@@ -10,7 +10,6 @@ $(ENVTEST_ASSETS_DIR):
 	mkdir -p $(ENVTEST_ASSETS_DIR)
 MOCKERY ?= $(ENVTEST_ASSETS_DIR)/mockery
 OAPI_CODEGEN ?= $(ENVTEST_ASSETS_DIR)/oapi-codegen
-LINTER ?= $(ENVTEST_ASSETS_DIR)/golangci-lint
 
 # Run acceptance tests
 .PHONY: testacc
@@ -25,16 +24,23 @@ test:
 
 .PHONY: fmt
 fmt:
-	golines -w ./
 	gofmt -w ./
 	goimports -w ./
 	[ -z "$$CIRCLECI" ] || git diff --exit-code --color=always # In CI: exit if anything changed
+
+.PHONY: validate-fmt
+validate-fmt:
+	@output=$$(gofmt -l ./); \
+	if [ -n "$$output" ]; then \
+		echo "$$output"; \
+		echo "Please run 'make fmt' to format the code"; \
+		exit 1; \
+	fi
 
 .PHONY: dep
 dep:
 	go mod download
 	go install golang.org/x/tools/cmd/goimports
-	go install github.com/segmentio/golines@latest
 	go mod tidy
 
 .PHONY: build

@@ -75,11 +75,6 @@ const (
 	CreateUserInviteRequestRoleORGANIZATIONOWNER        CreateUserInviteRequestRole = "ORGANIZATION_OWNER"
 )
 
-// Defines values for DeploymentRoleRole.
-const (
-	DEPLOYMENTADMIN DeploymentRoleRole = "DEPLOYMENT_ADMIN"
-)
-
 // Defines values for SubjectRolesOrganizationRole.
 const (
 	SubjectRolesOrganizationRoleORGANIZATIONBILLINGADMIN SubjectRolesOrganizationRole = "ORGANIZATION_BILLING_ADMIN"
@@ -353,12 +348,9 @@ type DeploymentRole struct {
 	// DeploymentId The Deployment ID.
 	DeploymentId string `json:"deploymentId"`
 
-	// Role The role of the subject in the Deployment.
-	Role DeploymentRoleRole `json:"role"`
+	// Role The name of the role for the subject in the Deployment.
+	Role string `json:"role"`
 }
-
-// DeploymentRoleRole The role of the subject in the Deployment.
-type DeploymentRoleRole string
 
 // Error defines model for Error.
 type Error struct {
@@ -514,6 +506,9 @@ type UpdateTeamRequest struct {
 
 // UpdateTeamRolesRequest defines model for UpdateTeamRolesRequest.
 type UpdateTeamRolesRequest struct {
+	// DeploymentRoles The user's updated Deployment roles. The Deployments you specify must belong to the Team's Organization.
+	DeploymentRoles *[]DeploymentRole `json:"deploymentRoles,omitempty"`
+
 	// OrganizationRole The Team's Organization roles.
 	OrganizationRole UpdateTeamRolesRequestOrganizationRole `json:"organizationRole"`
 
@@ -526,6 +521,9 @@ type UpdateTeamRolesRequestOrganizationRole string
 
 // UpdateUserRolesRequest defines model for UpdateUserRolesRequest.
 type UpdateUserRolesRequest struct {
+	// DeploymentRoles The user's updated Deployment roles. Requires also specifying an `OrganizationRole`.
+	DeploymentRoles *[]DeploymentRole `json:"deploymentRoles,omitempty"`
+
 	// OrganizationRole The user's updated Organization role.
 	OrganizationRole *UpdateUserRolesRequestOrganizationRole `json:"organizationRole,omitempty"`
 

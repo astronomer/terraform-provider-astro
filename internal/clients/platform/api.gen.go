@@ -2074,6 +2074,9 @@ type ListDeploymentsParams struct {
 	// DeploymentIds A list of IDs for Deployments to show. The API returns details only for the specified Deployments.
 	DeploymentIds *[]string `form:"deploymentIds,omitempty" json:"deploymentIds,omitempty"`
 
+	// Names A list of names for Deployments to filter by. The API returns details only for the specified Deployments.
+	Names *[]string `form:"names,omitempty" json:"names,omitempty"`
+
 	// WorkspaceIds A list of IDs for Workspaces to filter on. The API returns details for all Deployments belonging only to the specified Workspaces.
 	WorkspaceIds *[]string `form:"workspaceIds,omitempty" json:"workspaceIds,omitempty"`
 
@@ -2094,6 +2097,9 @@ type ListDeploymentsParamsSorts string
 type ListWorkspacesParams struct {
 	// WorkspaceIds A list of IDs for specific Workspaces to list. The API will list information only for Workspaces which have been specified in this list.
 	WorkspaceIds *[]string `form:"workspaceIds,omitempty" json:"workspaceIds,omitempty"`
+
+	// Names A list of names for specific Workspaces to filter by. The API will list information only for Workspaces which have been specified in this list.
+	Names *[]string `form:"names,omitempty" json:"names,omitempty"`
 
 	// Offset The number of results to skip before returning values.
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
@@ -3694,6 +3700,22 @@ func NewListDeploymentsRequest(server string, organizationId string, params *Lis
 
 		}
 
+		if params.Names != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "names", runtime.ParamLocationQuery, *params.Names); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.WorkspaceIds != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "workspaceIds", runtime.ParamLocationQuery, *params.WorkspaceIds); err != nil {
@@ -4079,6 +4101,22 @@ func NewListWorkspacesRequest(server string, organizationId string, params *List
 		if params.WorkspaceIds != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "workspaceIds", runtime.ParamLocationQuery, *params.WorkspaceIds); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Names != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "names", runtime.ParamLocationQuery, *params.Names); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
