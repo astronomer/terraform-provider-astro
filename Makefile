@@ -46,7 +46,7 @@ dep:
 .PHONY: build
 build:
 	go build -o ${ENVTEST_ASSETS_DIR}/terraform-provider-astronomer
-	go generate
+	go generate ./...
 #
 #.PHONY: mock
 #mock: $(ENVTEST_ASSETS_DIR)

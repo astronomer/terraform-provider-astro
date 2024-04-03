@@ -7,13 +7,13 @@ terraform {
 }
 
 variable "token" {
-    type = string
+  type = string
 }
 
 provider "astronomer" {
   organization_id = "cljzz64cc001n01mln1pgkvpj"
   host            = "https://api.astronomer-dev.io"
-  token =   var.token
+  token           = var.token
 }
 
 data "astronomer_workspace" "example" {
