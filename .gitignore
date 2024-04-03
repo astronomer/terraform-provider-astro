@@ -29,6 +29,7 @@ website/vendor
 examples/main.tf
 test_results
 vendor/
+.terraformrc
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate

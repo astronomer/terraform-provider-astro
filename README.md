@@ -59,6 +59,18 @@ In order to run the full suite of Acceptance tests, run `make testacc`.
 
 *Note:* Acceptance tests create real resources, and often cost money to run.
 
+To run terraform with the provider, create a `.terraformrc` file in your home directory with the following content to override the provider installation with the local build:
+
+```hcl
+provider_installation {
+  dev_overrides {
+    "registry.terraform.io/astronomer/astronomer" = "~/astronomer/astronomer-terraform-provider/bin" # Path to the provider binary
+  }
+direct {}
+}
+```
+
+
 ```shell
 make testacc
 ```
