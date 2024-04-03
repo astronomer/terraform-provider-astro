@@ -1,0 +1,19 @@
+with-expecter: false
+dir: internal/mocks/{{ replaceAll .InterfaceDirRelative "internal" "" }} # So we don't add another /internal/ to the path
+mockname: "{{.InterfaceName}}"
+outpkg: "{{.PackageName}}_mocks"
+packages:
+  github.com/astronomer/astronomer-terraform-provider/internal/clients/iam:
+    config:
+      dir: mocks/clients/iam
+    interfaces:
+      ClientWithResponsesInterface:
+        config:
+          filename: client.go
+  github.com/astronomer/astronomer-terraform-provider/internal/clients/platform:
+    config:
+      dir: mocks/clients/platform
+    interfaces:
+      ClientWithResponsesInterface:
+        config:
+          filename: client.go
