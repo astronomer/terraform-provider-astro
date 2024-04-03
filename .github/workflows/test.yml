@@ -27,7 +27,7 @@ jobs:
         with:
           go-version-file: 'go.mod'
           cache: true
-      - run: make fmt
+      - run: go mod tidy
       - run: go build -v .
       - run: make test
 
@@ -89,7 +89,7 @@ jobs:
         with:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
-      - run: make fmt
+      - run: go mod tidy
       - env:
           TF_ACC: "1"
         run: go test -v -cover ./internal/provider/
