@@ -20,7 +20,7 @@ testacc:
 .PHONY: test
 test:
 	go vet ./...
-	ginkgo run -r -v --skip-package internal/mocks --cover --covermode atomic --junit-report=report.xml --output-dir=test_results $(ARGS)
+	go run github.com/onsi/ginkgo/v2/ginkgo run -r -v --skip-package internal/mocks --cover --covermode atomic --junit-report=report.xml --output-dir=test_results $(ARGS)
 
 .PHONY: fmt
 fmt:
