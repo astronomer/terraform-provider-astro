@@ -35,10 +35,12 @@ var _ = Describe("Common Test", func() {
 
 		DescribeTable(
 			"should return subject profile model",
-			func(input any, expected *models.SubjectProfile) {
+			func(input any, expected models.SubjectProfile) {
 				subjectProfileModel, diags := models.SubjectProfileTypesObject(ctx, input)
 				Expect(diags.HasError()).To(BeFalse())
-				Expect(subjectProfileModel).To(Equal(expected))
+				expectedSubjectProfile, diags := types.ObjectValueFrom(ctx, models.SubjectProfileTF, expected)
+				Expect(diags.HasError()).To(BeFalse())
+				Expect(subjectProfileModel).To(Equal(expectedSubjectProfile))
 			},
 			Entry("user", &platform.BasicSubjectProfile{
 				AvatarUrl:   lo.ToPtr("avatar_url"),
@@ -46,7 +48,7 @@ var _ = Describe("Common Test", func() {
 				Id:          "id",
 				SubjectType: (*platform.BasicSubjectProfileSubjectType)(lo.ToPtr("USER")),
 				Username:    lo.ToPtr("username"),
-			}, &models.SubjectProfile{
+			}, models.SubjectProfile{
 				Id:           types.StringValue("id"),
 				SubjectType:  types.StringValue("USER"),
 				Username:     types.StringValue("username"),
@@ -58,7 +60,7 @@ var _ = Describe("Common Test", func() {
 				Id:           "id",
 				SubjectType:  (*iam.BasicSubjectProfileSubjectType)(lo.ToPtr("SERVICEKEY")),
 				ApiTokenName: lo.ToPtr("api_token_name"),
-			}, &models.SubjectProfile{
+			}, models.SubjectProfile{
 				Id:           types.StringValue("id"),
 				SubjectType:  types.StringValue("SERVICEKEY"),
 				Username:     types.StringNull(),
@@ -68,13 +70,13 @@ var _ = Describe("Common Test", func() {
 			}),
 			Entry("just id", &platform.BasicSubjectProfile{
 				Id: "id",
-			}, &models.SubjectProfile{
+			}, models.SubjectProfile{
 				Id:           types.StringValue("id"),
-				SubjectType:  types.StringUnknown(),
-				Username:     types.StringUnknown(),
-				FullName:     types.StringUnknown(),
-				AvatarUrl:    types.StringUnknown(),
-				ApiTokenName: types.StringUnknown(),
+				SubjectType:  types.StringNull(),
+				Username:     types.StringNull(),
+				FullName:     types.StringNull(),
+				AvatarUrl:    types.StringNull(),
+				ApiTokenName: types.StringNull(),
 			}),
 		)
 	})
