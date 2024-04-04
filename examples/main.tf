@@ -29,22 +29,22 @@ resource "astronomer_workspace" "tf_workspace" {
   description           = "This is a Terraform created workspace"
   cicd_enforced_default = false
 }
-#
-# output "terraform_workspace" {
-#   value = astronomer_workspace.tf_workspace
-# }
+
+output "terraform_workspace" {
+  value = astronomer_workspace.tf_workspace
+}
 
 // terraform import astronomer_workspace.imported_workspace cuid
-# import {
-#   to = astronomer_workspace.imported_workspace
-#   id = "clukf7a2p000e01oe9pup199x"
-# }
-# resource "astronomer_workspace" "imported_workspace" {
-#   name                  = "imported_workspace"
-#   description           = "hi fred"
-#   cicd_enforced_default = false
-# }
-#
-# output "imported_workspace" {
-#   value = astronomer_workspace.imported_workspace
-# }
+import {
+  to = astronomer_workspace.imported_workspace
+  id = "clukhp501000401jdyc42imci"
+}
+resource "astronomer_workspace" "imported_workspace" {
+  name                  = "imported_workspace"
+  description           = "hi fred"
+  cicd_enforced_default = false
+}
+
+output "imported_workspace" {
+  value = astronomer_workspace.imported_workspace
+}

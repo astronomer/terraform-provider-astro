@@ -35,7 +35,7 @@ var _ = Describe("Common Test", func() {
 
 		DescribeTable(
 			"should return subject profile model",
-			func(input any, expected *models.SubjectProfileModel) {
+			func(input any, expected *models.SubjectProfile) {
 				subjectProfileModel, diags := models.SubjectProfileTypesObject(ctx, input)
 				Expect(diags.HasError()).To(BeFalse())
 				Expect(subjectProfileModel).To(Equal(expected))
@@ -46,7 +46,7 @@ var _ = Describe("Common Test", func() {
 				Id:          "id",
 				SubjectType: (*platform.BasicSubjectProfileSubjectType)(lo.ToPtr("USER")),
 				Username:    lo.ToPtr("username"),
-			}, &models.SubjectProfileModel{
+			}, &models.SubjectProfile{
 				Id:           types.StringValue("id"),
 				SubjectType:  types.StringValue("USER"),
 				Username:     types.StringValue("username"),
@@ -58,7 +58,7 @@ var _ = Describe("Common Test", func() {
 				Id:           "id",
 				SubjectType:  (*iam.BasicSubjectProfileSubjectType)(lo.ToPtr("SERVICEKEY")),
 				ApiTokenName: lo.ToPtr("api_token_name"),
-			}, &models.SubjectProfileModel{
+			}, &models.SubjectProfile{
 				Id:           types.StringValue("id"),
 				SubjectType:  types.StringValue("SERVICEKEY"),
 				Username:     types.StringNull(),
@@ -68,7 +68,7 @@ var _ = Describe("Common Test", func() {
 			}),
 			Entry("just id", &platform.BasicSubjectProfile{
 				Id: "id",
-			}, &models.SubjectProfileModel{
+			}, &models.SubjectProfile{
 				Id:           types.StringValue("id"),
 				SubjectType:  types.StringUnknown(),
 				Username:     types.StringUnknown(),

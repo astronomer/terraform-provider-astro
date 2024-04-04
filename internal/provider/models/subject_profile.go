@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/iam"
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
@@ -10,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-type SubjectProfileModel struct {
+type SubjectProfile struct {
 	Id           types.String `tfsdk:"id"`
 	SubjectType  types.String `tfsdk:"subject_type"`
 	Username     types.String `tfsdk:"username"`
@@ -19,10 +20,19 @@ type SubjectProfileModel struct {
 	ApiTokenName types.String `tfsdk:"api_token_name"`
 }
 
+var SubjectProfileTF map[string]attr.Type = map[string]attr.Type{
+	"id":             types.StringType,
+	"subject_type":   types.StringType,
+	"username":       types.StringType,
+	"full_name":      types.StringType,
+	"avatar_url":     types.StringType,
+	"api_token_name": types.StringType,
+}
+
 func SubjectProfileTypesObject(
 	ctx context.Context,
 	basicSubjectProfile any,
-) (*SubjectProfileModel, diag.Diagnostics) {
+) (types.Object, diag.Diagnostics) {
 	// Check that the type passed in is a platform.BasicSubjectProfile or iam.BasicSubjectProfile
 	bsp, ok := basicSubjectProfile.(*platform.BasicSubjectProfile)
 	if !ok {
@@ -33,7 +43,7 @@ func SubjectProfileTypesObject(
 				"Unexpected type passed into subject profile",
 				map[string]interface{}{"value": basicSubjectProfile},
 			)
-			return nil, diag.Diagnostics{
+			return types.Object{}, diag.Diagnostics{
 				diag.NewErrorDiagnostic(
 					"Internal Error",
 					"SubjectProfileTypesObject expects a BasicSubjectProfile type but did not receive one",
@@ -51,7 +61,7 @@ func SubjectProfileTypesObject(
 		}
 	}
 
-	subjectProfile := SubjectProfileModel{
+	subjectProfile := SubjectProfile{
 		Id: types.StringValue(bsp.Id),
 	}
 
@@ -73,7 +83,6 @@ func SubjectProfileTypesObject(
 			} else {
 				subjectProfile.AvatarUrl = types.StringUnknown()
 			}
-			subjectProfile.ApiTokenName = types.StringNull()
 		} else {
 			if bsp.ApiTokenName != nil {
 				subjectProfile.ApiTokenName = types.StringValue(*bsp.ApiTokenName)
@@ -81,12 +90,6 @@ func SubjectProfileTypesObject(
 				subjectProfile.ApiTokenName = types.StringUnknown()
 			}
 		}
-	} else {
-		subjectProfile.SubjectType = types.StringUnknown()
-		subjectProfile.Username = types.StringUnknown()
-		subjectProfile.FullName = types.StringUnknown()
-		subjectProfile.AvatarUrl = types.StringUnknown()
-		subjectProfile.ApiTokenName = types.StringUnknown()
 	}
-	return &subjectProfile, nil
+	return types.ObjectValueFrom(ctx, SubjectProfileTF, subjectProfile)
 }

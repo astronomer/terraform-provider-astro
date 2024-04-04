@@ -73,7 +73,7 @@ func (d *workspaceDataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var data models.WorkspaceDataSourceModel
+	var data models.WorkspaceDataSource
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -107,7 +107,7 @@ func (d *workspaceDataSource) Read(
 	}
 
 	// Populate the model with the response data
-	models.FillWorkspaceDataSourceState(ctx, workspace.JSON200, &data)
+	data.ReadFromResponse(ctx, workspace.JSON200)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

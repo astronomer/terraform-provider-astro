@@ -76,7 +76,7 @@ func (r *workspaceResource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	var data models.WorkspaceResourceModel
+	var data models.WorkspaceResource
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -110,7 +110,7 @@ func (r *workspaceResource) Create(
 		return
 	}
 
-	diags := models.FillWorkspaceResourceState(ctx, workspace.JSON200, &data)
+	diags := data.ReadFromResponse(ctx, workspace.JSON200)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -127,7 +127,7 @@ func (r *workspaceResource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	var data models.WorkspaceResourceModel
+	var data models.WorkspaceResource
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -162,7 +162,7 @@ func (r *workspaceResource) Read(
 		return
 	}
 
-	diags := models.FillWorkspaceResourceState(ctx, workspace.JSON200, &data)
+	diags := data.ReadFromResponse(ctx, workspace.JSON200)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -179,7 +179,7 @@ func (r *workspaceResource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	var data models.WorkspaceResourceModel
+	var data models.WorkspaceResource
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -214,7 +214,7 @@ func (r *workspaceResource) Update(
 		return
 	}
 
-	diags := models.FillWorkspaceResourceState(ctx, workspace.JSON200, &data)
+	diags := data.ReadFromResponse(ctx, workspace.JSON200)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -231,7 +231,7 @@ func (r *workspaceResource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	var data models.WorkspaceResourceModel
+	var data models.WorkspaceResource
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)

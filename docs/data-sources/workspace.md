@@ -39,15 +39,12 @@ data "astronomer_workspace" "example" {
 <a id="nestedatt--created_by"></a>
 ### Nested Schema for `created_by`
 
-Required:
-
-- `id` (String)
-
 Read-Only:
 
 - `api_token_name` (String)
 - `avatar_url` (String)
 - `full_name` (String)
+- `id` (String)
 - `subject_type` (String)
 - `username` (String)
 
@@ -55,14 +52,11 @@ Read-Only:
 <a id="nestedatt--updated_by"></a>
 ### Nested Schema for `updated_by`
 
-Required:
-
-- `id` (String)
-
 Read-Only:
 
 - `api_token_name` (String)
 - `avatar_url` (String)
 - `full_name` (String)
+- `id` (String)
 - `subject_type` (String)
 - `username` (String)
