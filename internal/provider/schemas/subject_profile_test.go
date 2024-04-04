@@ -2,6 +2,7 @@ package schemas_test
 
 import (
 	"context"
+
 	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/iam"

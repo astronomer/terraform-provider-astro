@@ -3,9 +3,10 @@ package datasources
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/samber/lo"
-	"strings"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
