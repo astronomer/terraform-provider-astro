@@ -29,7 +29,7 @@ jobs:
         with:
           go-version-file: 'go.mod'
           cache: true
-      - run: go mod tidy
+      - run: go mod download
       - run: go build -v .
       - run: make test
 
@@ -87,7 +87,7 @@ jobs:
         with:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
-      - run: go mod tidy
+      - run: go mod download
       - env:
           TF_ACC: "1"
         run: go test -v -cover ./internal/provider/
