@@ -2,6 +2,7 @@ package schemas_test
 
 import (
 	"context"
+	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/iam"
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
@@ -38,7 +39,7 @@ var _ = Describe("Common Test", func() {
 			func(input any, expected models.SubjectProfile) {
 				subjectProfileModel, diags := models.SubjectProfileTypesObject(ctx, input)
 				Expect(diags.HasError()).To(BeFalse())
-				expectedSubjectProfile, diags := types.ObjectValueFrom(ctx, models.SubjectProfileTF, expected)
+				expectedSubjectProfile, diags := types.ObjectValueFrom(ctx, schemas.SubjectProfileTF, expected)
 				Expect(diags.HasError()).To(BeFalse())
 				Expect(subjectProfileModel).To(Equal(expectedSubjectProfile))
 			},

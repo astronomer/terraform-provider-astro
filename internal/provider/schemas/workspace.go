@@ -1,63 +1,63 @@
 package schemas
 
 import (
-	"github.com/astronomer/astronomer-terraform-provider/internal/validators"
+	"github.com/astronomer/astronomer-terraform-provider/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	datasource "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	resource "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-func WorkspaceDataSourceSchemaAttributes() map[string]datasource.Attribute {
-	return map[string]datasource.Attribute{
-		"id": datasource.StringAttribute{
+func WorkspaceDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
+	return map[string]datasourceSchema.Attribute{
+		"id": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace identifier",
 			Required:            true,
 			Validators:          []validator.String{validators.IsCuid()},
 		},
-		"name": datasource.StringAttribute{
+		"name": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace name",
 			Computed:            true,
 		},
-		"description": datasource.StringAttribute{
+		"description": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace description",
 			Computed:            true,
 		},
-		"organization_name": datasource.StringAttribute{
+		"organization_name": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace organization name",
 			Computed:            true,
 		},
-		"cicd_enforced_default": datasource.BoolAttribute{
+		"cicd_enforced_default": datasourceSchema.BoolAttribute{
 			MarkdownDescription: "Whether new Deployments enforce CI/CD deploys by default",
 			Computed:            true,
 		},
-		"created_at": datasource.StringAttribute{
+		"created_at": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace creation timestamp",
 			Computed:            true,
 		},
-		"updated_at": datasource.StringAttribute{
+		"updated_at": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace last updated timestamp",
 			Computed:            true,
 		},
-		"created_by": datasource.SingleNestedAttribute{
+		"created_by": datasourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "Workspace creator",
 			Computed:            true,
-			Attributes:          DataSourceSubjectProfileSchema(),
+			Attributes:          DataSourceSubjectProfileSchemaAttributes(),
 		},
-		"updated_by": datasource.SingleNestedAttribute{
+		"updated_by": datasourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "Workspace updater",
 			Computed:            true,
-			Attributes:          DataSourceSubjectProfileSchema(),
+			Attributes:          DataSourceSubjectProfileSchemaAttributes(),
 		},
 	}
 }
 
-func WorkspaceResourceSchemaAttributes() map[string]resource.Attribute {
-	return map[string]resource.Attribute{
-		"id": resource.StringAttribute{
+func WorkspaceResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"id": resourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace identifier",
 			Computed:            true,
 			Validators:          []validator.String{validators.IsCuid()},
@@ -65,49 +65,49 @@ func WorkspaceResourceSchemaAttributes() map[string]resource.Attribute {
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
-		"name": resource.StringAttribute{
+		"name": resourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace name",
 			Required:            true,
 			Validators:          []validator.String{stringvalidator.LengthAtMost(50)},
 		},
-		"description": resource.StringAttribute{
+		"description": resourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace description",
 			Required:            true,
 		},
-		"organization_name": resource.StringAttribute{
+		"organization_name": resourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace organization name",
 			Computed:            true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
-		"cicd_enforced_default": resource.BoolAttribute{
+		"cicd_enforced_default": resourceSchema.BoolAttribute{
 			MarkdownDescription: "Whether new Deployments enforce CI/CD deploys by default",
 			Required:            true,
 		},
-		"created_at": resource.StringAttribute{
+		"created_at": resourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace creation timestamp",
 			Computed:            true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
-		"updated_at": resource.StringAttribute{
+		"updated_at": resourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace last updated timestamp",
 			Computed:            true,
 		},
-		"created_by": resource.SingleNestedAttribute{
+		"created_by": resourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "Workspace creator",
 			Computed:            true,
-			Attributes:          ResourceSubjectProfileSchema(),
+			Attributes:          ResourceSubjectProfileSchemaAttributes(),
 			PlanModifiers: []planmodifier.Object{
 				objectplanmodifier.UseStateForUnknown(),
 			},
 		},
-		"updated_by": resource.SingleNestedAttribute{
+		"updated_by": resourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "Workspace updater",
 			Computed:            true,
-			Attributes:          ResourceSubjectProfileSchema(),
+			Attributes:          ResourceSubjectProfileSchemaAttributes(),
 		},
 	}
 }

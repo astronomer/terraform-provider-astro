@@ -1,5 +1,5 @@
-CORE_IAM_OPENAPI_SPEC=../astro-monorepo/apps/core/docs/iam/v1beta1/iam_v1beta1.yaml
-CORE_PLATFORM_OPENAPI_SPEC=../astro-monorepo/apps/core/docs/platform/v1beta1/platform_v1beta1.yaml
+CORE_IAM_OPENAPI_SPEC=../astro/apps/core/docs/iam/v1beta1/iam_v1beta1.yaml
+CORE_PLATFORM_OPENAPI_SPEC=../astro/apps/core/docs/platform/v1beta1/platform_v1beta1.yaml
 
 DESIRED_OAPI_CODEGEN_VERSION=v2.1.0
 DESIRED_MOCKERY_VERSION=v2.40.2
@@ -8,7 +8,6 @@ DESIRED_MOCKERY_VERSION=v2.40.2
 ENVTEST_ASSETS_DIR=$(shell pwd)/bin
 $(ENVTEST_ASSETS_DIR):
 	mkdir -p $(ENVTEST_ASSETS_DIR)
-MOCKERY ?= $(ENVTEST_ASSETS_DIR)/mockery
 OAPI_CODEGEN ?= $(ENVTEST_ASSETS_DIR)/oapi-codegen
 
 # Run acceptance tests
@@ -47,13 +46,6 @@ dep:
 build:
 	go build -o ${ENVTEST_ASSETS_DIR}/terraform-provider-astronomer
 	go generate ./...
-#
-#.PHONY: mock
-#mock: $(ENVTEST_ASSETS_DIR)
-#	# Install correct mockery version if not installed
-#	(test -s $(MOCKERY) && $(MOCKERY) --version | grep -i $(DESIRED_MOCKERY_VERSION)) || GOBIN=$(ENVTEST_ASSETS_DIR) go install github.com/vektra/mockery/v2@$(DESIRED_MOCKERY_VERSION)
-#	rm -rf internal/mocks
-#	$(MOCKERY) --config .mockery.yaml
 
 .PHONY: api_client_gen
 api_client_gen: $(ENVTEST_ASSETS_DIR)

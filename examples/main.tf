@@ -48,3 +48,12 @@ resource "astronomer_workspace" "imported_workspace" {
 output "imported_workspace" {
   value = astronomer_workspace.imported_workspace
 }
+
+// list workspaces
+data "astronomer_workspaces" "list_workspaces" {
+  names = ["imported_workspace"]
+}
+
+output "list_workspaces" {
+  value = data.astronomer_workspaces.list_workspaces
+}
