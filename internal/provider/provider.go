@@ -5,88 +5,141 @@ package provider
 
 import (
 	"context"
-	"net/http"
+	"os"
 
+	"github.com/astronomer/astronomer-terraform-provider/internal/clients/iam"
+	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
+	"github.com/astronomer/astronomer-terraform-provider/internal/provider/datasources"
+	"github.com/astronomer/astronomer-terraform-provider/internal/provider/models"
+	"github.com/astronomer/astronomer-terraform-provider/internal/provider/resources"
+	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// Ensure ScaffoldingProvider satisfies various provider interfaces.
-var _ provider.Provider = &ScaffoldingProvider{}
-var _ provider.ProviderWithFunctions = &ScaffoldingProvider{}
+// Ensure AstronomerProvider satisfies various provider interfaces.
+var _ provider.Provider = &AstronomerProvider{}
+var _ provider.ProviderWithFunctions = &AstronomerProvider{}
 
-// ScaffoldingProvider defines the provider implementation.
-type ScaffoldingProvider struct {
+// AstronomerProvider defines the provider implementation.
+type AstronomerProvider struct {
 	// version is set to the provider version on release, "dev" when the
 	// provider is built and ran locally, and "test" when running acceptance
 	// testing.
 	version string
 }
 
-// ScaffoldingProviderModel describes the provider data model.
-type ScaffoldingProviderModel struct {
-	Endpoint types.String `tfsdk:"endpoint"`
-}
-
-func (p *ScaffoldingProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "scaffolding"
+func (p *AstronomerProvider) Metadata(
+	ctx context.Context,
+	req provider.MetadataRequest,
+	resp *provider.MetadataResponse,
+) {
+	resp.TypeName = "astronomer"
 	resp.Version = p.version
 }
 
-func (p *ScaffoldingProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
-	resp.Schema = schema.Schema{
-		Attributes: map[string]schema.Attribute{
-			"endpoint": schema.StringAttribute{
-				MarkdownDescription: "Example provider attribute",
-				Optional:            true,
-			},
-		},
+func (p *AstronomerProvider) Schema(
+	ctx context.Context,
+	req provider.SchemaRequest,
+	resp *provider.SchemaResponse,
+) {
+	resp.Schema = providerSchema()
+}
+
+func providerSchema() schema.Schema {
+	return schema.Schema{
+		Attributes: schemas.ProviderSchemaAttributes(),
 	}
 }
 
-func (p *ScaffoldingProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var data ScaffoldingProviderModel
+func (p *AstronomerProvider) Configure(
+	ctx context.Context,
+	req provider.ConfigureRequest,
+	resp *provider.ConfigureResponse,
+) {
+	tflog.Info(ctx, "Configuring Astronomer Terraform Provider client")
+
+	var data models.AstronomerProviderModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Configuration values are now available.
-	// if data.Endpoint.IsNull() { /* ... */ }
+	// Will use Token provided in the configuration, or fallback to the ASTRO_API_TOKEN env var
+	if data.Token.IsNull() {
+		data.Token = types.StringValue(os.Getenv("ASTRO_API_TOKEN"))
+	}
+
+	if len(data.Token.ValueString()) == 0 {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("token"),
+			"Missing Astro API Token",
+			"Astro API Token must be set in the configuration or the 'ASTRO_API_TOKEN' environment variable",
+		)
+		return
+	}
+
+	if data.Host.IsNull() {
+		data.Host = types.StringValue("https://api.astronomer.io")
+	}
+
+	platformClient, err := platform.NewPlatformClient(
+		data.Host.ValueString(),
+		data.Token.ValueString(),
+		p.version,
+	)
+	if err != nil {
+		tflog.Error(ctx, "failed to create platform client", map[string]any{"error": err})
+		resp.Diagnostics.AddError(
+			"Failed to create platform client",
+			"failed to create platform API client",
+		)
+		return
+	}
+	iamClient, err := iam.NewIamClient(data.Host.ValueString(), data.Token.ValueString(), p.version)
+	if err != nil {
+		tflog.Error(ctx, "failed to create iam client", map[string]any{"error": err})
+		resp.Diagnostics.AddError("Failed to create iam client", "failed to create IAM API client")
+		return
+	}
+
+	apiClientsModel := models.ApiClientsModel{
+		OrganizationId: data.OrganizationId.ValueString(),
+		PlatformClient: platformClient,
+		IamClient:      iamClient,
+	}
 
 	// Example client configuration for data sources and resources
-	client := http.DefaultClient
-	resp.DataSourceData = client
-	resp.ResourceData = client
+	resp.DataSourceData = apiClientsModel
+	resp.ResourceData = apiClientsModel
 }
 
-func (p *ScaffoldingProvider) Resources(ctx context.Context) []func() resource.Resource {
+func (p *AstronomerProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		NewExampleResource,
+		resources.NewWorkspaceResource,
 	}
 }
 
-func (p *ScaffoldingProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+func (p *AstronomerProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		NewExampleDataSource,
+		datasources.NewWorkspaceDataSource,
 	}
 }
 
-func (p *ScaffoldingProvider) Functions(ctx context.Context) []func() function.Function {
-	return []func() function.Function{
-		NewExampleFunction,
-	}
+func (p *AstronomerProvider) Functions(ctx context.Context) []func() function.Function {
+	return []func() function.Function{}
 }
 
 func New(version string) func() provider.Provider {
 	return func() provider.Provider {
-		return &ScaffoldingProvider{
+		return &AstronomerProvider{
 			version: version,
 		}
 	}

@@ -24,8 +24,12 @@ website/node_modules
 *.iml
 *.test
 *.iml
+*.tfvars
 
 website/vendor
+test_results
+vendor/
+.terraformrc
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate
