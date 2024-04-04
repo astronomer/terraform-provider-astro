@@ -20,31 +20,31 @@ data "astronomer_workspace" "example" {
   id = "cltj71ygr000101qafj5hhihs"
 }
 
-output "data_workspace_updated_by" {
-  value = data.astronomer_workspace.example.created_by
+output "data_workspace_example" {
+  value = data.astronomer_workspace.example
 }
 
 resource "astronomer_workspace" "tf_workspace" {
-  name                  = "tf-workspace"
+  name                  = "tf-workspace-1234"
   description           = "This is a Terraform created workspace"
-  cicd_enforced_default = true
-}
-
-// terraform import astronomer_workspace.imported_workspace cuid
-import {
-  to = astronomer_workspace.imported_workspace
-  id = "cltj6pn3v000001owkjx4xhuv"
-}
-resource "astronomer_workspace" "imported_workspace" {
-  name                  = "imported_workspace_2"
-  description           = "hi fred"
   cicd_enforced_default = false
 }
+#
+# output "terraform_workspace" {
+#   value = astronomer_workspace.tf_workspace
+# }
 
-output "imported_workspace_updated_by" {
-  value = astronomer_workspace.imported_workspace.updated_by
-}
-
-output "imported_workspace_created_by" {
-  value = astronomer_workspace.imported_workspace.created_by
-}
+// terraform import astronomer_workspace.imported_workspace cuid
+# import {
+#   to = astronomer_workspace.imported_workspace
+#   id = "clukf7a2p000e01oe9pup199x"
+# }
+# resource "astronomer_workspace" "imported_workspace" {
+#   name                  = "imported_workspace"
+#   description           = "hi fred"
+#   cicd_enforced_default = false
+# }
+#
+# output "imported_workspace" {
+#   value = astronomer_workspace.imported_workspace
+# }

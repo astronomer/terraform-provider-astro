@@ -108,9 +108,6 @@ func WorkspaceResourceSchemaAttributes() map[string]resource.Attribute {
 			MarkdownDescription: "Workspace updater",
 			Computed:            true,
 			Attributes:          ResourceSubjectProfileSchema(),
-			PlanModifiers: []planmodifier.Object{
-				objectplanmodifier.UseStateForUnknown(),
-			},
 		},
 	}
 }

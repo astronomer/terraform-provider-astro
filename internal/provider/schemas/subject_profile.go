@@ -8,7 +8,7 @@ import (
 func DataSourceSubjectProfileSchema() map[string]datasource.Attribute {
 	return map[string]datasource.Attribute{
 		"id": datasource.StringAttribute{
-			Required: true,
+			Computed: true,
 		},
 		"subject_type": datasource.StringAttribute{
 			Computed: true,
@@ -31,7 +31,7 @@ func DataSourceSubjectProfileSchema() map[string]datasource.Attribute {
 func ResourceSubjectProfileSchema() map[string]resource.Attribute {
 	return map[string]resource.Attribute{
 		"id": resource.StringAttribute{
-			Required: true,
+			Computed: true,
 		},
 		"subject_type": resource.StringAttribute{
 			Computed: true,
