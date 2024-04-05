@@ -13,8 +13,8 @@ import (
 // WorkspacesDataSource describes the data source data model.
 type WorkspacesDataSource struct {
 	Workspaces   types.List `tfsdk:"workspaces"`
-	WorkspaceIds types.List `tfsdk:"workspace_ids"`
-	Names        types.List `tfsdk:"names"`
+	WorkspaceIds types.List `tfsdk:"workspace_ids"` // query parameter
+	Names        types.List `tfsdk:"names"`         // query parameter
 }
 
 func (data *WorkspacesDataSource) ReadFromResponse(
