@@ -83,5 +83,5 @@ func SubjectProfileTypesObject(
 			}
 		}
 	}
-	return types.ObjectValueFrom(ctx, schemas.SubjectProfileTF, subjectProfile)
+	return types.ObjectValueFrom(ctx, schemas.SubjectProfileAttributeTypes(), subjectProfile)
 }

@@ -7,13 +7,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-var SubjectProfileTF = map[string]attr.Type{
-	"id":             types.StringType,
-	"subject_type":   types.StringType,
-	"username":       types.StringType,
-	"full_name":      types.StringType,
-	"avatar_url":     types.StringType,
-	"api_token_name": types.StringType,
+func SubjectProfileAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":             types.StringType,
+		"subject_type":   types.StringType,
+		"username":       types.StringType,
+		"full_name":      types.StringType,
+		"avatar_url":     types.StringType,
+		"api_token_name": types.StringType,
+	}
 }
 
 func DataSourceSubjectProfileSchemaAttributes() map[string]datasourceSchema.Attribute {

@@ -16,10 +16,10 @@ func WorkspacesElementAttributeTypes() map[string]attr.Type {
 		"created_at":            types.StringType,
 		"updated_at":            types.StringType,
 		"created_by": types.ObjectType{
-			AttrTypes: SubjectProfileTF,
+			AttrTypes: SubjectProfileAttributeTypes(),
 		},
 		"updated_by": types.ObjectType{
-			AttrTypes: SubjectProfileTF,
+			AttrTypes: SubjectProfileAttributeTypes(),
 		},
 	}
 }
