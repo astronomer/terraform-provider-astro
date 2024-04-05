@@ -40,7 +40,7 @@ var _ = Describe("Common Test", func() {
 			func(input any, expected models.SubjectProfile) {
 				subjectProfileModel, diags := models.SubjectProfileTypesObject(ctx, input)
 				Expect(diags.HasError()).To(BeFalse())
-				expectedSubjectProfile, diags := types.ObjectValueFrom(ctx, schemas.SubjectProfileTF, expected)
+				expectedSubjectProfile, diags := types.ObjectValueFrom(ctx, schemas.SubjectProfileAttributeTypes(), expected)
 				Expect(diags.HasError()).To(BeFalse())
 				Expect(subjectProfileModel).To(Equal(expectedSubjectProfile))
 			},
