@@ -35,6 +35,7 @@ Then commit the changes to `go.mod` and `go.sum`.
 ## Using the provider
 
 ```shell
+export ASTRI_API_TOKEN=<token>
 terraform apply
 terraform plan
 ```
@@ -53,6 +54,45 @@ provider_installation {
     "registry.terraform.io/astronomer/astronomer" = "~/astronomer/astronomer-terraform-provider/bin" # Path to the provider binary
   }
 direct {}
+}
+```
+
+## Example `main.tf` file
+```terraform
+terraform {
+  required_providers {
+    astronomer = {
+      source = "registry.terraform.io/astronomer/astronomer"
+    }
+  }
+}
+
+variable "token" {
+  type = string
+}
+
+provider "astronomer" {
+  organization_id = "<cuid>"
+  host            = "https://api.astronomer-dev.io"
+  token           = var.token
+}
+
+data "astronomer_workspace" "example" {
+  id = "<cuid>>"
+}
+
+output "data_workspace_example" {
+  value = data.astronomer_workspace.example
+}
+
+resource "astronomer_workspace" "tf_workspace" {
+  name                  = "my workspace"
+  description           = "my first workspace"
+  cicd_enforced_default = false
+}
+
+output "terraform_workspace" {
+  value = astronomer_workspace.tf_workspace
 }
 ```
 
