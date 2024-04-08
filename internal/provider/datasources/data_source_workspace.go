@@ -107,7 +107,11 @@ func (d *workspaceDataSource) Read(
 	}
 
 	// Populate the model with the response data
-	data.ReadFromResponse(ctx, workspace.JSON200)
+	diags := data.ReadFromResponse(ctx, workspace.JSON200)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

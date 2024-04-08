@@ -1,7 +1,7 @@
 package validators_test
 
 import (
-	"github.com/astronomer/astronomer-terraform-provider/internal/validators"
+	"github.com/astronomer/astronomer-terraform-provider/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/lucsky/cuid"

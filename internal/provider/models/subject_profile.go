@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/iam"
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
@@ -19,15 +19,6 @@ type SubjectProfile struct {
 	FullName     types.String `tfsdk:"full_name"`
 	AvatarUrl    types.String `tfsdk:"avatar_url"`
 	ApiTokenName types.String `tfsdk:"api_token_name"`
-}
-
-var SubjectProfileTF map[string]attr.Type = map[string]attr.Type{
-	"id":             types.StringType,
-	"subject_type":   types.StringType,
-	"username":       types.StringType,
-	"full_name":      types.StringType,
-	"avatar_url":     types.StringType,
-	"api_token_name": types.StringType,
 }
 
 func SubjectProfileTypesObject(
@@ -92,5 +83,5 @@ func SubjectProfileTypesObject(
 			}
 		}
 	}
-	return types.ObjectValueFrom(ctx, SubjectProfileTF, subjectProfile)
+	return types.ObjectValueFrom(ctx, schemas.SubjectProfileAttributeTypes(), subjectProfile)
 }

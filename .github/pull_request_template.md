@@ -1,6 +1,6 @@
 ## Description
 
-> Describe the purpose of this pull request.
+<!--- Describe the purpose of this pull request. --->
 
 ## 🎟 Issue(s)
 
@@ -8,11 +8,11 @@ Related #XXX
 
 ## 🧪 Functional Testing
 
-> List the functional testing steps to confirm this feature or fix.
+<!--- List the functional testing steps to confirm this feature or fix. --->
 
 ## 📸 Screenshots
 
-> Add screenshots to illustrate the validity of these changes.
+<!--- Add screenshots to illustrate the validity of these changes. --->
 
 ## 📋 Checklist
 

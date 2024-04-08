@@ -130,6 +130,7 @@ func (p *AstronomerProvider) Resources(ctx context.Context) []func() resource.Re
 func (p *AstronomerProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		datasources.NewWorkspaceDataSource,
+		datasources.NewWorkspacesDataSource,
 	}
 }
 
