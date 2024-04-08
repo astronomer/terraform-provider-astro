@@ -33,9 +33,26 @@ go mod tidy
 Then commit the changes to `go.mod` and `go.sum`.
 
 ## Using the provider
+1. Create an [API Token](https://docs.astronomer.io/astro/automation-authentication#step-1-create-an-api-token) to use in the provider. We recommend creating an organization API token since it is the most flexible but the type of your API token will depend on your use case.
+2. Create a `main.tf` file with the following content:
+```terraform
+terraform {
+  required_providers {
+    astronomer = {
+      source = "registry.terraform.io/astronomer/astronomer"
+    }
+  }
+}
 
+provider "astronomer" {
+  organization_id = "<cuid>"
+}
+
+# your terraform commands here
+```
+3. Run the following commands to apply the provider:
 ```shell
-export ASTRI_API_TOKEN=<token>
+export ASTRO_API_TOKEN=<token>
 terraform apply
 terraform plan
 ```
@@ -57,7 +74,7 @@ direct {}
 }
 ```
 
-## Example `main.tf` file
+## Example `main.tf` file for development and testing data sources and resources
 ```terraform
 terraform {
   required_providers {

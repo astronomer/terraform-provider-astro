@@ -2,7 +2,6 @@ CORE_IAM_OPENAPI_SPEC=../astro/apps/core/docs/iam/v1beta1/iam_v1beta1.yaml
 CORE_PLATFORM_OPENAPI_SPEC=../astro/apps/core/docs/platform/v1beta1/platform_v1beta1.yaml
 
 DESIRED_OAPI_CODEGEN_VERSION=v2.1.0
-DESIRED_MOCKERY_VERSION=v2.40.2
 
 ## Location to install dependencies to
 ENVTEST_ASSETS_DIR=$(shell pwd)/bin
@@ -19,7 +18,7 @@ testacc:
 .PHONY: test
 test:
 	go vet ./...
-	go run github.com/onsi/ginkgo/v2/ginkgo run -r -v --skip-package internal/mocks --cover --covermode atomic --junit-report=report.xml --output-dir=test_results $(ARGS)
+	go run github.com/onsi/ginkgo/v2/ginkgo run -r -v --cover --covermode atomic --junit-report=report.xml --output-dir=test_results $(ARGS)
 
 .PHONY: fmt
 fmt:
