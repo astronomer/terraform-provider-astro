@@ -50,6 +50,8 @@ Deployment data source
 - `region` (String) Deployment region
 - `resource_quota_cpu` (String) Deployment resource quota CPU
 - `resource_quota_memory` (String) Deployment resource quota memory
+- `scaling_spec` (Attributes) Deployment scaling spec (see [below for nested schema](#nestedatt--scaling_spec))
+- `scaling_status` (Attributes) Deployment scaling status (see [below for nested schema](#nestedatt--scaling_status))
 - `scheduler_au` (Number) Deployment scheduler AU
 - `scheduler_cpu` (String) Deployment scheduler CPU
 - `scheduler_memory` (String) Deployment scheduler memory
@@ -94,6 +96,63 @@ Read-Only:
 - `key` (String) Environment variable key
 - `updated_at` (String) Environment variable last updated timestamp
 - `value` (String) Environment variable value
+
+
+<a id="nestedatt--scaling_spec"></a>
+### Nested Schema for `scaling_spec`
+
+Read-Only:
+
+- `hibernation_spec` (Attributes) (see [below for nested schema](#nestedatt--scaling_spec--hibernation_spec))
+
+<a id="nestedatt--scaling_spec--hibernation_spec"></a>
+### Nested Schema for `scaling_spec.hibernation_spec`
+
+Read-Only:
+
+- `override` (Attributes) (see [below for nested schema](#nestedatt--scaling_spec--hibernation_spec--override))
+- `schedules` (Attributes List) (see [below for nested schema](#nestedatt--scaling_spec--hibernation_spec--schedules))
+
+<a id="nestedatt--scaling_spec--hibernation_spec--override"></a>
+### Nested Schema for `scaling_spec.hibernation_spec.override`
+
+Read-Only:
+
+- `is_active` (Boolean)
+- `is_hibernating` (Boolean)
+- `override_until` (String)
+
+
+<a id="nestedatt--scaling_spec--hibernation_spec--schedules"></a>
+### Nested Schema for `scaling_spec.hibernation_spec.schedules`
+
+Read-Only:
+
+- `description` (String)
+- `hibernate_at_cron` (String)
+- `is_enabled` (Boolean)
+- `wake_at_cron` (String)
+
+
+
+
+<a id="nestedatt--scaling_status"></a>
+### Nested Schema for `scaling_status`
+
+Read-Only:
+
+- `hibernation_status` (Attributes) (see [below for nested schema](#nestedatt--scaling_status--hibernation_status))
+
+<a id="nestedatt--scaling_status--hibernation_status"></a>
+### Nested Schema for `scaling_status.hibernation_status`
+
+Read-Only:
+
+- `is_hibernating` (Boolean)
+- `next_event_at` (String)
+- `next_event_type` (String)
+- `reason` (String)
+
 
 
 <a id="nestedatt--updated_by"></a>

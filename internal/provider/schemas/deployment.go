@@ -225,14 +225,16 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			MarkdownDescription: "Deployment default task pod memory",
 			Computed:            true,
 		},
-		//"scaling_status": datasourceSchema.SingleNestedAttribute{
-		//	MarkdownDescription: "Deployment scaling status",
-		//	Computed:            true,
-		//},
-		//"scaling_spec": datasourceSchema.SingleNestedAttribute{
-		//	MarkdownDescription: "Deployment scaling spec",
-		//	Computed:            true,
-		//},
+		"scaling_status": datasourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Deployment scaling status",
+			Computed:            true,
+			Attributes:          ScalingStatusAttributes(),
+		},
+		"scaling_spec": datasourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Deployment scaling spec",
+			Computed:            true,
+			Attributes:          ScalingSpecSchemaAttributes(),
+		},
 	}
 }
 
@@ -242,21 +244,6 @@ func DeploymentEnvironmentVariableAttributeTypes() map[string]attr.Type {
 		"value":      types.StringType,
 		"updated_at": types.StringType,
 		"is_secret":  types.BoolType,
-	}
-}
-
-func WorkerQueueAttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"id":                 types.StringType,
-		"name":               types.StringType,
-		"astro_machine":      types.StringType,
-		"is_default":         types.BoolType,
-		"max_worker_count":   types.Int64Type,
-		"min_worker_count":   types.Int64Type,
-		"node_pool_id":       types.StringType,
-		"pod_cpu":            types.StringType,
-		"pod_memory":         types.StringType,
-		"worker_concurrency": types.Int64Type,
 	}
 }
 
@@ -278,6 +265,21 @@ func DeploymentEnvironmentVariableAttributes() map[string]datasourceSchema.Attri
 			MarkdownDescription: "Whether Environment variable is a secret",
 			Computed:            true,
 		},
+	}
+}
+
+func WorkerQueueAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":                 types.StringType,
+		"name":               types.StringType,
+		"astro_machine":      types.StringType,
+		"is_default":         types.BoolType,
+		"max_worker_count":   types.Int64Type,
+		"min_worker_count":   types.Int64Type,
+		"node_pool_id":       types.StringType,
+		"pod_cpu":            types.StringType,
+		"pod_memory":         types.StringType,
+		"worker_concurrency": types.Int64Type,
 	}
 }
 
@@ -315,16 +317,3 @@ func WorkerQueueSchemaAttributes() map[string]datasourceSchema.Attribute {
 		},
 	}
 }
-
-//func ScalingStatusAttributeTypes() map[string]attr.Type {
-//	return map[string]attr.Type{
-//		"hibernation_status": types.ObjectType{
-//			AttrTypes: map[string]attr.Type{
-//				"is_hibernating":  types.StringType,
-//				"next_event_at":   types.StringType,
-//				"next_event_type": types.StringType,
-//				"reason":          types.StringType,
-//			},
-//		},
-//	}
-//}

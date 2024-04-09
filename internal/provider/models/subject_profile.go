@@ -25,6 +25,7 @@ func SubjectProfileTypesObject(
 	basicSubjectProfile any,
 ) (types.Object, diag.Diagnostics) {
 	// Attempt to convert basicSubjectProfile to *platform.BasicSubjectProfile
+	// Our API client returns a BasicSubjectProfile, but we are unsure if it is a pointer and which package it is from
 	var bspPtr *platform.BasicSubjectProfile
 
 	switch v := basicSubjectProfile.(type) {

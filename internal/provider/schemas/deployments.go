@@ -75,6 +75,12 @@ func DeploymentsElementAttributeTypes() map[string]attr.Type {
 		"resource_quota_memory":   types.StringType,
 		"default_task_pod_cpu":    types.StringType,
 		"default_task_pod_memory": types.StringType,
+		"scaling_status": types.ObjectType{
+			AttrTypes: ScalingStatusAttributeTypes(),
+		},
+		"scaling_spec": types.ObjectType{
+			AttrTypes: ScalingSpecAttributeTypes(),
+		},
 	}
 }
 

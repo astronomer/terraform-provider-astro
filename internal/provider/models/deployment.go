@@ -62,8 +62,8 @@ type DeploymentDataSource struct {
 	ResourceQuotaMemory      types.String `tfsdk:"resource_quota_memory"`
 	DefaultTaskPodCpu        types.String `tfsdk:"default_task_pod_cpu"`
 	DefaultTaskPodMemory     types.String `tfsdk:"default_task_pod_memory"`
-	//ScalingStatus            types.Object `tfsdk:"scaling_status"`
-	//ScalingSpec              types.Object `tfsdk:"scaling_spec"`
+	ScalingStatus            types.Object `tfsdk:"scaling_status"`
+	ScalingSpec              types.Object `tfsdk:"scaling_spec"`
 }
 
 type DeploymentEnvironmentVariable struct {
@@ -173,14 +173,14 @@ func (data *DeploymentDataSource) ReadFromResponse(
 	data.ResourceQuotaMemory = types.StringPointerValue(deployment.ResourceQuotaMemory)
 	data.DefaultTaskPodCpu = types.StringPointerValue(deployment.DefaultTaskPodCpu)
 	data.DefaultTaskPodMemory = types.StringPointerValue(deployment.DefaultTaskPodMemory)
-	//data.ScalingStatus, diags = ScalingStatusTypesObject(ctx, deployment.ScalingStatus)
-	//if diags.HasError() {
-	//	return diags
-	//}
-	//data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, deployment.ScalingSpec)
-	//if diags.HasError() {
-	//	return diags
-	//}
+	data.ScalingStatus, diags = ScalingStatusTypesObject(ctx, deployment.ScalingStatus)
+	if diags.HasError() {
+		return diags
+	}
+	data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, deployment.ScalingSpec)
+	if diags.HasError() {
+		return diags
+	}
 
 	return nil
 }
@@ -217,4 +217,89 @@ func WorkerQueueTypesObject(
 	}
 
 	return types.ObjectValueFrom(ctx, schemas.WorkerQueueAttributeTypes(), obj)
+}
+
+type DeploymentScalingSpec struct {
+	HibernationSpec HibernationSpec `tfsdk:"hibernation_spec"`
+}
+
+type DeploymentStatus struct {
+	HibernationStatus HibernationStatus `tfsdk:"hibernation_status"`
+}
+
+type HibernationStatus struct {
+	IsHibernating types.Bool   `tfsdk:"is_hibernating"`
+	NextEventType types.String `tfsdk:"next_event_type"`
+	NextEventAt   types.String `tfsdk:"next_event_at"`
+	Reason        types.String `tfsdk:"reason"`
+}
+
+type HibernationSpec struct {
+	Override  HibernationSpecOverride `tfsdk:"override"`
+	Schedules []HibernationSchedule   `tfsdk:"schedules"`
+}
+
+type HibernationSpecOverride struct {
+	IsHibernating types.Bool   `tfsdk:"is_hibernating"`
+	OverrideUntil types.String `tfsdk:"override_until"`
+	IsActive      types.Bool   `tfsdk:"is_active"`
+}
+
+type HibernationSchedule struct {
+	Description     types.String `tfsdk:"description"`
+	HibernateAtCron types.String `tfsdk:"hibernate_at_cron"`
+	IsEnabled       types.Bool   `tfsdk:"is_enabled"`
+	WakeAtCron      types.String `tfsdk:"wake_at_cron"`
+}
+
+func ScalingStatusTypesObject(
+	ctx context.Context,
+	scalingStatus *platform.DeploymentScalingStatus,
+) (types.Object, diag.Diagnostics) {
+	if scalingStatus != nil && scalingStatus.HibernationStatus != nil {
+		obj := DeploymentStatus{
+			HibernationStatus: HibernationStatus{
+				IsHibernating: types.BoolValue(scalingStatus.HibernationStatus.IsHibernating),
+				NextEventType: types.StringPointerValue((*string)(scalingStatus.HibernationStatus.NextEventType)),
+				NextEventAt:   types.StringPointerValue(scalingStatus.HibernationStatus.NextEventAt),
+				Reason:        types.StringPointerValue(scalingStatus.HibernationStatus.Reason),
+			},
+		}
+		return types.ObjectValueFrom(ctx, schemas.ScalingStatusAttributeTypes(), obj)
+	}
+	return types.ObjectNull(schemas.ScalingStatusAttributeTypes()), nil
+}
+
+func ScalingSpecTypesObject(
+	ctx context.Context,
+	scalingSpec *platform.DeploymentScalingSpec,
+) (types.Object, diag.Diagnostics) {
+	if scalingSpec != nil && scalingSpec.HibernationSpec != nil && (scalingSpec.HibernationSpec.Override != nil || scalingSpec.HibernationSpec.Schedules != nil) {
+		obj := DeploymentScalingSpec{
+			HibernationSpec: HibernationSpec{},
+		}
+		if scalingSpec.HibernationSpec.Override != nil {
+			obj.HibernationSpec.Override = HibernationSpecOverride{
+				IsHibernating: types.BoolPointerValue(scalingSpec.HibernationSpec.Override.IsHibernating),
+				IsActive:      types.BoolPointerValue(scalingSpec.HibernationSpec.Override.IsActive),
+			}
+			if scalingSpec.HibernationSpec.Override.OverrideUntil != nil {
+				obj.HibernationSpec.Override.OverrideUntil = types.StringValue(scalingSpec.HibernationSpec.Override.OverrideUntil.String())
+			}
+		}
+		if scalingSpec.HibernationSpec.Schedules != nil {
+			schedules := make([]HibernationSchedule, 0, len(*scalingSpec.HibernationSpec.Schedules))
+			for _, schedule := range *scalingSpec.HibernationSpec.Schedules {
+				schedules = append(schedules, HibernationSchedule{
+					Description:     types.StringPointerValue(schedule.Description),
+					HibernateAtCron: types.StringValue(schedule.HibernateAtCron),
+					IsEnabled:       types.BoolValue(schedule.IsEnabled),
+					WakeAtCron:      types.StringValue(schedule.WakeAtCron),
+				})
+			}
+			obj.HibernationSpec.Schedules = schedules
+		}
+		return types.ObjectValueFrom(ctx, schemas.ScalingSpecAttributeTypes(), obj)
+	}
+	return types.ObjectNull(schemas.ScalingSpecAttributeTypes()), nil
 }
