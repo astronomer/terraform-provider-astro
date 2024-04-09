@@ -55,13 +55,16 @@ func HibernationSpecDataSourceSchemaAttributes() map[string]datasourceSchema.Att
 func HibernationOverrideDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"is_active": datasourceSchema.BoolAttribute{
-			Computed: true,
+			Computed:            true,
+			MarkdownDescription: "Whether the override is active",
 		},
 		"is_hibernating": datasourceSchema.BoolAttribute{
-			Computed: true,
+			Computed:            true,
+			MarkdownDescription: "Whether the override is hibernating",
 		},
 		"override_until": datasourceSchema.StringAttribute{
-			Computed: true,
+			Computed:            true,
+			MarkdownDescription: "Time until the override is active",
 		},
 	}
 }
@@ -69,16 +72,20 @@ func HibernationOverrideDataSourceSchemaAttributes() map[string]datasourceSchema
 func HibernationScheduleDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"description": datasourceSchema.StringAttribute{
-			Computed: true,
+			Computed:            true,
+			MarkdownDescription: "Description of the schedule",
 		},
 		"hibernate_at_cron": datasourceSchema.StringAttribute{
-			Computed: true,
+			Computed:            true,
+			MarkdownDescription: "Cron expression for hibernation",
 		},
 		"is_enabled": datasourceSchema.BoolAttribute{
-			Computed: true,
+			Computed:            true,
+			MarkdownDescription: "Whether the schedule is enabled",
 		},
 		"wake_at_cron": datasourceSchema.StringAttribute{
-			Computed: true,
+			Computed:            true,
+			MarkdownDescription: "Cron expression for waking",
 		},
 	}
 }
@@ -130,16 +137,20 @@ func ScalingStatusDataSourceAttributes() map[string]datasourceSchema.Attribute {
 func HibernationStatusDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"is_hibernating": datasourceSchema.BoolAttribute{
-			Computed: true,
+			Computed:            true,
+			MarkdownDescription: "Whether the deployment is hibernating",
 		},
 		"next_event_at": datasourceSchema.StringAttribute{
-			Computed: true,
+			Computed:            true,
+			MarkdownDescription: "Time of the next event",
 		},
 		"next_event_type": datasourceSchema.StringAttribute{
-			Computed: true,
+			Computed:            true,
+			MarkdownDescription: "Type of the next event",
 		},
 		"reason": datasourceSchema.StringAttribute{
-			Computed: true,
+			Computed:            true,
+			MarkdownDescription: "Reason for the current state",
 		},
 	}
 }

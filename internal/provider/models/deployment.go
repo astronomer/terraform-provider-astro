@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
 	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
 	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
@@ -19,9 +20,7 @@ type DeploymentDataSource struct {
 	CreatedBy                types.Object `tfsdk:"created_by"`
 	UpdatedBy                types.Object `tfsdk:"updated_by"`
 	WorkspaceId              types.String `tfsdk:"workspace_id"`
-	WorkspaceName            types.String `tfsdk:"workspace_name"`
 	ClusterId                types.String `tfsdk:"cluster_id"`
-	ClusterName              types.String `tfsdk:"cluster_name"`
 	Region                   types.String `tfsdk:"region"`
 	CloudProvider            types.String `tfsdk:"cloud_provider"`
 	AstroRuntimeVersion      types.String `tfsdk:"astro_runtime_version"`
@@ -105,9 +104,7 @@ func (data *DeploymentDataSource) ReadFromResponse(
 		return diags
 	}
 	data.WorkspaceId = types.StringValue(deployment.WorkspaceId)
-	data.WorkspaceName = types.StringPointerValue(deployment.WorkspaceName)
 	data.ClusterId = types.StringPointerValue(deployment.ClusterId)
-	data.ClusterName = types.StringPointerValue(deployment.ClusterName)
 	data.Region = types.StringPointerValue(deployment.Region)
 	data.CloudProvider = types.StringPointerValue((*string)(deployment.CloudProvider))
 	data.AstroRuntimeVersion = types.StringValue(deployment.AstroRuntimeVersion)

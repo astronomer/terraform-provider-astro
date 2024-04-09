@@ -45,16 +45,8 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			MarkdownDescription: "Deployment workspace identifier",
 			Computed:            true,
 		},
-		"workspace_name": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment workspace name",
-			Computed:            true,
-		},
 		"cluster_id": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Deployment cluster identifier",
-			Computed:            true,
-		},
-		"cluster_name": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment cluster name",
 			Computed:            true,
 		},
 		"region": datasourceSchema.StringAttribute{
@@ -173,7 +165,7 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			Computed:            true,
 		},
 		"is_cicd_enforced": datasourceSchema.BoolAttribute{
-			MarkdownDescription: "Deployment CI/CD enforced",
+			MarkdownDescription: "Whether the Deployment enforces CI/CD deploys",
 			Computed:            true,
 		},
 		"type": datasourceSchema.StringAttribute{
@@ -181,7 +173,7 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			Computed:            true,
 		},
 		"is_dag_deploy_enabled": datasourceSchema.BoolAttribute{
-			MarkdownDescription: "Deployment DAG deploy enabled",
+			MarkdownDescription: "Whether DAG deploy is enabled",
 			Computed:            true,
 		},
 		"scheduler_size": datasourceSchema.StringAttribute{
@@ -189,11 +181,11 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			Computed:            true,
 		},
 		"is_high_availability": datasourceSchema.BoolAttribute{
-			MarkdownDescription: "Deployment high availability",
+			MarkdownDescription: "Whether Deployment has high availability",
 			Computed:            true,
 		},
 		"is_development_mode": datasourceSchema.BoolAttribute{
-			MarkdownDescription: "Deployment development mode",
+			MarkdownDescription: "Whether Deployment is in development mode",
 			Computed:            true,
 		},
 		"workload_identity": datasourceSchema.StringAttribute{
@@ -286,34 +278,44 @@ func WorkerQueueAttributeTypes() map[string]attr.Type {
 func WorkerQueueSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"id": datasourceSchema.StringAttribute{
-			Computed: true,
+			MarkdownDescription: "Worker queue identifier",
+			Computed:            true,
 		},
 		"name": datasourceSchema.StringAttribute{
-			Computed: true,
+			MarkdownDescription: "Worker queue name",
+			Computed:            true,
 		},
 		"astro_machine": datasourceSchema.StringAttribute{
-			Computed: true,
+			MarkdownDescription: "Worker queue Astro machine value",
+			Computed:            true,
 		},
 		"is_default": datasourceSchema.BoolAttribute{
-			Computed: true,
+			MarkdownDescription: "Whether Worker queue is default",
+			Computed:            true,
 		},
 		"max_worker_count": datasourceSchema.Int64Attribute{
-			Computed: true,
+			MarkdownDescription: "Worker queue max worker count",
+			Computed:            true,
 		},
 		"min_worker_count": datasourceSchema.Int64Attribute{
-			Computed: true,
+			MarkdownDescription: "Worker queue min worker count",
+			Computed:            true,
 		},
 		"node_pool_id": datasourceSchema.StringAttribute{
-			Computed: true,
+			MarkdownDescription: "Worker queue node pool identifier",
+			Computed:            true,
 		},
 		"pod_cpu": datasourceSchema.StringAttribute{
-			Computed: true,
+			MarkdownDescription: "Worker queue pod CPU",
+			Computed:            true,
 		},
 		"pod_memory": datasourceSchema.StringAttribute{
-			Computed: true,
+			MarkdownDescription: "Worker queue pod memory",
+			Computed:            true,
 		},
 		"worker_concurrency": datasourceSchema.Int64Attribute{
-			Computed: true,
+			MarkdownDescription: "Worker queue worker concurrency",
+			Computed:            true,
 		},
 	}
 }

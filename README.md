@@ -63,6 +63,8 @@ If you wish to work on the provider, you'll first need [Go](http://www.golang.or
 
 To compile the provider, see [Building The Provider](## Building The Provider).
 
+To add example docs, add the correspond `.tf` files to the `examples` directory.
+
 To run terraform with the provider, create a `.terraformrc` file in your home directory (`~`) with the following content to override the provider installation with the local build:
 
 ```hcl
