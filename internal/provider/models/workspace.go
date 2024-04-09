@@ -40,12 +40,8 @@ func (data *WorkspaceResource) ReadFromResponse(
 ) diag.Diagnostics {
 	data.Id = types.StringValue(workspace.Id)
 	data.Name = types.StringValue(workspace.Name)
-	if workspace.Description != nil {
-		data.Description = types.StringValue(*workspace.Description)
-	}
-	if workspace.OrganizationName != nil {
-		data.OrganizationName = types.StringValue(*workspace.OrganizationName)
-	}
+	data.Description = types.StringPointerValue(workspace.Description)
+	data.OrganizationName = types.StringPointerValue(workspace.OrganizationName)
 	data.CicdEnforcedDefault = types.BoolValue(workspace.CicdEnforcedDefault)
 	data.CreatedAt = types.StringValue(workspace.CreatedAt.String())
 	data.UpdatedAt = types.StringValue(workspace.UpdatedAt.String())
@@ -68,12 +64,8 @@ func (data *WorkspaceDataSource) ReadFromResponse(
 ) diag.Diagnostics {
 	data.Id = types.StringValue(workspace.Id)
 	data.Name = types.StringValue(workspace.Name)
-	if workspace.Description != nil {
-		data.Description = types.StringValue(*workspace.Description)
-	}
-	if workspace.OrganizationName != nil {
-		data.OrganizationName = types.StringValue(*workspace.OrganizationName)
-	}
+	data.Description = types.StringPointerValue(workspace.Description)
+	data.OrganizationName = types.StringPointerValue(workspace.OrganizationName)
 	data.CicdEnforcedDefault = types.BoolValue(workspace.CicdEnforcedDefault)
 	data.CreatedAt = types.StringValue(workspace.CreatedAt.String())
 	data.UpdatedAt = types.StringValue(workspace.UpdatedAt.String())

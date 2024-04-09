@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
 	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -27,38 +26,13 @@ func (data *WorkspacesDataSource) ReadFromResponse(
 
 	values := make([]attr.Value, len(workspaces))
 	for i, workspace := range workspaces {
-		v := map[string]attr.Value{}
-		v["id"] = types.StringValue(workspace.Id)
-		v["name"] = types.StringValue(workspace.Name)
-		if workspace.Description != nil {
-			v["description"] = types.StringValue(*workspace.Description)
-		} else {
-			v["description"] = types.StringNull()
-		}
-		if workspace.OrganizationName != nil {
-			v["organization_name"] = types.StringValue(*workspace.OrganizationName)
-		} else {
-			v["organization_name"] = types.StringNull()
-		}
-		v["cicd_enforced_default"] = types.BoolValue(workspace.CicdEnforcedDefault)
-		v["created_at"] = types.StringValue(workspace.CreatedAt.String())
-		v["updated_at"] = types.StringValue(workspace.UpdatedAt.String())
-		if workspace.CreatedBy != nil {
-			createdBy, diags := SubjectProfileTypesObject(ctx, workspace.CreatedBy)
-			if diags.HasError() {
-				return diags
-			}
-			v["created_by"] = createdBy
-		}
-		if workspace.UpdatedBy != nil {
-			updatedBy, diags := SubjectProfileTypesObject(ctx, workspace.UpdatedBy)
-			if diags.HasError() {
-				return diags
-			}
-			v["updated_by"] = updatedBy
+		var data WorkspaceDataSource
+		diags := data.ReadFromResponse(ctx, &workspace)
+		if diags.HasError() {
+			return diags
 		}
 
-		objectValue, diags := types.ObjectValue(schemas.WorkspacesElementAttributeTypes(), v)
+		objectValue, diags := types.ObjectValueFrom(ctx, schemas.WorkspacesElementAttributeTypes(), data)
 		if diags.HasError() {
 			return diags
 		}
