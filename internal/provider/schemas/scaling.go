@@ -28,31 +28,31 @@ func HibernationSpecAttributeTypes() map[string]attr.Type {
 	}
 }
 
-func ScalingSpecSchemaAttributes() map[string]datasourceSchema.Attribute {
+func ScalingSpecDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"hibernation_spec": datasourceSchema.SingleNestedAttribute{
-			Attributes: HibernationSpecSchemaAttributes(),
+			Attributes: HibernationSpecDataSourceSchemaAttributes(),
 			Computed:   true,
 		},
 	}
 }
 
-func HibernationSpecSchemaAttributes() map[string]datasourceSchema.Attribute {
+func HibernationSpecDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"override": datasourceSchema.SingleNestedAttribute{
-			Attributes: HibernationOverrideSchemaAttributes(),
+			Attributes: HibernationOverrideDataSourceSchemaAttributes(),
 			Computed:   true,
 		},
 		"schedules": datasourceSchema.ListNestedAttribute{
 			NestedObject: datasourceSchema.NestedAttributeObject{
-				Attributes: HibernationScheduleSchemaAttributes(),
+				Attributes: HibernationScheduleDataSourceSchemaAttributes(),
 			},
 			Computed: true,
 		},
 	}
 }
 
-func HibernationOverrideSchemaAttributes() map[string]datasourceSchema.Attribute {
+func HibernationOverrideDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"is_active": datasourceSchema.BoolAttribute{
 			Computed: true,
@@ -66,7 +66,7 @@ func HibernationOverrideSchemaAttributes() map[string]datasourceSchema.Attribute
 	}
 }
 
-func HibernationScheduleSchemaAttributes() map[string]datasourceSchema.Attribute {
+func HibernationScheduleDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"description": datasourceSchema.StringAttribute{
 			Computed: true,
@@ -118,16 +118,16 @@ func HibernationScheduleAttributeTypes() map[string]attr.Type {
 	}
 }
 
-func ScalingStatusAttributes() map[string]datasourceSchema.Attribute {
+func ScalingStatusDataSourceAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"hibernation_status": datasourceSchema.SingleNestedAttribute{
-			Attributes: HibernationStatusSchemaAttributes(),
+			Attributes: HibernationStatusDataSourceSchemaAttributes(),
 			Computed:   true,
 		},
 	}
 }
 
-func HibernationStatusSchemaAttributes() map[string]datasourceSchema.Attribute {
+func HibernationStatusDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"is_hibernating": datasourceSchema.BoolAttribute{
 			Computed: true,

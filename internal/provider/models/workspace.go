@@ -13,7 +13,6 @@ type WorkspaceDataSource struct {
 	Id                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
 	Description         types.String `tfsdk:"description"`
-	OrganizationName    types.String `tfsdk:"organization_name"`
 	CicdEnforcedDefault types.Bool   `tfsdk:"cicd_enforced_default"`
 	CreatedAt           types.String `tfsdk:"created_at"`
 	UpdatedAt           types.String `tfsdk:"updated_at"`
@@ -26,7 +25,6 @@ type WorkspaceResource struct {
 	Id                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
 	Description         types.String `tfsdk:"description"`
-	OrganizationName    types.String `tfsdk:"organization_name"`
 	CicdEnforcedDefault types.Bool   `tfsdk:"cicd_enforced_default"`
 	CreatedAt           types.String `tfsdk:"created_at"`
 	UpdatedAt           types.String `tfsdk:"updated_at"`
@@ -41,7 +39,6 @@ func (data *WorkspaceResource) ReadFromResponse(
 	data.Id = types.StringValue(workspace.Id)
 	data.Name = types.StringValue(workspace.Name)
 	data.Description = types.StringPointerValue(workspace.Description)
-	data.OrganizationName = types.StringPointerValue(workspace.OrganizationName)
 	data.CicdEnforcedDefault = types.BoolValue(workspace.CicdEnforcedDefault)
 	data.CreatedAt = types.StringValue(workspace.CreatedAt.String())
 	data.UpdatedAt = types.StringValue(workspace.UpdatedAt.String())
@@ -65,7 +62,6 @@ func (data *WorkspaceDataSource) ReadFromResponse(
 	data.Id = types.StringValue(workspace.Id)
 	data.Name = types.StringValue(workspace.Name)
 	data.Description = types.StringPointerValue(workspace.Description)
-	data.OrganizationName = types.StringPointerValue(workspace.OrganizationName)
 	data.CicdEnforcedDefault = types.BoolValue(workspace.CicdEnforcedDefault)
 	data.CreatedAt = types.StringValue(workspace.CreatedAt.String())
 	data.UpdatedAt = types.StringValue(workspace.UpdatedAt.String())

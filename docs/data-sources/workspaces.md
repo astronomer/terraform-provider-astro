@@ -38,7 +38,6 @@ Read-Only:
 - `created_by` (Attributes) Workspace creator (see [below for nested schema](#nestedatt--workspaces--created_by))
 - `description` (String) Workspace description
 - `name` (String) Workspace name
-- `organization_name` (String) Workspace organization name
 - `updated_at` (String) Workspace last updated timestamp
 - `updated_by` (Attributes) Workspace updater (see [below for nested schema](#nestedatt--workspaces--updated_by))
 

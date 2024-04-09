@@ -32,7 +32,6 @@ data "astronomer_workspace" "example" {
 - `created_by` (Attributes) Workspace creator (see [below for nested schema](#nestedatt--created_by))
 - `description` (String) Workspace description
 - `name` (String) Workspace name
-- `organization_name` (String) Workspace organization name
 - `updated_at` (String) Workspace last updated timestamp
 - `updated_by` (Attributes) Workspace updater (see [below for nested schema](#nestedatt--updated_by))
 

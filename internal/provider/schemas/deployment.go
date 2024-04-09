@@ -228,12 +228,12 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 		"scaling_status": datasourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "Deployment scaling status",
 			Computed:            true,
-			Attributes:          ScalingStatusAttributes(),
+			Attributes:          ScalingStatusDataSourceAttributes(),
 		},
 		"scaling_spec": datasourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "Deployment scaling spec",
 			Computed:            true,
-			Attributes:          ScalingSpecSchemaAttributes(),
+			Attributes:          ScalingSpecDataSourceSchemaAttributes(),
 		},
 	}
 }
