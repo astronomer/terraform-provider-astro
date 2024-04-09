@@ -13,6 +13,7 @@ import (
 // DeploymentsDataSource describes the data source data model.
 type DeploymentsDataSource struct {
 	Deployments   types.List `tfsdk:"deployments"`
+	WorkspaceIds  types.List `tfsdk:"workspace_ids"`  // query parameter
 	DeploymentIds types.List `tfsdk:"deployment_ids"` // query parameter
 	Names         types.List `tfsdk:"names"`          // query parameter
 }

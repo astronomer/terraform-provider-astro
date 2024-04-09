@@ -3,9 +3,6 @@ package datasources
 import (
 	"context"
 	"fmt"
-	"strings"
-
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/samber/lo"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
@@ -85,22 +82,8 @@ func (d *workspacesDataSource) Read(
 	params := &platform.ListWorkspacesParams{
 		Limit: lo.ToPtr(1000),
 	}
-	workspaceIds := data.WorkspaceIds.Elements()
-	if len(workspaceIds) > 0 {
-		workspaceIdsParam := lo.Map(workspaceIds, func(id attr.Value, _ int) string {
-			// Terraform includes quotes around the string, so we need to remove them
-			return strings.ReplaceAll(id.String(), `"`, "")
-		})
-		params.WorkspaceIds = &workspaceIdsParam
-	}
-	names := data.Names.Elements()
-	if len(names) > 0 {
-		namesParam := lo.Map(names, func(name attr.Value, _ int) string {
-			// Terraform includes quotes around the string, so we need to remove them
-			return strings.ReplaceAll(name.String(), `"`, "")
-		})
-		params.Names = &namesParam
-	}
+	params.WorkspaceIds = utils.TypesListToStringSlice(data.WorkspaceIds)
+	params.Names = utils.TypesListToStringSlice(data.Names)
 
 	if resp.Diagnostics.HasError() {
 		return

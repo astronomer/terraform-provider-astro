@@ -3,9 +3,6 @@ package datasources
 import (
 	"context"
 	"fmt"
-	"strings"
-
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/samber/lo"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
@@ -85,22 +82,9 @@ func (d *deploymentsDataSource) Read(
 	params := &platform.ListDeploymentsParams{
 		Limit: lo.ToPtr(1000),
 	}
-	deploymentIds := data.DeploymentIds.Elements()
-	if len(deploymentIds) > 0 {
-		deploymentIdsParam := lo.Map(deploymentIds, func(id attr.Value, _ int) string {
-			// Terraform includes quotes around the string, so we need to remove them
-			return strings.ReplaceAll(id.String(), `"`, "")
-		})
-		params.DeploymentIds = &deploymentIdsParam
-	}
-	names := data.Names.Elements()
-	if len(names) > 0 {
-		namesParam := lo.Map(names, func(name attr.Value, _ int) string {
-			// Terraform includes quotes around the string, so we need to remove them
-			return strings.ReplaceAll(name.String(), `"`, "")
-		})
-		params.Names = &namesParam
-	}
+	params.DeploymentIds = utils.TypesListToStringSlice(data.DeploymentIds)
+	params.WorkspaceIds = utils.TypesListToStringSlice(data.WorkspaceIds)
+	params.Names = utils.TypesListToStringSlice(data.Names)
 
 	if resp.Diagnostics.HasError() {
 		return

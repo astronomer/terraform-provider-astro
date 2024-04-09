@@ -1,8 +1,10 @@
 package schemas
 
 import (
+	"github.com/astronomer/astronomer-terraform-provider/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -93,6 +95,16 @@ func DeploymentsDataSourceSchemaAttributes() map[string]schema.Attribute {
 		"deployment_ids": schema.ListAttribute{
 			ElementType: types.StringType,
 			Optional:    true,
+			Validators: []validator.List{
+				validators.ListIsCuids(),
+			},
+		},
+		"workspace_ids": schema.ListAttribute{
+			ElementType: types.StringType,
+			Optional:    true,
+			Validators: []validator.List{
+				validators.ListIsCuids(),
+			},
 		},
 		"names": schema.ListAttribute{
 			ElementType: types.StringType,
