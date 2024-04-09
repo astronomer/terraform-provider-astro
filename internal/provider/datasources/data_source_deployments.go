@@ -3,6 +3,7 @@ package datasources
 import (
 	"context"
 	"fmt"
+
 	"github.com/samber/lo"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
