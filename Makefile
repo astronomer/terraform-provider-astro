@@ -37,6 +37,7 @@ validate-fmt:
 
 .PHONY: dep
 dep:
+	git config core.hooksPath .githooks
 	go mod download
 	go install golang.org/x/tools/cmd/goimports
 	go mod tidy
