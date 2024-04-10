@@ -27,8 +27,8 @@ func ObjectList[T any](ctx context.Context, values []T, objectAttributeTypes map
 		return types.ListNull(types.ObjectType{AttrTypes: objectAttributeTypes}), nil
 	}
 	objs := make([]attr.Value, len(values))
-	for i, envVar := range values {
-		obj, diags := transformer(ctx, envVar)
+	for i, value := range values {
+		obj, diags := transformer(ctx, value)
 		if diags.HasError() {
 			return types.List{}, diags
 		}
