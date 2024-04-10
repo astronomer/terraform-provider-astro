@@ -13,7 +13,6 @@ type WorkspaceDataSource struct {
 	Id                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
 	Description         types.String `tfsdk:"description"`
-	OrganizationName    types.String `tfsdk:"organization_name"`
 	CicdEnforcedDefault types.Bool   `tfsdk:"cicd_enforced_default"`
 	CreatedAt           types.String `tfsdk:"created_at"`
 	UpdatedAt           types.String `tfsdk:"updated_at"`
@@ -26,7 +25,6 @@ type WorkspaceResource struct {
 	Id                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
 	Description         types.String `tfsdk:"description"`
-	OrganizationName    types.String `tfsdk:"organization_name"`
 	CicdEnforcedDefault types.Bool   `tfsdk:"cicd_enforced_default"`
 	CreatedAt           types.String `tfsdk:"created_at"`
 	UpdatedAt           types.String `tfsdk:"updated_at"`
@@ -40,12 +38,7 @@ func (data *WorkspaceResource) ReadFromResponse(
 ) diag.Diagnostics {
 	data.Id = types.StringValue(workspace.Id)
 	data.Name = types.StringValue(workspace.Name)
-	if workspace.Description != nil {
-		data.Description = types.StringValue(*workspace.Description)
-	}
-	if workspace.OrganizationName != nil {
-		data.OrganizationName = types.StringValue(*workspace.OrganizationName)
-	}
+	data.Description = types.StringPointerValue(workspace.Description)
 	data.CicdEnforcedDefault = types.BoolValue(workspace.CicdEnforcedDefault)
 	data.CreatedAt = types.StringValue(workspace.CreatedAt.String())
 	data.UpdatedAt = types.StringValue(workspace.UpdatedAt.String())
@@ -68,12 +61,7 @@ func (data *WorkspaceDataSource) ReadFromResponse(
 ) diag.Diagnostics {
 	data.Id = types.StringValue(workspace.Id)
 	data.Name = types.StringValue(workspace.Name)
-	if workspace.Description != nil {
-		data.Description = types.StringValue(*workspace.Description)
-	}
-	if workspace.OrganizationName != nil {
-		data.OrganizationName = types.StringValue(*workspace.OrganizationName)
-	}
+	data.Description = types.StringPointerValue(workspace.Description)
 	data.CicdEnforcedDefault = types.BoolValue(workspace.CicdEnforcedDefault)
 	data.CreatedAt = types.StringValue(workspace.CreatedAt.String())
 	data.UpdatedAt = types.StringValue(workspace.UpdatedAt.String())

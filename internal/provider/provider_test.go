@@ -44,6 +44,8 @@ var _ = Describe("Provider Test", func() {
 		expectedDataSources := []string{
 			"astronomer_workspace",
 			"astronomer_workspaces",
+			"astronomer_deployment",
+			"astronomer_deployments",
 		}
 
 		dataSources := p.DataSources(ctx)

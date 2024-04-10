@@ -26,10 +26,6 @@ func WorkspaceDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute
 			MarkdownDescription: "Workspace description",
 			Computed:            true,
 		},
-		"organization_name": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Workspace organization name",
-			Computed:            true,
-		},
 		"cicd_enforced_default": datasourceSchema.BoolAttribute{
 			MarkdownDescription: "Whether new Deployments enforce CI/CD deploys by default",
 			Computed:            true,
@@ -73,13 +69,6 @@ func WorkspaceResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 		"description": resourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace description",
 			Required:            true,
-		},
-		"organization_name": resourceSchema.StringAttribute{
-			MarkdownDescription: "Workspace organization name",
-			Computed:            true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
 		},
 		"cicd_enforced_default": resourceSchema.BoolAttribute{
 			MarkdownDescription: "Whether new Deployments enforce CI/CD deploys by default",

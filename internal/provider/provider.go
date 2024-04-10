@@ -131,6 +131,8 @@ func (p *AstronomerProvider) DataSources(ctx context.Context) []func() datasourc
 	return []func() datasource.DataSource{
 		datasources.NewWorkspaceDataSource,
 		datasources.NewWorkspacesDataSource,
+		datasources.NewDeploymentDataSource,
+		datasources.NewDeploymentsDataSource,
 	}
 }
 

@@ -34,7 +34,6 @@ resource "workspace_resource" "example" {
 - `created_at` (String) Workspace creation timestamp
 - `created_by` (Attributes) Workspace creator (see [below for nested schema](#nestedatt--created_by))
 - `id` (String) Workspace identifier
-- `organization_name` (String) Workspace organization name
 - `updated_at` (String) Workspace last updated timestamp
 - `updated_by` (Attributes) Workspace updater (see [below for nested schema](#nestedatt--updated_by))
 

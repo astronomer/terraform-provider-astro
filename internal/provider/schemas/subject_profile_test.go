@@ -80,6 +80,46 @@ var _ = Describe("Common Test", func() {
 				AvatarUrl:    types.StringNull(),
 				ApiTokenName: types.StringNull(),
 			}),
+			Entry("platform.BasicSubjectProfile", platform.BasicSubjectProfile{
+				Id: "id",
+			}, models.SubjectProfile{
+				Id:           types.StringValue("id"),
+				SubjectType:  types.StringNull(),
+				Username:     types.StringNull(),
+				FullName:     types.StringNull(),
+				AvatarUrl:    types.StringNull(),
+				ApiTokenName: types.StringNull(),
+			}),
+			Entry("*platform.BasicSubjectProfile", &platform.BasicSubjectProfile{
+				Id: "id",
+			}, models.SubjectProfile{
+				Id:           types.StringValue("id"),
+				SubjectType:  types.StringNull(),
+				Username:     types.StringNull(),
+				FullName:     types.StringNull(),
+				AvatarUrl:    types.StringNull(),
+				ApiTokenName: types.StringNull(),
+			}),
+			Entry("iam.BasicSubjectProfile", iam.BasicSubjectProfile{
+				Id: "id",
+			}, models.SubjectProfile{
+				Id:           types.StringValue("id"),
+				SubjectType:  types.StringNull(),
+				Username:     types.StringNull(),
+				FullName:     types.StringNull(),
+				AvatarUrl:    types.StringNull(),
+				ApiTokenName: types.StringNull(),
+			}),
+			Entry("*iam.BasicSubjectProfile", &iam.BasicSubjectProfile{
+				Id: "id",
+			}, models.SubjectProfile{
+				Id:           types.StringValue("id"),
+				SubjectType:  types.StringNull(),
+				Username:     types.StringNull(),
+				FullName:     types.StringNull(),
+				AvatarUrl:    types.StringNull(),
+				ApiTokenName: types.StringNull(),
+			}),
 		)
 	})
 })

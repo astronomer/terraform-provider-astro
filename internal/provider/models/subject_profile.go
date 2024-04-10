@@ -3,13 +3,13 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
-
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/iam"
+	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 type SubjectProfile struct {
@@ -25,25 +25,24 @@ func SubjectProfileTypesObject(
 	ctx context.Context,
 	basicSubjectProfile any,
 ) (types.Object, diag.Diagnostics) {
-	// Check that the type passed in is a platform.BasicSubjectProfile or iam.BasicSubjectProfile
-	bsp, ok := basicSubjectProfile.(*platform.BasicSubjectProfile)
-	if !ok {
-		iamBsp, ok := basicSubjectProfile.(*iam.BasicSubjectProfile)
-		if !ok {
-			tflog.Error(
-				ctx,
-				"Unexpected type passed into subject profile",
-				map[string]interface{}{"value": basicSubjectProfile},
-			)
-			return types.Object{}, diag.Diagnostics{
-				diag.NewErrorDiagnostic(
-					"Internal Error",
-					"SubjectProfileTypesObject expects a BasicSubjectProfile type but did not receive one",
-				),
-			}
+	// Attempt to convert basicSubjectProfile to *platform.BasicSubjectProfile
+	// Our API client returns a BasicSubjectProfile, but we are unsure if it is a pointer and which package it is from
+	var bspPtr *platform.BasicSubjectProfile
+
+	switch v := basicSubjectProfile.(type) {
+	case platform.BasicSubjectProfile:
+		bspPtr = &v
+	case *platform.BasicSubjectProfile:
+		bspPtr = v
+	case iam.BasicSubjectProfile, *iam.BasicSubjectProfile:
+		var iamBsp *iam.BasicSubjectProfile
+		if nonPtr, ok := v.(iam.BasicSubjectProfile); ok {
+			iamBsp = &nonPtr
+		} else {
+			iamBsp = v.(*iam.BasicSubjectProfile)
 		}
-		// Convert the iam.BasicSubjectProfile to a platform.BasicSubjectProfile for simplicity
-		bsp = &platform.BasicSubjectProfile{
+
+		bspPtr = &platform.BasicSubjectProfile{
 			ApiTokenName: iamBsp.ApiTokenName,
 			AvatarUrl:    iamBsp.AvatarUrl,
 			FullName:     iamBsp.FullName,
@@ -51,37 +50,29 @@ func SubjectProfileTypesObject(
 			SubjectType:  (*platform.BasicSubjectProfileSubjectType)(iamBsp.SubjectType),
 			Username:     iamBsp.Username,
 		}
+	default:
+		// Log error and return if none of the types match
+		tflog.Error(
+			ctx,
+			"Unexpected type passed into subject profile",
+			map[string]interface{}{"value": basicSubjectProfile},
+		)
+		return types.Object{}, diag.Diagnostics{
+			diag.NewErrorDiagnostic(
+				"Internal Error",
+				"SubjectProfileTypesObject expects a BasicSubjectProfile type but did not receive one",
+			),
+		}
 	}
 
 	subjectProfile := SubjectProfile{
-		Id: types.StringValue(bsp.Id),
+		Id:           types.StringValue(bspPtr.Id),
+		SubjectType:  types.StringPointerValue((*string)(bspPtr.SubjectType)),
+		Username:     types.StringPointerValue(bspPtr.Username),
+		FullName:     types.StringPointerValue(bspPtr.FullName),
+		AvatarUrl:    types.StringPointerValue(bspPtr.AvatarUrl),
+		ApiTokenName: types.StringPointerValue(bspPtr.ApiTokenName),
 	}
 
-	if bsp.SubjectType != nil {
-		subjectProfile.SubjectType = types.StringValue(string(*bsp.SubjectType))
-		if *bsp.SubjectType == platform.USER {
-			if bsp.Username != nil {
-				subjectProfile.Username = types.StringValue(*bsp.Username)
-			} else {
-				subjectProfile.Username = types.StringUnknown()
-			}
-			if bsp.FullName != nil {
-				subjectProfile.FullName = types.StringValue(*bsp.FullName)
-			} else {
-				subjectProfile.FullName = types.StringUnknown()
-			}
-			if bsp.AvatarUrl != nil {
-				subjectProfile.AvatarUrl = types.StringValue(*bsp.AvatarUrl)
-			} else {
-				subjectProfile.AvatarUrl = types.StringUnknown()
-			}
-		} else {
-			if bsp.ApiTokenName != nil {
-				subjectProfile.ApiTokenName = types.StringValue(*bsp.ApiTokenName)
-			} else {
-				subjectProfile.ApiTokenName = types.StringUnknown()
-			}
-		}
-	}
 	return types.ObjectValueFrom(ctx, schemas.SubjectProfileAttributeTypes(), subjectProfile)
 }

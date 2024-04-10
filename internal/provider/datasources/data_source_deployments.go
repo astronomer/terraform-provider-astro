@@ -17,40 +17,40 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ datasource.DataSource = &workspacesDataSource{}
-var _ datasource.DataSourceWithConfigure = &workspacesDataSource{}
+var _ datasource.DataSource = &deploymentsDataSource{}
+var _ datasource.DataSourceWithConfigure = &deploymentsDataSource{}
 
-func NewWorkspacesDataSource() datasource.DataSource {
-	return &workspacesDataSource{}
+func NewDeploymentsDataSource() datasource.DataSource {
+	return &deploymentsDataSource{}
 }
 
-// workspacesDataSource defines the data source implementation.
-type workspacesDataSource struct {
+// deploymentsDataSource defines the data source implementation.
+type deploymentsDataSource struct {
 	PlatformClient platform.ClientWithResponsesInterface
 	OrganizationId string
 }
 
-func (d *workspacesDataSource) Metadata(
+func (d *deploymentsDataSource) Metadata(
 	ctx context.Context,
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_workspaces"
+	resp.TypeName = req.ProviderTypeName + "_deployments"
 }
 
-func (d *workspacesDataSource) Schema(
+func (d *deploymentsDataSource) Schema(
 	ctx context.Context,
 	req datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Workspaces data source",
-		Attributes:          schemas.WorkspacesDataSourceSchemaAttributes(),
+		MarkdownDescription: "Deployments data source",
+		Attributes:          schemas.DeploymentsDataSourceSchemaAttributes(),
 	}
 }
 
-func (d *workspacesDataSource) Configure(
+func (d *deploymentsDataSource) Configure(
 	ctx context.Context,
 	req datasource.ConfigureRequest,
 	resp *datasource.ConfigureResponse,
@@ -70,19 +70,20 @@ func (d *workspacesDataSource) Configure(
 	d.OrganizationId = apiClients.OrganizationId
 }
 
-func (d *workspacesDataSource) Read(
+func (d *deploymentsDataSource) Read(
 	ctx context.Context,
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var data models.WorkspacesDataSource
+	var data models.DeploymentsDataSource
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
-	params := &platform.ListWorkspacesParams{
+	params := &platform.ListDeploymentsParams{
 		Limit: lo.ToPtr(1000),
 	}
+	params.DeploymentIds = utils.TypesListToStringSlicePtr(data.DeploymentIds)
 	params.WorkspaceIds = utils.TypesListToStringSlicePtr(data.WorkspaceIds)
 	params.Names = utils.TypesListToStringSlicePtr(data.Names)
 
@@ -90,37 +91,37 @@ func (d *workspacesDataSource) Read(
 		return
 	}
 
-	var workspaces []platform.Workspace
+	var deployments []platform.Deployment
 	offset := 0
 	for {
 		params.Offset = &offset
-		workspacesResp, err := d.PlatformClient.ListWorkspacesWithResponse(
+		deploymentsResp, err := d.PlatformClient.ListDeploymentsWithResponse(
 			ctx,
 			d.OrganizationId,
 			params,
 		)
 		if err != nil {
-			tflog.Error(ctx, "failed to list workspaces", map[string]interface{}{"error": err})
+			tflog.Error(ctx, "failed to list deployments", map[string]interface{}{"error": err})
 			resp.Diagnostics.AddError(
 				"Client Error",
-				fmt.Sprintf("Unable to read workspaces, got error: %s", err),
+				fmt.Sprintf("Unable to read deployments, got error: %s", err),
 			)
 			return
 		}
-		_, diagnostic := clients.NormalizeAPIError(ctx, workspacesResp.HTTPResponse, workspacesResp.Body)
+		_, diagnostic := clients.NormalizeAPIError(ctx, deploymentsResp.HTTPResponse, deploymentsResp.Body)
 		if diagnostic != nil {
 			resp.Diagnostics.Append(diagnostic)
 			return
 		}
-		if workspacesResp.JSON200 == nil {
-			tflog.Error(ctx, "failed to list workspaces", map[string]interface{}{"error": "nil response"})
-			resp.Diagnostics.AddError("Client Error", "Unable to read workspaces, got nil response")
+		if deploymentsResp.JSON200 == nil {
+			tflog.Error(ctx, "failed to list deployments", map[string]interface{}{"error": "nil response"})
+			resp.Diagnostics.AddError("Client Error", "Unable to read deployments, got nil response")
 			return
 		}
 
-		workspaces = append(workspaces, workspacesResp.JSON200.Workspaces...)
+		deployments = append(deployments, deploymentsResp.JSON200.Deployments...)
 
-		if workspacesResp.JSON200.TotalCount <= offset {
+		if deploymentsResp.JSON200.TotalCount <= offset {
 			break
 		}
 
@@ -128,7 +129,7 @@ func (d *workspacesDataSource) Read(
 	}
 
 	// Populate the model with the response data
-	diags := data.ReadFromResponse(ctx, workspaces)
+	diags := data.ReadFromResponse(ctx, deployments)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

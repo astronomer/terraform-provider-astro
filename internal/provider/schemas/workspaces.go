@@ -11,7 +11,6 @@ func WorkspacesElementAttributeTypes() map[string]attr.Type {
 		"id":                    types.StringType,
 		"name":                  types.StringType,
 		"description":           types.StringType,
-		"organization_name":     types.StringType,
 		"cicd_enforced_default": types.BoolType,
 		"created_at":            types.StringType,
 		"updated_at":            types.StringType,
