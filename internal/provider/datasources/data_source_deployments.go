@@ -101,10 +101,10 @@ func (d *deploymentsDataSource) Read(
 			params,
 		)
 		if err != nil {
-			tflog.Error(ctx, "failed to get deployment", map[string]interface{}{"error": err})
+			tflog.Error(ctx, "failed to list deployments", map[string]interface{}{"error": err})
 			resp.Diagnostics.AddError(
 				"Client Error",
-				fmt.Sprintf("Unable to read deployment, got error: %s", err),
+				fmt.Sprintf("Unable to read deployments, got error: %s", err),
 			)
 			return
 		}
@@ -114,8 +114,8 @@ func (d *deploymentsDataSource) Read(
 			return
 		}
 		if deploymentsResp.JSON200 == nil {
-			tflog.Error(ctx, "failed to get deployment", map[string]interface{}{"error": "nil response"})
-			resp.Diagnostics.AddError("Client Error", "Unable to read deployment, got nil response")
+			tflog.Error(ctx, "failed to list deployments", map[string]interface{}{"error": "nil response"})
+			resp.Diagnostics.AddError("Client Error", "Unable to read deployments, got nil response")
 			return
 		}
 

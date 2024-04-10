@@ -100,10 +100,10 @@ func (d *workspacesDataSource) Read(
 			params,
 		)
 		if err != nil {
-			tflog.Error(ctx, "failed to get workspace", map[string]interface{}{"error": err})
+			tflog.Error(ctx, "failed to list workspaces", map[string]interface{}{"error": err})
 			resp.Diagnostics.AddError(
 				"Client Error",
-				fmt.Sprintf("Unable to read workspace, got error: %s", err),
+				fmt.Sprintf("Unable to read workspaces, got error: %s", err),
 			)
 			return
 		}
@@ -113,8 +113,8 @@ func (d *workspacesDataSource) Read(
 			return
 		}
 		if workspacesResp.JSON200 == nil {
-			tflog.Error(ctx, "failed to get workspace", map[string]interface{}{"error": "nil response"})
-			resp.Diagnostics.AddError("Client Error", "Unable to read workspace, got nil response")
+			tflog.Error(ctx, "failed to list workspaces", map[string]interface{}{"error": "nil response"})
+			resp.Diagnostics.AddError("Client Error", "Unable to read workspaces, got nil response")
 			return
 		}
 

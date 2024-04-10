@@ -9,5 +9,5 @@ data "astronomer_deployments" "example_deployments_filter_by_workspace_ids" {
 }
 
 data "astronomer_deployments" "example_deployments_filter_by_names" {
-  deployment_ids = ["my first deployment", "my second deployment"]
+  names = ["my first deployment", "my second deployment"]
 }

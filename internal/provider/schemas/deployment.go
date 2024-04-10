@@ -95,7 +95,7 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			Computed:            true,
 		},
 		"image_tag": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment mage tag",
+			MarkdownDescription: "Deployment image tag",
 			Computed:            true,
 		},
 		"image_repository": datasourceSchema.StringAttribute{

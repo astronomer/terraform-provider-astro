@@ -5,5 +5,5 @@ data "astronomer_workspaces" "example_workspaces_filter_by_workspace_ids" {
 }
 
 data "astronomer_workspaces" "example_workspaces_filter_by_names" {
-  workspace_ids = ["my first workspace", "my second workspace"]
+  names = ["my first workspace", "my second workspace"]
 }
