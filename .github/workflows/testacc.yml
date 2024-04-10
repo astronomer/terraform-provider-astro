@@ -1,6 +1,10 @@
 # Terraform Provider testing workflow.
 name: Acceptance Tests
 
+# In the future, we only want to run acceptance tests on the main branch and
+# on-demand for pull requests (via a PR comment)
+# The github action will be triggered by a comment on a PR and run against the latest commit
+# The PR can only be merged if the acceptance tests pass
 on:
   pull_request:
     paths-ignore:
