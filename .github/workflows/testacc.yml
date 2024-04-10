@@ -56,8 +56,8 @@ jobs:
       - env:
           TF_ACC: "1"
           ASTRO_API_TOKEN: ${{ secrets.DEV_ASTRO_API_TOKEN }}
-          ASTRO_API_HOST: ${{ secrets.DEV_ASTRO_API_HOST }}
-          ASTRO_ORGANIZATION_ID: ${{ secrets.DEV_ASTRO_ORGANIZATION_ID }}
+          ASTRO_API_HOST: ${{ env.DEV_ASTRO_API_HOST }}
+          ASTRO_ORGANIZATION_ID: ${{ env.DEV_ASTRO_ORGANIZATION_ID }}
         run: make testacc
         timeout-minutes: 10
 
