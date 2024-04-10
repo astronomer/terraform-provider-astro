@@ -36,7 +36,7 @@ jobs:
     # This job runs on issue_comment event with /run-testacc command.
     # We will block merging to main unless this job passes
     # The reason we don't want to run this on every push is because it's expensive/creates real resources
-    if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, '/testacc') }}
+    if: github.event.issue.pull_request && contains(github.event.comment.body, '/testacc')
     name: PR Terraform Provider Acceptance Tests
     needs: build
     runs-on: ubuntu-latest
@@ -67,8 +67,15 @@ jobs:
         with:
           go-version-file: 'go.mod'
           cache: true
+      - uses: hashicorp/setup-terraform@a1502cd9e758c50496cc9ac5308c4843bcd56d36 # v3.0.0
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
       - run: go mod download
-      - run: go build -v .
+      - env:
+          TF_ACC: "1"
+        run: make testacc
+        timeout-minutes: 10
       - name: Set latest commit status as ${{ job.status }}
         uses: myrotvorets/set-commit-status-action@master
         if: always()
@@ -79,7 +86,7 @@ jobs:
 
   main-testacc:
     # This job runs on push to main branch.
-    if: ${{ github.event_name == 'push' }}
+    if: github.event_name == 'push'
     name: Main Terraform Provider Acceptance Tests
     needs: build
     environment: dev
