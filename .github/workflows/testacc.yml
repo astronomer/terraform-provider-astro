@@ -2,9 +2,6 @@
 name: Acceptance Tests
 
 on:
-  pull_request:
-    branches:
-      - tests
   issue_comment:
     types:
       - created
@@ -13,6 +10,7 @@ on:
   push:
     branches:
       - main
+      - tests
     paths-ignore:
       - 'README.md'
 
