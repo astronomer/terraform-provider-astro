@@ -3,6 +3,9 @@ package resources_test
 import (
 	"context"
 	"fmt"
+	"os"
+	"testing"
+
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
 	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"
 	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
@@ -10,8 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/stretchr/testify/assert"
-	"os"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )

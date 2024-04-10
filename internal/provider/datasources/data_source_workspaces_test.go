@@ -2,12 +2,13 @@ package datasources_test
 
 import (
 	"fmt"
+	"strconv"
+	"testing"
+
 	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"
 	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/lucsky/cuid"
-	"strconv"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )

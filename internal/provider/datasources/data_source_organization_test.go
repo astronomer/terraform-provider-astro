@@ -1,9 +1,10 @@
 package datasources_test
 
 import (
-	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"
 	"os"
 	"testing"
+
+	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )

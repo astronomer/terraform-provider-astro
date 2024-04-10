@@ -3,6 +3,10 @@ package provider_test
 import (
 	"context"
 	"fmt"
+	"os"
+	"regexp"
+	"testing"
+
 	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -10,9 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/lucsky/cuid"
 	"github.com/stretchr/testify/assert"
-	"os"
-	"regexp"
-	"testing"
 )
 
 func TestUnit_Provider(t *testing.T) {

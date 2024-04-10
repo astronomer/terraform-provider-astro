@@ -1,6 +1,8 @@
 package validators_test
 
 import (
+	"testing"
+
 	"github.com/astronomer/astronomer-terraform-provider/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -8,7 +10,6 @@ import (
 	"github.com/lucsky/cuid"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestUnit_Validators_ListIsCuids(t *testing.T) {

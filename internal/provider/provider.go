@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"os"
+
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/iam"
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
 	"github.com/astronomer/astronomer-terraform-provider/internal/provider/datasources"
@@ -16,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"os"
 )
 
 // Ensure AstronomerProvider satisfies various provider interfaces.

@@ -2,10 +2,11 @@ package utils
 
 import (
 	"fmt"
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"os"
 	"strings"
+
+	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 )
 
 var platformClient *platform.ClientWithResponses

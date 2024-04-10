@@ -2,8 +2,9 @@ package utils_test
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"

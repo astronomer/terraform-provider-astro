@@ -2,10 +2,11 @@ package clients_test
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/url"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
 )

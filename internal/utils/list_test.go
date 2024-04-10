@@ -3,13 +3,14 @@ package utils_test
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/astronomer/astronomer-terraform-provider/internal/provider/models"
 	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
 )
