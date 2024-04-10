@@ -48,6 +48,13 @@ jobs:
         with:
           go-version-file: 'go.mod'
           cache: true
+      - name: Echo environment variables
+        run: |
+          echo "ASTRO_ORGANIZATION_ID=$ASTRO_ORGANIZATION_ID"
+          echo "ASTRO_API_HOST=$ASTRO_API_HOST"
+        env:
+          ASTRO_ORGANIZATION_ID: ${{ env.DEV_ASTRO_ORGANIZATION_ID }}
+          ASTRO_API_HOST: ${{ env.DEV_ASTRO_API_HOST }}
       - uses: hashicorp/setup-terraform@a1502cd9e758c50496cc9ac5308c4843bcd56d36 # v3.0.0
         with:
           terraform_version: ${{ matrix.terraform }}
@@ -56,6 +63,8 @@ jobs:
       - env:
           TF_ACC: "1"
           ASTRO_API_TOKEN: ${{ secrets.DEV_ASTRO_API_TOKEN }}
-        run: ASTRO_ORGANIZATION_ID=$DEV_ASTRO_ORGANIZATION_ID ASTRO_API_HOST=$DEV_ASTRO_API_HOST make testacc
+          ASTRO_ORGANIZATION_ID: ${{ env.DEV_ASTRO_ORGANIZATION_ID }}
+          ASTRO_API_HOST: ${{ env.DEV_ASTRO_API_HOST }}
+        run: make testacc
         timeout-minutes: 10
 
