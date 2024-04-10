@@ -5,12 +5,9 @@ on:
   issue_comment:
     types:
       - created
-    paths-ignore:
-      - 'README.md'
   push:
     branches:
       - main
-      - tests
     paths-ignore:
       - 'README.md'
 
