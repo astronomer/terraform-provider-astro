@@ -43,7 +43,7 @@ data "astronomer_deployment" "example" {
 - `executor` (String) Deployment executor
 - `external_ips` (List of String) Deployment external IPs
 - `image_repository` (String) Deployment image repository
-- `image_tag` (String) Deployment mage tag
+- `image_tag` (String) Deployment image tag
 - `image_version` (String) Deployment image version
 - `is_cicd_enforced` (Boolean) Whether the Deployment enforces CI/CD deploys
 - `is_dag_deploy_enabled` (Boolean) Whether DAG deploy is enabled
