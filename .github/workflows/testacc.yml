@@ -74,6 +74,9 @@ jobs:
       - run: go mod download
       - env:
           TF_ACC: "1"
+          ASTRO_API_TOKEN: ${{ secrets.DEV_ASTRO_API_TOKEN }}
+          ASTRO_API_HOST: ${{ secrets.DEV_ASTRO_API_HOST }}
+          ASTRO_ORGANIZATION_ID: ${{ secrets.DEV_ASTRO_ORGANIZATION_ID }}
         run: make testacc
         timeout-minutes: 10
       - name: Set latest commit status as ${{ job.status }}
@@ -86,7 +89,7 @@ jobs:
 
   main-testacc:
     # This job runs on push to main branch.
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     name: Main Terraform Provider Acceptance Tests
     needs: build
     environment: dev
