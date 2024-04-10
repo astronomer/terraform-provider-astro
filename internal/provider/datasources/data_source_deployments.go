@@ -83,9 +83,9 @@ func (d *deploymentsDataSource) Read(
 	params := &platform.ListDeploymentsParams{
 		Limit: lo.ToPtr(1000),
 	}
-	params.DeploymentIds = utils.TypesListToStringSlice(data.DeploymentIds)
-	params.WorkspaceIds = utils.TypesListToStringSlice(data.WorkspaceIds)
-	params.Names = utils.TypesListToStringSlice(data.Names)
+	params.DeploymentIds = utils.TypesListToStringSlicePtr(data.DeploymentIds)
+	params.WorkspaceIds = utils.TypesListToStringSlicePtr(data.WorkspaceIds)
+	params.Names = utils.TypesListToStringSlicePtr(data.Names)
 
 	if resp.Diagnostics.HasError() {
 		return

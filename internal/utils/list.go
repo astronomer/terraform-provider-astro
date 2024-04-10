@@ -41,9 +41,11 @@ func ObjectList[T any](ctx context.Context, values []T, objectAttributeTypes map
 	return objectList, nil
 }
 
-// TypesListToStringSlice converts a types.List to a pointer to a slice of strings
+// TypesListToStringSlicePtr converts a types.List to a pointer to a slice of strings
 // This is useful for converting a list of strings from the Terraform framework to a slice of strings used for calling the API
-func TypesListToStringSlice(list types.List) *[]string {
+// We prefer to use a pointer to a slice of strings because our API client query params usually have type *[]string
+// and we can easily assign the query param to the result of this function (regardless if the result is nil or not)
+func TypesListToStringSlicePtr(list types.List) *[]string {
 	elements := list.Elements()
 	if len(elements) == 0 {
 		return nil

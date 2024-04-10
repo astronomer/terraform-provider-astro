@@ -83,8 +83,8 @@ func (d *workspacesDataSource) Read(
 	params := &platform.ListWorkspacesParams{
 		Limit: lo.ToPtr(1000),
 	}
-	params.WorkspaceIds = utils.TypesListToStringSlice(data.WorkspaceIds)
-	params.Names = utils.TypesListToStringSlice(data.Names)
+	params.WorkspaceIds = utils.TypesListToStringSlicePtr(data.WorkspaceIds)
+	params.Names = utils.TypesListToStringSlicePtr(data.Names)
 
 	if resp.Diagnostics.HasError() {
 		return
