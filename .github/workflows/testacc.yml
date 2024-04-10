@@ -1,11 +1,13 @@
 # Terraform Provider testing workflow.
 name: Acceptance Tests
 
-# This GitHub action runs your tests for each pull request and push.
-# Optionally, you can turn it on using a schedule for regular testing.
 on:
+  pull_request:
+    branches:
+      - tests
   issue_comment:
-    types: [created]
+    types:
+      - created
     paths-ignore:
       - 'README.md'
   push:
@@ -33,7 +35,7 @@ jobs:
       - run: go build -v .
 
   comment-triggered-testacc:
-    # This job runs on issue_comment event with /run-testacc command.
+    # This job runs on issue_comment event with /testacc command.
     # We will block merging to main unless this job passes
     # The reason we don't want to run this on every push is because it's expensive/creates real resources
     if: github.event.issue.pull_request && contains(github.event.comment.body, '/testacc')
