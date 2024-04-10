@@ -118,3 +118,12 @@ jobs:
           ASTRO_ORGANIZATION_ID: ${{ secrets.DEV_ASTRO_ORGANIZATION_ID }}
         run: make testacc
         timeout-minutes: 10
+
+  debug:
+    if: github.event_name == 'issue_comment'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
