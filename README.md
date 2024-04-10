@@ -116,9 +116,15 @@ output "terraform_workspace" {
 ```
 
 ## Testing
-TODO: In order to run the full suite of Acceptance tests, run `make testacc`.
+Unit tests can be run with `make test`.
 
-*Note:* Acceptance tests create real resources, and often cost money to run.
+In order to run the full suite of Acceptance tests, run `make testacc`.
+You will also need to set the following environment variables:
+- `ASTRO_API_HOST`
+- `ASTRO_API_TOKEN`
+- `ASTRO_ORGANIZATION_ID`
+
+The acceptance tests will run against the Astronomer API and create/read/update/delete real resources.
 
 
 
