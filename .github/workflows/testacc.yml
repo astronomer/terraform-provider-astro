@@ -2,9 +2,9 @@
 name: Acceptance Tests
 
 on:
-  issue_comment:
-    types:
-      - created
+  pull_request:
+    paths-ignore:
+      - 'README.md'
   push:
     branches:
       - main
@@ -29,64 +29,9 @@ jobs:
       - run: go mod download
       - run: go build -v .
 
-  comment-triggered-testacc:
-    # This job runs on issue_comment event with /testacc command.
-    # We will block merging to main unless this job passes
-    # The reason we don't want to run this on every push is because it's expensive/creates real resources
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '/testacc')
-    name: PR Terraform Provider Acceptance Tests
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    strategy:
-      fail-fast: true
-      matrix:
-        # list whatever Terraform versions here you would like to support
-        terraform:
-          - '1.7.*'
-          - '1.6.*'
-    steps:
-      - name: Get PR branch
-        uses: xt0rted/pull-request-comment-branch@v1
-        id: comment-branch
-      - name: Set latest commit status as pending
-        uses: myrotvorets/set-commit-status-action@master
-        with:
-          sha: ${{ steps.comment-branch.outputs.head_sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          status: pending
-      - name: Checkout PR branch
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ steps.comment-branch.outputs.head_ref }}
-      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
-        with:
-          go-version-file: 'go.mod'
-          cache: true
-      - uses: hashicorp/setup-terraform@a1502cd9e758c50496cc9ac5308c4843bcd56d36 # v3.0.0
-        with:
-          terraform_version: ${{ matrix.terraform }}
-          terraform_wrapper: false
-      - run: go mod download
-      - env:
-          TF_ACC: "1"
-          ASTRO_API_TOKEN: ${{ secrets.DEV_ASTRO_API_TOKEN }}
-          ASTRO_API_HOST: ${{ secrets.DEV_ASTRO_API_HOST }}
-          ASTRO_ORGANIZATION_ID: ${{ secrets.DEV_ASTRO_ORGANIZATION_ID }}
-        run: make testacc
-        timeout-minutes: 10
-      - name: Set latest commit status as ${{ job.status }}
-        uses: myrotvorets/set-commit-status-action@master
-        if: always()
-        with:
-          sha: ${{ steps.comment-branch.outputs.head_sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          status: ${{ job.status }}
-
-  main-testacc:
+  testacc:
     # This job runs on push to main branch.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    name: Main Terraform Provider Acceptance Tests
+    name: Terraform Provider Acceptance Tests
     needs: build
     timeout-minutes: 15
     strategy:
@@ -116,11 +61,3 @@ jobs:
         run: make testacc
         timeout-minutes: 10
 
-  debug:
-    if: github.event_name == 'issue_comment'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
