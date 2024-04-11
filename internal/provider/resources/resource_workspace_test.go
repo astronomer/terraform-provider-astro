@@ -18,26 +18,38 @@ import (
 )
 
 func TestAcc_Resource(t *testing.T) {
-	workspaceName := utils.GenerateTestResourceName(10)
+	namePrefix := utils.GenerateTestResourceName(10)
+	workspace1Name := fmt.Sprintf("%v-1", namePrefix)
+	workspace2Name := fmt.Sprintf("%v-2", namePrefix)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			// Check that workspaces have been removed
+			testAccCheckWorkspaceExistence(t, workspace1Name, false),
+			testAccCheckWorkspaceExistence(t, workspace2Name, false),
+		),
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig() + workspace(fmt.Sprintf("%v-1", workspaceName), "test", false),
+				Config: astronomerprovider.ProviderConfig() + workspace(workspace1Name, "test", false),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("astronomer_workspace.test", "name", fmt.Sprintf("%v-1", workspaceName)),
+					resource.TestCheckResourceAttr("astronomer_workspace.test", "name", workspace1Name),
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "description", "test"),
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "cicd_enforced_default", "false"),
+					// Check via API that workspace exists
+					testAccCheckWorkspaceExistence(t, workspace1Name, true),
 				),
 			},
 			// Change properties and check they have been updated in terraform state
 			{
-				Config: astronomerprovider.ProviderConfig() + workspace(fmt.Sprintf("%v-2", workspaceName), utils.TestResourceDescription, true),
+				Config: astronomerprovider.ProviderConfig() + workspace(workspace2Name, utils.TestResourceDescription, true),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("astronomer_workspace.test", "name", fmt.Sprintf("%v-2", workspaceName)),
+					resource.TestCheckResourceAttr("astronomer_workspace.test", "name", workspace2Name),
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "description", utils.TestResourceDescription),
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "cicd_enforced_default", "true"),
+					// Check via API that workspace exists
+					testAccCheckWorkspaceExistence(t, workspace2Name, true),
 				),
 			},
 			// Import existing workspace and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests
@@ -68,6 +80,7 @@ func TestAcc_WorkspaceRemovedOutsideOfTerraform(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "name", workspaceName),
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "description", utils.TestResourceDescription),
+					// Check via API that workspace exists
 					testAccCheckWorkspaceExistence(t, workspaceName, true),
 				),
 			},
@@ -83,6 +96,7 @@ func TestAcc_WorkspaceRemovedOutsideOfTerraform(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "name", workspaceName),
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "description", utils.TestResourceDescription),
+					// Check via API that workspace exists
 					testAccCheckWorkspaceExistence(t, workspaceName, true),
 				),
 			},
