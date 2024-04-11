@@ -1,0 +1,64 @@
+name: Acceptance Tests
+
+# In the future, we will need to figure out how we want to run acceptance tests
+# since creation of deployments and clusters are costly
+on:
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+
+# Testing only needs permissions to read the repository contents.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - run: go mod download
+      - run: go build -v .
+
+  testacc:
+    # This job runs on push to main branch.
+    name: Terraform Provider Acceptance Tests
+    needs: build
+    timeout-minutes: 15
+    strategy:
+      fail-fast: true
+      matrix:
+        # list whatever Terraform versions here you would like to support
+        terraform:
+          - latest
+#          - '1.7.*'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - uses: hashicorp/setup-terraform@a1502cd9e758c50496cc9ac5308c4843bcd56d36 # v3.0.0
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+      - run: go mod download
+      - env:
+          TF_ACC: "1"
+          ASTRO_API_TOKEN: ${{ secrets.DEV_ASTRO_API_TOKEN }}
+          ASTRO_ORGANIZATION_ID: ckmzjm22937931d35puw3tcdo
+          ASTRO_API_HOST: https://api.astronomer-dev.io
+        run: make testacc
+        timeout-minutes: 10
+

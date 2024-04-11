@@ -116,9 +116,25 @@ output "terraform_workspace" {
 ```
 
 ## Testing
-TODO: In order to run the full suite of Acceptance tests, run `make testacc`.
+Unit tests can be run with `make test`.
 
-*Note:* Acceptance tests create real resources, and often cost money to run.
+### Acceptance tests
+Acceptance integration tests use a Terraform CLI binary to run real Terraform commands against the Astro API. The goal is to approximate using the provider with Terraform in production as closely as possible.
+
+Using the terraform-plugin-testing framework, each `resource.Test` runs an acceptance test on a resource.
+- `ProtoV6ProviderFactories`: map of the provider factories that the test suite will use to create the provider - just has the `astronomer` provider
+- `PreCheck`: a function that runs before the test suite starts to check that all the required environment variables are set
+- `Steps`: a list of `terraform apply` sequences that the test suite will run. Each step is a `resource.TestStep` that contains a `Config` and `Check` function.
+  - `Config`: the Terraform configuration that the test will run (ie. the `.tf` file)
+  - `Check`: function that will verify the state of the resources after the `terraform apply` command has run.
+
+In order to run the full suite of Acceptance tests, run `make testacc`.
+You will also need to set the following environment variables:
+- `ASTRO_API_HOST`
+- `ASTRO_API_TOKEN`
+- `ASTRO_ORGANIZATION_ID`
+
+The acceptance tests will run against the Astronomer API and create/read/update/delete real resources.
 
 
 

@@ -12,13 +12,13 @@ OAPI_CODEGEN ?= $(ENVTEST_ASSETS_DIR)/oapi-codegen
 # Run acceptance tests
 .PHONY: testacc
 testacc:
-	TF_ACC=1 go test ./... -v $(TESTARGS) -timeout 120m
+	TF_ACC=1 go test ./... -v -run TestAcc $(TESTARGS) -timeout 120m
 
 # Run unit tests
 .PHONY: test
 test:
 	go vet ./...
-	go run github.com/onsi/ginkgo/v2/ginkgo run -r -v --cover --covermode atomic --junit-report=report.xml --output-dir=test_results $(ARGS)
+	TF_ACC="" go test ./... -v $(TESTARGS)
 
 .PHONY: fmt
 fmt:

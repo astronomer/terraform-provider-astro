@@ -1,6 +1,3 @@
-// Copyright (c) HashiCorp, Inc.
-// SPDX-License-Identifier: MPL-2.0
-
 package provider
 
 import (
@@ -133,6 +130,7 @@ func (p *AstronomerProvider) DataSources(ctx context.Context) []func() datasourc
 		datasources.NewWorkspacesDataSource,
 		datasources.NewDeploymentDataSource,
 		datasources.NewDeploymentsDataSource,
+		datasources.NewOrganizationDataSource,
 	}
 }
 
