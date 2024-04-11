@@ -31,7 +31,7 @@ func TestAcc_Resource(t *testing.T) {
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "cicd_enforced_default", "false"),
 				),
 			},
-			// CHANGE PROPERTIES
+			// Change properties and check they have been updated in terraform state
 			{
 				Config: astronomerprovider.ProviderConfig() + workspace(fmt.Sprintf("%v-2", workspaceName), utils.TestResourceDescription, true),
 				Check: resource.ComposeTestCheckFunc(
@@ -40,7 +40,7 @@ func TestAcc_Resource(t *testing.T) {
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "cicd_enforced_default", "true"),
 				),
 			},
-			// IMPORT
+			// Import existing workspace and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests
 			{
 				ResourceName:      "astronomer_workspace.test",
 				ImportState:       true,
