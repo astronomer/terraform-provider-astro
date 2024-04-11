@@ -1,4 +1,3 @@
-# Terraform Provider testing workflow.
 name: Build
 
 # This GitHub action runs your tests for each pull request and push.
