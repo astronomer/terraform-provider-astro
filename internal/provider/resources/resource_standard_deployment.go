@@ -170,10 +170,10 @@ func (r *standardDeploymentResource) Create(
 	var createDeploymentRequest platform.CreateDeploymentRequest
 	err = createDeploymentRequest.FromCreateStandardDeploymentRequest(createStandardDeploymentRequest)
 	if err != nil {
-		tflog.Error(ctx, fmt.Sprintf("failed to create deployment error: %v", err))
+		tflog.Error(ctx, fmt.Sprintf("failed to create standard deployment error: %v", err))
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to create hybrid deployment request body, got error: %s", err),
+			fmt.Sprintf("Unable to create standard deployment request body, got error: %s", err),
 		)
 		return
 	}
@@ -184,10 +184,10 @@ func (r *standardDeploymentResource) Create(
 		createDeploymentRequest,
 	)
 	if err != nil {
-		tflog.Error(ctx, "failed to create deployment", map[string]interface{}{"error": err})
+		tflog.Error(ctx, "failed to create standard deployment", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to create deployment, got error: %s", err),
+			fmt.Sprintf("Unable to create standard deployment, got error: %s", err),
 		)
 		return
 	}
@@ -203,7 +203,7 @@ func (r *standardDeploymentResource) Create(
 		return
 	}
 
-	tflog.Trace(ctx, fmt.Sprintf("created a deployment resource: %v", data.Id.ValueString()))
+	tflog.Trace(ctx, fmt.Sprintf("created a standard deployment resource: %v", data.Id.ValueString()))
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -230,10 +230,10 @@ func (r *standardDeploymentResource) Read(
 		data.Id.ValueString(),
 	)
 	if err != nil {
-		tflog.Error(ctx, "failed to get deployment", map[string]interface{}{"error": err})
+		tflog.Error(ctx, "failed to get standard deployment", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to get deployment, got error: %s", err),
+			fmt.Sprintf("Unable to get standard deployment, got error: %s", err),
 		)
 		return
 	}
@@ -333,10 +333,10 @@ func (r *standardDeploymentResource) Update(
 	var updateDeploymentRequest platform.UpdateDeploymentRequest
 	err := updateDeploymentRequest.FromUpdateStandardDeploymentRequest(updateStandardDeploymentRequest)
 	if err != nil {
-		tflog.Error(ctx, fmt.Sprintf("failed to update deployment error: %v", err))
+		tflog.Error(ctx, fmt.Sprintf("failed to update standard deployment error: %v", err))
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to update hybrid deployment request body, got error: %s", err),
+			fmt.Sprintf("Unable to update standard deployment request body, got error: %s", err),
 		)
 		return
 	}

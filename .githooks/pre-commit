@@ -5,5 +5,21 @@ go generate ./...
 # Add examples and docs files to git after documentation is generated
 git add examples/
 git add docs/
-git add internal/
+
+# First, get a list of all staged go files (ends in .go)
+gofiles="$(git diff --cached --name-only --diff-filter=ACM --line-prefix="$(git rev-parse --show-toplevel)"/ '*.go')"
+[ -z "$gofiles" ] && exit 0
+
+for file in $gofiles; do
+    echo "running pre commit hook on $file"
+    # format the file
+    gofmt -w "$file"
+
+    # run goimports
+    goimports -w "$file"
+
+    # add the new changes to git commit
+    git add $file
+done
+
 echo "Pre-commit hook finished"
