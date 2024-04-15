@@ -419,6 +419,8 @@ func (r *standardDeploymentResource) ImportState(
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
+// ValidateConfig validates the configuration of the resource as a whole before any operations are performed.
+// This is a good place to check for any conflicting settings.
 func (r *standardDeploymentResource) ValidateConfig(
 	ctx context.Context,
 	req resource.ValidateConfigRequest,

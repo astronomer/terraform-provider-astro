@@ -11,6 +11,7 @@ import (
 	"github.com/samber/lo"
 )
 
+// RequestScalingSpec converts a Terraform object to a platform.DeploymentScalingSpecRequest to be used in create and update requests
 func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*platform.DeploymentScalingSpecRequest, diag.Diagnostics) {
 	if scalingSpecObj.IsNull() {
 		return nil, nil
@@ -46,6 +47,7 @@ func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*plat
 	return platformScalingSpec, nil
 }
 
+// RequestHostedWorkerQueues converts a Terraform list to a list of platform.WorkerQueueRequest to be used in create and update requests
 func RequestHostedWorkerQueues(ctx context.Context, workerQueuesObjList types.List) (*[]platform.WorkerQueueRequest, diag.Diagnostics) {
 	if len(workerQueuesObjList.Elements()) == 0 {
 		return nil, nil
@@ -69,6 +71,7 @@ func RequestHostedWorkerQueues(ctx context.Context, workerQueuesObjList types.Li
 	return &platformWorkerQueues, nil
 }
 
+// RequestDeploymentEnvironmentVariables converts a Terraform list to a list of platform.DeploymentEnvironmentVariableRequest to be used in create and update requests
 func RequestDeploymentEnvironmentVariables(ctx context.Context, environmentVariablesObjList types.List) ([]platform.DeploymentEnvironmentVariableRequest, diag.Diagnostics) {
 	if len(environmentVariablesObjList.Elements()) == 0 {
 		return []platform.DeploymentEnvironmentVariableRequest{}, nil
