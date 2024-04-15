@@ -43,7 +43,7 @@ Deployment resource
 - `scheduler_replicas` (Number) Deployment scheduler replicas - required for 'HYBRID' deployments
 - `scheduler_size` (String) Deployment scheduler size - required for 'STANDARD' and 'DEDICATED' deployments
 - `task_pod_node_pool_id` (String) Deployment task pod node pool identifier - required if executor is 'KUBERNETES' and type is 'HYBRID'
-- `worker_queues` (Attributes List) Deployment worker queues (see [below for nested schema](#nestedatt--worker_queues))
+- `worker_queues` (Attributes List) Deployment worker queues - required for deployments with 'CELERY' executor (see [below for nested schema](#nestedatt--worker_queues))
 
 ### Read-Only
 

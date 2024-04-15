@@ -1,7 +1,6 @@
 set -e
 
 echo "Running pre-commit hook"
-make fmt
 make build
 go generate ./...
 # Add examples and docs files to git after documentation is generated
