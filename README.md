@@ -131,8 +131,10 @@ Using the terraform-plugin-testing framework, each `resource.Test` runs an accep
 In order to run the full suite of Acceptance tests, run `make testacc`.
 You will also need to set the following environment variables:
 - `ASTRO_API_HOST`
-- `ASTRO_API_TOKEN`
-- `ASTRO_ORGANIZATION_ID`
+- `ASTRO_HOSTED_ORGANIZATION_ID`
+- `ASTRO_HOSTED_API_TOKEN` - an organization owner API token for the above organization
+- `ASTRO_HYBRID_ORGANIZATION_ID`
+- `ASTRO_HYBRID_API_TOKEN` - an organization owner API token for the above organization
 
 The acceptance tests will run against the Astronomer API and create/read/update/delete real resources.
 

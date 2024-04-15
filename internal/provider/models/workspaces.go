@@ -21,19 +21,15 @@ func (data *WorkspacesDataSource) ReadFromResponse(
 	ctx context.Context,
 	workspaces []platform.Workspace,
 ) diag.Diagnostics {
-	if len(workspaces) == 0 {
-		types.ListNull(types.ObjectType{AttrTypes: schemas.WorkspacesElementAttributeTypes()})
-	}
-
 	values := make([]attr.Value, len(workspaces))
 	for i, workspace := range workspaces {
-		var data WorkspaceDataSource
-		diags := data.ReadFromResponse(ctx, &workspace)
+		var singleWorkspaceData WorkspaceDataSource
+		diags := singleWorkspaceData.ReadFromResponse(ctx, &workspace)
 		if diags.HasError() {
 			return diags
 		}
 
-		objectValue, diags := types.ObjectValueFrom(ctx, schemas.WorkspacesElementAttributeTypes(), data)
+		objectValue, diags := types.ObjectValueFrom(ctx, schemas.WorkspacesElementAttributeTypes(), singleWorkspaceData)
 		if diags.HasError() {
 			return diags
 		}

@@ -3,6 +3,7 @@ package datasources
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 
 	"github.com/samber/lo"
 
@@ -79,15 +80,27 @@ func (d *deploymentsDataSource) Read(
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	params := &platform.ListDeploymentsParams{
 		Limit: lo.ToPtr(1000),
 	}
-	params.DeploymentIds = utils.TypesListToStringSlicePtr(data.DeploymentIds)
-	params.WorkspaceIds = utils.TypesListToStringSlicePtr(data.WorkspaceIds)
-	params.Names = utils.TypesListToStringSlicePtr(data.Names)
-
-	if resp.Diagnostics.HasError() {
+	var diags diag.Diagnostics
+	params.DeploymentIds, diags = utils.TypesListToStringSlicePtr(ctx, data.DeploymentIds)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+	params.WorkspaceIds, diags = utils.TypesListToStringSlicePtr(ctx, data.WorkspaceIds)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+	params.Names, diags = utils.TypesListToStringSlicePtr(ctx, data.Names)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
 		return
 	}
 
@@ -129,7 +142,7 @@ func (d *deploymentsDataSource) Read(
 	}
 
 	// Populate the model with the response data
-	diags := data.ReadFromResponse(ctx, deployments)
+	diags = data.ReadFromResponse(ctx, deployments)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

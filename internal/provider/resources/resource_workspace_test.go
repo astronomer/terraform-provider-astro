@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAcc_Resource(t *testing.T) {
+func TestAcc_ResourceWorkspace(t *testing.T) {
 	namePrefix := utils.GenerateTestResourceName(10)
 	workspace1Name := fmt.Sprintf("%v-1", namePrefix)
 	workspace2Name := fmt.Sprintf("%v-2", namePrefix)
@@ -32,7 +32,7 @@ func TestAcc_Resource(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig() + workspace(workspace1Name, "test", false),
+				Config: astronomerprovider.ProviderConfig(t, false) + workspace(workspace1Name, "test", false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "name", workspace1Name),
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "description", "test"),
@@ -43,7 +43,7 @@ func TestAcc_Resource(t *testing.T) {
 			},
 			// Change properties and check they have been updated in terraform state
 			{
-				Config: astronomerprovider.ProviderConfig() + workspace(workspace2Name, utils.TestResourceDescription, true),
+				Config: astronomerprovider.ProviderConfig(t, false) + workspace(workspace2Name, utils.TestResourceDescription, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "name", workspace2Name),
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "description", utils.TestResourceDescription),
@@ -70,7 +70,7 @@ func TestAcc_WorkspaceRemovedOutsideOfTerraform(t *testing.T) {
 		CheckDestroy:             testAccCheckWorkspaceExistence(t, workspaceName, false),
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig() + workspaceWithVariableName(),
+				Config: astronomerprovider.ProviderConfig(t, false) + workspaceWithVariableName(),
 				ConfigVariables: map[string]config.Variable{
 					"name": config.StringVariable(workspaceName),
 				},
@@ -86,7 +86,7 @@ func TestAcc_WorkspaceRemovedOutsideOfTerraform(t *testing.T) {
 			},
 			{
 				PreConfig: func() { deleteWorkspaceOutsideOfTerraform(t, workspaceName) },
-				Config:    astronomerprovider.ProviderConfig() + workspaceWithVariableName(),
+				Config:    astronomerprovider.ProviderConfig(t, false) + workspaceWithVariableName(),
 				ConfigVariables: map[string]config.Variable{
 					"name": config.StringVariable(workspaceName),
 				},
@@ -134,14 +134,14 @@ func deleteWorkspaceOutsideOfTerraform(t *testing.T, name string) {
 	assert.NoError(t, err)
 
 	ctx := context.Background()
-	resp, err := client.ListWorkspacesWithResponse(ctx, os.Getenv("ASTRO_ORGANIZATION_ID"), &platform.ListWorkspacesParams{
+	resp, err := client.ListWorkspacesWithResponse(ctx, os.Getenv("ASTRO_HYBRID_ORGANIZATION_ID"), &platform.ListWorkspacesParams{
 		Names: &[]string{name},
 	})
 	if err != nil {
 		assert.NoError(t, err)
 	}
 	assert.True(t, len(resp.JSON200.Workspaces) >= 1, "workspace should exist but list workspaces did not find it")
-	_, err = client.DeleteWorkspaceWithResponse(ctx, os.Getenv("ASTRO_ORGANIZATION_ID"), resp.JSON200.Workspaces[0].Id)
+	_, err = client.DeleteWorkspaceWithResponse(ctx, os.Getenv("ASTRO_HYBRID_ORGANIZATION_ID"), resp.JSON200.Workspaces[0].Id)
 	assert.NoError(t, err)
 }
 
@@ -152,7 +152,7 @@ func testAccCheckWorkspaceExistence(t *testing.T, name string, shouldExist bool)
 		assert.NoError(t, err)
 
 		ctx := context.Background()
-		resp, err := client.ListWorkspacesWithResponse(ctx, os.Getenv("ASTRO_ORGANIZATION_ID"), &platform.ListWorkspacesParams{
+		resp, err := client.ListWorkspacesWithResponse(ctx, os.Getenv("ASTRO_HYBRID_ORGANIZATION_ID"), &platform.ListWorkspacesParams{
 			Names: &[]string{name},
 		})
 		if err != nil {

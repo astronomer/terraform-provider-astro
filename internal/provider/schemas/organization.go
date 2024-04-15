@@ -8,7 +8,7 @@ func OrganizationDataSourceSchemaAttributes() map[string]datasourceSchema.Attrib
 	return map[string]datasourceSchema.Attribute{
 		"id": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Organization identifier",
-			Computed:            true,
+			Computed:            true, // This is computed because we retrieve it from the provider configuration
 		},
 		"name": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Organization name",

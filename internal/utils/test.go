@@ -14,7 +14,7 @@ var platformClient *platform.ClientWithResponses
 const TestResourceDescription = "Created by Terraform Acceptance Test - will self-cleanup"
 
 func GenerateTestResourceName(numRandomChars int) string {
-	return fmt.Sprintf("TFAcceptanceTest %v", strings.ToUpper(acctest.RandStringFromCharSet(numRandomChars, acctest.CharSetAlpha)))
+	return fmt.Sprintf("TFAcceptanceTest_%v", strings.ToUpper(acctest.RandStringFromCharSet(numRandomChars, acctest.CharSetAlpha)))
 }
 
 func GetTestPlatformClient() (*platform.ClientWithResponses, error) {

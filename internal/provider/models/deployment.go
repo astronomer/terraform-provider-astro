@@ -10,6 +10,237 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+type StandardDeploymentResource struct {
+	// Common fields
+	Id                       types.String `tfsdk:"id"`
+	Name                     types.String `tfsdk:"name"`
+	Description              types.String `tfsdk:"description"`
+	CreatedAt                types.String `tfsdk:"created_at"`
+	UpdatedAt                types.String `tfsdk:"updated_at"`
+	CreatedBy                types.Object `tfsdk:"created_by"`
+	UpdatedBy                types.Object `tfsdk:"updated_by"`
+	WorkspaceId              types.String `tfsdk:"workspace_id"`
+	Region                   types.String `tfsdk:"region"`
+	CloudProvider            types.String `tfsdk:"cloud_provider"`
+	AstroRuntimeVersion      types.String `tfsdk:"astro_runtime_version"`
+	AirflowVersion           types.String `tfsdk:"airflow_version"`
+	Namespace                types.String `tfsdk:"namespace"`
+	ContactEmails            types.List   `tfsdk:"contact_emails"`
+	Executor                 types.String `tfsdk:"executor"`
+	SchedulerCpu             types.String `tfsdk:"scheduler_cpu"`
+	SchedulerMemory          types.String `tfsdk:"scheduler_memory"`
+	SchedulerReplicas        types.Int64  `tfsdk:"scheduler_replicas"`
+	ImageTag                 types.String `tfsdk:"image_tag"`
+	ImageRepository          types.String `tfsdk:"image_repository"`
+	ImageVersion             types.String `tfsdk:"image_version"`
+	EnvironmentVariables     types.List   `tfsdk:"environment_variables"`
+	WebserverIngressHostname types.String `tfsdk:"webserver_ingress_hostname"`
+	WebserverUrl             types.String `tfsdk:"webserver_url"`
+	WebserverAirflowApiUrl   types.String `tfsdk:"webserver_airflow_api_url"`
+	Status                   types.String `tfsdk:"status"`
+	StatusReason             types.String `tfsdk:"status_reason"`
+	DagTarballVersion        types.String `tfsdk:"dag_tarball_version"`
+	DesiredDagTarballVersion types.String `tfsdk:"desired_dag_tarball_version"`
+	IsCicdEnforced           types.Bool   `tfsdk:"is_cicd_enforced"`
+	IsDagDeployEnabled       types.Bool   `tfsdk:"is_dag_deploy_enabled"`
+	WorkloadIdentity         types.String `tfsdk:"workload_identity"`
+	ExternalIps              types.List   `tfsdk:"external_ips"`
+	OidcIssuerUrl            types.String `tfsdk:"oidc_issuer_url"`
+	WorkerQueues             types.List   `tfsdk:"worker_queues"`
+
+	// Hosted deployment specific fields
+	ResourceQuotaCpu     types.String `tfsdk:"resource_quota_cpu"`
+	ResourceQuotaMemory  types.String `tfsdk:"resource_quota_memory"`
+	DefaultTaskPodCpu    types.String `tfsdk:"default_task_pod_cpu"`
+	DefaultTaskPodMemory types.String `tfsdk:"default_task_pod_memory"`
+	ScalingStatus        types.Object `tfsdk:"scaling_status"`
+	ScalingSpec          types.Object `tfsdk:"scaling_spec"`
+	SchedulerSize        types.String `tfsdk:"scheduler_size"`
+	IsDevelopmentMode    types.Bool   `tfsdk:"is_development_mode"`
+	IsHighAvailability   types.Bool   `tfsdk:"is_high_availability"`
+}
+
+type DedicatedDeploymentResource struct {
+	// Common fields
+	Id                       types.String `tfsdk:"id"`
+	Name                     types.String `tfsdk:"name"`
+	Description              types.String `tfsdk:"description"`
+	CreatedAt                types.String `tfsdk:"created_at"`
+	UpdatedAt                types.String `tfsdk:"updated_at"`
+	CreatedBy                types.Object `tfsdk:"created_by"`
+	UpdatedBy                types.Object `tfsdk:"updated_by"`
+	WorkspaceId              types.String `tfsdk:"workspace_id"`
+	Region                   types.String `tfsdk:"region"`
+	CloudProvider            types.String `tfsdk:"cloud_provider"`
+	AstroRuntimeVersion      types.String `tfsdk:"astro_runtime_version"`
+	AirflowVersion           types.String `tfsdk:"airflow_version"`
+	Namespace                types.String `tfsdk:"namespace"`
+	ContactEmails            types.List   `tfsdk:"contact_emails"`
+	Executor                 types.String `tfsdk:"executor"`
+	SchedulerCpu             types.String `tfsdk:"scheduler_cpu"`
+	SchedulerMemory          types.String `tfsdk:"scheduler_memory"`
+	SchedulerReplicas        types.Int64  `tfsdk:"scheduler_replicas"`
+	ImageTag                 types.String `tfsdk:"image_tag"`
+	ImageRepository          types.String `tfsdk:"image_repository"`
+	ImageVersion             types.String `tfsdk:"image_version"`
+	EnvironmentVariables     types.List   `tfsdk:"environment_variables"`
+	WebserverIngressHostname types.String `tfsdk:"webserver_ingress_hostname"`
+	WebserverUrl             types.String `tfsdk:"webserver_url"`
+	WebserverAirflowApiUrl   types.String `tfsdk:"webserver_airflow_api_url"`
+	Status                   types.String `tfsdk:"status"`
+	StatusReason             types.String `tfsdk:"status_reason"`
+	DagTarballVersion        types.String `tfsdk:"dag_tarball_version"`
+	DesiredDagTarballVersion types.String `tfsdk:"desired_dag_tarball_version"`
+	IsCicdEnforced           types.Bool   `tfsdk:"is_cicd_enforced"`
+	IsDagDeployEnabled       types.Bool   `tfsdk:"is_dag_deploy_enabled"`
+	WorkloadIdentity         types.String `tfsdk:"workload_identity"`
+	ExternalIps              types.List   `tfsdk:"external_ips"`
+	OidcIssuerUrl            types.String `tfsdk:"oidc_issuer_url"`
+	WorkerQueues             types.List   `tfsdk:"worker_queues"`
+
+	// Hosted deployment specific fields
+	ClusterId            types.String `tfsdk:"cluster_id"`
+	ResourceQuotaCpu     types.String `tfsdk:"resource_quota_cpu"`
+	ResourceQuotaMemory  types.String `tfsdk:"resource_quota_memory"`
+	DefaultTaskPodCpu    types.String `tfsdk:"default_task_pod_cpu"`
+	DefaultTaskPodMemory types.String `tfsdk:"default_task_pod_memory"`
+	ScalingStatus        types.Object `tfsdk:"scaling_status"`
+	ScalingSpec          types.Object `tfsdk:"scaling_spec"`
+	SchedulerSize        types.String `tfsdk:"scheduler_size"`
+	IsDevelopmentMode    types.Bool   `tfsdk:"is_development_mode"`
+	IsHighAvailability   types.Bool   `tfsdk:"is_high_availability"`
+}
+
+type HybridDeploymentResource struct {
+	Id                       types.String `tfsdk:"id"`
+	Name                     types.String `tfsdk:"name"`
+	Description              types.String `tfsdk:"description"`
+	CreatedAt                types.String `tfsdk:"created_at"`
+	UpdatedAt                types.String `tfsdk:"updated_at"`
+	CreatedBy                types.Object `tfsdk:"created_by"`
+	UpdatedBy                types.Object `tfsdk:"updated_by"`
+	WorkspaceId              types.String `tfsdk:"workspace_id"`
+	Region                   types.String `tfsdk:"region"`
+	CloudProvider            types.String `tfsdk:"cloud_provider"`
+	AstroRuntimeVersion      types.String `tfsdk:"astro_runtime_version"`
+	AirflowVersion           types.String `tfsdk:"airflow_version"`
+	Namespace                types.String `tfsdk:"namespace"`
+	ContactEmails            types.List   `tfsdk:"contact_emails"`
+	Executor                 types.String `tfsdk:"executor"`
+	SchedulerCpu             types.String `tfsdk:"scheduler_cpu"`
+	SchedulerMemory          types.String `tfsdk:"scheduler_memory"`
+	SchedulerAu              types.Int64  `tfsdk:"scheduler_au"`
+	SchedulerReplicas        types.Int64  `tfsdk:"scheduler_replicas"`
+	ImageTag                 types.String `tfsdk:"image_tag"`
+	ImageRepository          types.String `tfsdk:"image_repository"`
+	ImageVersion             types.String `tfsdk:"image_version"`
+	EnvironmentVariables     types.List   `tfsdk:"environment_variables"`
+	WebserverIngressHostname types.String `tfsdk:"webserver_ingress_hostname"`
+	WebserverUrl             types.String `tfsdk:"webserver_url"`
+	WebserverAirflowApiUrl   types.String `tfsdk:"webserver_airflow_api_url"`
+	Status                   types.String `tfsdk:"status"`
+	StatusReason             types.String `tfsdk:"status_reason"`
+	DagTarballVersion        types.String `tfsdk:"dag_tarball_version"`
+	DesiredDagTarballVersion types.String `tfsdk:"desired_dag_tarball_version"`
+	IsCicdEnforced           types.Bool   `tfsdk:"is_cicd_enforced"`
+	IsDagDeployEnabled       types.Bool   `tfsdk:"is_dag_deploy_enabled"`
+	WorkloadIdentity         types.String `tfsdk:"workload_identity"`
+	ExternalIps              types.List   `tfsdk:"external_ips"`
+	OidcIssuerUrl            types.String `tfsdk:"oidc_issuer_url"`
+	WorkerQueues             types.List   `tfsdk:"worker_queues"`
+
+	// Hybrid deployment specific fields
+	TasksNodePoolId types.String `tfsdk:"tasks_node_pool_id"`
+	ClusterId       types.String `tfsdk:"cluster_id"`
+}
+
+func (data *StandardDeploymentResource) ReadFromResponse(
+	ctx context.Context,
+	deployment *platform.Deployment,
+) diag.Diagnostics {
+	// Read common fields
+	data.Id = types.StringValue(deployment.Id)
+	data.Name = types.StringValue(deployment.Name)
+	// If the description is nil, set it to an empty string since the terraform state/config for this resource
+	// cannot have a null value for a string.
+	if deployment.Description != nil {
+		data.Description = types.StringValue(*deployment.Description)
+	} else {
+		data.Description = types.StringValue("")
+	}
+	data.CreatedAt = types.StringValue(deployment.CreatedAt.String())
+	data.UpdatedAt = types.StringValue(deployment.UpdatedAt.String())
+	var diags diag.Diagnostics
+	data.CreatedBy, diags = SubjectProfileTypesObject(ctx, deployment.CreatedBy)
+	if diags.HasError() {
+		return diags
+	}
+	data.UpdatedBy, diags = SubjectProfileTypesObject(ctx, deployment.UpdatedBy)
+	if diags.HasError() {
+		return diags
+	}
+	data.WorkspaceId = types.StringValue(deployment.WorkspaceId)
+	data.Region = types.StringPointerValue(deployment.Region)
+	data.CloudProvider = types.StringPointerValue((*string)(deployment.CloudProvider))
+	data.AstroRuntimeVersion = types.StringValue(deployment.AstroRuntimeVersion)
+	data.AirflowVersion = types.StringValue(deployment.AirflowVersion)
+	data.Namespace = types.StringValue(deployment.Namespace)
+	data.ContactEmails, diags = utils.StringList(deployment.ContactEmails)
+	if diags.HasError() {
+		return diags
+	}
+	data.Executor = types.StringPointerValue((*string)(deployment.Executor))
+	data.SchedulerCpu = types.StringValue(deployment.SchedulerCpu)
+	data.SchedulerMemory = types.StringValue(deployment.SchedulerMemory)
+	data.SchedulerReplicas = types.Int64Value(int64(deployment.SchedulerReplicas))
+	data.ImageTag = types.StringValue(deployment.ImageTag)
+	data.ImageRepository = types.StringValue(deployment.ImageRepository)
+	data.ImageVersion = types.StringPointerValue(deployment.ImageVersion)
+	data.EnvironmentVariables, diags = utils.ObjectList(ctx, deployment.EnvironmentVariables, schemas.DeploymentEnvironmentVariableAttributeTypes(), DeploymentEnvironmentVariableTypesObject)
+	if diags.HasError() {
+		return diags
+	}
+	data.WebserverIngressHostname = types.StringValue(deployment.WebServerIngressHostname)
+	data.WebserverUrl = types.StringValue(deployment.WebServerUrl)
+	data.WebserverAirflowApiUrl = types.StringValue(deployment.WebServerAirflowApiUrl)
+	data.Status = types.StringValue(string(deployment.Status))
+	data.StatusReason = types.StringPointerValue(deployment.StatusReason)
+	data.DagTarballVersion = types.StringPointerValue(deployment.DagTarballVersion)
+	data.DesiredDagTarballVersion = types.StringPointerValue(deployment.DesiredDagTarballVersion)
+	data.WorkerQueues, diags = utils.ObjectList(ctx, deployment.WorkerQueues, schemas.HostedWorkerQueueAttributeTypes(), HostedWorkerQueueTypesObject)
+	if diags.HasError() {
+		return diags
+	}
+	data.IsCicdEnforced = types.BoolValue(deployment.IsCicdEnforced)
+	data.IsDagDeployEnabled = types.BoolValue(deployment.IsDagDeployEnabled)
+
+	data.WorkloadIdentity = types.StringPointerValue(deployment.WorkloadIdentity)
+	data.ExternalIps, diags = utils.StringList(deployment.ExternalIPs)
+	if diags.HasError() {
+		return diags
+	}
+	data.OidcIssuerUrl = types.StringPointerValue(deployment.OidcIssuerUrl)
+
+	// Read hosted deployment specific fields
+	data.ResourceQuotaCpu = types.StringPointerValue(deployment.ResourceQuotaCpu)
+	data.ResourceQuotaMemory = types.StringPointerValue(deployment.ResourceQuotaMemory)
+	data.DefaultTaskPodCpu = types.StringPointerValue(deployment.DefaultTaskPodCpu)
+	data.DefaultTaskPodMemory = types.StringPointerValue(deployment.DefaultTaskPodMemory)
+	data.SchedulerSize = types.StringPointerValue((*string)(deployment.SchedulerSize))
+	data.IsHighAvailability = types.BoolPointerValue(deployment.IsHighAvailability)
+	data.IsDevelopmentMode = types.BoolPointerValue(deployment.IsDevelopmentMode)
+	data.ScalingStatus, diags = ScalingStatusTypesObject(ctx, deployment.ScalingStatus)
+	if diags.HasError() {
+		return diags
+	}
+	data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, deployment.ScalingSpec)
+	if diags.HasError() {
+		return diags
+	}
+
+	return nil
+}
+
 // DeploymentDataSource describes the data source data model.
 type DeploymentDataSource struct {
 	Id                       types.String `tfsdk:"id"`
@@ -39,9 +270,6 @@ type DeploymentDataSource struct {
 	WebserverIngressHostname types.String `tfsdk:"webserver_ingress_hostname"`
 	WebserverUrl             types.String `tfsdk:"webserver_url"`
 	WebserverAirflowApiUrl   types.String `tfsdk:"webserver_airflow_api_url"`
-	WebserverCpu             types.String `tfsdk:"webserver_cpu"`
-	WebserverMemory          types.String `tfsdk:"webserver_memory"`
-	WebserverReplicas        types.Int64  `tfsdk:"webserver_replicas"`
 	Status                   types.String `tfsdk:"status"`
 	StatusReason             types.String `tfsdk:"status_reason"`
 	DagTarballVersion        types.String `tfsdk:"dag_tarball_version"`
@@ -72,6 +300,33 @@ type DeploymentEnvironmentVariable struct {
 	IsSecret  types.Bool   `tfsdk:"is_secret"`
 }
 
+type HostedWorkerQueue struct {
+	Id                types.String `tfsdk:"id"`
+	Name              types.String `tfsdk:"name"`
+	AstroMachine      types.String `tfsdk:"astro_machine"`
+	IsDefault         types.Bool   `tfsdk:"is_default"`
+	MaxWorkerCount    types.Int64  `tfsdk:"max_worker_count"`
+	MinWorkerCount    types.Int64  `tfsdk:"min_worker_count"`
+	PodCpu            types.String `tfsdk:"pod_cpu"`
+	PodMemory         types.String `tfsdk:"pod_memory"`
+	WorkerConcurrency types.Int64  `tfsdk:"worker_concurrency"`
+}
+
+type HybridWorkerQueue struct {
+	Id                types.String `tfsdk:"id"`
+	Name              types.String `tfsdk:"name"`
+	NodePoolId        types.String `tfsdk:"node_pool_id"`
+	IsDefault         types.Bool   `tfsdk:"is_default"`
+	MaxWorkerCount    types.Int64  `tfsdk:"max_worker_count"`
+	MinWorkerCount    types.Int64  `tfsdk:"min_worker_count"`
+	PodCpu            types.String `tfsdk:"pod_cpu"`
+	PodMemory         types.String `tfsdk:"pod_memory"`
+	WorkerConcurrency types.Int64  `tfsdk:"worker_concurrency"`
+}
+
+// WorkerQueue describes the worker queue data model.
+// It is used to represent the worker queue data in the deployment data source.
+// It contains both 'node_pool_id' and 'astro_machine' fields since the deployment data source can be hosted or hybrid.
 type WorkerQueue struct {
 	Id                types.String `tfsdk:"id"`
 	Name              types.String `tfsdk:"name"`
@@ -110,11 +365,9 @@ func (data *DeploymentDataSource) ReadFromResponse(
 	data.AstroRuntimeVersion = types.StringValue(deployment.AstroRuntimeVersion)
 	data.AirflowVersion = types.StringValue(deployment.AirflowVersion)
 	data.Namespace = types.StringValue(deployment.Namespace)
-	if deployment.ContactEmails != nil {
-		data.ContactEmails, diags = utils.StringList(*deployment.ContactEmails)
-		if diags.HasError() {
-			return diags
-		}
+	data.ContactEmails, diags = utils.StringList(deployment.ContactEmails)
+	if diags.HasError() {
+		return diags
 	}
 	data.Executor = types.StringPointerValue((*string)(deployment.Executor))
 	if deployment.SchedulerAu != nil {
@@ -127,29 +380,20 @@ func (data *DeploymentDataSource) ReadFromResponse(
 	data.ImageTag = types.StringValue(deployment.ImageTag)
 	data.ImageRepository = types.StringValue(deployment.ImageRepository)
 	data.ImageVersion = types.StringPointerValue(deployment.ImageVersion)
-	if deployment.EnvironmentVariables != nil {
-		data.EnvironmentVariables, diags = utils.ObjectList(ctx, *deployment.EnvironmentVariables, schemas.DeploymentEnvironmentVariableAttributeTypes(), DeploymentEnvironmentVariableTypesObject)
-		if diags.HasError() {
-			return diags
-		}
+	data.EnvironmentVariables, diags = utils.ObjectList(ctx, deployment.EnvironmentVariables, schemas.DeploymentEnvironmentVariableAttributeTypes(), DeploymentEnvironmentVariableTypesObject)
+	if diags.HasError() {
+		return diags
 	}
 	data.WebserverIngressHostname = types.StringValue(deployment.WebServerIngressHostname)
 	data.WebserverUrl = types.StringValue(deployment.WebServerUrl)
 	data.WebserverAirflowApiUrl = types.StringValue(deployment.WebServerAirflowApiUrl)
-	data.WebserverCpu = types.StringValue(deployment.WebServerCpu)
-	data.WebserverMemory = types.StringValue(deployment.WebServerMemory)
-	if deployment.WebServerReplicas != nil {
-		data.WebserverReplicas = types.Int64Value(int64(*deployment.WebServerReplicas))
-	}
 	data.Status = types.StringValue(string(deployment.Status))
 	data.StatusReason = types.StringPointerValue(deployment.StatusReason)
 	data.DagTarballVersion = types.StringPointerValue(deployment.DagTarballVersion)
 	data.DesiredDagTarballVersion = types.StringPointerValue(deployment.DesiredDagTarballVersion)
-	if deployment.WorkerQueues != nil {
-		data.WorkerQueues, diags = utils.ObjectList(ctx, *deployment.WorkerQueues, schemas.WorkerQueueAttributeTypes(), WorkerQueueTypesObject)
-		if diags.HasError() {
-			return diags
-		}
+	data.WorkerQueues, diags = utils.ObjectList(ctx, deployment.WorkerQueues, schemas.WorkerQueueAttributeTypes(), WorkerQueueTypesObject)
+	if diags.HasError() {
+		return diags
 	}
 	data.TaskPodNodePoolId = types.StringPointerValue(deployment.TaskPodNodePoolId)
 	data.IsCicdEnforced = types.BoolValue(deployment.IsCicdEnforced)
@@ -159,11 +403,9 @@ func (data *DeploymentDataSource) ReadFromResponse(
 	data.IsHighAvailability = types.BoolPointerValue(deployment.IsHighAvailability)
 	data.IsDevelopmentMode = types.BoolPointerValue(deployment.IsDevelopmentMode)
 	data.WorkloadIdentity = types.StringPointerValue(deployment.WorkloadIdentity)
-	if deployment.ExternalIPs != nil {
-		data.ExternalIps, diags = utils.StringList(*deployment.ExternalIPs)
-		if diags.HasError() {
-			return diags
-		}
+	data.ExternalIps, diags = utils.StringList(deployment.ExternalIPs)
+	if diags.HasError() {
+		return diags
 	}
 	data.OidcIssuerUrl = types.StringPointerValue(deployment.OidcIssuerUrl)
 	data.ResourceQuotaCpu = types.StringPointerValue(deployment.ResourceQuotaCpu)
@@ -214,6 +456,44 @@ func WorkerQueueTypesObject(
 	}
 
 	return types.ObjectValueFrom(ctx, schemas.WorkerQueueAttributeTypes(), obj)
+}
+
+func HostedWorkerQueueTypesObject(
+	ctx context.Context,
+	workerQueue platform.WorkerQueue,
+) (types.Object, diag.Diagnostics) {
+	obj := HostedWorkerQueue{
+		Id:                types.StringValue(workerQueue.Id),
+		Name:              types.StringValue(workerQueue.Name),
+		AstroMachine:      types.StringPointerValue(workerQueue.AstroMachine),
+		IsDefault:         types.BoolValue(workerQueue.IsDefault),
+		MaxWorkerCount:    types.Int64Value(int64(workerQueue.MaxWorkerCount)),
+		MinWorkerCount:    types.Int64Value(int64(workerQueue.MinWorkerCount)),
+		PodCpu:            types.StringValue(workerQueue.PodCpu),
+		PodMemory:         types.StringValue(workerQueue.PodMemory),
+		WorkerConcurrency: types.Int64Value(int64(workerQueue.WorkerConcurrency)),
+	}
+
+	return types.ObjectValueFrom(ctx, schemas.HostedWorkerQueueAttributeTypes(), obj)
+}
+
+func HybridWorkerQueueTypesObject(
+	ctx context.Context,
+	workerQueue platform.WorkerQueue,
+) (types.Object, diag.Diagnostics) {
+	obj := HybridWorkerQueue{
+		Id:                types.StringValue(workerQueue.Id),
+		Name:              types.StringValue(workerQueue.Name),
+		IsDefault:         types.BoolValue(workerQueue.IsDefault),
+		MaxWorkerCount:    types.Int64Value(int64(workerQueue.MaxWorkerCount)),
+		MinWorkerCount:    types.Int64Value(int64(workerQueue.MinWorkerCount)),
+		PodCpu:            types.StringValue(workerQueue.PodCpu),
+		PodMemory:         types.StringValue(workerQueue.PodMemory),
+		NodePoolId:        types.StringPointerValue(workerQueue.NodePoolId),
+		WorkerConcurrency: types.Int64Value(int64(workerQueue.WorkerConcurrency)),
+	}
+
+	return types.ObjectValueFrom(ctx, schemas.HybridWorkerQueueAttributeTypes(), obj)
 }
 
 type DeploymentScalingSpec struct {

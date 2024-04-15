@@ -38,7 +38,13 @@ func (data *WorkspaceResource) ReadFromResponse(
 ) diag.Diagnostics {
 	data.Id = types.StringValue(workspace.Id)
 	data.Name = types.StringValue(workspace.Name)
-	data.Description = types.StringPointerValue(workspace.Description)
+	// If the description is nil, set it to an empty string since the terraform state/config for this resource
+	// cannot have a null value for a string.
+	if workspace.Description != nil {
+		data.Description = types.StringValue(*workspace.Description)
+	} else {
+		data.Description = types.StringValue("")
+	}
 	data.CicdEnforcedDefault = types.BoolValue(workspace.CicdEnforcedDefault)
 	data.CreatedAt = types.StringValue(workspace.CreatedAt.String())
 	data.UpdatedAt = types.StringValue(workspace.UpdatedAt.String())

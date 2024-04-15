@@ -56,7 +56,6 @@ func WorkspaceResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 		"id": resourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace identifier",
 			Computed:            true,
-			Validators:          []validator.String{validators.IsCuid()},
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
@@ -64,7 +63,9 @@ func WorkspaceResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 		"name": resourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace name",
 			Required:            true,
-			Validators:          []validator.String{stringvalidator.LengthAtMost(50)},
+			Validators: []validator.String{
+				stringvalidator.LengthBetween(1, 50),
+			},
 		},
 		"description": resourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace description",

@@ -21,21 +21,36 @@ func TestAccPreCheck(t *testing.T) {
 	// You can add code here to run prior to any test case execution, for example assertions
 	// about the appropriate environment variables being set are common to see in a pre-check
 	// function.
-	if token := os.Getenv("ASTRO_API_TOKEN"); len(token) == 0 {
-		t.Fatal("ASTRO_API_TOKEN must be set for acceptance tests")
+	if hostedToken := os.Getenv("ASTRO_HOSTED_API_TOKEN"); len(hostedToken) == 0 {
+		t.Fatal("ASTRO_HOSTED_API_TOKEN must be set for acceptance tests")
 	}
-	if orgId := os.Getenv("ASTRO_ORGANIZATION_ID"); len(orgId) == 0 {
-		t.Fatal("ASTRO_ORGANIZATION_ID must be set for acceptance tests")
+	if hostedOrgId := os.Getenv("ASTRO_HOSTED_ORGANIZATION_ID"); len(hostedOrgId) == 0 {
+		t.Fatal("ASTRO_HOSTED_ORGANIZATION_ID must be set for acceptance tests")
+	}
+	if hybridToken := os.Getenv("ASTRO_HYBRID_API_TOKEN"); len(hybridToken) == 0 {
+		t.Fatal("ASTRO_HYBRID_API_TOKEN must be set for acceptance tests")
+	}
+	if hybridOrgId := os.Getenv("ASTRO_HYBRID_ORGANIZATION_ID"); len(hybridOrgId) == 0 {
+		t.Fatal("ASTRO_HYBRID_ORGANIZATION_ID must be set for acceptance tests")
 	}
 	if host := os.Getenv("ASTRO_API_HOST"); len(host) == 0 {
 		t.Fatal("ASTRO_API_HOST must be set for acceptance tests")
 	}
 }
 
-func ProviderConfig() string {
+func ProviderConfig(t *testing.T, isHosted bool) string {
+	var orgId string
+	if isHosted {
+		orgId = os.Getenv("ASTRO_HOSTED_ORGANIZATION_ID")
+		t.Setenv("ASTRO_API_TOKEN", os.Getenv("ASTRO_HOSTED_API_TOKEN"))
+	} else {
+		orgId = os.Getenv("ASTRO_HYBRID_ORGANIZATION_ID")
+		t.Setenv("ASTRO_API_TOKEN", os.Getenv("ASTRO_HYBRID_API_TOKEN"))
+	}
+
 	return fmt.Sprintf(`
 provider "astronomer" {
 	organization_id = "%v"
 	host = "%v"
-}`, os.Getenv("ASTRO_ORGANIZATION_ID"), os.Getenv("ASTRO_API_HOST"))
+}`, orgId, os.Getenv("ASTRO_API_HOST"))
 }

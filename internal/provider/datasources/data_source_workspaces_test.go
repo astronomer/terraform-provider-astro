@@ -23,30 +23,42 @@ func TestAcc_DataSourceWorkspaces(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig() + workspaces(workspaceName, ""),
+				Config: astronomerprovider.ProviderConfig(t, false) + workspaces(workspaceName, ""),
 				Check: resource.ComposeTestCheckFunc(
+					// These checks are for the workspace data source (singular)
+					resource.TestCheckResourceAttrSet("data.astronomer_workspace.test_data_workspace", "id"),
+					resource.TestCheckResourceAttr("data.astronomer_workspace.test_data_workspace", "name", fmt.Sprintf("%v-1", workspaceName)),
+					resource.TestCheckResourceAttrSet("data.astronomer_workspace.test_data_workspace", "description"),
+					resource.TestCheckResourceAttr("data.astronomer_workspace.test_data_workspace", "cicd_enforced_default", "true"),
+					resource.TestCheckResourceAttrSet("data.astronomer_workspace.test_data_workspace", "created_by.id"),
+					resource.TestCheckResourceAttrSet("data.astronomer_workspace.test_data_workspace", "created_at"),
+					resource.TestCheckResourceAttrSet("data.astronomer_workspace.test_data_workspace", "updated_by.id"),
+					resource.TestCheckResourceAttrSet("data.astronomer_workspace.test_data_workspace", "updated_at"),
+
+					// These checks are for the workspaces data source (plural)
 					checkWorkspaces(workspaceName+"-1"),
 					checkWorkspaces(workspaceName+"-2"),
 				),
 			},
+			// The following tests are for filtering the workspaces data source
 			{
-				Config: astronomerprovider.ProviderConfig() + workspaces(workspaceName, `workspace_ids = [astronomer_workspace.test_workspace1.id]`),
+				Config: astronomerprovider.ProviderConfig(t, false) + workspaces(workspaceName, `workspace_ids = [astronomer_workspace.test_workspace1.id]`),
 				Check: resource.ComposeTestCheckFunc(
 					checkWorkspaces(workspaceName + "-1"),
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig() + workspaces(workspaceName, fmt.Sprintf(`names = ["%v-1"]`, workspaceName)),
+				Config: astronomerprovider.ProviderConfig(t, false) + workspaces(workspaceName, fmt.Sprintf(`names = ["%v-1"]`, workspaceName)),
 				Check: resource.ComposeTestCheckFunc(
 					checkWorkspaces(workspaceName + "-1"),
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig() + workspaces(workspaceName, fmt.Sprintf(`names = ["%v"]`, cuid.New())),
+				Config: astronomerprovider.ProviderConfig(t, false) + workspaces(workspaceName, fmt.Sprintf(`names = ["%v"]`, cuid.New())),
 				Check:  checkWorkspacesAreEmpty(),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig() + workspaces(workspaceName, fmt.Sprintf(`workspace_ids = ["%v"]`, cuid.New())),
+				Config: astronomerprovider.ProviderConfig(t, false) + workspaces(workspaceName, fmt.Sprintf(`workspace_ids = ["%v"]`, cuid.New())),
 				Check:  checkWorkspacesAreEmpty(),
 			},
 		},
@@ -67,7 +79,12 @@ resource "astronomer_workspace" "test_workspace2" {
 	cicd_enforced_default = true
 }
 
-data astronomer_workspaces "t" {
+data astronomer_workspace "test_data_workspace" {
+	depends_on = [astronomer_workspace.test_workspace1]
+	id = astronomer_workspace.test_workspace1.id
+}
+
+data astronomer_workspaces "test_data_workspaces" {
 	depends_on = [astronomer_workspace.test_workspace1, astronomer_workspace.test_workspace2]
 	%v
 }`, name, utils.TestResourceDescription, name, utils.TestResourceDescription, filter)
@@ -75,7 +92,7 @@ data astronomer_workspaces "t" {
 
 func checkWorkspacesAreEmpty() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceState := s.Modules[0].Resources["data.astronomer_workspaces.t"]
+		resourceState := s.Modules[0].Resources["data.astronomer_workspaces.test_data_workspaces"]
 		if resourceState == nil {
 			return fmt.Errorf("resource not found in state")
 		}
@@ -96,7 +113,7 @@ func checkWorkspacesAreEmpty() resource.TestCheckFunc {
 
 func checkWorkspaces(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceState := s.Modules[0].Resources["data.astronomer_workspaces.t"]
+		resourceState := s.Modules[0].Resources["data.astronomer_workspaces.test_data_workspaces"]
 		if resourceState == nil {
 			return fmt.Errorf("resource not found in state")
 		}

@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
 	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -22,19 +21,15 @@ func (data *DeploymentsDataSource) ReadFromResponse(
 	ctx context.Context,
 	deployments []platform.Deployment,
 ) diag.Diagnostics {
-	if len(deployments) == 0 {
-		types.ListNull(types.ObjectType{AttrTypes: schemas.DeploymentsElementAttributeTypes()})
-	}
-
 	values := make([]attr.Value, len(deployments))
 	for i, deployment := range deployments {
-		var data DeploymentDataSource
-		diags := data.ReadFromResponse(ctx, &deployment)
+		var singleDeploymentData DeploymentDataSource
+		diags := singleDeploymentData.ReadFromResponse(ctx, &deployment)
 		if diags.HasError() {
 			return diags
 		}
 
-		objectValue, diags := types.ObjectValueFrom(ctx, schemas.DeploymentsElementAttributeTypes(), data)
+		objectValue, diags := types.ObjectValueFrom(ctx, schemas.DeploymentsElementAttributeTypes(), singleDeploymentData)
 		if diags.HasError() {
 			return diags
 		}

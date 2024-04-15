@@ -1,12 +1,366 @@
 package schemas
 
 import (
+	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
 	"github.com/astronomer/astronomer-terraform-provider/internal/provider/validators"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/samber/lo"
+	"regexp"
 )
+
+func StandardDeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return lo.Assign(map[string]resourceSchema.Attribute{
+		"region": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment region - if changing this value, the deployment will be recreated in the new region",
+			Required:            true,
+			PlanModifiers: []planmodifier.String{
+				// Would recreate the deployment if this attribute changes
+				stringplanmodifier.RequiresReplaceIfConfigured(),
+			},
+		},
+		"cloud_provider": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment cloud provider - if changing this value, the deployment will be recreated in the new cloud provider",
+			Required:            true,
+			PlanModifiers: []planmodifier.String{
+				// Would recreate the deployment if this attribute changes
+				stringplanmodifier.RequiresReplaceIfConfigured(),
+			},
+			Validators: []validator.String{
+				stringvalidator.OneOf(string(platform.ClusterCloudProviderAWS), string(platform.ClusterCloudProviderAZURE), string(platform.ClusterCloudProviderGCP)),
+			},
+		},
+	}, HostedDeploymentResourceSchemaAttributes())
+}
+
+func DedicatedDeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return lo.Assign(map[string]resourceSchema.Attribute{
+		"cluster_id": resourceSchema.StringAttribute{
+			Required: true,
+			Validators: []validator.String{
+				validators.IsCuid(),
+			},
+		},
+		"region": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment region",
+			Computed:            true,
+		},
+		"cloud_provider": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment cloud provider",
+			Computed:            true,
+		},
+	}, CommonDeploymentResourceSchemaAttributes())
+}
+
+func HostedDeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return lo.Assign(map[string]resourceSchema.Attribute{
+		"worker_queues": resourceSchema.ListNestedAttribute{
+			NestedObject: resourceSchema.NestedAttributeObject{
+				Attributes: HostedWorkerQueueResourceSchemaAttributes(),
+			},
+			MarkdownDescription: "Deployment worker queues",
+			Optional:            true,
+			Validators: []validator.List{
+				// Dynamic validation with 'executor' done in the resource.ValidateConfig function
+				listvalidator.SizeAtLeast(1),
+			},
+		},
+		"scheduler_size": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment scheduler size",
+			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(platform.SchedulerMachineNameSMALL),
+					string(platform.SchedulerMachineNameMEDIUM),
+					string(platform.SchedulerMachineNameLARGE),
+				),
+			},
+		},
+		"scheduler_replicas": resourceSchema.Int64Attribute{
+			MarkdownDescription: "Deployment scheduler replicas",
+			Computed:            true,
+		},
+		"is_high_availability": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Deployment high availability",
+			Required:            true,
+		},
+		"is_development_mode": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Deployment development mode",
+			Required:            true,
+			PlanModifiers: []planmodifier.Bool{
+				// Remove once this https://github.com/astronomer/astro/pull/19471 is merged
+				// Would recreate the deployment if this attribute changes
+				boolplanmodifier.RequiresReplaceIfConfigured(),
+			},
+		},
+		"resource_quota_cpu": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment resource quota CPU",
+			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.RegexMatches(regexp.MustCompile(validators.KubernetesResourceString), "must be a valid kubernetes resource string"),
+			},
+		},
+		"resource_quota_memory": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment resource quota memory",
+			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.RegexMatches(regexp.MustCompile(validators.KubernetesResourceString), "must be a valid kubernetes resource string"),
+			},
+		},
+		"default_task_pod_cpu": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment default task pod CPU",
+			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.RegexMatches(regexp.MustCompile(validators.KubernetesResourceString), "must be a valid kubernetes resource string"),
+			},
+		},
+		"default_task_pod_memory": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment default task pod memory",
+			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.RegexMatches(regexp.MustCompile(validators.KubernetesResourceString), "must be a valid kubernetes resource string"),
+			},
+		},
+		"scaling_status": resourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Deployment scaling status",
+			Computed:            true,
+			Attributes:          ScalingStatusResourceAttributes(),
+		},
+		"scaling_spec": resourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Deployment scaling spec",
+			Optional:            true,
+			Attributes:          ScalingSpecResourceSchemaAttributes(),
+		},
+	}, CommonDeploymentResourceSchemaAttributes())
+}
+
+func HybridDeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return lo.Assign(map[string]resourceSchema.Attribute{
+		"cluster_id": resourceSchema.StringAttribute{
+			Required: true,
+			Validators: []validator.String{
+				validators.IsCuid(),
+			},
+		},
+		"worker_queues": resourceSchema.ListNestedAttribute{
+			NestedObject: resourceSchema.NestedAttributeObject{
+				Attributes: HybridWorkerQueueResourceSchemaAttributes(),
+			},
+			MarkdownDescription: "Deployment worker queues",
+			Validators: []validator.List{
+				// Dynamic validation with 'executor' done in the resource.ValidateConfig function
+				listvalidator.SizeAtLeast(1),
+			},
+		},
+		"scheduler_au": resourceSchema.Int64Attribute{
+			MarkdownDescription: "Deployment scheduler AU",
+			Required:            true,
+			Validators: []validator.Int64{
+				int64validator.Between(5, 24),
+			},
+		},
+		"scheduler_replicas": resourceSchema.Int64Attribute{
+			MarkdownDescription: "Deployment scheduler replicas",
+			Required:            true,
+			Validators: []validator.Int64{
+				int64validator.Between(1, 4),
+			},
+		},
+		"region": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment region",
+			Computed:            true,
+		},
+		"cloud_provider": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment cloud provider",
+			Computed:            true,
+		},
+		"task_pod_node_pool_id": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment task pod node pool identifier",
+			Computed:            true,
+		},
+	}, CommonDeploymentResourceSchemaAttributes())
+}
+
+func CommonDeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"id": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment identifier",
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"name": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment name",
+			Required:            true,
+		},
+		"description": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment description",
+			Required:            true,
+		},
+		"created_at": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment creation timestamp",
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"updated_at": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment last updated timestamp",
+			Computed:            true,
+		},
+		"created_by": resourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Deployment creator",
+			Computed:            true,
+			Attributes:          ResourceSubjectProfileSchemaAttributes(),
+			PlanModifiers: []planmodifier.Object{
+				objectplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"updated_by": resourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Deployment updater",
+			Computed:            true,
+			Attributes:          ResourceSubjectProfileSchemaAttributes(),
+		},
+		"workspace_id": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment workspace identifier",
+			Required:            true,
+			Validators:          []validator.String{validators.IsCuid()},
+		},
+		"astro_runtime_version": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment Astro Runtime version. The terraform provider will use the latest Astro runtime version for the Deployment. The Astro runtime version can be updated with your Astro project Dockerfile",
+			Computed:            true,
+		},
+		"airflow_version": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment Airflow version",
+			Computed:            true,
+		},
+		"namespace": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment namespace",
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"contact_emails": resourceSchema.ListAttribute{
+			ElementType:         types.StringType,
+			MarkdownDescription: "Deployment contact emails",
+			Required:            true,
+			Validators: []validator.List{
+				listvalidator.ValueStringsAre(stringvalidator.RegexMatches(regexp.MustCompile(validators.EmailString), "must be a valid email address")),
+			},
+		},
+		"executor": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment executor",
+			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(string(platform.DeploymentExecutorCELERY), string(platform.DeploymentExecutorKUBERNETES)),
+			},
+		},
+		"scheduler_cpu": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment scheduler CPU",
+			Computed:            true,
+		},
+		"scheduler_memory": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment scheduler memory",
+			Computed:            true,
+		},
+		"image_tag": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment image tag",
+			Computed:            true,
+		},
+		"image_repository": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment image repository",
+			Computed:            true,
+		},
+		"image_version": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment image version",
+			Computed:            true,
+		},
+		"environment_variables": resourceSchema.ListNestedAttribute{
+			NestedObject: resourceSchema.NestedAttributeObject{
+				Attributes: DeploymentEnvironmentVariableResourceAttributes(),
+			},
+			MarkdownDescription: "Deployment environment variables",
+			Required:            true,
+		},
+		"webserver_ingress_hostname": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment webserver ingress hostname",
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"webserver_url": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment webserver URL",
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"webserver_airflow_api_url": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment webserver Airflow API URL",
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"status": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment status",
+			Computed:            true,
+		},
+		"status_reason": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment status reason",
+			Computed:            true,
+		},
+		"dag_tarball_version": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment DAG tarball version",
+			Computed:            true,
+		},
+		"desired_dag_tarball_version": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment desired DAG tarball version",
+			Computed:            true,
+		},
+		"is_cicd_enforced": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Deployment CI/CD enforced",
+			Required:            true,
+		},
+		"is_dag_deploy_enabled": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Deployment DAG deploy enabled",
+			Required:            true,
+		},
+		"external_ips": resourceSchema.ListAttribute{
+			ElementType:         types.StringType,
+			MarkdownDescription: "Deployment external IPs",
+			Computed:            true,
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"oidc_issuer_url": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment OIDC issuer URL",
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"workload_identity": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment workload identity. This value can be changed via the Astro API if applicable.",
+			Computed:            true,
+		},
+	}
+}
 
 func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
@@ -108,7 +462,7 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 		},
 		"environment_variables": datasourceSchema.ListNestedAttribute{
 			NestedObject: datasourceSchema.NestedAttributeObject{
-				Attributes: DeploymentEnvironmentVariableAttributes(),
+				Attributes: DeploymentEnvironmentVariableDataSourceAttributes(),
 			},
 			MarkdownDescription: "Deployment environment variables",
 			Computed:            true,
@@ -123,18 +477,6 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 		},
 		"webserver_airflow_api_url": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Deployment webserver Airflow API URL",
-			Computed:            true,
-		},
-		"webserver_cpu": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment webserver CPU",
-			Computed:            true,
-		},
-		"webserver_memory": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment webserver memory",
-			Computed:            true,
-		},
-		"webserver_replicas": datasourceSchema.Int64Attribute{
-			MarkdownDescription: "Deployment webserver replicas",
 			Computed:            true,
 		},
 		"status": datasourceSchema.StringAttribute{
@@ -155,7 +497,7 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 		},
 		"worker_queues": datasourceSchema.ListNestedAttribute{
 			NestedObject: datasourceSchema.NestedAttributeObject{
-				Attributes: WorkerQueueSchemaAttributes(),
+				Attributes: WorkerQueueDataSourceSchemaAttributes(),
 			},
 			MarkdownDescription: "Deployment worker queues",
 			Computed:            true,
@@ -239,7 +581,7 @@ func DeploymentEnvironmentVariableAttributeTypes() map[string]attr.Type {
 	}
 }
 
-func DeploymentEnvironmentVariableAttributes() map[string]datasourceSchema.Attribute {
+func DeploymentEnvironmentVariableDataSourceAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"key": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Environment variable key",
@@ -260,22 +602,62 @@ func DeploymentEnvironmentVariableAttributes() map[string]datasourceSchema.Attri
 	}
 }
 
+func DeploymentEnvironmentVariableResourceAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"key": resourceSchema.StringAttribute{
+			MarkdownDescription: "Environment variable key",
+			Required:            true,
+		},
+		"value": resourceSchema.StringAttribute{
+			MarkdownDescription: "Environment variable value",
+			Required:            true,
+			Sensitive:           true,
+		},
+		"updated_at": resourceSchema.StringAttribute{
+			MarkdownDescription: "Environment variable last updated timestamp",
+			Computed:            true,
+		},
+		"is_secret": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether Environment variable is a secret",
+			Required:            true,
+		},
+	}
+}
+
 func WorkerQueueAttributeTypes() map[string]attr.Type {
+	return lo.Assign(map[string]attr.Type{
+		"node_pool_id":  types.StringType,
+		"astro_machine": types.StringType,
+	}, CommonWorkerQueueAttributeTypes())
+
+}
+
+func HostedWorkerQueueAttributeTypes() map[string]attr.Type {
+	return lo.Assign(map[string]attr.Type{
+		"astro_machine": types.StringType,
+	}, CommonWorkerQueueAttributeTypes())
+}
+
+func HybridWorkerQueueAttributeTypes() map[string]attr.Type {
+	return lo.Assign(map[string]attr.Type{
+		"node_pool_id": types.StringType,
+	}, CommonWorkerQueueAttributeTypes())
+}
+
+func CommonWorkerQueueAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"id":                 types.StringType,
 		"name":               types.StringType,
-		"astro_machine":      types.StringType,
 		"is_default":         types.BoolType,
 		"max_worker_count":   types.Int64Type,
 		"min_worker_count":   types.Int64Type,
-		"node_pool_id":       types.StringType,
 		"pod_cpu":            types.StringType,
 		"pod_memory":         types.StringType,
 		"worker_concurrency": types.Int64Type,
 	}
 }
 
-func WorkerQueueSchemaAttributes() map[string]datasourceSchema.Attribute {
+func WorkerQueueDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"id": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Worker queue identifier",
@@ -316,6 +698,77 @@ func WorkerQueueSchemaAttributes() map[string]datasourceSchema.Attribute {
 		"worker_concurrency": datasourceSchema.Int64Attribute{
 			MarkdownDescription: "Worker queue worker concurrency",
 			Computed:            true,
+		},
+	}
+}
+
+func HybridWorkerQueueResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return lo.Assign(map[string]resourceSchema.Attribute{
+		"node_pool_id": resourceSchema.StringAttribute{
+			Required: true,
+			Validators: []validator.String{
+				validators.IsCuid(),
+			},
+		},
+	}, CommonWorkerQueueResourceSchemaAttributes())
+}
+
+func HostedWorkerQueueResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return lo.Assign(map[string]resourceSchema.Attribute{
+		"astro_machine": resourceSchema.StringAttribute{
+			Required: true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(platform.WorkerQueueRequestAstroMachineA5),
+					string(platform.WorkerQueueRequestAstroMachineA10),
+					string(platform.WorkerQueueRequestAstroMachineA20),
+					string(platform.WorkerQueueRequestAstroMachineA40),
+					string(platform.WorkerQueueRequestAstroMachineA60),
+					string(platform.WorkerQueueRequestAstroMachineA120),
+					string(platform.WorkerQueueRequestAstroMachineA160),
+				),
+			},
+		},
+	}, CommonWorkerQueueResourceSchemaAttributes())
+}
+
+func CommonWorkerQueueResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"id": resourceSchema.StringAttribute{
+			Computed: true,
+		},
+		"name": resourceSchema.StringAttribute{
+			Required: true,
+			Validators: []validator.String{
+				stringvalidator.LengthBetween(1, 63),
+			},
+		},
+		"is_default": resourceSchema.BoolAttribute{
+			Required: true,
+		},
+		"max_worker_count": resourceSchema.Int64Attribute{
+			Required: true,
+			Validators: []validator.Int64{
+				int64validator.AtLeast(1),
+			},
+		},
+		"min_worker_count": resourceSchema.Int64Attribute{
+			Required: true,
+			Validators: []validator.Int64{
+				int64validator.AtLeast(0),
+			},
+		},
+		"pod_cpu": resourceSchema.StringAttribute{
+			Computed: true,
+		},
+		"pod_memory": resourceSchema.StringAttribute{
+			Computed: true,
+		},
+		"worker_concurrency": resourceSchema.Int64Attribute{
+			Required: true,
+			Validators: []validator.Int64{
+				int64validator.AtLeast(1),
+			},
 		},
 	}
 }

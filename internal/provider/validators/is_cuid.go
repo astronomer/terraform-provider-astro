@@ -2,10 +2,10 @@ package validators
 
 import (
 	"context"
-
 	"github.com/hashicorp/terraform-plugin-framework-validators/helpers/validatordiag"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/lucsky/cuid"
+
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
 var _ validator.String = isCuidValidator{}
@@ -26,11 +26,12 @@ func (v isCuidValidator) ValidateString(
 	request validator.StringRequest,
 	response *validator.StringResponse,
 ) {
+	// If the value is unknown, we can't validate it, it could be variable that is a cuid or not
 	if request.ConfigValue.IsNull() || request.ConfigValue.IsUnknown() {
 		return
 	}
 
-	value := request.ConfigValue.String()
+	value := request.ConfigValue.ValueString()
 	if err := cuid.IsCuid(value); err == nil {
 		return
 	}
@@ -44,49 +45,4 @@ func (v isCuidValidator) ValidateString(
 
 func IsCuid() validator.String {
 	return isCuidValidator{}
-}
-
-var _ validator.List = listIsCuidsValidator{}
-
-type listIsCuidsValidator struct{}
-
-func (v listIsCuidsValidator) Description(ctx context.Context) string {
-	return v.MarkdownDescription(ctx)
-}
-
-func (v listIsCuidsValidator) MarkdownDescription(_ context.Context) string {
-	return "each value in list must be a cuid"
-}
-
-func (v listIsCuidsValidator) ValidateList(
-	ctx context.Context,
-	request validator.ListRequest,
-	response *validator.ListResponse,
-) {
-	if request.ConfigValue.IsNull() || request.ConfigValue.IsUnknown() {
-		return
-	}
-
-	value := request.ConfigValue.Elements()
-	for i, elem := range value {
-		if elem.IsNull() || elem.IsUnknown() {
-			response.Diagnostics.Append(validatordiag.InvalidAttributeValueMatchDiagnostic(
-				request.Path.AtListIndex(i),
-				v.Description(ctx),
-				elem.String(),
-			))
-		}
-
-		if err := cuid.IsCuid(elem.String()); err != nil {
-			response.Diagnostics.Append(validatordiag.InvalidAttributeValueMatchDiagnostic(
-				request.Path.AtListIndex(i),
-				v.Description(ctx),
-				elem.String(),
-			))
-		}
-	}
-}
-
-func ListIsCuids() validator.List {
-	return listIsCuidsValidator{}
 }
