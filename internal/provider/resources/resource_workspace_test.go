@@ -3,9 +3,10 @@ package resources_test
 import (
 	"context"
 	"fmt"
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
 	"os"
 	"testing"
+
+	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
 	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"

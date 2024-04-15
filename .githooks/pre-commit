@@ -5,4 +5,5 @@ go generate ./...
 # Add examples and docs files to git after documentation is generated
 git add examples/
 git add docs/
+git add internal/
 echo "Pre-commit hook finished"
