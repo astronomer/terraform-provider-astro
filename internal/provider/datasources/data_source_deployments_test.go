@@ -22,8 +22,9 @@ func TestAcc_DataSourceDeployments(t *testing.T) {
 		},
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
+			//Check the data source for deployments for a hosted organization
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + deployments(deploymentName),
+				Config: astronomerprovider.ProviderConfig(t, true) + hostedDeployments(deploymentName),
 				Check: resource.ComposeTestCheckFunc(
 					// Doing all checks in one step because we do not want to unnecessarily create multiple deployments for the data sources test
 
@@ -84,9 +85,32 @@ func TestAcc_DataSourceDeployments(t *testing.T) {
 			},
 		},
 	})
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			astronomerprovider.TestAccPreCheck(t)
+		},
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			//Check the data source for deployments for a hybrid organization
+			{
+				Config: astronomerprovider.ProviderConfig(t, false) + hybridDeployments(),
+				Check: resource.ComposeTestCheckFunc(
+					// Checks that the deployments data source is not empty and checks the first deployment in the list
+					// has some of the expected attributes
+					checkDeployments("test_data_deployments_hybrid_no_filters", ""),
+				),
+			},
+		},
+	})
 }
 
-func deployments(name string) string {
+func hybridDeployments() string {
+	return `
+data astronomer_deployments "test_data_deployments_hybrid_no_filters" {}`
+}
+
+func hostedDeployments(name string) string {
 	return fmt.Sprintf(`
 resource "astronomer_workspace" "test_workspace" {
 	name = "%v"
@@ -94,9 +118,10 @@ resource "astronomer_workspace" "test_workspace" {
 	cicd_enforced_default = true
 }
 
-resource "astronomer_standard_deployment" "test_deployment_kubernetes" {
+resource "astronomer_deployment" "test_deployment_kubernetes" {
 	name = "%v-1"
 	description = "%v"
+	type = "STANDARD"
 	region = "us-east4"
 	cloud_provider = "GCP"
 	contact_emails = ["preview@astronomer.test"]
@@ -118,9 +143,10 @@ resource "astronomer_standard_deployment" "test_deployment_kubernetes" {
 	}]
 }
 
-resource "astronomer_standard_deployment" "test_deployment_celery" {
+resource "astronomer_deployment" "test_deployment_celery" {
 	name = "%v-2"
 	description = "%v"
+	type = "STANDARD"
 	region = "us-east-1"
 	cloud_provider = "AWS"
 	contact_emails = []
@@ -147,46 +173,46 @@ resource "astronomer_standard_deployment" "test_deployment_celery" {
 }
 
 data astronomer_deployment "test_data_deployment_kubernetes" {
-	depends_on = [astronomer_standard_deployment.test_deployment_kubernetes]
-	id = astronomer_standard_deployment.test_deployment_kubernetes.id
+	depends_on = [astronomer_deployment.test_deployment_kubernetes]
+	id = astronomer_deployment.test_deployment_kubernetes.id
 }
 
 data astronomer_deployment "test_data_deployment_celery" {
-	depends_on = [astronomer_standard_deployment.test_deployment_celery]
-	id = astronomer_standard_deployment.test_deployment_celery.id
+	depends_on = [astronomer_deployment.test_deployment_celery]
+	id = astronomer_deployment.test_deployment_celery.id
 }
 
 data astronomer_deployments "test_data_deployments_no_filters" {
-	depends_on = [astronomer_standard_deployment.test_deployment_kubernetes, astronomer_standard_deployment.test_deployment_celery]
+	depends_on = [astronomer_deployment.test_deployment_kubernetes, astronomer_deployment.test_deployment_celery]
 }
 
 data astronomer_deployments "test_data_deployments_workspace_ids_filter" {
-	depends_on = [astronomer_standard_deployment.test_deployment_kubernetes, astronomer_standard_deployment.test_deployment_celery]
+	depends_on = [astronomer_deployment.test_deployment_kubernetes, astronomer_deployment.test_deployment_celery]
 	workspace_ids = [astronomer_workspace.test_workspace.id]
 }
 
 data astronomer_deployments "test_data_deployments_deployment_ids_filter" {
-	depends_on = [astronomer_standard_deployment.test_deployment_kubernetes, astronomer_standard_deployment.test_deployment_celery]
-	deployment_ids = [astronomer_standard_deployment.test_deployment_kubernetes.id]
+	depends_on = [astronomer_deployment.test_deployment_kubernetes, astronomer_deployment.test_deployment_celery]
+	deployment_ids = [astronomer_deployment.test_deployment_kubernetes.id]
 }
 
 data astronomer_deployments "test_data_deployments_names_filter" {
-	depends_on = [astronomer_standard_deployment.test_deployment_kubernetes, astronomer_standard_deployment.test_deployment_celery]
+	depends_on = [astronomer_deployment.test_deployment_kubernetes, astronomer_deployment.test_deployment_celery]
 	names = ["%v-1"]
 }
 
 data astronomer_deployments "test_data_deployments_incorrect_workspace_ids_filter" {
-	depends_on = [astronomer_standard_deployment.test_deployment_kubernetes, astronomer_standard_deployment.test_deployment_celery]
+	depends_on = [astronomer_deployment.test_deployment_kubernetes, astronomer_deployment.test_deployment_celery]
 	workspace_ids = ["%v"]
 }
 
 data astronomer_deployments "test_data_deployments_incorrect_deployment_ids_filter" {
-	depends_on = [astronomer_standard_deployment.test_deployment_kubernetes, astronomer_standard_deployment.test_deployment_celery]
+	depends_on = [astronomer_deployment.test_deployment_kubernetes, astronomer_deployment.test_deployment_celery]
 	deployment_ids = ["%v"]
 }
 
 data astronomer_deployments "test_data_deployments_incorrect_names_filter" {
-	depends_on = [astronomer_standard_deployment.test_deployment_kubernetes, astronomer_standard_deployment.test_deployment_celery]
+	depends_on = [astronomer_deployment.test_deployment_kubernetes, astronomer_deployment.test_deployment_celery]
 	names = ["%v"]
 }
 `, name, utils.TestResourceDescription, name, utils.TestResourceDescription, name, utils.TestResourceDescription, name, cuid.New(), cuid.New(), cuid.New())
@@ -230,17 +256,24 @@ func checkDeployments(tfDataSourceName, deploymentName string) resource.TestChec
 		if numDeployments == 0 {
 			return fmt.Errorf("expected deployments to be greater or equal to 1, got %s", instanceState.Attributes["deployments.#"])
 		}
-		deploymentsIdx := -1
-		for i := 0; i < numDeployments; i++ {
-			idxName := fmt.Sprintf("deployments.%d.name", i)
-			if instanceState.Attributes[idxName] == deploymentName {
-				deploymentsIdx = i
-				break
+
+		// If deploymentName is not set, we will check the first deployment
+		var deploymentsIdx int
+		if deploymentName == "" {
+			deploymentsIdx = 0
+		} else {
+			for i := 0; i < numDeployments; i++ {
+				idxName := fmt.Sprintf("deployments.%d.name", i)
+				if instanceState.Attributes[idxName] == deploymentName {
+					deploymentsIdx = i
+					break
+				}
+			}
+			if deploymentsIdx == -1 {
+				return fmt.Errorf("deployment %s not found", deploymentName)
 			}
 		}
-		if deploymentsIdx == -1 {
-			return fmt.Errorf("deployment %s not found", deploymentName)
-		}
+
 		description := fmt.Sprintf("deployments.%d.description", deploymentsIdx)
 		if instanceState.Attributes[description] == "" {
 			return fmt.Errorf("expected 'description' to be set")

@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type StandardDeploymentResource struct {
+type DeploymentResource struct {
 	// Common fields
 	Id                       types.String `tfsdk:"id"`
 	Name                     types.String `tfsdk:"name"`
@@ -20,106 +20,7 @@ type StandardDeploymentResource struct {
 	CreatedBy                types.Object `tfsdk:"created_by"`
 	UpdatedBy                types.Object `tfsdk:"updated_by"`
 	WorkspaceId              types.String `tfsdk:"workspace_id"`
-	Region                   types.String `tfsdk:"region"`
-	CloudProvider            types.String `tfsdk:"cloud_provider"`
-	AstroRuntimeVersion      types.String `tfsdk:"astro_runtime_version"`
-	AirflowVersion           types.String `tfsdk:"airflow_version"`
-	Namespace                types.String `tfsdk:"namespace"`
-	ContactEmails            types.List   `tfsdk:"contact_emails"`
-	Executor                 types.String `tfsdk:"executor"`
-	SchedulerCpu             types.String `tfsdk:"scheduler_cpu"`
-	SchedulerMemory          types.String `tfsdk:"scheduler_memory"`
-	SchedulerReplicas        types.Int64  `tfsdk:"scheduler_replicas"`
-	ImageTag                 types.String `tfsdk:"image_tag"`
-	ImageRepository          types.String `tfsdk:"image_repository"`
-	ImageVersion             types.String `tfsdk:"image_version"`
-	EnvironmentVariables     types.List   `tfsdk:"environment_variables"`
-	WebserverIngressHostname types.String `tfsdk:"webserver_ingress_hostname"`
-	WebserverUrl             types.String `tfsdk:"webserver_url"`
-	WebserverAirflowApiUrl   types.String `tfsdk:"webserver_airflow_api_url"`
-	Status                   types.String `tfsdk:"status"`
-	StatusReason             types.String `tfsdk:"status_reason"`
-	DagTarballVersion        types.String `tfsdk:"dag_tarball_version"`
-	DesiredDagTarballVersion types.String `tfsdk:"desired_dag_tarball_version"`
-	IsCicdEnforced           types.Bool   `tfsdk:"is_cicd_enforced"`
-	IsDagDeployEnabled       types.Bool   `tfsdk:"is_dag_deploy_enabled"`
-	WorkloadIdentity         types.String `tfsdk:"workload_identity"`
-	ExternalIps              types.List   `tfsdk:"external_ips"`
-	OidcIssuerUrl            types.String `tfsdk:"oidc_issuer_url"`
-	WorkerQueues             types.List   `tfsdk:"worker_queues"`
-
-	// Hosted deployment specific fields
-	ResourceQuotaCpu     types.String `tfsdk:"resource_quota_cpu"`
-	ResourceQuotaMemory  types.String `tfsdk:"resource_quota_memory"`
-	DefaultTaskPodCpu    types.String `tfsdk:"default_task_pod_cpu"`
-	DefaultTaskPodMemory types.String `tfsdk:"default_task_pod_memory"`
-	ScalingStatus        types.Object `tfsdk:"scaling_status"`
-	ScalingSpec          types.Object `tfsdk:"scaling_spec"`
-	SchedulerSize        types.String `tfsdk:"scheduler_size"`
-	IsDevelopmentMode    types.Bool   `tfsdk:"is_development_mode"`
-	IsHighAvailability   types.Bool   `tfsdk:"is_high_availability"`
-}
-
-type DedicatedDeploymentResource struct {
-	// Common fields
-	Id                       types.String `tfsdk:"id"`
-	Name                     types.String `tfsdk:"name"`
-	Description              types.String `tfsdk:"description"`
-	CreatedAt                types.String `tfsdk:"created_at"`
-	UpdatedAt                types.String `tfsdk:"updated_at"`
-	CreatedBy                types.Object `tfsdk:"created_by"`
-	UpdatedBy                types.Object `tfsdk:"updated_by"`
-	WorkspaceId              types.String `tfsdk:"workspace_id"`
-	Region                   types.String `tfsdk:"region"`
-	CloudProvider            types.String `tfsdk:"cloud_provider"`
-	AstroRuntimeVersion      types.String `tfsdk:"astro_runtime_version"`
-	AirflowVersion           types.String `tfsdk:"airflow_version"`
-	Namespace                types.String `tfsdk:"namespace"`
-	ContactEmails            types.List   `tfsdk:"contact_emails"`
-	Executor                 types.String `tfsdk:"executor"`
-	SchedulerCpu             types.String `tfsdk:"scheduler_cpu"`
-	SchedulerMemory          types.String `tfsdk:"scheduler_memory"`
-	SchedulerReplicas        types.Int64  `tfsdk:"scheduler_replicas"`
-	ImageTag                 types.String `tfsdk:"image_tag"`
-	ImageRepository          types.String `tfsdk:"image_repository"`
-	ImageVersion             types.String `tfsdk:"image_version"`
-	EnvironmentVariables     types.List   `tfsdk:"environment_variables"`
-	WebserverIngressHostname types.String `tfsdk:"webserver_ingress_hostname"`
-	WebserverUrl             types.String `tfsdk:"webserver_url"`
-	WebserverAirflowApiUrl   types.String `tfsdk:"webserver_airflow_api_url"`
-	Status                   types.String `tfsdk:"status"`
-	StatusReason             types.String `tfsdk:"status_reason"`
-	DagTarballVersion        types.String `tfsdk:"dag_tarball_version"`
-	DesiredDagTarballVersion types.String `tfsdk:"desired_dag_tarball_version"`
-	IsCicdEnforced           types.Bool   `tfsdk:"is_cicd_enforced"`
-	IsDagDeployEnabled       types.Bool   `tfsdk:"is_dag_deploy_enabled"`
-	WorkloadIdentity         types.String `tfsdk:"workload_identity"`
-	ExternalIps              types.List   `tfsdk:"external_ips"`
-	OidcIssuerUrl            types.String `tfsdk:"oidc_issuer_url"`
-	WorkerQueues             types.List   `tfsdk:"worker_queues"`
-
-	// Hosted deployment specific fields
-	ClusterId            types.String `tfsdk:"cluster_id"`
-	ResourceQuotaCpu     types.String `tfsdk:"resource_quota_cpu"`
-	ResourceQuotaMemory  types.String `tfsdk:"resource_quota_memory"`
-	DefaultTaskPodCpu    types.String `tfsdk:"default_task_pod_cpu"`
-	DefaultTaskPodMemory types.String `tfsdk:"default_task_pod_memory"`
-	ScalingStatus        types.Object `tfsdk:"scaling_status"`
-	ScalingSpec          types.Object `tfsdk:"scaling_spec"`
-	SchedulerSize        types.String `tfsdk:"scheduler_size"`
-	IsDevelopmentMode    types.Bool   `tfsdk:"is_development_mode"`
-	IsHighAvailability   types.Bool   `tfsdk:"is_high_availability"`
-}
-
-type HybridDeploymentResource struct {
-	Id                       types.String `tfsdk:"id"`
-	Name                     types.String `tfsdk:"name"`
-	Description              types.String `tfsdk:"description"`
-	CreatedAt                types.String `tfsdk:"created_at"`
-	UpdatedAt                types.String `tfsdk:"updated_at"`
-	CreatedBy                types.Object `tfsdk:"created_by"`
-	UpdatedBy                types.Object `tfsdk:"updated_by"`
-	WorkspaceId              types.String `tfsdk:"workspace_id"`
+	Type                     types.String `tfsdk:"type"`
 	Region                   types.String `tfsdk:"region"`
 	CloudProvider            types.String `tfsdk:"cloud_provider"`
 	AstroRuntimeVersion      types.String `tfsdk:"astro_runtime_version"`
@@ -149,12 +50,25 @@ type HybridDeploymentResource struct {
 	OidcIssuerUrl            types.String `tfsdk:"oidc_issuer_url"`
 	WorkerQueues             types.List   `tfsdk:"worker_queues"`
 
+	// Hybrid and dedicated specific fields
+	ClusterId types.String `tfsdk:"cluster_id"`
+
 	// Hybrid deployment specific fields
-	TasksNodePoolId types.String `tfsdk:"tasks_node_pool_id"`
-	ClusterId       types.String `tfsdk:"cluster_id"`
+	TaskPodNodePoolId types.String `tfsdk:"task_pod_node_pool_id"`
+
+	// Hosted deployment specific fields
+	ResourceQuotaCpu     types.String `tfsdk:"resource_quota_cpu"`
+	ResourceQuotaMemory  types.String `tfsdk:"resource_quota_memory"`
+	DefaultTaskPodCpu    types.String `tfsdk:"default_task_pod_cpu"`
+	DefaultTaskPodMemory types.String `tfsdk:"default_task_pod_memory"`
+	ScalingStatus        types.Object `tfsdk:"scaling_status"`
+	ScalingSpec          types.Object `tfsdk:"scaling_spec"`
+	SchedulerSize        types.String `tfsdk:"scheduler_size"`
+	IsDevelopmentMode    types.Bool   `tfsdk:"is_development_mode"`
+	IsHighAvailability   types.Bool   `tfsdk:"is_high_availability"`
 }
 
-func (data *StandardDeploymentResource) ReadFromResponse(
+func (data *DeploymentResource) ReadFromResponse(
 	ctx context.Context,
 	deployment *platform.Deployment,
 ) diag.Diagnostics {
@@ -190,6 +104,10 @@ func (data *StandardDeploymentResource) ReadFromResponse(
 		return diags
 	}
 	data.Executor = types.StringPointerValue((*string)(deployment.Executor))
+	if deployment.SchedulerAu != nil {
+		deploymentSchedulerAu := int64(*deployment.SchedulerAu)
+		data.SchedulerAu = types.Int64Value(deploymentSchedulerAu)
+	}
 	data.SchedulerCpu = types.StringValue(deployment.SchedulerCpu)
 	data.SchedulerMemory = types.StringValue(deployment.SchedulerMemory)
 	data.SchedulerReplicas = types.Int64Value(int64(deployment.SchedulerReplicas))
@@ -205,9 +123,10 @@ func (data *StandardDeploymentResource) ReadFromResponse(
 	data.WebserverAirflowApiUrl = types.StringValue(deployment.WebServerAirflowApiUrl)
 	data.Status = types.StringValue(string(deployment.Status))
 	data.StatusReason = types.StringPointerValue(deployment.StatusReason)
+	data.Type = types.StringPointerValue((*string)(deployment.Type))
 	data.DagTarballVersion = types.StringPointerValue(deployment.DagTarballVersion)
 	data.DesiredDagTarballVersion = types.StringPointerValue(deployment.DesiredDagTarballVersion)
-	data.WorkerQueues, diags = utils.ObjectList(ctx, deployment.WorkerQueues, schemas.HostedWorkerQueueAttributeTypes(), HostedWorkerQueueTypesObject)
+	data.WorkerQueues, diags = utils.ObjectList(ctx, deployment.WorkerQueues, schemas.WorkerQueueAttributeTypes(), WorkerQueueTypesObject)
 	if diags.HasError() {
 		return diags
 	}
@@ -220,6 +139,12 @@ func (data *StandardDeploymentResource) ReadFromResponse(
 		return diags
 	}
 	data.OidcIssuerUrl = types.StringPointerValue(deployment.OidcIssuerUrl)
+
+	// Read hybrid and dedicated specific fields
+	data.ClusterId = types.StringPointerValue(deployment.ClusterId)
+
+	// Read hybrid deployment specific fields
+	data.TaskPodNodePoolId = types.StringPointerValue(deployment.TaskPodNodePoolId)
 
 	// Read hosted deployment specific fields
 	data.ResourceQuotaCpu = types.StringPointerValue(deployment.ResourceQuotaCpu)
@@ -300,33 +225,6 @@ type DeploymentEnvironmentVariable struct {
 	IsSecret  types.Bool   `tfsdk:"is_secret"`
 }
 
-type HostedWorkerQueue struct {
-	Id                types.String `tfsdk:"id"`
-	Name              types.String `tfsdk:"name"`
-	AstroMachine      types.String `tfsdk:"astro_machine"`
-	IsDefault         types.Bool   `tfsdk:"is_default"`
-	MaxWorkerCount    types.Int64  `tfsdk:"max_worker_count"`
-	MinWorkerCount    types.Int64  `tfsdk:"min_worker_count"`
-	PodCpu            types.String `tfsdk:"pod_cpu"`
-	PodMemory         types.String `tfsdk:"pod_memory"`
-	WorkerConcurrency types.Int64  `tfsdk:"worker_concurrency"`
-}
-
-type HybridWorkerQueue struct {
-	Id                types.String `tfsdk:"id"`
-	Name              types.String `tfsdk:"name"`
-	NodePoolId        types.String `tfsdk:"node_pool_id"`
-	IsDefault         types.Bool   `tfsdk:"is_default"`
-	MaxWorkerCount    types.Int64  `tfsdk:"max_worker_count"`
-	MinWorkerCount    types.Int64  `tfsdk:"min_worker_count"`
-	PodCpu            types.String `tfsdk:"pod_cpu"`
-	PodMemory         types.String `tfsdk:"pod_memory"`
-	WorkerConcurrency types.Int64  `tfsdk:"worker_concurrency"`
-}
-
-// WorkerQueue describes the worker queue data model.
-// It is used to represent the worker queue data in the deployment data source.
-// It contains both 'node_pool_id' and 'astro_machine' fields since the deployment data source can be hosted or hybrid.
 type WorkerQueue struct {
 	Id                types.String `tfsdk:"id"`
 	Name              types.String `tfsdk:"name"`
@@ -456,44 +354,6 @@ func WorkerQueueTypesObject(
 	}
 
 	return types.ObjectValueFrom(ctx, schemas.WorkerQueueAttributeTypes(), obj)
-}
-
-func HostedWorkerQueueTypesObject(
-	ctx context.Context,
-	workerQueue platform.WorkerQueue,
-) (types.Object, diag.Diagnostics) {
-	obj := HostedWorkerQueue{
-		Id:                types.StringValue(workerQueue.Id),
-		Name:              types.StringValue(workerQueue.Name),
-		AstroMachine:      types.StringPointerValue(workerQueue.AstroMachine),
-		IsDefault:         types.BoolValue(workerQueue.IsDefault),
-		MaxWorkerCount:    types.Int64Value(int64(workerQueue.MaxWorkerCount)),
-		MinWorkerCount:    types.Int64Value(int64(workerQueue.MinWorkerCount)),
-		PodCpu:            types.StringValue(workerQueue.PodCpu),
-		PodMemory:         types.StringValue(workerQueue.PodMemory),
-		WorkerConcurrency: types.Int64Value(int64(workerQueue.WorkerConcurrency)),
-	}
-
-	return types.ObjectValueFrom(ctx, schemas.HostedWorkerQueueAttributeTypes(), obj)
-}
-
-func HybridWorkerQueueTypesObject(
-	ctx context.Context,
-	workerQueue platform.WorkerQueue,
-) (types.Object, diag.Diagnostics) {
-	obj := HybridWorkerQueue{
-		Id:                types.StringValue(workerQueue.Id),
-		Name:              types.StringValue(workerQueue.Name),
-		IsDefault:         types.BoolValue(workerQueue.IsDefault),
-		MaxWorkerCount:    types.Int64Value(int64(workerQueue.MaxWorkerCount)),
-		MinWorkerCount:    types.Int64Value(int64(workerQueue.MinWorkerCount)),
-		PodCpu:            types.StringValue(workerQueue.PodCpu),
-		PodMemory:         types.StringValue(workerQueue.PodMemory),
-		NodePoolId:        types.StringPointerValue(workerQueue.NodePoolId),
-		WorkerConcurrency: types.Int64Value(int64(workerQueue.WorkerConcurrency)),
-	}
-
-	return types.ObjectValueFrom(ctx, schemas.HybridWorkerQueueAttributeTypes(), obj)
 }
 
 type DeploymentScalingSpec struct {

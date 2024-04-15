@@ -12,7 +12,7 @@ OAPI_CODEGEN ?= $(ENVTEST_ASSETS_DIR)/oapi-codegen
 # Run acceptance tests
 .PHONY: testacc
 testacc:
-	TF_ACC=1 go test ./... -v -failfast -run TestAcc $(TESTARGS) -timeout 120m
+	TF_ACC=1 go test ./... -v -run TestAcc $(TESTARGS) -timeout 120m
 
 # Run unit tests
 .PHONY: test

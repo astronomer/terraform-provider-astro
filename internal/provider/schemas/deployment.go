@@ -18,182 +18,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/samber/lo"
 )
 
-func StandardDeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
-	return lo.Assign(map[string]resourceSchema.Attribute{
-		"region": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment region - if changing this value, the deployment will be recreated in the new region",
-			Required:            true,
-			PlanModifiers: []planmodifier.String{
-				// Would recreate the deployment if this attribute changes
-				stringplanmodifier.RequiresReplaceIfConfigured(),
-			},
-		},
-		"cloud_provider": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment cloud provider - if changing this value, the deployment will be recreated in the new cloud provider",
-			Required:            true,
-			PlanModifiers: []planmodifier.String{
-				// Would recreate the deployment if this attribute changes
-				stringplanmodifier.RequiresReplaceIfConfigured(),
-			},
-			Validators: []validator.String{
-				stringvalidator.OneOf(string(platform.ClusterCloudProviderAWS), string(platform.ClusterCloudProviderAZURE), string(platform.ClusterCloudProviderGCP)),
-			},
-		},
-	}, HostedDeploymentResourceSchemaAttributes())
-}
-
-func DedicatedDeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
-	return lo.Assign(map[string]resourceSchema.Attribute{
-		"cluster_id": resourceSchema.StringAttribute{
-			Required: true,
-			Validators: []validator.String{
-				validators.IsCuid(),
-			},
-		},
-		"region": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment region",
-			Computed:            true,
-		},
-		"cloud_provider": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment cloud provider",
-			Computed:            true,
-		},
-	}, CommonDeploymentResourceSchemaAttributes())
-}
-
-func HostedDeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
-	return lo.Assign(map[string]resourceSchema.Attribute{
-		"worker_queues": resourceSchema.ListNestedAttribute{
-			NestedObject: resourceSchema.NestedAttributeObject{
-				Attributes: HostedWorkerQueueResourceSchemaAttributes(),
-			},
-			MarkdownDescription: "Deployment worker queues",
-			Optional:            true,
-			Validators: []validator.List{
-				// Dynamic validation with 'executor' done in the resource.ValidateConfig function
-				listvalidator.SizeAtLeast(1),
-			},
-		},
-		"scheduler_size": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment scheduler size",
-			Required:            true,
-			Validators: []validator.String{
-				stringvalidator.OneOf(
-					string(platform.SchedulerMachineNameSMALL),
-					string(platform.SchedulerMachineNameMEDIUM),
-					string(platform.SchedulerMachineNameLARGE),
-				),
-			},
-		},
-		"scheduler_replicas": resourceSchema.Int64Attribute{
-			MarkdownDescription: "Deployment scheduler replicas",
-			Computed:            true,
-		},
-		"is_high_availability": resourceSchema.BoolAttribute{
-			MarkdownDescription: "Deployment high availability",
-			Required:            true,
-		},
-		"is_development_mode": resourceSchema.BoolAttribute{
-			MarkdownDescription: "Deployment development mode",
-			Required:            true,
-			PlanModifiers: []planmodifier.Bool{
-				// Remove once this https://github.com/astronomer/astro/pull/19471 is merged
-				// Would recreate the deployment if this attribute changes
-				boolplanmodifier.RequiresReplaceIfConfigured(),
-			},
-		},
-		"resource_quota_cpu": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment resource quota CPU",
-			Required:            true,
-			Validators: []validator.String{
-				stringvalidator.RegexMatches(regexp.MustCompile(validators.KubernetesResourceString), "must be a valid kubernetes resource string"),
-			},
-		},
-		"resource_quota_memory": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment resource quota memory",
-			Required:            true,
-			Validators: []validator.String{
-				stringvalidator.RegexMatches(regexp.MustCompile(validators.KubernetesResourceString), "must be a valid kubernetes resource string"),
-			},
-		},
-		"default_task_pod_cpu": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment default task pod CPU",
-			Required:            true,
-			Validators: []validator.String{
-				stringvalidator.RegexMatches(regexp.MustCompile(validators.KubernetesResourceString), "must be a valid kubernetes resource string"),
-			},
-		},
-		"default_task_pod_memory": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment default task pod memory",
-			Required:            true,
-			Validators: []validator.String{
-				stringvalidator.RegexMatches(regexp.MustCompile(validators.KubernetesResourceString), "must be a valid kubernetes resource string"),
-			},
-		},
-		"scaling_status": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Deployment scaling status",
-			Computed:            true,
-			Attributes:          ScalingStatusResourceAttributes(),
-		},
-		"scaling_spec": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Deployment scaling spec",
-			Optional:            true,
-			Attributes:          ScalingSpecResourceSchemaAttributes(),
-		},
-	}, CommonDeploymentResourceSchemaAttributes())
-}
-
-func HybridDeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
-	return lo.Assign(map[string]resourceSchema.Attribute{
-		"cluster_id": resourceSchema.StringAttribute{
-			Required: true,
-			Validators: []validator.String{
-				validators.IsCuid(),
-			},
-		},
-		"worker_queues": resourceSchema.ListNestedAttribute{
-			NestedObject: resourceSchema.NestedAttributeObject{
-				Attributes: HybridWorkerQueueResourceSchemaAttributes(),
-			},
-			MarkdownDescription: "Deployment worker queues",
-			Validators: []validator.List{
-				// Dynamic validation with 'executor' done in the resource.ValidateConfig function
-				listvalidator.SizeAtLeast(1),
-			},
-		},
-		"scheduler_au": resourceSchema.Int64Attribute{
-			MarkdownDescription: "Deployment scheduler AU",
-			Required:            true,
-			Validators: []validator.Int64{
-				int64validator.Between(5, 24),
-			},
-		},
-		"scheduler_replicas": resourceSchema.Int64Attribute{
-			MarkdownDescription: "Deployment scheduler replicas",
-			Required:            true,
-			Validators: []validator.Int64{
-				int64validator.Between(1, 4),
-			},
-		},
-		"region": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment region",
-			Computed:            true,
-		},
-		"cloud_provider": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment cloud provider",
-			Computed:            true,
-		},
-		"task_pod_node_pool_id": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment task pod node pool identifier",
-			Computed:            true,
-		},
-	}, CommonDeploymentResourceSchemaAttributes())
-}
-
-func CommonDeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
 		"id": resourceSchema.StringAttribute{
 			MarkdownDescription: "Deployment identifier",
@@ -359,6 +186,141 @@ func CommonDeploymentResourceSchemaAttributes() map[string]resourceSchema.Attrib
 		"workload_identity": resourceSchema.StringAttribute{
 			MarkdownDescription: "Deployment workload identity. This value can be changed via the Astro API if applicable.",
 			Computed:            true,
+		},
+		"type": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment type - if changing this value, the deployment will be recreated with the new type",
+			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(string(platform.DeploymentTypeSTANDARD), string(platform.DeploymentTypeDEDICATED), string(platform.DeploymentTypeHYBRID)),
+			},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplaceIfConfigured(),
+			},
+		},
+		"worker_queues": resourceSchema.ListNestedAttribute{
+			Optional: true,
+			NestedObject: resourceSchema.NestedAttributeObject{
+				Attributes: WorkerQueueResourceSchemaAttributes(),
+			},
+			MarkdownDescription: "Deployment worker queues",
+			Validators: []validator.List{
+				// Dynamic validation with 'executor' done in the resource.ValidateConfig function
+				listvalidator.SizeAtLeast(1),
+			},
+		},
+		"scheduler_au": resourceSchema.Int64Attribute{
+			MarkdownDescription: "Deployment scheduler AU - required for 'HYBRID' deployments",
+			Optional:            true,
+			Validators: []validator.Int64{
+				int64validator.Between(5, 24),
+			},
+		},
+		"scheduler_replicas": resourceSchema.Int64Attribute{
+			MarkdownDescription: "Deployment scheduler replicas - required for 'HYBRID' deployments",
+			Optional:            true,
+			Computed:            true,
+			Validators: []validator.Int64{
+				int64validator.Between(1, 4),
+			},
+		},
+		"task_pod_node_pool_id": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment task pod node pool identifier - required if executor is 'KUBERNETES' and type is 'HYBRID'",
+			Optional:            true,
+		},
+		"scheduler_size": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment scheduler size - required for 'STANDARD' and 'DEDICATED' deployments",
+			Optional:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(platform.SchedulerMachineNameSMALL),
+					string(platform.SchedulerMachineNameMEDIUM),
+					string(platform.SchedulerMachineNameLARGE),
+				),
+			},
+		},
+		"is_high_availability": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Deployment high availability - required for 'STANDARD' and 'DEDICATED' deployments",
+			Optional:            true,
+		},
+		"is_development_mode": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Deployment development mode - required for 'STANDARD' and 'DEDICATED' deployments",
+			Optional:            true,
+			PlanModifiers: []planmodifier.Bool{
+				// Remove once this https://github.com/astronomer/astro/pull/19471 is merged
+				// Would recreate the deployment if this attribute changes
+				boolplanmodifier.RequiresReplaceIfConfigured(),
+			},
+		},
+		"resource_quota_cpu": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment resource quota CPU - required for 'STANDARD' and 'DEDICATED' deployments",
+			Optional:            true,
+			Validators: []validator.String{
+				stringvalidator.RegexMatches(regexp.MustCompile(validators.KubernetesResourceString), "must be a valid kubernetes resource string"),
+			},
+		},
+		"resource_quota_memory": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment resource quota memory - required for 'STANDARD' and 'DEDICATED' deployments",
+			Optional:            true,
+			Validators: []validator.String{
+				stringvalidator.RegexMatches(regexp.MustCompile(validators.KubernetesResourceString), "must be a valid kubernetes resource string"),
+			},
+		},
+		"default_task_pod_cpu": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment default task pod CPU - required for 'STANDARD' and 'DEDICATED' deployments",
+			Optional:            true,
+			Validators: []validator.String{
+				stringvalidator.RegexMatches(regexp.MustCompile(validators.KubernetesResourceString), "must be a valid kubernetes resource string"),
+			},
+		},
+		"default_task_pod_memory": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment default task pod memory - required for 'STANDARD' and 'DEDICATED' deployments",
+			Optional:            true,
+			Validators: []validator.String{
+				stringvalidator.RegexMatches(regexp.MustCompile(validators.KubernetesResourceString), "must be a valid kubernetes resource string"),
+			},
+		},
+		"scaling_status": resourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Deployment scaling status",
+			Computed:            true,
+			Attributes:          ScalingStatusResourceAttributes(),
+		},
+		"scaling_spec": resourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Deployment scaling spec - only for 'STANDARD' and 'DEDICATED' deployments",
+			Optional:            true,
+			Attributes:          ScalingSpecResourceSchemaAttributes(),
+		},
+		"region": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment region - required for 'STANDARD' deployments. If changing this value, the deployment will be recreated in the new region",
+			Computed:            true,
+			Optional:            true,
+			PlanModifiers: []planmodifier.String{
+				// Would recreate the deployment if this attribute changes
+				stringplanmodifier.RequiresReplaceIfConfigured(),
+			},
+		},
+		"cloud_provider": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment cloud provider - required for 'STANDARD' deployments. If changing this value, the deployment will be recreated in the new cloud provider",
+			Optional:            true,
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				// Would recreate the deployment if this attribute changes
+				stringplanmodifier.RequiresReplaceIfConfigured(),
+			},
+			Validators: []validator.String{
+				stringvalidator.OneOf(string(platform.ClusterCloudProviderAWS), string(platform.ClusterCloudProviderAZURE), string(platform.ClusterCloudProviderGCP)),
+			},
+		},
+		"cluster_id": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment cluster identifier - required for 'HYBRID' and 'DEDICATED' deployments. If changing this value, the deployment will be recreated in the new cluster",
+			Optional:            true,
+			Computed:            true,
+			Validators: []validator.String{
+				validators.IsCuid(),
+			},
+			PlanModifiers: []planmodifier.String{
+				// Would recreate the deployment if this attribute changes
+				stringplanmodifier.RequiresReplaceIfConfigured(),
+			},
 		},
 	}
 }
@@ -626,26 +588,6 @@ func DeploymentEnvironmentVariableResourceAttributes() map[string]resourceSchema
 }
 
 func WorkerQueueAttributeTypes() map[string]attr.Type {
-	return lo.Assign(map[string]attr.Type{
-		"node_pool_id":  types.StringType,
-		"astro_machine": types.StringType,
-	}, CommonWorkerQueueAttributeTypes())
-
-}
-
-func HostedWorkerQueueAttributeTypes() map[string]attr.Type {
-	return lo.Assign(map[string]attr.Type{
-		"astro_machine": types.StringType,
-	}, CommonWorkerQueueAttributeTypes())
-}
-
-func HybridWorkerQueueAttributeTypes() map[string]attr.Type {
-	return lo.Assign(map[string]attr.Type{
-		"node_pool_id": types.StringType,
-	}, CommonWorkerQueueAttributeTypes())
-}
-
-func CommonWorkerQueueAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"id":                 types.StringType,
 		"name":               types.StringType,
@@ -655,6 +597,8 @@ func CommonWorkerQueueAttributeTypes() map[string]attr.Type {
 		"pod_cpu":            types.StringType,
 		"pod_memory":         types.StringType,
 		"worker_concurrency": types.Int64Type,
+		"node_pool_id":       types.StringType,
+		"astro_machine":      types.StringType,
 	}
 }
 
@@ -703,21 +647,55 @@ func WorkerQueueDataSourceSchemaAttributes() map[string]datasourceSchema.Attribu
 	}
 }
 
-func HybridWorkerQueueResourceSchemaAttributes() map[string]resourceSchema.Attribute {
-	return lo.Assign(map[string]resourceSchema.Attribute{
-		"node_pool_id": resourceSchema.StringAttribute{
-			Required: true,
+func WorkerQueueResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"id": resourceSchema.StringAttribute{
+			MarkdownDescription: "Worker queue identifier",
+			Computed:            true,
+		},
+		"name": resourceSchema.StringAttribute{
+			MarkdownDescription: "Worker queue name",
+			Required:            true,
 			Validators: []validator.String{
-				validators.IsCuid(),
+				stringvalidator.LengthBetween(1, 63),
 			},
 		},
-	}, CommonWorkerQueueResourceSchemaAttributes())
-}
-
-func HostedWorkerQueueResourceSchemaAttributes() map[string]resourceSchema.Attribute {
-	return lo.Assign(map[string]resourceSchema.Attribute{
+		"is_default": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Worker queue default",
+			Required:            true,
+		},
+		"max_worker_count": resourceSchema.Int64Attribute{
+			MarkdownDescription: "Worker queue max worker count",
+			Required:            true,
+			Validators: []validator.Int64{
+				int64validator.AtLeast(1),
+			},
+		},
+		"min_worker_count": resourceSchema.Int64Attribute{
+			MarkdownDescription: "Worker queue min worker count",
+			Required:            true,
+			Validators: []validator.Int64{
+				int64validator.AtLeast(0),
+			},
+		},
+		"pod_cpu": resourceSchema.StringAttribute{
+			MarkdownDescription: "Worker queue pod CPU",
+			Computed:            true,
+		},
+		"pod_memory": resourceSchema.StringAttribute{
+			MarkdownDescription: "Worker queue pod memory",
+			Computed:            true,
+		},
+		"worker_concurrency": resourceSchema.Int64Attribute{
+			MarkdownDescription: "Worker queue worker concurrency",
+			Required:            true,
+			Validators: []validator.Int64{
+				int64validator.AtLeast(1),
+			},
+		},
 		"astro_machine": resourceSchema.StringAttribute{
-			Required: true,
+			MarkdownDescription: "Worker queue Astro machine value - required for 'STANDARD' and 'DEDICATED' deployments",
+			Optional:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
 					string(platform.WorkerQueueRequestAstroMachineA5),
@@ -730,45 +708,11 @@ func HostedWorkerQueueResourceSchemaAttributes() map[string]resourceSchema.Attri
 				),
 			},
 		},
-	}, CommonWorkerQueueResourceSchemaAttributes())
-}
-
-func CommonWorkerQueueResourceSchemaAttributes() map[string]resourceSchema.Attribute {
-	return map[string]resourceSchema.Attribute{
-		"id": resourceSchema.StringAttribute{
-			Computed: true,
-		},
-		"name": resourceSchema.StringAttribute{
-			Required: true,
+		"node_pool_id": resourceSchema.StringAttribute{
+			MarkdownDescription: "Worker queue Node pool identifier - required for 'HYBRID' deployments",
+			Optional:            true,
 			Validators: []validator.String{
-				stringvalidator.LengthBetween(1, 63),
-			},
-		},
-		"is_default": resourceSchema.BoolAttribute{
-			Required: true,
-		},
-		"max_worker_count": resourceSchema.Int64Attribute{
-			Required: true,
-			Validators: []validator.Int64{
-				int64validator.AtLeast(1),
-			},
-		},
-		"min_worker_count": resourceSchema.Int64Attribute{
-			Required: true,
-			Validators: []validator.Int64{
-				int64validator.AtLeast(0),
-			},
-		},
-		"pod_cpu": resourceSchema.StringAttribute{
-			Computed: true,
-		},
-		"pod_memory": resourceSchema.StringAttribute{
-			Computed: true,
-		},
-		"worker_concurrency": resourceSchema.Int64Attribute{
-			Required: true,
-			Validators: []validator.Int64{
-				int64validator.AtLeast(1),
+				validators.IsCuid(),
 			},
 		},
 	}

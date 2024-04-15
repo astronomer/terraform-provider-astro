@@ -38,6 +38,12 @@ func TestAccPreCheck(t *testing.T) {
 	if host := os.Getenv("ASTRO_API_HOST"); len(host) == 0 {
 		missingEnvVars = append(missingEnvVars, "ASTRO_API_HOST")
 	}
+	if hybridClusterId := os.Getenv("HYBRID_CLUSTER_ID"); len(hybridClusterId) == 0 {
+		missingEnvVars = append(missingEnvVars, "HYBRID_CLUSTER_ID")
+	}
+	if hybridNodePoolId := os.Getenv("HYBRID_NODE_POOL_ID"); len(hybridNodePoolId) == 0 {
+		missingEnvVars = append(missingEnvVars, "HYBRID_NODE_POOL_ID")
+	}
 	if len(missingEnvVars) > 0 {
 		t.Fatalf("Pre-check failed: %+v must be set for acceptance tests", strings.Join(missingEnvVars, ", "))
 	}
