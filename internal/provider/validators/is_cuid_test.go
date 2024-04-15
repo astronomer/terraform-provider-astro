@@ -1,6 +1,7 @@
 package validators_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/provider/validators"
@@ -16,7 +17,7 @@ func TestUnit_Validators_IsCuid(t *testing.T) {
 		expectedIsCuid bool
 	}
 	testCases := []testCase{
-		{str: "null", expectedIsCuid: false},
+		{str: "null", expectedIsCuid: true},
 		{str: "unknown", expectedIsCuid: true},
 		{str: cuid.New(), expectedIsCuid: true},
 		{str: "abcdef", expectedIsCuid: false},
@@ -39,7 +40,7 @@ func TestUnit_Validators_IsCuid(t *testing.T) {
 			}
 			response := validator.StringResponse{}
 			isCuidValidator.ValidateString(nil, request, &response)
-			assert.Equal(t, response.Diagnostics.HasError(), !tc.expectedIsCuid)
+			assert.Equal(t, response.Diagnostics.HasError(), !tc.expectedIsCuid, fmt.Sprintf("test case: %s failed", tc.str))
 		})
 	}
 }

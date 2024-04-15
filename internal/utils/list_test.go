@@ -83,7 +83,7 @@ func TestUnit_ObjectList(t *testing.T) {
 			assert.Contains(t, objString, v.Key.ValueString())
 			assert.Contains(t, objString, v.Value.ValueString())
 			assert.Contains(t, objString, v.UpdatedAt.ValueString())
-			assert.Contains(t, objString, v.IsSecret.ValueBool())
+			assert.Contains(t, objString, fmt.Sprintf("%v", v.IsSecret.ValueBool()))
 		}
 	})
 }
