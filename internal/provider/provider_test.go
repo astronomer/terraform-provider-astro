@@ -78,7 +78,7 @@ provider "astronomer" {
 organization_id = "%v"
 host = "%v"
 token = "%v"
-}`, os.Getenv("HYBRID_ORGANIZATION_ID"), os.Getenv("ASTRO_API_HOST"), os.Getenv("HYBRID_ORGANIZATION_API_TOKEN")) + dataSourceConfig()
+}`, os.Getenv("HOSTED_ORGANIZATION_ID"), os.Getenv("ASTRO_API_HOST"), os.Getenv("HOSTED_ORGANIZATION_API_TOKEN")) + dataSourceConfig()
 }
 
 func missingOrganizationIdConfig() string {
@@ -99,7 +99,7 @@ func invalidHost() string {
 provider "astronomer" {
 organization_id = "%v"
 host = "https://api.astronomer.com"
-}`, os.Getenv("HYBRID_ORGANIZATION_ID")) + dataSourceConfig()
+}`, os.Getenv("HOSTED_ORGANIZATION_ID")) + dataSourceConfig()
 }
 
 // dataSourceConfig is needed to actually run the "Configure" method in the provider
