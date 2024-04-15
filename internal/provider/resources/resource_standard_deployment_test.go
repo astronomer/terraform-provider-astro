@@ -308,14 +308,14 @@ func deleteDeploymentOutsideOfTerraform(t *testing.T, name string) {
 	assert.NoError(t, err)
 
 	ctx := context.Background()
-	resp, err := client.ListDeploymentsWithResponse(ctx, os.Getenv("ASTRO_HOSTED_ORGANIZATION_ID"), &platform.ListDeploymentsParams{
+	resp, err := client.ListDeploymentsWithResponse(ctx, os.Getenv("HOSTED_ORGANIZATION_ID"), &platform.ListDeploymentsParams{
 		Names: &[]string{name},
 	})
 	if err != nil {
 		assert.NoError(t, err)
 	}
 	assert.True(t, len(resp.JSON200.Deployments) >= 1, "deployment should exist but list deployments did not find it")
-	_, err = client.DeleteDeploymentWithResponse(ctx, os.Getenv("ASTRO_HOSTED_ORGANIZATION_ID"), resp.JSON200.Deployments[0].Id)
+	_, err = client.DeleteDeploymentWithResponse(ctx, os.Getenv("HOSTED_ORGANIZATION_ID"), resp.JSON200.Deployments[0].Id)
 	assert.NoError(t, err)
 }
 
@@ -326,7 +326,7 @@ func testAccCheckDeploymentExistence(t *testing.T, name string, shouldExist bool
 		assert.NoError(t, err)
 
 		ctx := context.Background()
-		resp, err := client.ListDeploymentsWithResponse(ctx, os.Getenv("ASTRO_HOSTED_ORGANIZATION_ID"), &platform.ListDeploymentsParams{
+		resp, err := client.ListDeploymentsWithResponse(ctx, os.Getenv("HOSTED_ORGANIZATION_ID"), &platform.ListDeploymentsParams{
 			Names: &[]string{name},
 		})
 		if err != nil {

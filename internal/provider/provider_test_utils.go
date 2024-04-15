@@ -22,24 +22,24 @@ func TestAccPreCheck(t *testing.T) {
 	// You can add code here to run prior to any test case execution, for example assertions
 	// about the appropriate environment variables being set are common to see in a pre-check
 	// function.
-	var errMsgs []string
+	var missingEnvVars []string
 	if hostedToken := os.Getenv("HOSTED_ORGANIZATION_API_TOKEN"); len(hostedToken) == 0 {
-		errMsgs = append(errMsgs, "HOSTED_ORGANIZATION_API_TOKEN must be set for acceptance tests")
+		missingEnvVars = append(missingEnvVars, "HOSTED_ORGANIZATION_API_TOKEN")
 	}
 	if hostedOrgId := os.Getenv("HOSTED_ORGANIZATION_ID"); len(hostedOrgId) == 0 {
-		errMsgs = append(errMsgs, "HOSTED_ORGANIZATION_ID must be set for acceptance tests")
+		missingEnvVars = append(missingEnvVars, "HOSTED_ORGANIZATION_ID")
 	}
 	if hybridToken := os.Getenv("HYBRID_ORGANIZATION_API_TOKEN"); len(hybridToken) == 0 {
-		errMsgs = append(errMsgs, "HYBRID_ORGANIZATION_API_TOKEN must be set for acceptance tests")
+		missingEnvVars = append(missingEnvVars, "HYBRID_ORGANIZATION_API_TOKEN")
 	}
 	if hybridOrgId := os.Getenv("HYBRID_ORGANIZATION_ID"); len(hybridOrgId) == 0 {
-		errMsgs = append(errMsgs, "HYBRID_ORGANIZATION_ID must be set for acceptance tests")
+		missingEnvVars = append(missingEnvVars, "HYBRID_ORGANIZATION_ID")
 	}
 	if host := os.Getenv("ASTRO_API_HOST"); len(host) == 0 {
-		errMsgs = append(errMsgs, "ASTRO_API_HOST must be set for acceptance tests")
+		missingEnvVars = append(missingEnvVars, "ASTRO_API_HOST")
 	}
-	if len(errMsgs) > 0 {
-		t.Fatalf("Pre-check failed: %+v", strings.Join(errMsgs, ", "))
+	if len(missingEnvVars) > 0 {
+		t.Fatalf("Pre-check failed: %+v must be set for acceptance tests", strings.Join(missingEnvVars, ", "))
 	}
 }
 

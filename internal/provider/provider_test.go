@@ -77,7 +77,8 @@ func explicitHostConfig() string {
 provider "astronomer" {
 organization_id = "%v"
 host = "%v"
-}`, os.Getenv("HYBRID_ORGANIZATION_ID"), os.Getenv("ASTRO_API_HOST")) + dataSourceConfig()
+token = "%v"
+}`, os.Getenv("HYBRID_ORGANIZATION_ID"), os.Getenv("ASTRO_API_HOST"), os.Getenv("HYBRID_ORGANIZATION_API_TOKEN")) + dataSourceConfig()
 }
 
 func missingOrganizationIdConfig() string {
