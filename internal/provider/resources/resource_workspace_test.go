@@ -134,14 +134,14 @@ func deleteWorkspaceOutsideOfTerraform(t *testing.T, name string) {
 	assert.NoError(t, err)
 
 	ctx := context.Background()
-	resp, err := client.ListWorkspacesWithResponse(ctx, os.Getenv("ASTRO_HYBRID_ORGANIZATION_ID"), &platform.ListWorkspacesParams{
+	resp, err := client.ListWorkspacesWithResponse(ctx, os.Getenv("HYBRID_ORGANIZATION_ID"), &platform.ListWorkspacesParams{
 		Names: &[]string{name},
 	})
 	if err != nil {
 		assert.NoError(t, err)
 	}
 	assert.True(t, len(resp.JSON200.Workspaces) >= 1, "workspace should exist but list workspaces did not find it")
-	_, err = client.DeleteWorkspaceWithResponse(ctx, os.Getenv("ASTRO_HYBRID_ORGANIZATION_ID"), resp.JSON200.Workspaces[0].Id)
+	_, err = client.DeleteWorkspaceWithResponse(ctx, os.Getenv("HYBRID_ORGANIZATION_ID"), resp.JSON200.Workspaces[0].Id)
 	assert.NoError(t, err)
 }
 
@@ -152,7 +152,7 @@ func testAccCheckWorkspaceExistence(t *testing.T, name string, shouldExist bool)
 		assert.NoError(t, err)
 
 		ctx := context.Background()
-		resp, err := client.ListWorkspacesWithResponse(ctx, os.Getenv("ASTRO_HYBRID_ORGANIZATION_ID"), &platform.ListWorkspacesParams{
+		resp, err := client.ListWorkspacesWithResponse(ctx, os.Getenv("HYBRID_ORGANIZATION_ID"), &platform.ListWorkspacesParams{
 			Names: &[]string{name},
 		})
 		if err != nil {

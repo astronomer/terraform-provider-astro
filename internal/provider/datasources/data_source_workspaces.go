@@ -3,6 +3,7 @@ package datasources
 import (
 	"context"
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 
 	"github.com/samber/lo"

@@ -2,9 +2,10 @@ package datasources_test
 
 import (
 	"fmt"
-	"github.com/lucsky/cuid"
 	"strconv"
 	"testing"
+
+	"github.com/lucsky/cuid"
 
 	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"
 	"github.com/astronomer/astronomer-terraform-provider/internal/utils"

@@ -3,9 +3,10 @@ package resources
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/samber/lo"
-	"net/http"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"

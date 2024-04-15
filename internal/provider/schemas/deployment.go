@@ -1,6 +1,8 @@
 package schemas
 
 import (
+	"regexp"
+
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
 	"github.com/astronomer/astronomer-terraform-provider/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -17,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/samber/lo"
-	"regexp"
 )
 
 func StandardDeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
