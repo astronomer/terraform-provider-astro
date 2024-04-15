@@ -3,6 +3,7 @@ package resources_test
 import (
 	"context"
 	"fmt"
+	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
 	"os"
 	"testing"
 
@@ -32,7 +33,7 @@ func TestAcc_ResourceWorkspace(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, false) + workspace(workspace1Name, "test", false),
+				Config: astronomerprovider.ProviderConfig(t, true) + workspace(workspace1Name, "test", false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "name", workspace1Name),
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "description", "test"),
@@ -43,7 +44,7 @@ func TestAcc_ResourceWorkspace(t *testing.T) {
 			},
 			// Change properties and check they have been updated in terraform state
 			{
-				Config: astronomerprovider.ProviderConfig(t, false) + workspace(workspace2Name, utils.TestResourceDescription, true),
+				Config: astronomerprovider.ProviderConfig(t, true) + workspace(workspace2Name, utils.TestResourceDescription, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "name", workspace2Name),
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "description", utils.TestResourceDescription),
@@ -70,7 +71,7 @@ func TestAcc_WorkspaceRemovedOutsideOfTerraform(t *testing.T) {
 		CheckDestroy:             testAccCheckWorkspaceExistence(t, workspaceName, false),
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, false) + workspaceWithVariableName(),
+				Config: astronomerprovider.ProviderConfig(t, true) + workspaceWithVariableName(),
 				ConfigVariables: map[string]config.Variable{
 					"name": config.StringVariable(workspaceName),
 				},
@@ -86,7 +87,7 @@ func TestAcc_WorkspaceRemovedOutsideOfTerraform(t *testing.T) {
 			},
 			{
 				PreConfig: func() { deleteWorkspaceOutsideOfTerraform(t, workspaceName) },
-				Config:    astronomerprovider.ProviderConfig(t, false) + workspaceWithVariableName(),
+				Config:    astronomerprovider.ProviderConfig(t, true) + workspaceWithVariableName(),
 				ConfigVariables: map[string]config.Variable{
 					"name": config.StringVariable(workspaceName),
 				},
@@ -157,6 +158,10 @@ func testAccCheckWorkspaceExistence(t *testing.T, name string, shouldExist bool)
 		})
 		if err != nil {
 			return fmt.Errorf("failed to list workspaces: %w", err)
+		}
+		if resp.JSON200 == nil {
+			status, diag := clients.NormalizeAPIError(ctx, resp.HTTPResponse, resp.Body)
+			return fmt.Errorf("response JSON200 is nil status: %v, err: %v", status, diag.Detail())
 		}
 		if shouldExist {
 			if len(resp.JSON200.Workspaces) != 1 {
