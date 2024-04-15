@@ -4,8 +4,6 @@
 
 ## 🎟 Issue(s)
 
-Related #XXX
-
 ## 🧪 Functional Testing
 
 <!--- List the functional testing steps to confirm this feature or fix. --->
