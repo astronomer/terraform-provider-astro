@@ -87,6 +87,7 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			Required:            true,
 			Validators: []validator.List{
 				listvalidator.ValueStringsAre(stringvalidator.RegexMatches(regexp.MustCompile(validators.EmailString), "must be a valid email address")),
+				listvalidator.UniqueValues(),
 			},
 		},
 		"executor": resourceSchema.StringAttribute{

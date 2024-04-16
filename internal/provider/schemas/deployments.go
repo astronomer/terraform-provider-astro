@@ -112,6 +112,7 @@ func DeploymentsDataSourceSchemaAttributes() map[string]schema.Attribute {
 			Optional:    true,
 			Validators: []validator.List{
 				listvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+				listvalidator.UniqueValues(),
 			},
 		},
 	}
