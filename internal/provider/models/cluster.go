@@ -107,23 +107,23 @@ func ClusterTagTypesObject(
 
 func NodePoolTypesObject(
 	ctx context.Context,
-	workerQueue platform.NodePool,
+	nodePool platform.NodePool,
 ) (types.Object, diag.Diagnostics) {
-	supportedAstroMachines, diags := utils.StringList(workerQueue.SupportedAstroMachines)
+	supportedAstroMachines, diags := utils.StringList(nodePool.SupportedAstroMachines)
 	if diags.HasError() {
 		return types.ObjectNull(schemas.NodePoolAttributeTypes()), diags
 	}
 	obj := NodePool{
-		Id:                     types.StringValue(workerQueue.Id),
-		Name:                   types.StringValue(workerQueue.Name),
-		ClusterId:              types.StringValue(workerQueue.ClusterId),
-		CloudProvider:          types.StringValue(string(workerQueue.CloudProvider)),
-		MaxNodeCount:           types.Int64Value(int64(workerQueue.MaxNodeCount)),
-		NodeInstanceType:       types.StringValue(workerQueue.NodeInstanceType),
-		IsDefault:              types.BoolValue(workerQueue.IsDefault),
+		Id:                     types.StringValue(nodePool.Id),
+		Name:                   types.StringValue(nodePool.Name),
+		ClusterId:              types.StringValue(nodePool.ClusterId),
+		CloudProvider:          types.StringValue(string(nodePool.CloudProvider)),
+		MaxNodeCount:           types.Int64Value(int64(nodePool.MaxNodeCount)),
+		NodeInstanceType:       types.StringValue(nodePool.NodeInstanceType),
+		IsDefault:              types.BoolValue(nodePool.IsDefault),
 		SupportedAstroMachines: supportedAstroMachines,
-		CreatedAt:              types.StringValue(workerQueue.CreatedAt.String()),
-		UpdatedAt:              types.StringValue(workerQueue.UpdatedAt.String()),
+		CreatedAt:              types.StringValue(nodePool.CreatedAt.String()),
+		UpdatedAt:              types.StringValue(nodePool.UpdatedAt.String()),
 	}
 
 	return types.ObjectValueFrom(ctx, schemas.NodePoolAttributeTypes(), obj)
