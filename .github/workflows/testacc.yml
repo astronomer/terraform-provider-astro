@@ -60,8 +60,8 @@ jobs:
           HYBRID_ORGANIZATION_ID: ckmzjm22937931d35puw3tcdo
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clczfgzc3001o01kjlphpi6hv
-          HYBRID_CLUSTER_ID: clk8h0fv1006801j8yysfybbt
-          HYBRID_NODE_POOL_ID: clk8h0fv1006701j8ku45qtb9
+          HYBRID_CLUSTER_ID: clnp86ly5000401ndagu20g81
+          HYBRID_NODE_POOL_ID: clnp86ly5000301ndzfxz895w
           ASTRO_API_HOST: https://api.astronomer-dev.io
           TESTARGS: "-failfast"
         run: make testacc

@@ -73,7 +73,7 @@ func (d *deploymentDataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var data models.DeploymentDataSource
+	var data models.Deployment
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)

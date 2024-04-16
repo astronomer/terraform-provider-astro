@@ -10,20 +10,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// WorkspacesDataSource describes the data source data model.
-type WorkspacesDataSource struct {
+// Workspaces describes the data source data model.
+type Workspaces struct {
 	Workspaces   types.List `tfsdk:"workspaces"`
 	WorkspaceIds types.List `tfsdk:"workspace_ids"` // query parameter
 	Names        types.List `tfsdk:"names"`         // query parameter
 }
 
-func (data *WorkspacesDataSource) ReadFromResponse(
+func (data *Workspaces) ReadFromResponse(
 	ctx context.Context,
 	workspaces []platform.Workspace,
 ) diag.Diagnostics {
 	values := make([]attr.Value, len(workspaces))
 	for i, workspace := range workspaces {
-		var singleWorkspaceData WorkspaceDataSource
+		var singleWorkspaceData Workspace
 		diags := singleWorkspaceData.ReadFromResponse(ctx, &workspace)
 		if diags.HasError() {
 			return diags

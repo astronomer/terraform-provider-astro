@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// ClusterDataSource describes the data source data model.
-type ClusterDataSource struct {
+// Cluster describes the resource data source data model.
+type Cluster struct {
 	Id                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
 	CloudProvider       types.String `tfsdk:"cloud_provider"`
@@ -52,7 +52,7 @@ type NodePool struct {
 	UpdatedAt              types.String `tfsdk:"updated_at"`
 }
 
-func (data *ClusterDataSource) ReadFromResponse(
+func (data *Cluster) ReadFromResponse(
 	ctx context.Context,
 	cluster *platform.Cluster,
 ) diag.Diagnostics {

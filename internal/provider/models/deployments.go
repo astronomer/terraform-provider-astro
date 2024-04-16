@@ -10,21 +10,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// DeploymentsDataSource describes the data source data model.
-type DeploymentsDataSource struct {
+// Deployments describes the data source data model.
+type Deployments struct {
 	Deployments   types.List `tfsdk:"deployments"`
 	WorkspaceIds  types.List `tfsdk:"workspace_ids"`  // query parameter
 	DeploymentIds types.List `tfsdk:"deployment_ids"` // query parameter
 	Names         types.List `tfsdk:"names"`          // query parameter
 }
 
-func (data *DeploymentsDataSource) ReadFromResponse(
+func (data *Deployments) ReadFromResponse(
 	ctx context.Context,
 	deployments []platform.Deployment,
 ) diag.Diagnostics {
 	values := make([]attr.Value, len(deployments))
 	for i, deployment := range deployments {
-		var singleDeploymentData DeploymentDataSource
+		var singleDeploymentData Deployment
 		diags := singleDeploymentData.ReadFromResponse(ctx, &deployment)
 		if diags.HasError() {
 			return diags
