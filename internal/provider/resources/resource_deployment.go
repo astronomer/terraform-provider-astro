@@ -83,7 +83,7 @@ func (r *DeploymentResource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	var data models.DeploymentResource
+	var data models.Deployment
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -331,7 +331,7 @@ func (r *DeploymentResource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	var data models.DeploymentResource
+	var data models.Deployment
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -383,8 +383,8 @@ func (r *DeploymentResource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	var data models.DeploymentResource
-	var prevData models.DeploymentResource
+	var data models.Deployment
+	var prevData models.Deployment
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &prevData)...)
@@ -608,7 +608,7 @@ func (r *DeploymentResource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	var data models.DeploymentResource
+	var data models.Deployment
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -656,7 +656,7 @@ func (r *DeploymentResource) ValidateConfig(
 	req resource.ValidateConfigRequest,
 	resp *resource.ValidateConfigResponse,
 ) {
-	var data models.DeploymentResource
+	var data models.Deployment
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -691,7 +691,7 @@ func (r *DeploymentResource) ValidateConfig(
 	}
 }
 
-func validateHybridConfig(ctx context.Context, data *models.DeploymentResource) diag.Diagnostics {
+func validateHybridConfig(ctx context.Context, data *models.Deployment) diag.Diagnostics {
 	var diags diag.Diagnostics
 	// Required hybrid values
 	if data.SchedulerAu.IsNull() {
@@ -787,7 +787,7 @@ func validateHybridConfig(ctx context.Context, data *models.DeploymentResource) 
 	return diags
 }
 
-func validateStandardConfig(ctx context.Context, data *models.DeploymentResource) diag.Diagnostics {
+func validateStandardConfig(ctx context.Context, data *models.Deployment) diag.Diagnostics {
 	var diags diag.Diagnostics
 	// Required standard values
 	if data.Region.IsNull() {
@@ -813,7 +813,7 @@ func validateStandardConfig(ctx context.Context, data *models.DeploymentResource
 	return diags
 }
 
-func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) diag.Diagnostics {
+func validateHostedConfig(ctx context.Context, data *models.Deployment) diag.Diagnostics {
 	// Required hosted values
 	var diags diag.Diagnostics
 	if data.SchedulerSize.IsNull() {
@@ -918,7 +918,7 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 	return diags
 }
 
-func validateClusterIdConfig(ctx context.Context, data *models.DeploymentResource) diag.Diagnostics {
+func validateClusterIdConfig(ctx context.Context, data *models.Deployment) diag.Diagnostics {
 	var diags diag.Diagnostics
 	// Required clusterId value
 	if data.ClusterId.IsNull() {
