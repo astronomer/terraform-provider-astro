@@ -95,11 +95,11 @@ func (data *Cluster) ReadFromResponse(
 
 func ClusterTagTypesObject(
 	ctx context.Context,
-	envVar platform.ClusterK8sTag,
+	tag platform.ClusterK8sTag,
 ) (types.Object, diag.Diagnostics) {
 	obj := ClusterTag{
-		Key:   types.StringPointerValue(envVar.Key),
-		Value: types.StringPointerValue(envVar.Value),
+		Key:   types.StringPointerValue(tag.Key),
+		Value: types.StringPointerValue(tag.Value),
 	}
 
 	return types.ObjectValueFrom(ctx, schemas.ClusterTagAttributeTypes(), obj)

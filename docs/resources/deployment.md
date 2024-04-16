@@ -97,10 +97,10 @@ resource "astronomer_deployment" "hybrid" {
 - `environment_variables` (Attributes List) Deployment environment variables (see [below for nested schema](#nestedatt--environment_variables))
 - `executor` (String) Deployment executor
 - `is_cicd_enforced` (Boolean) Deployment CI/CD enforced
-- `is_dag_deploy_enabled` (Boolean) Deployment DAG deploy enabled - TODO https://docs.astronomer.io/astro/deploy-dags#enable-or-disable-dag-only-deploys-on-a-deployment
+- `is_dag_deploy_enabled` (Boolean) Deployment DAG deploy enabled
 - `name` (String) Deployment name
 - `type` (String) Deployment type - if changing this value, the deployment will be recreated with the new type
-- `workspace_id` (String) Deployment workspace identifier - if changing this value, the deployment will be recreated in the new workspace
+- `workspace_id` (String) Deployment workspace identifier
 
 ### Optional
 
