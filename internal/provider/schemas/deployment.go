@@ -121,6 +121,10 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: DeploymentEnvironmentVariableResourceAttributes(),
 			},
+			Validators: []validator.List{
+				listvalidator.UniqueValues(),
+				listvalidator.UniqueValues(),
+			},
 			MarkdownDescription: "Deployment environment variables",
 			Required:            true,
 		},
@@ -207,6 +211,7 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			Validators: []validator.List{
 				// Dynamic validation with 'executor' done in the resource.ValidateConfig function
 				listvalidator.SizeAtLeast(1),
+				listvalidator.UniqueValues(),
 			},
 		},
 		"scheduler_au": resourceSchema.Int64Attribute{
