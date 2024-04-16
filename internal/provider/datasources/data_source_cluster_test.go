@@ -29,7 +29,7 @@ func TestAcc_DataSourceCluster(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceVar, "cloud_provider"),
 					resource.TestCheckResourceAttrSet(resourceVar, "db_instance_type"),
 					resource.TestCheckResourceAttrSet(resourceVar, "region"),
-					resource.TestCheckResourceAttrSet(resourceVar, "pod_subnet_range"),
+					resource.TestCheckResourceAttrSet(resourceVar, "vpc_subnet_range"),
 					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
 					resource.TestCheckResourceAttrSet(resourceVar, "updated_at"),
 					resource.TestCheckResourceAttr(resourceVar, "type", "HYBRID"),
