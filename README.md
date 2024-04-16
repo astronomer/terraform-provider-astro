@@ -53,8 +53,8 @@ provider "astronomer" {
 3. Run the following commands to apply the provider:
 ```shell
 export ASTRO_API_TOKEN=<token>
-terraform apply
 terraform plan
+terraform apply
 ```
 
 ## Developing the Provider
@@ -63,16 +63,16 @@ If you wish to work on the provider, you'll first need [Go](http://www.golang.or
 
 To compile the provider, see [Building The Provider](## Building The Provider).
 
-To add example docs, add the correspond `.tf` files to the `examples` directory.
+To add example docs, add the correspond `.tf` files to the `examples` directory. These should be added for every new data source and resource.
 
 To run terraform with the provider, create a `.terraformrc` file in your home directory (`~`) with the following content to override the provider installation with the local build:
 
 ```hcl
 provider_installation {
   dev_overrides {
-    "registry.terraform.io/astronomer/astronomer" = "~/astronomer/astronomer-terraform-provider/bin" # Path to the provider binary
+    "registry.terraform.io/astronomer/astronomer" = "~/astronomer-terraform-provider/bin" # Your path to the provider binary
   }
-direct {}
+  direct {}
 }
 ```
 
@@ -86,14 +86,9 @@ terraform {
   }
 }
 
-variable "token" {
-  type = string
-}
-
 provider "astronomer" {
   organization_id = "<cuid>"
   host            = "https://api.astronomer-dev.io"
-  token           = var.token
 }
 
 data "astronomer_workspace" "example" {
