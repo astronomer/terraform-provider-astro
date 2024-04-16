@@ -96,6 +96,7 @@ func DeploymentsDataSourceSchemaAttributes() map[string]schema.Attribute {
 			Optional:    true,
 			Validators: []validator.List{
 				listvalidator.ValueStringsAre(validators.IsCuid()),
+				listvalidator.UniqueValues(),
 			},
 		},
 		"workspace_ids": schema.ListAttribute{
@@ -103,6 +104,7 @@ func DeploymentsDataSourceSchemaAttributes() map[string]schema.Attribute {
 			Optional:    true,
 			Validators: []validator.List{
 				listvalidator.ValueStringsAre(validators.IsCuid()),
+				listvalidator.UniqueValues(),
 			},
 		},
 		"names": schema.ListAttribute{
