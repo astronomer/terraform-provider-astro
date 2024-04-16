@@ -2026,6 +2026,9 @@ type GetClusterOptionsParamsType string
 
 // ListClustersParams defines parameters for ListClusters.
 type ListClustersParams struct {
+	// Names A list of names for Clusters to filter by. The API returns details only for the specified Clusters.
+	Names *[]string `form:"names,omitempty" json:"names,omitempty"`
+
 	// Provider The cloud provider to list clusters for. Clusters from other providers will be filtered out of the results.
 	Provider *ListClustersParamsProvider `form:"provider,omitempty" json:"provider,omitempty"`
 
@@ -3292,6 +3295,22 @@ func NewListClustersRequest(server string, organizationId string, params *ListCl
 
 	if params != nil {
 		queryValues := queryURL.Query()
+
+		if params.Names != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "names", runtime.ParamLocationQuery, *params.Names); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
 
 		if params.Provider != nil {
 
