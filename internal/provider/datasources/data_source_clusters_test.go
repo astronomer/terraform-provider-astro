@@ -77,9 +77,9 @@ func checkClusters(resourceName string) resource.TestCheckFunc {
 		if instanceState.Attributes[region] == "" {
 			return fmt.Errorf("expected 'region' to be set")
 		}
-		podSubnetRange := fmt.Sprintf("clusters.%d.pod_subnet_range", clustersIdx)
-		if instanceState.Attributes[podSubnetRange] == "" {
-			return fmt.Errorf("expected 'pod_subnet_range' to be set")
+		vpcSubnetRange := fmt.Sprintf("clusters.%d.vpc_subnet_range", clustersIdx)
+		if instanceState.Attributes[vpcSubnetRange] == "" {
+			return fmt.Errorf("expected 'vpc_subnet_range' to be set")
 		}
 		createdAt := fmt.Sprintf("clusters.%d.created_at", clustersIdx)
 		if instanceState.Attributes[createdAt] == "" {
