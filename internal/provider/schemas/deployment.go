@@ -62,9 +62,12 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			Attributes:          ResourceSubjectProfileSchemaAttributes(),
 		},
 		"workspace_id": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment workspace identifier",
+			MarkdownDescription: "Deployment workspace identifier - if changing this value, the deployment will be recreated in the new workspace",
 			Required:            true,
 			Validators:          []validator.String{validators.IsCuid()},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplaceIfConfigured(),
+			},
 		},
 		"astro_runtime_version": resourceSchema.StringAttribute{
 			MarkdownDescription: "Deployment Astro Runtime version. The terraform provider will use the latest Astro runtime version for the Deployment. The Astro runtime version can be updated with your Astro project Dockerfile",
@@ -170,7 +173,7 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			Required:            true,
 		},
 		"is_dag_deploy_enabled": resourceSchema.BoolAttribute{
-			MarkdownDescription: "Deployment DAG deploy enabled",
+			MarkdownDescription: "Whether DAG deploy is enabled - Changing this value may disrupt your deployment. Read more at https://docs.astronomer.io/astro/deploy-dags#enable-or-disable-dag-only-deploys-on-a-deployment",
 			Required:            true,
 		},
 		"external_ips": resourceSchema.ListAttribute{
