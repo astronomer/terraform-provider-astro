@@ -53,6 +53,7 @@ provider "astronomer" {
 3. Run the following commands to apply the provider:
 ```shell
 export ASTRO_API_TOKEN=<token>
+terraform init
 terraform plan
 terraform apply
 ```
