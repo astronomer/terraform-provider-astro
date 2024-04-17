@@ -41,7 +41,7 @@ func (data *Workspace) ReadFromResponse(
 	if diags.HasError() {
 		return diags
 	}
-	data.UpdatedBy, diags = SubjectProfileTypesObject(ctx, workspace.CreatedBy)
+	data.UpdatedBy, diags = SubjectProfileTypesObject(ctx, workspace.UpdatedBy)
 	if diags.HasError() {
 		return diags
 	}

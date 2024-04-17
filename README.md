@@ -53,9 +53,9 @@ provider "astronomer" {
 3. Run the following commands to apply the provider:
 ```shell
 export ASTRO_API_TOKEN=<token>
-terraform init
-terraform plan
-terraform apply
+terraform init # only needed the first time - initializes a working directory and downloads the necessary provider plugins and modules and setting up the backend for storing your infrastructure's state
+terraform plan # creates a plan consisting of a set of changes that will make your resources match your configuration
+terraform apply # performs a plan just like terraform plan does, but then actually carries out the planned changes to each resource using the relevant infrastructure provider's API
 ```
 
 ## Developing the Provider
