@@ -47,6 +47,7 @@ func WorkspacesDataSourceSchemaAttributes() map[string]schema.Attribute {
 			ElementType: types.StringType,
 			Validators: []validator.List{
 				listvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+				listvalidator.UniqueValues(),
 			},
 			Optional: true,
 		},

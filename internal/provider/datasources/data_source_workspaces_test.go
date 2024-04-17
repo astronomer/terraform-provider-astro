@@ -2,7 +2,6 @@ package datasources_test
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
 	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"
@@ -92,17 +91,9 @@ data astronomer_workspaces "test_data_workspaces" {
 
 func checkWorkspacesAreEmpty() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceState := s.Modules[0].Resources["data.astronomer_workspaces.test_data_workspaces"]
-		if resourceState == nil {
-			return fmt.Errorf("resource not found in state")
-		}
-		instanceState := resourceState.Primary
-		if instanceState == nil {
-			return fmt.Errorf("resource has no primary instance")
-		}
-		numWorkspaces, err := strconv.Atoi(instanceState.Attributes["workspaces.#"])
+		instanceState, numWorkspaces, err := utils.GetDataSourcesLength(s, "test_data_workspaces", "workspaces")
 		if err != nil {
-			return fmt.Errorf("expected a number for field 'workspaces', got %s", instanceState.Attributes["workspaces.#"])
+			return err
 		}
 		if numWorkspaces != 0 {
 			return fmt.Errorf("expected workspaces to be 0, got %s", instanceState.Attributes["workspaces.#"])
@@ -113,53 +104,45 @@ func checkWorkspacesAreEmpty() resource.TestCheckFunc {
 
 func checkWorkspaces(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceState := s.Modules[0].Resources["data.astronomer_workspaces.test_data_workspaces"]
-		if resourceState == nil {
-			return fmt.Errorf("resource not found in state")
-		}
-		instanceState := resourceState.Primary
-		if instanceState == nil {
-			return fmt.Errorf("resource has no primary instance")
-		}
-		numWorkspaces, err := strconv.Atoi(instanceState.Attributes["workspaces.#"])
+		instanceState, numWorkspaces, err := utils.GetDataSourcesLength(s, "test_data_workspaces", "workspaces")
 		if err != nil {
-			return fmt.Errorf("expected a number for field 'workspaces', got %s", instanceState.Attributes["workspaces.#"])
+			return err
 		}
 		if numWorkspaces == 0 {
 			return fmt.Errorf("expected workspaces to be greater or equal to 1, got %s", instanceState.Attributes["workspaces.#"])
 		}
-		workspacesIdx := -1
+		workspaceIdx := -1
 		for i := 0; i < numWorkspaces; i++ {
 			idxName := fmt.Sprintf("workspaces.%d.name", i)
 			if instanceState.Attributes[idxName] == name {
-				workspacesIdx = i
+				workspaceIdx = i
 				break
 			}
 		}
-		if workspacesIdx == -1 {
+		if workspaceIdx == -1 {
 			return fmt.Errorf("workspace %s not found", name)
 		}
-		description := fmt.Sprintf("workspaces.%d.description", workspacesIdx)
+		description := fmt.Sprintf("workspaces.%d.description", workspaceIdx)
 		if instanceState.Attributes[description] == "" {
 			return fmt.Errorf("expected 'description' to be set")
 		}
-		cicdEnforcedDefault := fmt.Sprintf("workspaces.%d.cicd_enforced_default", workspacesIdx)
+		cicdEnforcedDefault := fmt.Sprintf("workspaces.%d.cicd_enforced_default", workspaceIdx)
 		if instanceState.Attributes[cicdEnforcedDefault] != "true" {
 			return fmt.Errorf("expected 'cicd_enforced_default' to be true")
 		}
-		createdAt := fmt.Sprintf("workspaces.%d.created_at", workspacesIdx)
+		createdAt := fmt.Sprintf("workspaces.%d.created_at", workspaceIdx)
 		if instanceState.Attributes[createdAt] == "" {
 			return fmt.Errorf("expected 'created_at' to be set")
 		}
-		updatedAt := fmt.Sprintf("workspaces.%d.updated_at", workspacesIdx)
+		updatedAt := fmt.Sprintf("workspaces.%d.updated_at", workspaceIdx)
 		if instanceState.Attributes[updatedAt] == "" {
 			return fmt.Errorf("expected 'updated_at' to be set")
 		}
-		createdById := fmt.Sprintf("workspaces.%d.created_by.id", workspacesIdx)
+		createdById := fmt.Sprintf("workspaces.%d.created_by.id", workspaceIdx)
 		if instanceState.Attributes[createdById] == "" {
 			return fmt.Errorf("expected 'created_by.id' to be set")
 		}
-		updatedById := fmt.Sprintf("workspaces.%d.updated_by.id", workspacesIdx)
+		updatedById := fmt.Sprintf("workspaces.%d.updated_by.id", workspaceIdx)
 		if instanceState.Attributes[updatedById] == "" {
 			return fmt.Errorf("expected 'updated_by.id' to be set")
 		}

@@ -384,13 +384,6 @@ func (r *DeploymentResource) Update(
 	resp *resource.UpdateResponse,
 ) {
 	var data models.Deployment
-	var prevData models.Deployment
-
-	// Read Terraform prior state data into the model
-	resp.Diagnostics.Append(req.State.Get(ctx, &prevData)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)

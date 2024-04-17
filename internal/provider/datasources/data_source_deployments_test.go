@@ -2,7 +2,6 @@ package datasources_test
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/lucsky/cuid"
@@ -218,19 +217,11 @@ data astronomer_deployments "test_data_deployments_incorrect_names_filter" {
 `, name, utils.TestResourceDescription, name, utils.TestResourceDescription, name, utils.TestResourceDescription, name, cuid.New(), cuid.New(), cuid.New())
 }
 
-func checkDeploymentsAreEmpty(tfDataSourceName string) resource.TestCheckFunc {
+func checkDeploymentsAreEmpty(tfVarName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceState := s.Modules[0].Resources[fmt.Sprintf("data.astronomer_deployments.%v", tfDataSourceName)]
-		if resourceState == nil {
-			return fmt.Errorf("resource not found in state for data source '%s'", tfDataSourceName)
-		}
-		instanceState := resourceState.Primary
-		if instanceState == nil {
-			return fmt.Errorf("resource has no primary instance")
-		}
-		numDeployments, err := strconv.Atoi(instanceState.Attributes["deployments.#"])
+		instanceState, numDeployments, err := utils.GetDataSourcesLength(s, tfVarName, "deployments")
 		if err != nil {
-			return fmt.Errorf("expected a number for field 'deployments', got %s", instanceState.Attributes["deployments.#"])
+			return err
 		}
 		if numDeployments != 0 {
 			return fmt.Errorf("expected deployments to be 0, got %s", instanceState.Attributes["deployments.#"])
@@ -239,96 +230,88 @@ func checkDeploymentsAreEmpty(tfDataSourceName string) resource.TestCheckFunc {
 	}
 }
 
-func checkDeployments(tfDataSourceName, deploymentName string) resource.TestCheckFunc {
+func checkDeployments(tfVarName, deploymentName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceState := s.Modules[0].Resources[fmt.Sprintf("data.astronomer_deployments.%v", tfDataSourceName)]
-		if resourceState == nil {
-			return fmt.Errorf("resource not found in state for data source '%s'", tfDataSourceName)
-		}
-		instanceState := resourceState.Primary
-		if instanceState == nil {
-			return fmt.Errorf("resource has no primary instance")
-		}
-		numDeployments, err := strconv.Atoi(instanceState.Attributes["deployments.#"])
+		instanceState, numDeployments, err := utils.GetDataSourcesLength(s, tfVarName, "deployments")
 		if err != nil {
-			return fmt.Errorf("expected a number for field 'deployments', got %s", instanceState.Attributes["deployments.#"])
+			return err
 		}
 		if numDeployments == 0 {
 			return fmt.Errorf("expected deployments to be greater or equal to 1, got %s", instanceState.Attributes["deployments.#"])
 		}
 
 		// If deploymentName is not set, we will check the first deployment
-		var deploymentsIdx int
+		var deploymentIdx int
 		if deploymentName == "" {
-			deploymentsIdx = 0
+			deploymentIdx = 0
 		} else {
 			for i := 0; i < numDeployments; i++ {
 				idxName := fmt.Sprintf("deployments.%d.name", i)
 				if instanceState.Attributes[idxName] == deploymentName {
-					deploymentsIdx = i
+					deploymentIdx = i
 					break
 				}
 			}
-			if deploymentsIdx == -1 {
+			if deploymentIdx == -1 {
 				return fmt.Errorf("deployment %s not found", deploymentName)
 			}
 		}
 
-		description := fmt.Sprintf("deployments.%d.description", deploymentsIdx)
+		description := fmt.Sprintf("deployments.%d.description", deploymentIdx)
 		if instanceState.Attributes[description] == "" {
 			return fmt.Errorf("expected 'description' to be set")
 		}
-		createdAt := fmt.Sprintf("deployments.%d.created_at", deploymentsIdx)
+		createdAt := fmt.Sprintf("deployments.%d.created_at", deploymentIdx)
 		if instanceState.Attributes[createdAt] == "" {
 			return fmt.Errorf("expected 'created_at' to be set")
 		}
-		updatedAt := fmt.Sprintf("deployments.%d.updated_at", deploymentsIdx)
+		updatedAt := fmt.Sprintf("deployments.%d.updated_at", deploymentIdx)
 		if instanceState.Attributes[updatedAt] == "" {
 			return fmt.Errorf("expected 'updated_at' to be set")
 		}
-		createdById := fmt.Sprintf("deployments.%d.created_by.id", deploymentsIdx)
+		createdById := fmt.Sprintf("deployments.%d.created_by.id", deploymentIdx)
 		if instanceState.Attributes[createdById] == "" {
 			return fmt.Errorf("expected 'created_by.id' to be set")
 		}
-		updatedById := fmt.Sprintf("deployments.%d.updated_by.id", deploymentsIdx)
+		updatedById := fmt.Sprintf("deployments.%d.updated_by.id", deploymentIdx)
 		if instanceState.Attributes[updatedById] == "" {
 			return fmt.Errorf("expected 'updated_by.id' to be set")
 		}
-		workspaceId := fmt.Sprintf("deployments.%d.workspace_id", deploymentsIdx)
+		workspaceId := fmt.Sprintf("deployments.%d.workspace_id", deploymentIdx)
 		if instanceState.Attributes[workspaceId] == "" {
 			return fmt.Errorf("expected 'workspace_id' to be set")
 		}
-		astroRuntimeVersion := fmt.Sprintf("deployments.%d.astro_runtime_version", deploymentsIdx)
+		astroRuntimeVersion := fmt.Sprintf("deployments.%d.astro_runtime_version", deploymentIdx)
 		if instanceState.Attributes[astroRuntimeVersion] == "" {
 			return fmt.Errorf("expected 'astro_runtime_version' to be set")
 		}
-		airflowVersion := fmt.Sprintf("deployments.%d.airflow_version", deploymentsIdx)
+		airflowVersion := fmt.Sprintf("deployments.%d.airflow_version", deploymentIdx)
 		if instanceState.Attributes[airflowVersion] == "" {
 			return fmt.Errorf("expected 'airflow_version' to be set")
 		}
-		namespace := fmt.Sprintf("deployments.%d.namespace", deploymentsIdx)
+		namespace := fmt.Sprintf("deployments.%d.namespace", deploymentIdx)
 		if instanceState.Attributes[namespace] == "" {
 			return fmt.Errorf("expected 'namespace' to be set")
 		}
-		executor := fmt.Sprintf("deployments.%d.executor", deploymentsIdx)
+		executor := fmt.Sprintf("deployments.%d.executor", deploymentIdx)
 		if instanceState.Attributes[executor] == "" {
 			return fmt.Errorf("expected 'executor' to be set")
 		} else if instanceState.Attributes[executor] == "KUBERNETES" {
-			workerQueues := fmt.Sprintf("deployments.%d.worker_queues", deploymentsIdx)
+			workerQueues := fmt.Sprintf("deployments.%d.worker_queues", deploymentIdx)
 			if instanceState.Attributes[workerQueues] != "" {
 				return fmt.Errorf("expected 'worker_queues' to be empty")
 			}
 		} else if instanceState.Attributes[executor] == "CELERY" {
-			workerQueues := fmt.Sprintf("deployments.%d.worker_queues.0.name", deploymentsIdx)
+			workerQueues := fmt.Sprintf("deployments.%d.worker_queues.0.name", deploymentIdx)
 			if instanceState.Attributes[workerQueues] == "" {
 				return fmt.Errorf("expected 'worker_queues.0.name' to be set")
 			}
 		}
-		typ := fmt.Sprintf("deployments.%d.type", deploymentsIdx)
+		typ := fmt.Sprintf("deployments.%d.type", deploymentIdx)
 		if instanceState.Attributes[typ] == "" {
 			return fmt.Errorf("expected 'type' to be set")
 		}
-		isCiCdEnforced := fmt.Sprintf("deployments.%d.is_cicd_enforced", deploymentsIdx)
+		isCiCdEnforced := fmt.Sprintf("deployments.%d.is_cicd_enforced", deploymentIdx)
 		if instanceState.Attributes[isCiCdEnforced] == "" {
 			return fmt.Errorf("expected 'is_cicd_enforced' to be set")
 		}
