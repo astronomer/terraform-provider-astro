@@ -2,8 +2,9 @@ package datasources_test
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
+
+	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -13,7 +14,7 @@ import (
 )
 
 func TestAcc_DataSourceClustersHybrid(t *testing.T) {
-	resourceName := "test_data_clusters_hybrid"
+	tfVarName := "test_data_clusters_hybrid"
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			astronomerprovider.TestAccPreCheck(t)
@@ -22,35 +23,27 @@ func TestAcc_DataSourceClustersHybrid(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Check the data source for clusters for a hybrid organization
 			{
-				Config: astronomerprovider.ProviderConfig(t, false) + clusters(resourceName),
+				Config: astronomerprovider.ProviderConfig(t, false) + clusters(tfVarName),
 				Check: resource.ComposeTestCheckFunc(
-					checkClusters(resourceName),
+					checkClusters(tfVarName),
 				),
 			},
 		},
 	})
 }
 
-func clusters(resourceName string) string {
+func clusters(tfVarName string) string {
 	return fmt.Sprintf(`
-data astronomer_clusters "%v" {}`, resourceName)
+data astronomer_clusters "%v" {}`, tfVarName)
 }
 
-func checkClusters(resourceName string) resource.TestCheckFunc {
+func checkClusters(tfVarName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceState := s.Modules[0].Resources[fmt.Sprintf("data.astronomer_clusters.%v", resourceName)]
-		if resourceState == nil {
-			return fmt.Errorf("resource not found in state for data source '%s'", resourceName)
-		}
-		instanceState := resourceState.Primary
-		if instanceState == nil {
-			return fmt.Errorf("resource has no primary instance")
-		}
-		numDeployments, err := strconv.Atoi(instanceState.Attributes["clusters.#"])
+		instanceState, numClusters, err := utils.GetDataSourcesLength(s, tfVarName, "clusters")
 		if err != nil {
-			return fmt.Errorf("expected a number for field 'clusters', got %s", instanceState.Attributes["clusters.#"])
+			return err
 		}
-		if numDeployments == 0 {
+		if numClusters == 0 {
 			return fmt.Errorf("expected clusters to be greater or equal to 1, got %s", instanceState.Attributes["clusters.#"])
 		}
 
