@@ -2,6 +2,8 @@ package schemas
 
 import (
 	"github.com/astronomer/astronomer-terraform-provider/internal/provider/validators"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -47,9 +49,6 @@ func DeploymentsElementAttributeTypes() map[string]attr.Type {
 		"webserver_ingress_hostname":  types.StringType,
 		"webserver_url":               types.StringType,
 		"webserver_airflow_api_url":   types.StringType,
-		"webserver_cpu":               types.StringType,
-		"webserver_memory":            types.StringType,
-		"webserver_replicas":          types.Int64Type,
 		"status":                      types.StringType,
 		"status_reason":               types.StringType,
 		"dag_tarball_version":         types.StringType,
@@ -96,19 +95,25 @@ func DeploymentsDataSourceSchemaAttributes() map[string]schema.Attribute {
 			ElementType: types.StringType,
 			Optional:    true,
 			Validators: []validator.List{
-				validators.ListIsCuids(),
+				listvalidator.ValueStringsAre(validators.IsCuid()),
+				listvalidator.UniqueValues(),
 			},
 		},
 		"workspace_ids": schema.ListAttribute{
 			ElementType: types.StringType,
 			Optional:    true,
 			Validators: []validator.List{
-				validators.ListIsCuids(),
+				listvalidator.ValueStringsAre(validators.IsCuid()),
+				listvalidator.UniqueValues(),
 			},
 		},
 		"names": schema.ListAttribute{
 			ElementType: types.StringType,
 			Optional:    true,
+			Validators: []validator.List{
+				listvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+				listvalidator.UniqueValues(),
+			},
 		},
 	}
 }

@@ -121,6 +121,7 @@ func (p *AstronomerProvider) Configure(
 func (p *AstronomerProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		resources.NewWorkspaceResource,
+		resources.NewDeploymentResource,
 	}
 }
 

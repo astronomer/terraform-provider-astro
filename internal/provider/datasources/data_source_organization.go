@@ -73,11 +73,10 @@ func (d *organizationDataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var data models.OrganizationDataSource
+	var data models.Organization
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}

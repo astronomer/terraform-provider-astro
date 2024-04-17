@@ -53,8 +53,9 @@ provider "astronomer" {
 3. Run the following commands to apply the provider:
 ```shell
 export ASTRO_API_TOKEN=<token>
-terraform apply
-terraform plan
+terraform init # only needed the first time - initializes a working directory and downloads the necessary provider plugins and modules and setting up the backend for storing your infrastructure's state
+terraform plan # creates a plan consisting of a set of changes that will make your resources match your configuration
+terraform apply # performs a plan just like terraform plan does, but then actually carries out the planned changes to each resource using the relevant infrastructure provider's API
 ```
 
 ## Developing the Provider
@@ -63,16 +64,16 @@ If you wish to work on the provider, you'll first need [Go](http://www.golang.or
 
 To compile the provider, see [Building The Provider](## Building The Provider).
 
-To add example docs, add the correspond `.tf` files to the `examples` directory.
+To add example docs, add the correspond `.tf` files to the `examples` directory. These should be added for every new data source and resource.
 
 To run terraform with the provider, create a `.terraformrc` file in your home directory (`~`) with the following content to override the provider installation with the local build:
 
 ```hcl
 provider_installation {
   dev_overrides {
-    "registry.terraform.io/astronomer/astronomer" = "~/astronomer/astronomer-terraform-provider/bin" # Path to the provider binary
+    "registry.terraform.io/astronomer/astronomer" = "~/astronomer-terraform-provider/bin" # Your path to the provider binary
   }
-direct {}
+  direct {}
 }
 ```
 
@@ -86,14 +87,9 @@ terraform {
   }
 }
 
-variable "token" {
-  type = string
-}
-
 provider "astronomer" {
   organization_id = "<cuid>"
   host            = "https://api.astronomer-dev.io"
-  token           = var.token
 }
 
 data "astronomer_workspace" "example" {
@@ -131,8 +127,10 @@ Using the terraform-plugin-testing framework, each `resource.Test` runs an accep
 In order to run the full suite of Acceptance tests, run `make testacc`.
 You will also need to set the following environment variables:
 - `ASTRO_API_HOST`
-- `ASTRO_API_TOKEN`
-- `ASTRO_ORGANIZATION_ID`
+- `HOSTED_ORGANIZATION_ID`
+- `HOSTED_ORGANIZATION_API_TOKEN` - an organization owner API token for the above organization
+- `HYBRID_ORGANIZATION_ID`
+- `HYBRID_ORGANIZATION_API_TOKEN` - an organization owner API token for the above organization
 
 The acceptance tests will run against the Astronomer API and create/read/update/delete real resources.
 

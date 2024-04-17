@@ -1,8 +1,14 @@
 package schemas
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -90,6 +96,70 @@ func HibernationScheduleDataSourceSchemaAttributes() map[string]datasourceSchema
 	}
 }
 
+func ScalingSpecResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"hibernation_spec": resourceSchema.SingleNestedAttribute{
+			Attributes: HibernationSpecResourceSchemaAttributes(),
+			Optional:   true,
+		},
+	}
+}
+
+func HibernationSpecResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"override": resourceSchema.SingleNestedAttribute{
+			Attributes: HibernationOverrideResourceSchemaAttributes(),
+			Optional:   true,
+		},
+		"schedules": resourceSchema.ListNestedAttribute{
+			NestedObject: resourceSchema.NestedAttributeObject{
+				Attributes: HibernationScheduleResourceSchemaAttributes(),
+			},
+			Validators: []validator.List{
+				listvalidator.SizeAtMost(10),
+			},
+			Optional: true,
+		},
+	}
+}
+
+func HibernationOverrideResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"is_active": resourceSchema.BoolAttribute{
+			Computed: true,
+		},
+		"is_hibernating": resourceSchema.BoolAttribute{
+			Optional: true,
+			Validators: []validator.Bool{
+				boolvalidator.AlsoRequires(path.MatchRoot("override_until")),
+			},
+		},
+		"override_until": resourceSchema.StringAttribute{
+			Optional: true,
+		},
+	}
+}
+
+func HibernationScheduleResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"description": resourceSchema.StringAttribute{
+			Optional: true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtMost(200),
+			},
+		},
+		"hibernate_at_cron": resourceSchema.StringAttribute{
+			Required: true,
+		},
+		"is_enabled": resourceSchema.BoolAttribute{
+			Required: true,
+		},
+		"wake_at_cron": resourceSchema.StringAttribute{
+			Required: true,
+		},
+	}
+}
+
 // ScalingStatus
 func ScalingStatusAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
@@ -151,6 +221,32 @@ func HibernationStatusDataSourceSchemaAttributes() map[string]datasourceSchema.A
 		"reason": datasourceSchema.StringAttribute{
 			Computed:            true,
 			MarkdownDescription: "Reason for the current state",
+		},
+	}
+}
+
+func ScalingStatusResourceAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"hibernation_status": resourceSchema.SingleNestedAttribute{
+			Attributes: HibernationStatusResourceSchemaAttributes(),
+			Computed:   true,
+		},
+	}
+}
+
+func HibernationStatusResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"is_hibernating": resourceSchema.BoolAttribute{
+			Computed: true,
+		},
+		"next_event_at": resourceSchema.StringAttribute{
+			Computed: true,
+		},
+		"next_event_type": resourceSchema.StringAttribute{
+			Computed: true,
+		},
+		"reason": resourceSchema.StringAttribute{
+			Computed: true,
 		},
 	}
 }

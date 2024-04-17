@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+
 	"github.com/samber/lo"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
@@ -75,18 +77,27 @@ func (d *workspacesDataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var data models.WorkspacesDataSource
+	var data models.Workspaces
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	params := &platform.ListWorkspacesParams{
 		Limit: lo.ToPtr(1000),
 	}
-	params.WorkspaceIds = utils.TypesListToStringSlicePtr(data.WorkspaceIds)
-	params.Names = utils.TypesListToStringSlicePtr(data.Names)
-
-	if resp.Diagnostics.HasError() {
+	var diags diag.Diagnostics
+	params.WorkspaceIds, diags = utils.TypesListToStringSlicePtr(ctx, data.WorkspaceIds)
+	if diags.HasError() {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read workspaces, got error %v", diags.Errors()[0].Summary()))
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+	params.Names, diags = utils.TypesListToStringSlicePtr(ctx, data.Names)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
 		return
 	}
 
@@ -128,7 +139,7 @@ func (d *workspacesDataSource) Read(
 	}
 
 	// Populate the model with the response data
-	diags := data.ReadFromResponse(ctx, workspaces)
+	diags = data.ReadFromResponse(ctx, workspaces)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

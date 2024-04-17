@@ -16,33 +16,27 @@ import (
 )
 
 func TestUnit_StringList(t *testing.T) {
-	input := []string{"one", "two", "three"}
+	t.Run("nil", func(t *testing.T) {
+		list, diags := utils.StringList(nil)
 
-	list, diags := utils.StringList(input)
+		assert.False(t, diags.HasError())
+		assert.Equal(t, 0, len(list.Elements()))
+	})
 
-	assert.False(t, diags.HasError())
-	assert.Equal(t, len(input), len(list.Elements()))
-	for i, v := range input {
-		assert.Equal(t, fmt.Sprintf(`"%s"`, v), list.Elements()[i].String())
-	}
+	t.Run("with values", func(t *testing.T) {
+		input := []string{"one", "two", "three"}
+
+		list, diags := utils.StringList(&input)
+
+		assert.False(t, diags.HasError())
+		assert.Equal(t, len(input), len(list.Elements()))
+		for i, v := range input {
+			assert.Equal(t, fmt.Sprintf(`"%s"`, v), list.Elements()[i].String())
+		}
+	})
 }
 
 func TestUnit_ObjectList(t *testing.T) {
-	ctx := context.Background()
-	input := []models.DeploymentEnvironmentVariable{
-		{
-			Key:       types.StringValue("key1"),
-			Value:     types.StringValue("value1"),
-			UpdatedAt: types.StringValue("date1"),
-			IsSecret:  types.BoolValue(false),
-		},
-		{
-			Key:       types.StringValue("key2"),
-			Value:     types.StringValue("value2"),
-			UpdatedAt: types.StringValue("date2"),
-			IsSecret:  types.BoolValue(true),
-		},
-	}
 	transformer := func(ctx context.Context, value models.DeploymentEnvironmentVariable) (types.Object, diag.Diagnostics) {
 		obj, diags := types.ObjectValue(schemas.DeploymentEnvironmentVariableAttributeTypes(), map[string]attr.Value{
 			"key":        value.Key,
@@ -55,23 +49,60 @@ func TestUnit_ObjectList(t *testing.T) {
 		}
 		return obj, nil
 	}
-	list, diags := utils.ObjectList(ctx, input, schemas.DeploymentEnvironmentVariableAttributeTypes(), transformer)
 
-	assert.False(t, diags.HasError())
-	assert.Equal(t, len(input), len(list.Elements()))
-	for i, v := range input {
-		objString := list.Elements()[i].String()
-		assert.Contains(t, objString, v.Key.String())
-		assert.Contains(t, objString, v.Value.String())
-		assert.Contains(t, objString, v.UpdatedAt.String())
-		assert.Contains(t, objString, v.IsSecret.String())
-	}
+	t.Run("nil", func(t *testing.T) {
+		ctx := context.Background()
+		list, diags := utils.ObjectList(ctx, nil, schemas.DeploymentEnvironmentVariableAttributeTypes(), transformer)
+
+		assert.False(t, diags.HasError())
+		assert.Equal(t, 0, len(list.Elements()))
+	})
+
+	t.Run("with values", func(t *testing.T) {
+		ctx := context.Background()
+		input := []models.DeploymentEnvironmentVariable{
+			{
+				Key:       types.StringValue("key1"),
+				Value:     types.StringValue("value1"),
+				UpdatedAt: types.StringValue("date1"),
+				IsSecret:  types.BoolValue(false),
+			},
+			{
+				Key:       types.StringValue("key2"),
+				Value:     types.StringValue("value2"),
+				UpdatedAt: types.StringValue("date2"),
+				IsSecret:  types.BoolValue(true),
+			},
+		}
+		list, diags := utils.ObjectList(ctx, &input, schemas.DeploymentEnvironmentVariableAttributeTypes(), transformer)
+
+		assert.False(t, diags.HasError())
+		assert.Equal(t, len(input), len(list.Elements()))
+		for i, v := range input {
+			objString := list.Elements()[i].String()
+			assert.Contains(t, objString, v.Key.ValueString())
+			assert.Contains(t, objString, v.Value.ValueString())
+			assert.Contains(t, objString, v.UpdatedAt.ValueString())
+			assert.Contains(t, objString, fmt.Sprintf("%v", v.IsSecret.ValueBool()))
+		}
+	})
 }
 
 func TestUnit_TypesListToStringSlicePtr(t *testing.T) {
-	list := types.ListValueMust(types.StringType, []attr.Value{types.StringValue("string1"), types.StringValue("string2")})
+	t.Run("empty", func(t *testing.T) {
+		list := types.ListValueMust(types.StringType, []attr.Value{})
 
-	expected := &[]string{"string1", "string2"}
-	result := utils.TypesListToStringSlicePtr(list)
-	assert.Equal(t, expected, result)
+		result, diags := utils.TypesListToStringSlicePtr(context.Background(), list)
+		assert.Nil(t, diags)
+		assert.Nil(t, result)
+	})
+
+	t.Run("with values", func(t *testing.T) {
+		list := types.ListValueMust(types.StringType, []attr.Value{types.StringValue("string1"), types.StringValue("string2")})
+
+		expected := &[]string{"string1", "string2"}
+		result, diags := utils.TypesListToStringSlicePtr(context.Background(), list)
+		assert.Nil(t, diags)
+		assert.Equal(t, expected, result)
+	})
 }
