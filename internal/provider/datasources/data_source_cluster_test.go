@@ -19,11 +19,9 @@ func TestAcc_DataSourceCluster(t *testing.T) {
 		},
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			//Check the data source for deployments for a hosted organization
 			{
 				Config: astronomerprovider.ProviderConfig(t, false) + cluster(resourceName, hybridClusterId),
 				Check: resource.ComposeTestCheckFunc(
-					// These checks are for the deployment data source (singular)
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "name"),
 					resource.TestCheckResourceAttrSet(resourceVar, "cloud_provider"),
