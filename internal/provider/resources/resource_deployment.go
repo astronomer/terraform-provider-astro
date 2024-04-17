@@ -140,7 +140,6 @@ func (r *DeploymentResource) Create(
 			ResourceQuotaMemory:  data.ResourceQuotaMemory.ValueString(),
 			SchedulerSize:        platform.CreateStandardDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString()),
 			Type:                 platform.CreateStandardDeploymentRequestTypeSTANDARD,
-			WorkloadIdentity:     data.WorkloadIdentity.ValueStringPointer(),
 			WorkspaceId:          data.WorkspaceId.ValueString(),
 		}
 
@@ -200,7 +199,6 @@ func (r *DeploymentResource) Create(
 			ResourceQuotaMemory:  data.ResourceQuotaMemory.ValueString(),
 			SchedulerSize:        platform.CreateDedicatedDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString()),
 			Type:                 platform.CreateDedicatedDeploymentRequestTypeDEDICATED,
-			WorkloadIdentity:     data.WorkloadIdentity.ValueStringPointer(),
 			WorkspaceId:          data.WorkspaceId.ValueString(),
 		}
 
@@ -258,7 +256,6 @@ func (r *DeploymentResource) Create(
 			},
 			TaskPodNodePoolId: data.TaskPodNodePoolId.ValueStringPointer(),
 			Type:              platform.CreateHybridDeploymentRequestTypeHYBRID,
-			WorkloadIdentity:  data.WorkloadIdentity.ValueStringPointer(),
 			WorkspaceId:       data.WorkspaceId.ValueString(),
 		}
 
@@ -412,7 +409,6 @@ func (r *DeploymentResource) Update(
 			ResourceQuotaMemory: data.ResourceQuotaMemory.ValueString(),
 			SchedulerSize:       platform.UpdateStandardDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString()),
 			Type:                platform.UpdateStandardDeploymentRequestTypeSTANDARD,
-			WorkloadIdentity:    data.WorkloadIdentity.ValueStringPointer(),
 			WorkspaceId:         data.WorkspaceId.ValueString(),
 		}
 
@@ -471,7 +467,6 @@ func (r *DeploymentResource) Update(
 			ResourceQuotaMemory: data.ResourceQuotaMemory.ValueString(),
 			SchedulerSize:       platform.UpdateDedicatedDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString()),
 			Type:                platform.UpdateDedicatedDeploymentRequestTypeDEDICATED,
-			WorkloadIdentity:    data.WorkloadIdentity.ValueStringPointer(),
 			WorkspaceId:         data.WorkspaceId.ValueString(),
 		}
 
@@ -527,7 +522,6 @@ func (r *DeploymentResource) Update(
 			},
 			TaskPodNodePoolId: data.TaskPodNodePoolId.ValueStringPointer(),
 			Type:              platform.UpdateHybridDeploymentRequestTypeHYBRID,
-			WorkloadIdentity:  data.WorkloadIdentity.ValueStringPointer(),
 			WorkspaceId:       data.WorkspaceId.ValueString(),
 		}
 
