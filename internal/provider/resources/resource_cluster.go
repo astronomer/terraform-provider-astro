@@ -408,12 +408,12 @@ func (r *ClusterResource) Delete(
 	}
 
 	// Create the timeout context for the cluster delete
-	updateTimeout, diags := data.Timeouts.Update(ctx, 1*time.Hour)
+	deleteTimeout, diags := data.Timeouts.Delete(ctx, 1*time.Hour)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
+	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 
 	// delete request
@@ -579,7 +579,7 @@ func (r *ClusterResource) resourceRefreshFunc(ctx context.Context, clusterId str
 		}
 		statusCode, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
 		if statusCode == http.StatusNotFound {
-			return nil, "DELETED", nil
+			return &platform.Cluster{}, "DELETED", nil
 		}
 		if diagnostic != nil {
 			return nil, "", fmt.Errorf("error getting cluster %s", diagnostic.Detail())
