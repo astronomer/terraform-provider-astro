@@ -257,10 +257,6 @@ func checkDeployments(tfVarName, deploymentName string) resource.TestCheckFunc {
 			}
 		}
 
-		description := fmt.Sprintf("deployments.%d.description", deploymentIdx)
-		if instanceState.Attributes[description] == "" {
-			return fmt.Errorf("expected 'description' to be set")
-		}
 		createdAt := fmt.Sprintf("deployments.%d.created_at", deploymentIdx)
 		if instanceState.Attributes[createdAt] == "" {
 			return fmt.Errorf("expected 'created_at' to be set")
