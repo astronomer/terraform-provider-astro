@@ -19,8 +19,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// We will test dedicated cluster resources once dedicated_cluster_resource is implemented
-
 func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 	namePrefix := utils.GenerateTestResourceName(10)
 
