@@ -403,6 +403,7 @@ func dedicatedDeployment(input dedicatedDeploymentInput) string {
 	resource_quota_memory = "20Gi"
 	scheduler_size = "%v"
 	workspace_id = %s
+	environment_variables = []
 }
 `, input.Name, input.Name, input.Description, input.ClusterResourceVar, input.SchedulerSize, input.WorkspaceResourceVar)
 }
