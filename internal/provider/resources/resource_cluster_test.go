@@ -55,7 +55,6 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
 					cluster(clusterInput{
 						Name:           awsClusterName,
-						Description:    "bad description",
 						Region:         "us-east-1",
 						CloudProvider:  "AWS",
 						DbInstanceType: "db.m6g.large",
@@ -70,7 +69,6 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
 					resource.TestCheckResourceAttr(awsResourceVar, "name", awsClusterName),
-					resource.TestCheckResourceAttr(awsResourceVar, "description", "bad description"),
 					resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-1"),
 					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
 					resource.TestCheckResourceAttr(awsResourceVar, "db_instance_type", "db.m6g.large"),
@@ -99,7 +97,6 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
 					cluster(clusterInput{
 						Name:           awsClusterName,
-						Description:    "bad description - updated",
 						Region:         "us-east-1",
 						CloudProvider:  "AWS",
 						DbInstanceType: "db.r5.xlarge",
@@ -114,7 +111,6 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
 					resource.TestCheckResourceAttr(awsResourceVar, "name", awsClusterName),
-					resource.TestCheckResourceAttr(awsResourceVar, "description", "bad description - updated"),
 					resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-1"),
 					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
 					resource.TestCheckResourceAttr(awsResourceVar, "db_instance_type", "db.r5.xlarge"),
@@ -140,7 +136,6 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
 					cluster(clusterInput{
 						Name:                               awsClusterName,
-						Description:                        utils.TestResourceDescription,
 						Region:                             "us-east-1",
 						CloudProvider:                      "AWS",
 						DbInstanceType:                     "db.m6g.large",
@@ -156,7 +151,6 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
 					resource.TestCheckResourceAttr(awsResourceVar, "name", awsClusterName),
-					resource.TestCheckResourceAttr(awsResourceVar, "description", utils.TestResourceDescription),
 					resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-1"),
 					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
 					resource.TestCheckResourceAttr(awsResourceVar, "db_instance_type", "db.m6g.large"),
@@ -182,7 +176,6 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
 					cluster(clusterInput{
 						Name:                               awsClusterName,
-						Description:                        utils.TestResourceDescription,
 						Region:                             "us-east-1",
 						CloudProvider:                      "AWS",
 						DbInstanceType:                     "db.m6g.large",
@@ -191,7 +184,6 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
 					resource.TestCheckResourceAttr(awsResourceVar, "name", awsClusterName),
-					resource.TestCheckResourceAttr(awsResourceVar, "description", utils.TestResourceDescription),
 					resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-1"),
 					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
 					resource.TestCheckResourceAttr(awsResourceVar, "db_instance_type", "db.m6g.large"),
@@ -228,7 +220,6 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
 					cluster(clusterInput{
 						Name:                               azureClusterName,
-						Description:                        utils.TestResourceDescription,
 						Region:                             "westus2",
 						CloudProvider:                      "AZURE",
 						DbInstanceType:                     "Standard_D2ds_v4",
@@ -244,7 +235,6 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
 					resource.TestCheckResourceAttr(azureResourceVar, "name", azureClusterName),
-					resource.TestCheckResourceAttr(azureResourceVar, "description", utils.TestResourceDescription),
 					resource.TestCheckResourceAttr(azureResourceVar, "region", "westus2"),
 					resource.TestCheckResourceAttr(azureResourceVar, "cloud_provider", "AZURE"),
 					resource.TestCheckResourceAttr(azureResourceVar, "db_instance_type", "Standard_D2ds_v4"),
@@ -290,7 +280,6 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
 					cluster(clusterInput{
 						Name:                               gcpClusterName,
-						Description:                        utils.TestResourceDescription,
 						Region:                             "us-central1",
 						CloudProvider:                      "GCP",
 						DbInstanceType:                     "Small General Purpose",
@@ -344,7 +333,6 @@ func TestAcc_ResourceClusterRemovedOutsideOfTerraform(t *testing.T) {
 	clusterResource := fmt.Sprintf("astronomer_cluster.%v", clusterName)
 	depInput := clusterInput{
 		Name:           clusterName,
-		Description:    utils.TestResourceDescription,
 		Region:         "us-east-1",
 		CloudProvider:  "AWS",
 		DbInstanceType: "db.m6g.large",
@@ -421,7 +409,6 @@ func dedicatedDeployment(input dedicatedDeploymentInput) string {
 
 type clusterInput struct {
 	Name                               string
-	Description                        string
 	Region                             string
 	CloudProvider                      string
 	DbInstanceType                     string
@@ -438,7 +425,6 @@ service_subnet_range =  "172.22.0.0/22",`
 	}
 	return fmt.Sprintf(`resource "astronomer_cluster" "%v" {
 	name = "%s"
-	description = "%s"
 	type = "DEDICATED"
 	region = "%v"
 	cloud_provider = "%v"
@@ -447,7 +433,7 @@ service_subnet_range =  "172.22.0.0/22",`
 	%v
 	workspace_ids = [%v]
 }
-`, input.Name, input.Name, input.Description, input.Region, input.CloudProvider, input.DbInstanceType, gcpNetworkFields, input.RestrictedWorkspaceResourceVarName)
+`, input.Name, input.Name, input.Region, input.CloudProvider, input.DbInstanceType, gcpNetworkFields, input.RestrictedWorkspaceResourceVarName)
 }
 
 func clusterWithVariableName(input clusterInput) string {
