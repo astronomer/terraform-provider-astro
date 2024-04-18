@@ -390,7 +390,7 @@ func dedicatedDeployment(input dedicatedDeploymentInput) string {
 	name = "%s"
 	description = "%s"
 	type = "DEDICATED"
-	cluster_id = %s
+	cluster_id = %s.id
 	contact_emails = []
 	default_task_pod_cpu = "0.25"
 	default_task_pod_memory = "0.5Gi"
@@ -402,7 +402,7 @@ func dedicatedDeployment(input dedicatedDeploymentInput) string {
 	resource_quota_cpu = "10"
 	resource_quota_memory = "20Gi"
 	scheduler_size = "%v"
-	workspace_id = %s
+	workspace_id = %s.id
 	environment_variables = []
 }
 `, input.Name, input.Name, input.Description, input.ClusterResourceVar, input.SchedulerSize, input.WorkspaceResourceVar)
@@ -432,7 +432,7 @@ service_subnet_range =  "172.22.0.0/22",`
 	db_instance_type = "%v"
 	vpc_subnet_range = "172.20.0.0/20"
 	%v
-	workspace_ids = [%v]
+	workspace_ids = [%v.id]
 }
 `, input.Name, input.Name, input.Region, input.CloudProvider, input.DbInstanceType, gcpNetworkFields, input.RestrictedWorkspaceResourceVarName)
 }
