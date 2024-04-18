@@ -418,6 +418,10 @@ type clusterInput struct {
 
 func cluster(input clusterInput) string {
 	gcpNetworkFields := ""
+	workspaceId := ""
+	if input.RestrictedWorkspaceResourceVarName != "" {
+		workspaceId = fmt.Sprintf("%v.id", input.RestrictedWorkspaceResourceVarName)
+	}
 	if input.CloudProvider == string(platform.ClusterCloudProviderGCP) {
 		gcpNetworkFields = `
 pod_subnet_range = "172.21.0.0/19",
@@ -432,9 +436,9 @@ service_subnet_range =  "172.22.0.0/22",`
 	db_instance_type = "%v"
 	vpc_subnet_range = "172.20.0.0/20"
 	%v
-	workspace_ids = [%v.id]
+	workspace_ids = [%v]
 }
-`, input.Name, input.Name, input.Region, input.CloudProvider, input.DbInstanceType, gcpNetworkFields, input.RestrictedWorkspaceResourceVarName)
+`, input.Name, input.Name, input.Region, input.CloudProvider, input.DbInstanceType, gcpNetworkFields, workspaceId)
 }
 
 func clusterWithVariableName(input clusterInput) string {
