@@ -122,6 +122,7 @@ func (p *AstronomerProvider) Resources(ctx context.Context) []func() resource.Re
 	return []func() resource.Resource{
 		resources.NewWorkspaceResource,
 		resources.NewDeploymentResource,
+		resources.NewClusterResource,
 	}
 }
 

@@ -87,27 +87,103 @@ terraform {
   }
 }
 
+# provider configuration
 provider "astronomer" {
   organization_id = "<cuid>"
   host            = "https://api.astronomer-dev.io"
 }
 
+# get information on an existing workspace
 data "astronomer_workspace" "example" {
   id = "<cuid>>"
 }
 
+# output the workspace data to the terminal
 output "data_workspace_example" {
   value = data.astronomer_workspace.example
 }
 
+# create a new workspace
 resource "astronomer_workspace" "tf_workspace" {
   name                  = "my workspace"
   description           = "my first workspace"
   cicd_enforced_default = false
 }
 
+# output the newly created workspace resource to the terminal
 output "terraform_workspace" {
   value = astronomer_workspace.tf_workspace
+}
+
+# create a new cluster resource
+resource "astronomer_cluster" "tf_cluster" {
+    type = "DEDICATED"
+    name = "my first cluster"
+    region = "us-east-1"
+    cloud_provider = "AWS"
+    db_instance_type = "db.m6g.large"
+    vpc_subnet_range = "172.20.0.0/20"
+    workspace_ids = [astronomer_workspace.tf_workspace.id, data.astronomer_workspace.example.id]
+    timeouts = {
+        create = "3h"
+        update = "2h"
+        delete = "20m"
+    }
+}
+
+# create a new dedicated deployment resource in that cluster
+resource "astronomer_deployment" "tf_deployment" {
+  name        = "my first dedicated deployment"
+  description = ""
+  cluster_id  = astronomer_cluster.tf_cluster.id
+  type = "DEDICATED"
+  contact_emails = ["example@astronomer.io"]
+  default_task_pod_cpu = "0.25"
+  default_task_pod_memory = "0.5Gi"
+  executor = "KUBERNETES"
+  is_cicd_enforced = true
+  is_dag_deploy_enabled = true
+  is_development_mode = false
+  is_high_availability = true
+  resource_quota_cpu = "10"
+  resource_quota_memory = "20Gi"
+  scheduler_size = "SMALL"
+  workspace_id = astronomer_workspace.tf_workspace.id
+  environment_variables = [{
+      key = "key1"
+      value = "value1"
+      is_secret = false
+  }]
+}
+
+# create a new standard deployment resource
+resource "astronomer_standard_deployment" "tf_standard_deployment" {
+  name        = "my first standard deployment"
+  description = ""
+  type = "STANDARD"
+  cloud_provider = "AWS"
+  region = "us-east-1"
+  contact_emails = []
+  default_task_pod_cpu = "0.25"
+  default_task_pod_memory = "0.5Gi"
+  executor = "CELERY"
+  is_cicd_enforced = true
+  is_dag_deploy_enabled = true
+  is_development_mode = false
+  is_high_availability = false
+  resource_quota_cpu = "10"
+  resource_quota_memory = "20Gi"
+  scheduler_size = "SMALL"
+  workspace_id = astronomer_workspace.tf_workspace.id
+  environment_variables = []
+  worker_queues = [{
+      name = "default"
+      is_default = true
+      astro_machine = "A5"
+      max_worker_count = 10
+      min_worker_count = 0
+      worker_concurrency = 1
+  }]
 }
 ```
 
