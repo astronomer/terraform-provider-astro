@@ -401,15 +401,14 @@ func (r *DeploymentResource) Update(
 			Executor:             platform.UpdateStandardDeploymentRequestExecutor(data.Executor.ValueString()),
 			IsCicdEnforced:       data.IsCicdEnforced.ValueBool(),
 			IsDagDeployEnabled:   data.IsDagDeployEnabled.ValueBool(),
-			// TODO: Uncomment once this https://github.com/astronomer/astro/pull/19471 is merged
-			//IsDevelopmentMode:    data.IsDevelopmentMode.ValueBoolPointer(),
-			IsHighAvailability:  data.IsHighAvailability.ValueBool(),
-			Name:                data.Name.ValueString(),
-			ResourceQuotaCpu:    data.ResourceQuotaCpu.ValueString(),
-			ResourceQuotaMemory: data.ResourceQuotaMemory.ValueString(),
-			SchedulerSize:       platform.UpdateStandardDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString()),
-			Type:                platform.UpdateStandardDeploymentRequestTypeSTANDARD,
-			WorkspaceId:         data.WorkspaceId.ValueString(),
+			IsDevelopmentMode:    data.IsDevelopmentMode.ValueBoolPointer(),
+			IsHighAvailability:   data.IsHighAvailability.ValueBool(),
+			Name:                 data.Name.ValueString(),
+			ResourceQuotaCpu:     data.ResourceQuotaCpu.ValueString(),
+			ResourceQuotaMemory:  data.ResourceQuotaMemory.ValueString(),
+			SchedulerSize:        platform.UpdateStandardDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString()),
+			Type:                 platform.UpdateStandardDeploymentRequestTypeSTANDARD,
+			WorkspaceId:          data.WorkspaceId.ValueString(),
 		}
 
 		// contact emails
@@ -459,15 +458,14 @@ func (r *DeploymentResource) Update(
 			Executor:             platform.UpdateDedicatedDeploymentRequestExecutor(data.Executor.ValueString()),
 			IsCicdEnforced:       data.IsCicdEnforced.ValueBool(),
 			IsDagDeployEnabled:   data.IsDagDeployEnabled.ValueBool(),
-			// TODO: Uncomment once this https://github.com/astronomer/astro/pull/19471 is merged
-			//IsDevelopmentMode:    data.IsDevelopmentMode.ValueBoolPointer(),
-			IsHighAvailability:  data.IsHighAvailability.ValueBool(),
-			Name:                data.Name.ValueString(),
-			ResourceQuotaCpu:    data.ResourceQuotaCpu.ValueString(),
-			ResourceQuotaMemory: data.ResourceQuotaMemory.ValueString(),
-			SchedulerSize:       platform.UpdateDedicatedDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString()),
-			Type:                platform.UpdateDedicatedDeploymentRequestTypeDEDICATED,
-			WorkspaceId:         data.WorkspaceId.ValueString(),
+			IsDevelopmentMode:    data.IsDevelopmentMode.ValueBoolPointer(),
+			IsHighAvailability:   data.IsHighAvailability.ValueBool(),
+			Name:                 data.Name.ValueString(),
+			ResourceQuotaCpu:     data.ResourceQuotaCpu.ValueString(),
+			ResourceQuotaMemory:  data.ResourceQuotaMemory.ValueString(),
+			SchedulerSize:        platform.UpdateDedicatedDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString()),
+			Type:                 platform.UpdateDedicatedDeploymentRequestTypeDEDICATED,
+			WorkspaceId:          data.WorkspaceId.ValueString(),
 		}
 
 		// contact emails
