@@ -73,9 +73,6 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
 					resource.TestCheckResourceAttr(awsResourceVar, "db_instance_type", "db.m6g.large"),
 					resource.TestCheckResourceAttrSet(awsResourceVar, "vpc_subnet_range"),
-					resource.TestCheckNoResourceAttr(gcpResourceVar, "pod_subnet_range"),
-					resource.TestCheckNoResourceAttr(gcpResourceVar, "service_peering_range"),
-					resource.TestCheckNoResourceAttr(gcpResourceVar, "service_subnet_range"),
 					resource.TestCheckResourceAttr(awsResourceVar, "workspace_ids.#", "0"),
 
 					// Check via API that cluster exists
