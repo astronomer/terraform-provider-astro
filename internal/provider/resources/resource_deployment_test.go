@@ -213,6 +213,25 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
 				),
 			},
+			// Change is_development_mode back to false (will not recreate)
+			{
+				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
+					Name:                        awsDeploymentName,
+					Description:                 utils.TestResourceDescription,
+					Region:                      "us-east-1",
+					CloudProvider:               "AWS",
+					Executor:                    "KUBERNETES",
+					SchedulerSize:               "SMALL",
+					IncludeEnvironmentVariables: false,
+					IsDevelopmentMode:           false,
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(awsResourceVar, "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr(awsResourceVar, "is_development_mode", "false"),
+					// Check via API that deployment exists
+					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
+				),
+			},
 			// Import existing deployment and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests
 			{
 				ResourceName:            awsResourceVar,

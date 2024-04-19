@@ -19,13 +19,15 @@ func TestAcc_DataSourceOrganization(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + organization(),
 				Check: resource.ComposeTestCheckFunc(
-					// TODO: Add more once OrganizationDataSource fully implemented
 					resource.TestCheckResourceAttr("data.astronomer_organization.t", "id", os.Getenv("HOSTED_ORGANIZATION_ID")),
 					resource.TestCheckResourceAttrSet("data.astronomer_organization.t", "name"),
+					resource.TestCheckResourceAttrSet("data.astronomer_organization.t", "support_plan"),
+					resource.TestCheckResourceAttrSet("data.astronomer_organization.t", "product"),
 					resource.TestCheckResourceAttrSet("data.astronomer_organization.t", "created_by.id"),
 					resource.TestCheckResourceAttrSet("data.astronomer_organization.t", "created_at"),
 					resource.TestCheckResourceAttrSet("data.astronomer_organization.t", "updated_by.id"),
 					resource.TestCheckResourceAttrSet("data.astronomer_organization.t", "updated_at"),
+					resource.TestCheckResourceAttrSet("data.astronomer_organization.t", "status"),
 				),
 			},
 		},

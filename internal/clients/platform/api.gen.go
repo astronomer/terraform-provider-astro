@@ -1637,6 +1637,9 @@ type UpdateDedicatedDeploymentRequest struct {
 	// IsDagDeployEnabled Whether the Deployment has DAG deploys enabled.
 	IsDagDeployEnabled bool `json:"isDagDeployEnabled"`
 
+	// IsDevelopmentMode Whether the Deployment is for development only. If `false`, the Deployment can be considered production for the purposes of support case priority, but development-only features such as hibernation will not be available. You can't update this value to `true` for existing non-development Deployments.
+	IsDevelopmentMode *bool `json:"isDevelopmentMode,omitempty"`
+
 	// IsHighAvailability Whether the Deployment is configured for high availability. If `true`, multiple scheduler pods will be online.
 	IsHighAvailability bool `json:"isHighAvailability"`
 
@@ -1793,6 +1796,9 @@ type UpdateStandardDeploymentRequest struct {
 
 	// IsDagDeployEnabled Whether the Deployment has DAG deploys enabled.
 	IsDagDeployEnabled bool `json:"isDagDeployEnabled"`
+
+	// IsDevelopmentMode Whether the Deployment is for development only. If `false`, the Deployment can be considered production for the purposes of support case priority, but development-only features such as hibernation will not be available. You can't update this value to `true` for existing non-development Deployments.
+	IsDevelopmentMode *bool `json:"isDevelopmentMode,omitempty"`
 
 	// IsHighAvailability Whether the Deployment is configured for high availability. If `true`, multiple scheduler pods will be online.
 	IsHighAvailability bool `json:"isHighAvailability"`
