@@ -132,7 +132,7 @@ resource "astronomer_workspace" "%s" {
 func deleteWorkspaceOutsideOfTerraform(t *testing.T, name string) {
 	t.Helper()
 
-	client, err := utils.GetTestPlatformClient()
+	client, err := utils.GetTestHostedPlatformClient()
 	assert.NoError(t, err)
 
 	ctx := context.Background()
@@ -150,7 +150,7 @@ func deleteWorkspaceOutsideOfTerraform(t *testing.T, name string) {
 func testAccCheckWorkspaceExistence(t *testing.T, name string, shouldExist bool) func(state *terraform.State) error {
 	t.Helper()
 	return func(state *terraform.State) error {
-		client, err := utils.GetTestPlatformClient()
+		client, err := utils.GetTestHostedPlatformClient()
 		assert.NoError(t, err)
 
 		ctx := context.Background()

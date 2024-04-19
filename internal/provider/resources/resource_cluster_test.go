@@ -445,7 +445,7 @@ variable "name" {
 func deleteClusterOutsideOfTerraform(t *testing.T, name string) {
 	t.Helper()
 
-	client, err := utils.GetTestPlatformClient()
+	client, err := utils.GetTestHostedPlatformClient()
 	assert.NoError(t, err)
 
 	organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
@@ -465,7 +465,7 @@ func deleteClusterOutsideOfTerraform(t *testing.T, name string) {
 func testAccCheckClusterExistence(t *testing.T, name string, isHosted, shouldExist bool) func(state *terraform.State) error {
 	t.Helper()
 	return func(state *terraform.State) error {
-		client, err := utils.GetTestPlatformClient()
+		client, err := utils.GetTestHostedPlatformClient()
 		assert.NoError(t, err)
 
 		organizationId := os.Getenv("HYBRID_ORGANIZATION_ID")
