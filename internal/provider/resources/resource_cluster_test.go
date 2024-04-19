@@ -236,10 +236,7 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(azureResourceVar, "cloud_provider", "AZURE"),
 					resource.TestCheckResourceAttr(azureResourceVar, "db_instance_type", "Standard_D2ds_v4"),
 					resource.TestCheckResourceAttrSet(azureResourceVar, "vpc_subnet_range"),
-					resource.TestCheckNoResourceAttr(gcpResourceVar, "pod_subnet_range"),
-					resource.TestCheckNoResourceAttr(gcpResourceVar, "service_peering_range"),
-					resource.TestCheckNoResourceAttr(gcpResourceVar, "service_subnet_range"),
-					resource.TestCheckResourceAttr(awsResourceVar, "workspace_ids.#", "1"),
+					resource.TestCheckResourceAttr(azureResourceVar, "workspace_ids.#", "1"),
 
 					// Check via API that cluster exists
 					testAccCheckClusterExistence(t, azureClusterName, true, true),
@@ -303,7 +300,7 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(gcpResourceVar, "workspace_ids.#", "1"),
 
 					// Check via API that cluster exists
-					testAccCheckClusterExistence(t, awsClusterName, true, true),
+					testAccCheckClusterExistence(t, gcpClusterName, true, true),
 
 					// Check dedicated deployment
 					resource.TestCheckResourceAttr(gcpDeploymentResourceVar, "name", gcpDeploymentName),
