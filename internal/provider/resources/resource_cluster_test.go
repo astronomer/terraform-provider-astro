@@ -417,9 +417,9 @@ func cluster(input clusterInput) string {
 	}
 	if input.CloudProvider == string(platform.ClusterCloudProviderGCP) {
 		gcpNetworkFields = `
-pod_subnet_range = "172.21.0.0/19",
-service_peering_range = "172.23.0.0/20",
-service_subnet_range =  "172.22.0.0/22",`
+	pod_subnet_range = "172.21.0.0/19"
+	service_peering_range = "172.23.0.0/20"
+	service_subnet_range =  "172.22.0.0/22"`
 	}
 	return fmt.Sprintf(`resource "astronomer_cluster" "%v" {
 	name = "%s"
