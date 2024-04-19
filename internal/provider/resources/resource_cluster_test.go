@@ -226,7 +226,7 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 						ClusterResourceVar:   azureResourceVar,
 						WorkspaceResourceVar: workspaceResourceVar,
 						Name:                 azureDeploymentName,
-						Description:          "deployment description",
+						Description:          utils.TestResourceDescription,
 						SchedulerSize:        "SMALL",
 					}),
 				Check: resource.ComposeTestCheckFunc(
@@ -289,10 +289,9 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
 					resource.TestCheckResourceAttr(gcpResourceVar, "name", gcpClusterName),
-					resource.TestCheckResourceAttr(gcpResourceVar, "description", utils.TestResourceDescription),
-					resource.TestCheckResourceAttr(gcpResourceVar, "region", "westus2"),
-					resource.TestCheckResourceAttr(gcpResourceVar, "cloud_provider", "AZURE"),
-					resource.TestCheckResourceAttr(gcpResourceVar, "db_instance_type", "Standard_D2ds_v4"),
+					resource.TestCheckResourceAttr(gcpResourceVar, "region", "us-central1"),
+					resource.TestCheckResourceAttr(gcpResourceVar, "cloud_provider", "GCP"),
+					resource.TestCheckResourceAttr(gcpResourceVar, "db_instance_type", "Small General Purpose"),
 					resource.TestCheckResourceAttrSet(gcpResourceVar, "vpc_subnet_range"),
 					resource.TestCheckResourceAttrSet(gcpResourceVar, "pod_subnet_range"),
 					resource.TestCheckResourceAttrSet(gcpResourceVar, "service_peering_range"),
