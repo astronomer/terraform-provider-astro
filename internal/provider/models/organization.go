@@ -44,7 +44,9 @@ func (data *Organization) ReadFromResponse(
 	if diags.HasError() {
 		return diags
 	}
-	data.TrialExpiresAt = types.StringValue(organization.TrialExpiresAt.String())
+	if organization.TrialExpiresAt != nil {
+		data.TrialExpiresAt = types.StringValue(organization.TrialExpiresAt.String())
+	}
 	data.Status = types.StringPointerValue((*string)(organization.Status))
 	data.PaymentMethod = types.StringPointerValue((*string)(organization.PaymentMethod))
 	data.IsScimEnabled = types.BoolValue(organization.IsScimEnabled)
