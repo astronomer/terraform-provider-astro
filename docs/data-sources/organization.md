@@ -21,10 +21,17 @@ data "astronomer_organization" "example" {}
 
 ### Read-Only
 
+- `billing_email` (String) Organization billing email
 - `created_at` (String) Organization creation timestamp
 - `created_by` (Attributes) Organization creator (see [below for nested schema](#nestedatt--created_by))
 - `id` (String) Organization identifier
+- `is_scim_enabled` (Boolean) Whether SCIM is enabled for the organization
 - `name` (String) Organization name
+- `payment_method` (String) Organization payment method
+- `product` (String) Organization product type
+- `status` (String) Organization status
+- `support_plan` (String) Organization support plan
+- `trial_expires_at` (String) Organization trial expiration timestamp
 - `updated_at` (String) Organization last updated timestamp
 - `updated_by` (Attributes) Organization updater (see [below for nested schema](#nestedatt--updated_by))
 
