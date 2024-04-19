@@ -10,12 +10,19 @@ import (
 
 // Organization describes the data source data model.
 type Organization struct {
-	Id        types.String `tfsdk:"id"`
-	Name      types.String `tfsdk:"name"`
-	CreatedAt types.String `tfsdk:"created_at"`
-	UpdatedAt types.String `tfsdk:"updated_at"`
-	CreatedBy types.Object `tfsdk:"created_by"`
-	UpdatedBy types.Object `tfsdk:"updated_by"`
+	Id             types.String `tfsdk:"id"`
+	Name           types.String `tfsdk:"name"`
+	SupportPlan    types.String `tfsdk:"support_plan"`
+	Product        types.String `tfsdk:"product"`
+	CreatedAt      types.String `tfsdk:"created_at"`
+	UpdatedAt      types.String `tfsdk:"updated_at"`
+	CreatedBy      types.Object `tfsdk:"created_by"`
+	UpdatedBy      types.Object `tfsdk:"updated_by"`
+	TrialExpiresAt types.String `tfsdk:"trial_expires_at"`
+	Status         types.String `tfsdk:"status"`
+	PaymentMethod  types.String `tfsdk:"payment_method"`
+	IsScimEnabled  types.Bool   `tfsdk:"is_scim_enabled"`
+	BillingEmail   types.String `tfsdk:"billing_email"`
 }
 
 func (data *Organization) ReadFromResponse(
@@ -24,6 +31,8 @@ func (data *Organization) ReadFromResponse(
 ) diag.Diagnostics {
 	data.Id = types.StringValue(organization.Id)
 	data.Name = types.StringValue(organization.Name)
+	data.SupportPlan = types.StringValue(string(organization.SupportPlan))
+	data.Product = types.StringPointerValue((*string)(organization.Product))
 	data.CreatedAt = types.StringValue(organization.CreatedAt.String())
 	data.UpdatedAt = types.StringValue(organization.UpdatedAt.String())
 	var diags diag.Diagnostics
@@ -35,6 +44,11 @@ func (data *Organization) ReadFromResponse(
 	if diags.HasError() {
 		return diags
 	}
+	data.TrialExpiresAt = types.StringValue(organization.TrialExpiresAt.String())
+	data.Status = types.StringPointerValue((*string)(organization.Status))
+	data.PaymentMethod = types.StringPointerValue((*string)(organization.PaymentMethod))
+	data.IsScimEnabled = types.BoolValue(organization.IsScimEnabled)
+	data.BillingEmail = types.StringPointerValue(organization.BillingEmail)
 
 	return nil
 }
