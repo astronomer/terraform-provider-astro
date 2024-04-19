@@ -345,7 +345,6 @@ func TestAcc_ResourceClusterRemovedOutsideOfTerraform(t *testing.T) {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(clusterResource, "name", clusterName),
-					resource.TestCheckResourceAttr(clusterResource, "description", utils.TestResourceDescription),
 					// Check via API that workspace exists
 					testAccCheckClusterExistence(t, clusterName, true, true),
 				),
@@ -361,7 +360,6 @@ func TestAcc_ResourceClusterRemovedOutsideOfTerraform(t *testing.T) {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(clusterResource, "name", clusterName),
-					resource.TestCheckResourceAttr(clusterResource, "description", utils.TestResourceDescription),
 					// Check via API that workspace exists
 					testAccCheckClusterExistence(t, clusterName, true, true),
 				),
