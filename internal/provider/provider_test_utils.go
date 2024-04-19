@@ -50,18 +50,19 @@ func TestAccPreCheck(t *testing.T) {
 }
 
 func ProviderConfig(t *testing.T, isHosted bool) string {
-	var orgId string
+	var orgId, token string
 	if isHosted {
 		orgId = os.Getenv("HOSTED_ORGANIZATION_ID")
-		t.Setenv("ASTRO_API_TOKEN", os.Getenv("HOSTED_ORGANIZATION_API_TOKEN"))
+		token = os.Getenv("HOSTED_ORGANIZATION_API_TOKEN")
 	} else {
 		orgId = os.Getenv("HYBRID_ORGANIZATION_ID")
-		t.Setenv("ASTRO_API_TOKEN", os.Getenv("HYBRID_ORGANIZATION_API_TOKEN"))
+		token = os.Getenv("HYBRID_ORGANIZATION_API_TOKEN")
 	}
 
 	return fmt.Sprintf(`
 provider "astronomer" {
 	organization_id = "%v"
 	host = "%v"
-}`, orgId, os.Getenv("ASTRO_API_HOST"))
+	token = "%v"
+}`, orgId, os.Getenv("ASTRO_API_HOST"), token)
 }
