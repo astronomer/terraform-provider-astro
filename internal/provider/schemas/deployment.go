@@ -1,6 +1,7 @@
 package schemas
 
 import (
+	"context"
 	"regexp"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
@@ -252,12 +253,20 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			Optional:            true,
 		},
 		"is_development_mode": resourceSchema.BoolAttribute{
-			MarkdownDescription: "Deployment development mode - required for 'STANDARD' and 'DEDICATED' deployments",
+			MarkdownDescription: "Deployment development mode - required for 'STANDARD' and 'DEDICATED' deployments. If changing from 'False' to 'True', the deployment will be recreated",
 			Optional:            true,
 			PlanModifiers: []planmodifier.Bool{
-				// Remove once this https://github.com/astronomer/astro/pull/19471 is merged
-				// Would recreate the deployment if this attribute changes
-				boolplanmodifier.RequiresReplaceIfConfigured(),
+				boolplanmodifier.RequiresReplaceIf(
+					func(_ context.Context, req planmodifier.BoolRequest, resp *boolplanmodifier.RequiresReplaceIfFuncResponse) {
+						prevIsDevelopmentMode := req.StateValue.ValueBool()
+						newIsDevelopmentMode := req.ConfigValue.ValueBool()
+						if prevIsDevelopmentMode == false && newIsDevelopmentMode == true {
+							resp.RequiresReplace = true
+						}
+					},
+					"Converting a non-development mode deployment to a development mode deployment is not allowed. Therefore, the deployment will be recreated as a development-mode deployment",
+					"Converting a non-development mode deployment to a development mode deployment is not allowed. Therefore, the deployment will be recreated as a development-mode deployment",
+				),
 			},
 		},
 		"resource_quota_cpu": resourceSchema.StringAttribute{

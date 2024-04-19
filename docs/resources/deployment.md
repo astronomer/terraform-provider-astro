@@ -108,7 +108,7 @@ resource "astronomer_deployment" "hybrid" {
 - `cluster_id` (String) Deployment cluster identifier - required for 'HYBRID' and 'DEDICATED' deployments. If changing this value, the deployment will be recreated in the new cluster
 - `default_task_pod_cpu` (String) Deployment default task pod CPU - required for 'STANDARD' and 'DEDICATED' deployments
 - `default_task_pod_memory` (String) Deployment default task pod memory - required for 'STANDARD' and 'DEDICATED' deployments
-- `is_development_mode` (Boolean) Deployment development mode - required for 'STANDARD' and 'DEDICATED' deployments
+- `is_development_mode` (Boolean) Deployment development mode - required for 'STANDARD' and 'DEDICATED' deployments. If changing from 'False' to 'True', the deployment will be recreated
 - `is_high_availability` (Boolean) Deployment high availability - required for 'STANDARD' and 'DEDICATED' deployments
 - `region` (String) Deployment region - required for 'STANDARD' deployments. If changing this value, the deployment will be recreated in the new region
 - `resource_quota_cpu` (String) Deployment resource quota CPU - required for 'STANDARD' and 'DEDICATED' deployments
