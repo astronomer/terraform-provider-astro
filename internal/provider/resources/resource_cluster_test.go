@@ -42,7 +42,7 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 	gcpResourceVar := fmt.Sprintf("astronomer_cluster.%v", gcpClusterName)
 
 	// aws cluster
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -204,7 +204,7 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 	})
 
 	// azure cluster
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -261,7 +261,7 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 	})
 
 	// gcp cluster
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -330,7 +330,7 @@ func TestAcc_ResourceClusterRemovedOutsideOfTerraform(t *testing.T) {
 		CloudProvider:  "AWS",
 		DbInstanceType: "db.m6g.large",
 	}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		CheckDestroy:             testAccCheckClusterExistence(t, clusterName, true, false),
