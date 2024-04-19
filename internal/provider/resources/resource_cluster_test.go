@@ -19,27 +19,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
+func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 	namePrefix := utils.GenerateTestResourceName(10)
 
 	workspaceName := fmt.Sprintf("%v_workspace", namePrefix)
 	awsDeploymentName := fmt.Sprintf("%v_deployment_aws", namePrefix)
-	azureDeploymentName := fmt.Sprintf("%v_deployment_azure", namePrefix)
-	gcpDeploymentName := fmt.Sprintf("%v_deployment_gcp", namePrefix)
 
 	workspaceResourceVar := fmt.Sprintf("astronomer_workspace.%v", workspaceName)
 	awsDeploymentResourceVar := fmt.Sprintf("astronomer_deployment.%v", awsDeploymentName)
-	azureDeploymentResourceVar := fmt.Sprintf("astronomer_deployment.%v", azureDeploymentName)
-	gcpDeploymentResourceVar := fmt.Sprintf("astronomer_deployment.%v", gcpDeploymentName)
 
 	// AWS cluster will switch executors during our tests
 	awsClusterName := fmt.Sprintf("%v_aws", namePrefix)
-	azureClusterName := fmt.Sprintf("%v_azure", namePrefix)
-	gcpClusterName := fmt.Sprintf("%v_gcp", namePrefix)
-
 	awsResourceVar := fmt.Sprintf("astronomer_cluster.%v", awsClusterName)
-	azureResourceVar := fmt.Sprintf("astronomer_cluster.%v", azureClusterName)
-	gcpResourceVar := fmt.Sprintf("astronomer_cluster.%v", gcpClusterName)
 
 	// aws cluster
 	resource.ParallelTest(t, resource.TestCase{
@@ -202,6 +193,19 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
+
+	workspaceName := fmt.Sprintf("%v_workspace", namePrefix)
+	azureDeploymentName := fmt.Sprintf("%v_deployment_azure", namePrefix)
+
+	workspaceResourceVar := fmt.Sprintf("astronomer_workspace.%v", workspaceName)
+	azureDeploymentResourceVar := fmt.Sprintf("astronomer_deployment.%v", azureDeploymentName)
+
+	azureClusterName := fmt.Sprintf("%v_azure", namePrefix)
+	azureResourceVar := fmt.Sprintf("astronomer_cluster.%v", azureClusterName)
 
 	// azure cluster
 	resource.ParallelTest(t, resource.TestCase{
@@ -259,6 +263,19 @@ func TestAcc_ResourceClusterWithDedicatedDeployments(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
+
+	workspaceName := fmt.Sprintf("%v_workspace", namePrefix)
+	gcpDeploymentName := fmt.Sprintf("%v_deployment_gcp", namePrefix)
+
+	workspaceResourceVar := fmt.Sprintf("astronomer_workspace.%v", workspaceName)
+	gcpDeploymentResourceVar := fmt.Sprintf("astronomer_deployment.%v", gcpDeploymentName)
+
+	gcpClusterName := fmt.Sprintf("%v_gcp", namePrefix)
+	gcpResourceVar := fmt.Sprintf("astronomer_cluster.%v", gcpClusterName)
 
 	// gcp cluster
 	resource.ParallelTest(t, resource.TestCase{
