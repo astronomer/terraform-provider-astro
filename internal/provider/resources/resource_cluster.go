@@ -8,15 +8,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/samber/lo"
-
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
 	"github.com/astronomer/astronomer-terraform-provider/internal/provider/models"
 	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
 	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -523,10 +520,22 @@ func validateAzureConfig(ctx context.Context, data *models.ClusterResource) diag
 	var diags diag.Diagnostics
 
 	// Unallowed values
-	if !data.TenantId.IsNull() {
+	if !data.ServicePeeringRange.IsNull() {
 		diags.AddError(
-			"tenant_id is not allowed for 'AWS' cluster",
-			"Please remove tenant_id",
+			"service_peering_range is not allowed for 'AZURE' cluster",
+			"Please remove service_peering_range",
+		)
+	}
+	if !data.PodSubnetRange.IsNull() {
+		diags.AddError(
+			"pod_subnet_range is not allowed for 'AZURE' cluster",
+			"Please remove pod_subnet_range",
+		)
+	}
+	if !data.ServiceSubnetRange.IsNull() {
+		diags.AddError(
+			"service_subnet_range is not allowed for 'AZURE' cluster",
+			"Please remove service_subnet_range",
 		)
 	}
 	return diags
@@ -534,6 +543,26 @@ func validateAzureConfig(ctx context.Context, data *models.ClusterResource) diag
 
 func validateGcpConfig(ctx context.Context, data *models.ClusterResource) diag.Diagnostics {
 	var diags diag.Diagnostics
+
+	// required values
+	if data.ServicePeeringRange.IsNull() {
+		diags.AddError(
+			"service_peering_range is required for 'GCP' cluster",
+			"Please add service_peering_range",
+		)
+	}
+	if data.PodSubnetRange.IsNull() {
+		diags.AddError(
+			"pod_subnet_range is required for 'GCP' cluster",
+			"Please add pod_subnet_range",
+		)
+	}
+	if data.ServiceSubnetRange.IsNull() {
+		diags.AddError(
+			"service_subnet_range is required for 'GCP' cluster",
+			"Please add service_subnet_range",
+		)
+	}
 
 	// Unallowed values
 	if !data.TenantId.IsNull() {
@@ -543,26 +572,6 @@ func validateGcpConfig(ctx context.Context, data *models.ClusterResource) diag.D
 		)
 	}
 	return diags
-}
-
-// RequestClusterTags converts a Terraform list to a list of platform.ClusterTagRequest to be used in create and update requests
-func RequestClusterTags(ctx context.Context, tagsObjList types.List) ([]platform.ClusterK8sTag, diag.Diagnostics) {
-	if len(tagsObjList.Elements()) == 0 {
-		return []platform.ClusterK8sTag{}, nil
-	}
-
-	var clusterTags []models.ClusterTag
-	diags := tagsObjList.ElementsAs(ctx, &clusterTags, false)
-	if diags.HasError() {
-		return nil, diags
-	}
-	platformClusterTags := lo.Map(clusterTags, func(envVar models.ClusterTag, _ int) platform.ClusterK8sTag {
-		return platform.ClusterK8sTag{
-			Key:   envVar.Key.ValueStringPointer(),
-			Value: envVar.Value.ValueStringPointer(),
-		}
-	})
-	return platformClusterTags, nil
 }
 
 // resourceRefreshFunc returns a retry.StateRefreshFunc that polls the platform API for the cluster status
