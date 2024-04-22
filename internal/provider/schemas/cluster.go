@@ -33,7 +33,7 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 			Required:            true,
 		},
 		"cloud_provider": resourceSchema.StringAttribute{
-			MarkdownDescription: "Cluster cloud provide - if changed, the cluster will be recreated.",
+			MarkdownDescription: "Cluster cloud provider - if changed, the cluster will be recreated.",
 			Required:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(

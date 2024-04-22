@@ -33,7 +33,7 @@ type ClusterResource struct {
 	NodePools           types.List     `tfsdk:"node_pools"`
 	WorkspaceIds        types.List     `tfsdk:"workspace_ids"`
 	IsLimited           types.Bool     `tfsdk:"is_limited"`
-	Timeouts            timeouts.Value `tfsdk:"timeouts"`
+	Timeouts            timeouts.Value `tfsdk:"timeouts"` // To allow users to set timeouts for the resource.
 }
 
 // ClusterDataSource describes the data source data model.

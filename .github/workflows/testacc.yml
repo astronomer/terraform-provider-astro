@@ -34,7 +34,7 @@ jobs:
     # This job runs on push to main branch.
     name: Terraform Provider Acceptance Tests
     needs: build
-    timeout-minutes: 180
+    timeout-minutes: 180 # 3 hours since cluster creation and cluster updates can take a while
     strategy:
       fail-fast: true
       matrix:

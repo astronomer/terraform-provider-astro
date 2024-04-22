@@ -57,7 +57,7 @@ resource "astronomer_cluster" "gcp_example" {
 
 ### Required
 
-- `cloud_provider` (String) Cluster cloud provide - if changed, the cluster will be recreated.
+- `cloud_provider` (String) Cluster cloud provider - if changed, the cluster will be recreated.
 - `db_instance_type` (String) Cluster database instance type
 - `name` (String) Cluster name
 - `region` (String) Cluster region - if changed, the cluster will be recreated.
