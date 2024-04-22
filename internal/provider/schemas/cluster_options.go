@@ -1,9 +1,12 @@
 package schemas
 
 import (
+	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -78,10 +81,17 @@ func ClusterOptionsDataSourceSchemaAttributes() map[string]schema.Attribute {
 			Computed: true,
 		},
 		"type": schema.StringAttribute{
-			Optional: true,
+			Required: true,
 		},
 		"cloud_provider": schema.StringAttribute{
 			Optional: true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(platform.ClusterCloudProviderAWS),
+					string(platform.ClusterCloudProviderGCP),
+					string(platform.ClusterCloudProviderAZURE),
+				),
+			},
 		},
 	}
 }
@@ -162,14 +172,16 @@ func ClusterOptionDataSourceSchemaAttributes() map[string]datasourceSchema.Attri
 func DatasourceRegionAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"name": datasourceSchema.StringAttribute{
-			Computed: true,
+			Computed:            true,
+			MarkdownDescription: "Region is limited bool",
 		},
 		"limited": datasourceSchema.BoolAttribute{
-			Computed: true,
+			Computed:            true,
+			MarkdownDescription: "Region is limited bool",
 		},
 		"banned_instances": datasourceSchema.ListAttribute{
 			ElementType:         types.StringType,
-			MarkdownDescription: "Default region banned instances",
+			MarkdownDescription: "Region banned instances",
 			Computed:            true,
 		},
 	}
@@ -178,13 +190,16 @@ func DatasourceRegionAttributes() map[string]datasourceSchema.Attribute {
 func DatasourceProviderInstanceAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"name": datasourceSchema.StringAttribute{
-			Computed: true,
+			Computed:            true,
+			MarkdownDescription: "Provider instance name",
 		},
 		"cpu": datasourceSchema.Int64Attribute{
-			Computed: true,
+			Computed:            true,
+			MarkdownDescription: "Provider instance cpu",
 		},
 		"memory": datasourceSchema.StringAttribute{
-			Computed: true,
+			Computed:            true,
+			MarkdownDescription: "Provider instance memory",
 		},
 	}
 }

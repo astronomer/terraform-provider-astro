@@ -73,16 +73,9 @@ func (data *ClusterOptionDataSource) ReadFromResponse(
 ) diag.Diagnostics {
 	data.Provider = types.StringValue(string(clusterOption.Provider))
 	data.DefaultVpcSubnetRange = types.StringValue(clusterOption.DefaultVpcSubnetRange)
-	if clusterOption.DefaultPodSubnetRange != nil {
-		data.DefaultPodSubnetRange = types.StringValue(*clusterOption.DefaultPodSubnetRange)
-	}
-	if clusterOption.DefaultServiceSubnetRange != nil {
-		data.DefaultServiceSubnetRange = types.StringValue(*clusterOption.DefaultServiceSubnetRange)
-	}
-	if clusterOption.DefaultServicePeeringRange != nil {
-		data.DefaultServicePeeringRange = types.StringValue(*clusterOption.DefaultServicePeeringRange)
-	}
-
+	data.DefaultPodSubnetRange = types.StringPointerValue(clusterOption.DefaultPodSubnetRange)
+	data.DefaultServiceSubnetRange = types.StringPointerValue(clusterOption.DefaultServiceSubnetRange)
+	data.DefaultServicePeeringRange = types.StringPointerValue(clusterOption.DefaultServicePeeringRange)
 	data.NodeCountMin = types.Int64Value(int64(clusterOption.NodeCountMin))
 	data.NodeCountMax = types.Int64Value(int64(clusterOption.NodeCountMax))
 	data.NodeCountDefault = types.Int64Value(int64(clusterOption.NodeCountDefault))
