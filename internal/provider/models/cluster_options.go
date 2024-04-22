@@ -60,6 +60,11 @@ type ClusterOptionDataSource struct {
 	NodeCountMax               types.Int64  `tfsdk:"node_count_max"`
 	NodeCountDefault           types.Int64  `tfsdk:"node_count_default"`
 	DefaultRegion              types.Object `tfsdk:"default_region"`
+	Regions                    types.List   `tfsdk:"regions"`
+	DefaultNodeInstance        types.Object `tfsdk:"default_node_instance"`
+	NodeInstances              types.List   `tfsdk:"node_instances"`
+	DefaultDatabaseInstance    types.Object `tfsdk:"default_database_instance"`
+	DatabaseInstances          types.List   `tfsdk:"database_instances"`
 }
 
 func (data *ClusterOptionDataSource) ReadFromResponse(
@@ -82,7 +87,31 @@ func (data *ClusterOptionDataSource) ReadFromResponse(
 	data.NodeCountMax = types.Int64Value(int64(clusterOption.NodeCountMax))
 	data.NodeCountDefault = types.Int64Value(int64(clusterOption.NodeCountDefault))
 	var diags diag.Diagnostics
-	data.DefaultRegion, diags = DefaultRegionTypesObject(ctx, clusterOption.DefaultRegion)
+	data.DefaultRegion, diags = RegionTypesObject(ctx, clusterOption.DefaultRegion)
+	if diags.HasError() {
+		return diags
+	}
+
+	data.Regions, diags = utils.ObjectList(ctx, &clusterOption.Regions, schemas.RegionAttributeTypes(), RegionTypesObject)
+	if diags.HasError() {
+		return diags
+	}
+	data.DefaultNodeInstance, diags = ProviderInstanceObject(ctx, clusterOption.DefaultNodeInstance)
+	if diags.HasError() {
+		return diags
+	}
+
+	data.NodeInstances, diags = utils.ObjectList(ctx, &clusterOption.NodeInstances, schemas.ProviderInstanceAttributeTypes(), ProviderInstanceObject)
+	if diags.HasError() {
+		return diags
+	}
+
+	data.DefaultDatabaseInstance, diags = ProviderInstanceObject(ctx, clusterOption.DefaultDatabaseInstance)
+	if diags.HasError() {
+		return diags
+	}
+
+	data.DatabaseInstances, diags = utils.ObjectList(ctx, &clusterOption.DatabaseInstances, schemas.ProviderInstanceAttributeTypes(), ProviderInstanceObject)
 	if diags.HasError() {
 		return diags
 	}
@@ -90,27 +119,45 @@ func (data *ClusterOptionDataSource) ReadFromResponse(
 	return nil
 }
 
-type DefaultRegion struct {
+type Region struct {
 	Name            types.String `tfsdk:"name"`
 	Limited         types.Bool   `tfsdk:"limited"`
 	BannedInstances types.List   `tfsdk:"banned_instances"`
 }
 
-func DefaultRegionTypesObject(
+func RegionTypesObject(
 	ctx context.Context,
-	defaultRegionInput platform.ProviderRegion,
-) (defaultRegionOutput types.Object, diags diag.Diagnostics) {
-	defaultRegion := DefaultRegion{
-		Name: types.StringValue(defaultRegionInput.Name),
+	regionInput platform.ProviderRegion,
+) (regionOutput types.Object, diags diag.Diagnostics) {
+	region := Region{
+		Name: types.StringValue(regionInput.Name),
 	}
-	defaultRegion.BannedInstances, diags = utils.StringList(defaultRegionInput.BannedInstances)
+	region.BannedInstances, diags = utils.StringList(regionInput.BannedInstances)
 	if diags.HasError() {
-		return defaultRegionOutput, diags
+		return regionOutput, diags
 	}
 
-	if defaultRegionInput.Limited != nil {
-		val := types.BoolValue(*defaultRegionInput.Limited)
-		defaultRegion.Limited = val
+	if regionInput.Limited != nil {
+		val := types.BoolValue(*regionInput.Limited)
+		region.Limited = val
 	}
-	return types.ObjectValueFrom(ctx, schemas.DefaultRegionAttributeTypes(), defaultRegion)
+	return types.ObjectValueFrom(ctx, schemas.RegionAttributeTypes(), region)
+}
+
+type ProviderInstance struct {
+	Name   types.String `tfsdk:"name"`
+	Memory types.String `tfsdk:"memory"`
+	Cpu    types.Int64  `tfsdk:"cpu"`
+}
+
+func ProviderInstanceObject(
+	ctx context.Context,
+	providerInstanceInput platform.ProviderInstanceType,
+) (types.Object, diag.Diagnostics) {
+	providerInstance := ProviderInstance{
+		Name:   types.StringValue(providerInstanceInput.Name),
+		Memory: types.StringValue(providerInstanceInput.Memory),
+		Cpu:    types.Int64Value(int64(providerInstanceInput.Cpu)),
+	}
+	return types.ObjectValueFrom(ctx, schemas.ProviderInstanceAttributeTypes(), providerInstance)
 }

@@ -7,14 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-//DefaultRegion              ProviderRegionResponse         `json:"defaultRegion,required" validate:"required"`
-//DefaultNodeInstance        ProviderInstanceTypeResponse   `json:"defaultNodeInstance,required" validate:"required"`
-//DefaultDatabaseInstance    ProviderInstanceTypeResponse   `json:"defaultDatabaseInstance,required" validate:"required"`
-//NodeInstances              []ProviderInstanceTypeResponse `json:"nodeInstances,required" validate:"required"`
-//DatabaseInstances          []ProviderInstanceTypeResponse `json:"databaseInstances,required" validate:"required"`
-//TemplateVersions           []TemplateVersionResponse      `json:"templateVersions,required" validate:"required"`
-//Regions                    []ProviderRegionResponse       `json:"regions,required" validate:"required"`
-
 func ClusterOptionsElementAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"provider":                      types.StringType,
@@ -26,18 +18,54 @@ func ClusterOptionsElementAttributeTypes() map[string]attr.Type {
 		"node_count_max":                types.Int64Type,
 		"node_count_default":            types.Int64Type,
 		"default_region": types.ObjectType{
-			AttrTypes: DefaultRegionAttributeTypes(),
+			AttrTypes: RegionAttributeTypes(),
+		},
+		"regions": types.ListType{
+			ElemType: types.ObjectType{
+				AttrTypes: RegionAttributeTypes(),
+			},
+		},
+		"default_node_instance": types.ObjectType{
+			AttrTypes: ProviderInstanceAttributeTypes(),
+		},
+		"node_instances": types.ListType{
+			ElemType: types.ObjectType{
+				AttrTypes: ProviderInstanceAttributeTypes(),
+			},
+		},
+		"default_database_instance": types.ObjectType{
+			AttrTypes: ProviderInstanceAttributeTypes(),
+		},
+		"database_instances": types.ListType{
+			ElemType: types.ObjectType{
+				AttrTypes: ProviderInstanceAttributeTypes(),
+			},
 		},
 	}
 }
 
-func DefaultRegionAttributeTypes() map[string]attr.Type {
+func RegionAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"name":    types.StringType,
 		"limited": types.BoolType,
 		"banned_instances": types.ListType{
 			ElemType: types.StringType,
 		},
+	}
+}
+
+func ProviderInstanceAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"name":   types.StringType,
+		"memory": types.StringType,
+		"cpu":    types.Int64Type,
+	}
+}
+
+func TemplateVersionAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"version": types.StringType,
+		"url":     types.StringType,
 	}
 }
 
@@ -95,12 +123,43 @@ func ClusterOptionDataSourceSchemaAttributes() map[string]datasourceSchema.Attri
 		"default_region": datasourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "ClusterOption default region",
 			Computed:            true,
-			Attributes:          DatasourceDefaultRegionAttributes(),
+			Attributes:          DatasourceRegionAttributes(),
+		},
+		"regions": datasourceSchema.ListNestedAttribute{
+			MarkdownDescription: "ClusterOption regions",
+			Computed:            true,
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: DatasourceRegionAttributes(),
+			},
+		},
+		"default_node_instance": datasourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "ClusterOption default node instance",
+			Computed:            true,
+			Attributes:          DatasourceProviderInstanceAttributes(),
+		},
+		"node_instances": datasourceSchema.ListNestedAttribute{
+			MarkdownDescription: "ClusterOption node instances",
+			Computed:            true,
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: DatasourceProviderInstanceAttributes(),
+			},
+		},
+		"default_database_instance": datasourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "ClusterOption default database instance",
+			Computed:            true,
+			Attributes:          DatasourceProviderInstanceAttributes(),
+		},
+		"database_instances": datasourceSchema.ListNestedAttribute{
+			MarkdownDescription: "ClusterOption database instances",
+			Computed:            true,
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: DatasourceProviderInstanceAttributes(),
+			},
 		},
 	}
 }
 
-func DatasourceDefaultRegionAttributes() map[string]datasourceSchema.Attribute {
+func DatasourceRegionAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"name": datasourceSchema.StringAttribute{
 			Computed: true,
@@ -112,6 +171,20 @@ func DatasourceDefaultRegionAttributes() map[string]datasourceSchema.Attribute {
 			ElementType:         types.StringType,
 			MarkdownDescription: "Default region banned instances",
 			Computed:            true,
+		},
+	}
+}
+
+func DatasourceProviderInstanceAttributes() map[string]datasourceSchema.Attribute {
+	return map[string]datasourceSchema.Attribute{
+		"name": datasourceSchema.StringAttribute{
+			Computed: true,
+		},
+		"cpu": datasourceSchema.Int64Attribute{
+			Computed: true,
+		},
+		"memory": datasourceSchema.StringAttribute{
+			Computed: true,
 		},
 	}
 }

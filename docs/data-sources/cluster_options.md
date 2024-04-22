@@ -29,6 +29,9 @@ ClusterOptions data source
 
 Read-Only:
 
+- `database_instances` (Attributes List) ClusterOption database instances (see [below for nested schema](#nestedatt--cluster_options--database_instances))
+- `default_database_instance` (Attributes) ClusterOption default database instance (see [below for nested schema](#nestedatt--cluster_options--default_database_instance))
+- `default_node_instance` (Attributes) ClusterOption default node instance (see [below for nested schema](#nestedatt--cluster_options--default_node_instance))
 - `default_pod_subnet_range` (String) ClusterOption default pod subnet range
 - `default_region` (Attributes) ClusterOption default region (see [below for nested schema](#nestedatt--cluster_options--default_region))
 - `default_service_peering_range` (String) ClusterOption default service peering range
@@ -37,10 +40,62 @@ Read-Only:
 - `node_count_default` (Number) ClusterOption node count default
 - `node_count_max` (Number) ClusterOption node count max
 - `node_count_min` (Number) ClusterOption node count min
+- `node_instances` (Attributes List) ClusterOption node instances (see [below for nested schema](#nestedatt--cluster_options--node_instances))
 - `provider` (String) ClusterOption provider
+- `regions` (Attributes List) ClusterOption regions (see [below for nested schema](#nestedatt--cluster_options--regions))
+
+<a id="nestedatt--cluster_options--database_instances"></a>
+### Nested Schema for `cluster_options.database_instances`
+
+Read-Only:
+
+- `cpu` (Number)
+- `memory` (String)
+- `name` (String)
+
+
+<a id="nestedatt--cluster_options--default_database_instance"></a>
+### Nested Schema for `cluster_options.default_database_instance`
+
+Read-Only:
+
+- `cpu` (Number)
+- `memory` (String)
+- `name` (String)
+
+
+<a id="nestedatt--cluster_options--default_node_instance"></a>
+### Nested Schema for `cluster_options.default_node_instance`
+
+Read-Only:
+
+- `cpu` (Number)
+- `memory` (String)
+- `name` (String)
+
 
 <a id="nestedatt--cluster_options--default_region"></a>
 ### Nested Schema for `cluster_options.default_region`
+
+Read-Only:
+
+- `banned_instances` (List of String) Default region banned instances
+- `limited` (Boolean)
+- `name` (String)
+
+
+<a id="nestedatt--cluster_options--node_instances"></a>
+### Nested Schema for `cluster_options.node_instances`
+
+Read-Only:
+
+- `cpu` (Number)
+- `memory` (String)
+- `name` (String)
+
+
+<a id="nestedatt--cluster_options--regions"></a>
+### Nested Schema for `cluster_options.regions`
 
 Read-Only:
 
