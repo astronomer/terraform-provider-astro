@@ -514,7 +514,7 @@ variable "name" {
 func deleteDeploymentOutsideOfTerraform(t *testing.T, name string, isHosted bool) {
 	t.Helper()
 
-	client, err := utils.GetTestPlatformClient()
+	client, err := utils.GetTestPlatformClient(isHosted)
 	assert.NoError(t, err)
 
 	organizationId := os.Getenv("HYBRID_ORGANIZATION_ID")
@@ -537,7 +537,7 @@ func deleteDeploymentOutsideOfTerraform(t *testing.T, name string, isHosted bool
 func testAccCheckDeploymentExistence(t *testing.T, name string, isHosted, shouldExist bool) func(state *terraform.State) error {
 	t.Helper()
 	return func(state *terraform.State) error {
-		client, err := utils.GetTestPlatformClient()
+		client, err := utils.GetTestPlatformClient(isHosted)
 		assert.NoError(t, err)
 
 		organizationId := os.Getenv("HYBRID_ORGANIZATION_ID")

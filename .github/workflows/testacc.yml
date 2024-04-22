@@ -34,7 +34,7 @@ jobs:
     # This job runs on push to main branch.
     name: Terraform Provider Acceptance Tests
     needs: build
-    timeout-minutes: 15
+    timeout-minutes: 180 # 3 hours since cluster creation and cluster updates can take a while
     strategy:
       fail-fast: true
       matrix:
@@ -65,5 +65,4 @@ jobs:
           ASTRO_API_HOST: https://api.astronomer-dev.io
           TESTARGS: "-failfast"
         run: make testacc
-        timeout-minutes: 10
 

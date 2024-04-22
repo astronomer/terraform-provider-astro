@@ -34,10 +34,10 @@ func TestAcc_ResourceWorkspace(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + workspace(workspace1Name, "test", false),
+				Config: astronomerprovider.ProviderConfig(t, true) + workspace("test", workspace1Name, "bad description", false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "name", workspace1Name),
-					resource.TestCheckResourceAttr("astronomer_workspace.test", "description", "test"),
+					resource.TestCheckResourceAttr("astronomer_workspace.test", "description", "bad description"),
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "cicd_enforced_default", "false"),
 					// Check via API that workspace exists
 					testAccCheckWorkspaceExistence(t, workspace1Name, true),
@@ -45,7 +45,7 @@ func TestAcc_ResourceWorkspace(t *testing.T) {
 			},
 			// Change properties and check they have been updated in terraform state
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + workspace(workspace2Name, utils.TestResourceDescription, true),
+				Config: astronomerprovider.ProviderConfig(t, true) + workspace("test", workspace2Name, utils.TestResourceDescription, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "name", workspace2Name),
 					resource.TestCheckResourceAttr("astronomer_workspace.test", "description", utils.TestResourceDescription),
@@ -119,20 +119,20 @@ resource "astronomer_workspace" "test" {
 }`, utils.TestResourceDescription)
 }
 
-func workspace(name, description string, cicdEnforcedDefault bool) string {
+func workspace(tfVarName, name, description string, cicdEnforcedDefault bool) string {
 	return fmt.Sprintf(`
-resource "astronomer_workspace" "test" {
+resource "astronomer_workspace" "%s" {
 	name = "%s"
 	description = "%s"
 	cicd_enforced_default = %t
 }
-`, name, description, cicdEnforcedDefault)
+`, tfVarName, name, description, cicdEnforcedDefault)
 }
 
 func deleteWorkspaceOutsideOfTerraform(t *testing.T, name string) {
 	t.Helper()
 
-	client, err := utils.GetTestPlatformClient()
+	client, err := utils.GetTestHostedPlatformClient()
 	assert.NoError(t, err)
 
 	ctx := context.Background()
@@ -150,7 +150,7 @@ func deleteWorkspaceOutsideOfTerraform(t *testing.T, name string) {
 func testAccCheckWorkspaceExistence(t *testing.T, name string, shouldExist bool) func(state *terraform.State) error {
 	t.Helper()
 	return func(state *terraform.State) error {
-		client, err := utils.GetTestPlatformClient()
+		client, err := utils.GetTestHostedPlatformClient()
 		assert.NoError(t, err)
 
 		ctx := context.Background()

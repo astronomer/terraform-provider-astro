@@ -3,6 +3,8 @@ package models
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
 	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
 	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
@@ -10,8 +12,32 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Cluster describes the resource data source data model.
-type Cluster struct {
+// ClusterResource describes the resource data model.
+type ClusterResource struct {
+	Id                  types.String   `tfsdk:"id"`
+	Name                types.String   `tfsdk:"name"`
+	CloudProvider       types.String   `tfsdk:"cloud_provider"`
+	DbInstanceType      types.String   `tfsdk:"db_instance_type"`
+	Region              types.String   `tfsdk:"region"`
+	PodSubnetRange      types.String   `tfsdk:"pod_subnet_range"`
+	ServicePeeringRange types.String   `tfsdk:"service_peering_range"`
+	ServiceSubnetRange  types.String   `tfsdk:"service_subnet_range"`
+	VpcSubnetRange      types.String   `tfsdk:"vpc_subnet_range"`
+	Metadata            types.Object   `tfsdk:"metadata"`
+	Status              types.String   `tfsdk:"status"`
+	CreatedAt           types.String   `tfsdk:"created_at"`
+	UpdatedAt           types.String   `tfsdk:"updated_at"`
+	Type                types.String   `tfsdk:"type"`
+	TenantId            types.String   `tfsdk:"tenant_id"`
+	ProviderAccount     types.String   `tfsdk:"provider_account"`
+	NodePools           types.List     `tfsdk:"node_pools"`
+	WorkspaceIds        types.List     `tfsdk:"workspace_ids"`
+	IsLimited           types.Bool     `tfsdk:"is_limited"`
+	Timeouts            timeouts.Value `tfsdk:"timeouts"` // To allow users to set timeouts for the resource.
+}
+
+// ClusterDataSource describes the data source data model.
+type ClusterDataSource struct {
 	Id                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
 	CloudProvider       types.String `tfsdk:"cloud_provider"`
@@ -52,7 +78,44 @@ type NodePool struct {
 	UpdatedAt              types.String `tfsdk:"updated_at"`
 }
 
-func (data *Cluster) ReadFromResponse(
+func (data *ClusterResource) ReadFromResponse(
+	ctx context.Context,
+	cluster *platform.Cluster,
+) diag.Diagnostics {
+	data.Id = types.StringValue(cluster.Id)
+	data.Name = types.StringValue(cluster.Name)
+	data.CloudProvider = types.StringValue(string(cluster.CloudProvider))
+	data.DbInstanceType = types.StringValue(cluster.DbInstanceType)
+	data.Region = types.StringValue(cluster.Region)
+	data.PodSubnetRange = types.StringPointerValue(cluster.PodSubnetRange)
+	data.ServicePeeringRange = types.StringPointerValue(cluster.ServicePeeringRange)
+	data.ServiceSubnetRange = types.StringPointerValue(cluster.ServiceSubnetRange)
+	data.VpcSubnetRange = types.StringValue(cluster.VpcSubnetRange)
+	var diags diag.Diagnostics
+	data.Metadata, diags = ClusterMetadataTypesObject(ctx, cluster.Metadata)
+	if diags.HasError() {
+		return diags
+	}
+	data.Status = types.StringValue(string(cluster.Status))
+	data.CreatedAt = types.StringValue(cluster.CreatedAt.String())
+	data.UpdatedAt = types.StringValue(cluster.UpdatedAt.String())
+	data.Type = types.StringValue(string(cluster.Type))
+	data.TenantId = types.StringPointerValue(cluster.TenantId)
+	data.ProviderAccount = types.StringPointerValue(cluster.ProviderAccount)
+	data.NodePools, diags = utils.ObjectList(ctx, cluster.NodePools, schemas.NodePoolAttributeTypes(), NodePoolTypesObject)
+	if diags.HasError() {
+		return diags
+	}
+	data.WorkspaceIds, diags = utils.StringList(cluster.WorkspaceIds)
+	if diags.HasError() {
+		return diags
+	}
+	data.IsLimited = types.BoolPointerValue(cluster.IsLimited)
+
+	return nil
+}
+
+func (data *ClusterDataSource) ReadFromResponse(
 	ctx context.Context,
 	cluster *platform.Cluster,
 ) diag.Diagnostics {

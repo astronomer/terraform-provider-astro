@@ -73,7 +73,7 @@ func (d *clusterDataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var data models.Cluster
+	var data models.ClusterDataSource
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)

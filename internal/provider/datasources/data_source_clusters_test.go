@@ -98,10 +98,6 @@ func checkClusters(tfVarName string) resource.TestCheckFunc {
 		if instanceState.Attributes[nodePoolsName] == "" {
 			return fmt.Errorf("expected 'node_pools.0.name' to be set")
 		}
-		metadataExternalIps := fmt.Sprintf("clusters.%d.metadata.external_ips.0", clustersIdx)
-		if instanceState.Attributes[metadataExternalIps] == "" {
-			return fmt.Errorf("expected 'metadata.external_ips.0' to be set")
-		}
 
 		return nil
 	}

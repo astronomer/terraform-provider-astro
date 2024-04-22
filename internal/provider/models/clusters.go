@@ -23,7 +23,7 @@ func (data *ClustersDataSource) ReadFromResponse(
 ) diag.Diagnostics {
 	values := make([]attr.Value, len(clusters))
 	for i, deployment := range clusters {
-		var singleClusterData Cluster
+		var singleClusterData ClusterDataSource
 		diags := singleClusterData.ReadFromResponse(ctx, &deployment)
 		if diags.HasError() {
 			return diags

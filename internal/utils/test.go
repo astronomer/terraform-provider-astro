@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 )
 
-var platformClient *platform.ClientWithResponses
+var hostedPlatformClient, hybridPlatformClient *platform.ClientWithResponses
 
 const TestResourceDescription = "Created by Terraform Acceptance Test - will self-cleanup"
 
@@ -20,11 +20,30 @@ func GenerateTestResourceName(numRandomChars int) string {
 	return fmt.Sprintf("TFAcceptanceTest_%v", strings.ToUpper(acctest.RandStringFromCharSet(numRandomChars, acctest.CharSetAlpha)))
 }
 
-func GetTestPlatformClient() (*platform.ClientWithResponses, error) {
-	if platformClient != nil {
-		return platformClient, nil
+func GetTestPlatformClient(isHosted bool) (*platform.ClientWithResponses, error) {
+	if isHosted {
+		return GetTestHostedPlatformClient()
+	} else {
+		return GetTestHybridPlatformClient()
 	}
-	return platform.NewPlatformClient(os.Getenv("ASTRO_API_HOST"), os.Getenv("ASTRO_API_TOKEN"), "acceptancetests")
+}
+
+func GetTestHybridPlatformClient() (*platform.ClientWithResponses, error) {
+	if hybridPlatformClient != nil {
+		return hybridPlatformClient, nil
+	}
+	var err error
+	hybridPlatformClient, err = platform.NewPlatformClient(os.Getenv("ASTRO_API_HOST"), os.Getenv("HYBRID_ORGANIZATION_API_TOKEN"), "acceptancetests")
+	return hybridPlatformClient, err
+}
+
+func GetTestHostedPlatformClient() (*platform.ClientWithResponses, error) {
+	if hostedPlatformClient != nil {
+		return hostedPlatformClient, nil
+	}
+	var err error
+	hostedPlatformClient, err = platform.NewPlatformClient(os.Getenv("ASTRO_API_HOST"), os.Getenv("HOSTED_ORGANIZATION_API_TOKEN"), "acceptancetests")
+	return hostedPlatformClient, err
 }
 
 // GetDataSourcesLength retrieves the number of elements returned from a data source in the Terraform state.
