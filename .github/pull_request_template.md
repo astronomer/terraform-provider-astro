@@ -15,9 +15,8 @@
 ## 📋 Checklist
 
 - [ ] Rebased from the main (or release if patching) branch (before testing)
-- [ ] Ran `make test` before taking out of draft
-- [ ] Ran `make fmt` before taking out of draft
 - [ ] Added/updated applicable tests
-- [ ] Tested against [Astro-API](https://github.com/astronomer/astro/) (if necessary).
+- [ ] Added/updated examples in the `examples/` directory
+- [ ] Tested against [Astro-API](https://github.com/astronomer/astro/)
 - [ ] Communicated to/tagged owners of respective clients potentially impacted by these changes.
 - [ ] Updated any related [documentation](https://github.com/astronomer/docs/)

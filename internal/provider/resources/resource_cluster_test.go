@@ -19,6 +19,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// These acceptance tests are testing the creation of dedicated clusters in the Astronomer platform.
+// We are also testing 'DEDICATED' deployment resources in these tests since they will be created in the clusters we create.
+
 func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 	namePrefix := utils.GenerateTestResourceName(10)
 
@@ -28,7 +31,7 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 	workspaceResourceVar := fmt.Sprintf("astronomer_workspace.%v", workspaceName)
 	awsDeploymentResourceVar := fmt.Sprintf("astronomer_deployment.%v", awsDeploymentName)
 
-	// AWS cluster will switch executors during our tests
+	// deployments in AWS cluster will switch executors during our tests
 	awsClusterName := fmt.Sprintf("%v_aws", namePrefix)
 	awsResourceVar := fmt.Sprintf("astronomer_cluster.%v", awsClusterName)
 
