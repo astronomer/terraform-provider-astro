@@ -1637,6 +1637,9 @@ type UpdateDedicatedDeploymentRequest struct {
 	// IsDagDeployEnabled Whether the Deployment has DAG deploys enabled.
 	IsDagDeployEnabled bool `json:"isDagDeployEnabled"`
 
+	// IsDevelopmentMode Whether the Deployment is for development only. If `false`, the Deployment can be considered production for the purposes of support case priority, but development-only features such as hibernation will not be available. You can't update this value to `true` for existing non-development Deployments.
+	IsDevelopmentMode *bool `json:"isDevelopmentMode,omitempty"`
+
 	// IsHighAvailability Whether the Deployment is configured for high availability. If `true`, multiple scheduler pods will be online.
 	IsHighAvailability bool `json:"isHighAvailability"`
 
@@ -1793,6 +1796,9 @@ type UpdateStandardDeploymentRequest struct {
 
 	// IsDagDeployEnabled Whether the Deployment has DAG deploys enabled.
 	IsDagDeployEnabled bool `json:"isDagDeployEnabled"`
+
+	// IsDevelopmentMode Whether the Deployment is for development only. If `false`, the Deployment can be considered production for the purposes of support case priority, but development-only features such as hibernation will not be available. You can't update this value to `true` for existing non-development Deployments.
+	IsDevelopmentMode *bool `json:"isDevelopmentMode,omitempty"`
 
 	// IsHighAvailability Whether the Deployment is configured for high availability. If `true`, multiple scheduler pods will be online.
 	IsHighAvailability bool `json:"isHighAvailability"`
@@ -2026,6 +2032,9 @@ type GetClusterOptionsParamsType string
 
 // ListClustersParams defines parameters for ListClusters.
 type ListClustersParams struct {
+	// Names A list of names for Clusters to filter by. The API returns details only for the specified Clusters.
+	Names *[]string `form:"names,omitempty" json:"names,omitempty"`
+
 	// Provider The cloud provider to list clusters for. Clusters from other providers will be filtered out of the results.
 	Provider *ListClustersParamsProvider `form:"provider,omitempty" json:"provider,omitempty"`
 
@@ -3292,6 +3301,22 @@ func NewListClustersRequest(server string, organizationId string, params *ListCl
 
 	if params != nil {
 		queryValues := queryURL.Query()
+
+		if params.Names != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "names", runtime.ParamLocationQuery, *params.Names); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
 
 		if params.Provider != nil {
 
