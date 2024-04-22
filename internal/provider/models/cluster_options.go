@@ -3,6 +3,8 @@ package models
 import (
 	"context"
 
+	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
+
 	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
 	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -89,9 +91,9 @@ func (data *ClusterOptionDataSource) ReadFromResponse(
 }
 
 type DefaultRegion struct {
-	Name    types.String `tfsdk:"name"`
-	Limited types.Bool   `tfsdk:"limited"`
-	//BannedInstances types.List   `tfsdk:"banned_instances"`
+	Name            types.String `tfsdk:"name"`
+	Limited         types.Bool   `tfsdk:"limited"`
+	BannedInstances types.List   `tfsdk:"banned_instances"`
 }
 
 func DefaultRegionTypesObject(
@@ -101,10 +103,10 @@ func DefaultRegionTypesObject(
 	defaultRegion := DefaultRegion{
 		Name: types.StringValue(defaultRegionInput.Name),
 	}
-	//defaultRegion.BannedInstances, diags = utils.StringList(defaultRegionInput.BannedInstances)
-	//if diags.HasError() {
-	//	return defaultRegionOutput, diags
-	//}
+	defaultRegion.BannedInstances, diags = utils.StringList(defaultRegionInput.BannedInstances)
+	if diags.HasError() {
+		return defaultRegionOutput, diags
+	}
 
 	if defaultRegionInput.Limited != nil {
 		val := types.BoolValue(*defaultRegionInput.Limited)

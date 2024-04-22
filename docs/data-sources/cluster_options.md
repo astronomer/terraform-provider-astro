@@ -44,5 +44,6 @@ Read-Only:
 
 Read-Only:
 
-- `limited` (String)
+- `banned_instances` (List of String) Default region banned instances
+- `limited` (Boolean)
 - `name` (String)

@@ -35,9 +35,9 @@ func DefaultRegionAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"name":    types.StringType,
 		"limited": types.BoolType,
-		//"banned_instances": types.ListType{
-		//	ElemType: types.StringType,
-		//},
+		"banned_instances": types.ListType{
+			ElemType: types.StringType,
+		},
 	}
 }
 
@@ -105,14 +105,13 @@ func DatasourceDefaultRegionAttributes() map[string]datasourceSchema.Attribute {
 		"name": datasourceSchema.StringAttribute{
 			Computed: true,
 		},
-		"limited": datasourceSchema.StringAttribute{
+		"limited": datasourceSchema.BoolAttribute{
 			Computed: true,
 		},
-		//"banned_instances": datasourceSchema.ListAttribute{
-		//	ElementType:         types.StringType,
-		//	MarkdownDescription: "Default region banned instances",
-		//	Computed:            true,
-		//	Optional:            true,
-		//},
+		"banned_instances": datasourceSchema.ListAttribute{
+			ElementType:         types.StringType,
+			MarkdownDescription: "Default region banned instances",
+			Computed:            true,
+		},
 	}
 }
