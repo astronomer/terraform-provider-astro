@@ -82,6 +82,12 @@ func ClusterOptionsDataSourceSchemaAttributes() map[string]schema.Attribute {
 		},
 		"type": schema.StringAttribute{
 			Required: true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(platform.ClusterTypeDEDICATED),
+					string(platform.ClusterTypeHYBRID),
+				),
+			},
 		},
 		"cloud_provider": schema.StringAttribute{
 			Optional: true,
