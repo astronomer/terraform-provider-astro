@@ -1,7 +1,7 @@
 package schemas
 
 import (
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"

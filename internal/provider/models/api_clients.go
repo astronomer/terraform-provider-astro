@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/iam"
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 )
 
 type ApiClientsModel struct {

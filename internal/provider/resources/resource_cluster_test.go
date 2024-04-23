@@ -7,14 +7,14 @@ import (
 	"strings"
 	"testing"
 
-	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"
+	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
-	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
+	"github.com/astronomer/terraform-provider-astro/internal/clients"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/stretchr/testify/assert"
 )
@@ -28,12 +28,12 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 	workspaceName := fmt.Sprintf("%v_workspace", namePrefix)
 	awsDeploymentName := fmt.Sprintf("%v_deployment_aws", namePrefix)
 
-	workspaceResourceVar := fmt.Sprintf("astronomer_workspace.%v", workspaceName)
-	awsDeploymentResourceVar := fmt.Sprintf("astronomer_deployment.%v", awsDeploymentName)
+	workspaceResourceVar := fmt.Sprintf("astro_workspace.%v", workspaceName)
+	awsDeploymentResourceVar := fmt.Sprintf("astro_deployment.%v", awsDeploymentName)
 
 	// deployments in AWS cluster will switch executors during our tests
 	awsClusterName := fmt.Sprintf("%v_aws", namePrefix)
-	awsResourceVar := fmt.Sprintf("astronomer_cluster.%v", awsClusterName)
+	awsResourceVar := fmt.Sprintf("astro_cluster.%v", awsClusterName)
 
 	// aws cluster
 	resource.ParallelTest(t, resource.TestCase{
@@ -204,11 +204,11 @@ func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
 	workspaceName := fmt.Sprintf("%v_workspace", namePrefix)
 	azureDeploymentName := fmt.Sprintf("%v_deployment_azure", namePrefix)
 
-	workspaceResourceVar := fmt.Sprintf("astronomer_workspace.%v", workspaceName)
-	azureDeploymentResourceVar := fmt.Sprintf("astronomer_deployment.%v", azureDeploymentName)
+	workspaceResourceVar := fmt.Sprintf("astro_workspace.%v", workspaceName)
+	azureDeploymentResourceVar := fmt.Sprintf("astro_deployment.%v", azureDeploymentName)
 
 	azureClusterName := fmt.Sprintf("%v_azure", namePrefix)
-	azureResourceVar := fmt.Sprintf("astronomer_cluster.%v", azureClusterName)
+	azureResourceVar := fmt.Sprintf("astro_cluster.%v", azureClusterName)
 
 	// azure cluster
 	resource.ParallelTest(t, resource.TestCase{
@@ -274,11 +274,11 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 	workspaceName := fmt.Sprintf("%v_workspace", namePrefix)
 	gcpDeploymentName := fmt.Sprintf("%v_deployment_gcp", namePrefix)
 
-	workspaceResourceVar := fmt.Sprintf("astronomer_workspace.%v", workspaceName)
-	gcpDeploymentResourceVar := fmt.Sprintf("astronomer_deployment.%v", gcpDeploymentName)
+	workspaceResourceVar := fmt.Sprintf("astro_workspace.%v", workspaceName)
+	gcpDeploymentResourceVar := fmt.Sprintf("astro_deployment.%v", gcpDeploymentName)
 
 	gcpClusterName := fmt.Sprintf("%v_gcp", namePrefix)
-	gcpResourceVar := fmt.Sprintf("astronomer_cluster.%v", gcpClusterName)
+	gcpResourceVar := fmt.Sprintf("astro_cluster.%v", gcpClusterName)
 
 	// gcp cluster
 	resource.ParallelTest(t, resource.TestCase{
@@ -343,7 +343,7 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 
 func TestAcc_ResourceClusterRemovedOutsideOfTerraform(t *testing.T) {
 	clusterName := utils.GenerateTestResourceName(10)
-	clusterResource := fmt.Sprintf("astronomer_cluster.%v", clusterName)
+	clusterResource := fmt.Sprintf("astro_cluster.%v", clusterName)
 	depInput := clusterInput{
 		Name:           clusterName,
 		Region:         "us-east-1",
@@ -397,7 +397,7 @@ type dedicatedDeploymentInput struct {
 }
 
 func dedicatedDeployment(input dedicatedDeploymentInput) string {
-	return fmt.Sprintf(`resource "astronomer_deployment" "%v" {
+	return fmt.Sprintf(`resource "astro_deployment" "%v" {
 	name = "%s"
 	description = "%s"
 	type = "DEDICATED"
@@ -439,7 +439,7 @@ func cluster(input clusterInput) string {
 	service_peering_range = "172.23.0.0/20"
 	service_subnet_range =  "172.22.0.0/22"`
 	}
-	return fmt.Sprintf(`resource "astronomer_cluster" "%v" {
+	return fmt.Sprintf(`resource "astro_cluster" "%v" {
 	name = "%s"
 	type = "DEDICATED"
 	region = "%v"

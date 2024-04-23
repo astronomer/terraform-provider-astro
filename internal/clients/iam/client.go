@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
+	"github.com/astronomer/terraform-provider-astro/internal/clients"
 )
 
 func NewIamClient(host, token, version string) (*ClientWithResponses, error) {

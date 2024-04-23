@@ -7,14 +7,14 @@ import (
 	"strings"
 	"testing"
 
-	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"
+	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
-	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
+	"github.com/astronomer/terraform-provider-astro/internal/clients"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/stretchr/testify/assert"
 )
@@ -27,7 +27,7 @@ func TestAcc_ResourceDeploymentHybrid(t *testing.T) {
 	clusterId := os.Getenv("HYBRID_CLUSTER_ID")
 	nodePoolId := os.Getenv("HYBRID_NODE_POOL_ID")
 	deploymentName := fmt.Sprintf("%v_hybrid", namePrefix)
-	resourceVar := fmt.Sprintf("astronomer_deployment.%v", deploymentName)
+	resourceVar := fmt.Sprintf("astro_deployment.%v", deploymentName)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
@@ -119,9 +119,9 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 	azureCeleryDeploymentName := fmt.Sprintf("%v_azure_celery", namePrefix)
 	gcpKubernetesDeploymentName := fmt.Sprintf("%v_gcp_kubernetes", namePrefix)
 
-	awsResourceVar := fmt.Sprintf("astronomer_deployment.%v", awsDeploymentName)
-	azureCeleryResourceVar := fmt.Sprintf("astronomer_deployment.%v", azureCeleryDeploymentName)
-	gcpKubernetesResourceVar := fmt.Sprintf("astronomer_deployment.%v", gcpKubernetesDeploymentName)
+	awsResourceVar := fmt.Sprintf("astro_deployment.%v", awsDeploymentName)
+	azureCeleryResourceVar := fmt.Sprintf("astro_deployment.%v", azureCeleryDeploymentName)
+	gcpKubernetesResourceVar := fmt.Sprintf("astro_deployment.%v", gcpKubernetesDeploymentName)
 
 	// standard aws deployment
 	resource.Test(t, resource.TestCase{
@@ -329,7 +329,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 
 func TestAcc_ResourceDeploymentStandardRemovedOutsideOfTerraform(t *testing.T) {
 	standardDeploymentName := utils.GenerateTestResourceName(10)
-	standardDeploymentResource := fmt.Sprintf("astronomer_deployment.%v", standardDeploymentName)
+	standardDeploymentResource := fmt.Sprintf("astro_deployment.%v", standardDeploymentName)
 	depInput := standardDeploymentInput{
 		Name:                        standardDeploymentName,
 		Description:                 utils.TestResourceDescription,
@@ -425,13 +425,13 @@ func hybridDeployment(input hybridDeploymentInput) string {
 		taskPodNodePoolIdStr = fmt.Sprintf(`task_pod_node_pool_id = "%v"`, input.NodePoolId)
 	}
 	return fmt.Sprintf(`
-resource "astronomer_workspace" "%v_workspace" {
+resource "astro_workspace" "%v_workspace" {
 	name = "%s"
 	description = "%s"
 	cicd_enforced_default = true
 }
 
-resource "astronomer_deployment" "%v" {
+resource "astro_deployment" "%v" {
 	name = "%s"
 	description = "%s"
 	type = "HYBRID"
@@ -442,7 +442,7 @@ resource "astronomer_deployment" "%v" {
 	is_dag_deploy_enabled = true
 	scheduler_au = %v
 	scheduler_replicas = 1
-	workspace_id = astronomer_workspace.%v_workspace.id
+	workspace_id = astro_workspace.%v_workspace.id
 	%v
 	%v
 	%v
@@ -469,13 +469,13 @@ func standardDeployment(input standardDeploymentInput) string {
 		wqStr = workerQueuesStr("")
 	}
 	return fmt.Sprintf(`
-resource "astronomer_workspace" "%v_workspace" {
+resource "astro_workspace" "%v_workspace" {
 	name = "%s"
 	description = "%s"
 	cicd_enforced_default = true
 }
 
-resource "astronomer_deployment" "%v" {
+resource "astro_deployment" "%v" {
 	name = "%s"
 	description = "%s"
 	type = "STANDARD"
@@ -492,7 +492,7 @@ resource "astronomer_deployment" "%v" {
 	resource_quota_cpu = "10"
 	resource_quota_memory = "20Gi"
 	scheduler_size = "%v"
-	workspace_id = astronomer_workspace.%v_workspace.id
+	workspace_id = astro_workspace.%v_workspace.id
 	%v
 	%v
 }

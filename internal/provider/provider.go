@@ -4,12 +4,12 @@ import (
 	"context"
 	"os"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/iam"
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/datasources"
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/models"
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/resources"
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/datasources"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/resources"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -20,28 +20,28 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// Ensure AstronomerProvider satisfies various provider interfaces.
-var _ provider.Provider = &AstronomerProvider{}
-var _ provider.ProviderWithFunctions = &AstronomerProvider{}
+// Ensure AstroProvider satisfies various provider interfaces.
+var _ provider.Provider = &AstroProvider{}
+var _ provider.ProviderWithFunctions = &AstroProvider{}
 
-// AstronomerProvider defines the provider implementation.
-type AstronomerProvider struct {
+// AstroProvider defines the provider implementation.
+type AstroProvider struct {
 	// version is set to the provider version on release, "dev" when the
 	// provider is built and ran locally, and "test" when running acceptance
 	// testing.
 	version string
 }
 
-func (p *AstronomerProvider) Metadata(
+func (p *AstroProvider) Metadata(
 	ctx context.Context,
 	req provider.MetadataRequest,
 	resp *provider.MetadataResponse,
 ) {
-	resp.TypeName = "astronomer"
+	resp.TypeName = "astro"
 	resp.Version = p.version
 }
 
-func (p *AstronomerProvider) Schema(
+func (p *AstroProvider) Schema(
 	ctx context.Context,
 	req provider.SchemaRequest,
 	resp *provider.SchemaResponse,
@@ -55,14 +55,14 @@ func providerSchema() schema.Schema {
 	}
 }
 
-func (p *AstronomerProvider) Configure(
+func (p *AstroProvider) Configure(
 	ctx context.Context,
 	req provider.ConfigureRequest,
 	resp *provider.ConfigureResponse,
 ) {
-	tflog.Info(ctx, "Configuring Astronomer Terraform Provider client")
+	tflog.Info(ctx, "Configuring Terraform Provider Astro client")
 
-	var data models.AstronomerProviderModel
+	var data models.AstroProviderModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -118,7 +118,7 @@ func (p *AstronomerProvider) Configure(
 	resp.ResourceData = apiClientsModel
 }
 
-func (p *AstronomerProvider) Resources(ctx context.Context) []func() resource.Resource {
+func (p *AstroProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		resources.NewWorkspaceResource,
 		resources.NewDeploymentResource,
@@ -126,7 +126,7 @@ func (p *AstronomerProvider) Resources(ctx context.Context) []func() resource.Re
 	}
 }
 
-func (p *AstronomerProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+func (p *AstroProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		datasources.NewWorkspaceDataSource,
 		datasources.NewWorkspacesDataSource,
@@ -140,13 +140,13 @@ func (p *AstronomerProvider) DataSources(ctx context.Context) []func() datasourc
 	}
 }
 
-func (p *AstronomerProvider) Functions(ctx context.Context) []func() function.Function {
+func (p *AstroProvider) Functions(ctx context.Context) []func() function.Function {
 	return []func() function.Function{}
 }
 
 func New(version string) func() provider.Provider {
 	return func() provider.Provider {
-		return &AstronomerProvider{
+		return &AstroProvider{
 			version: version,
 		}
 	}

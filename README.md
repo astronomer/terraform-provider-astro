@@ -1,4 +1,4 @@
-# Astronomer Terraform Provider
+# Terraform Provider Astro
 
 ## Requirements
 
@@ -38,13 +38,13 @@ Then commit the changes to `go.mod` and `go.sum`.
 ```terraform
 terraform {
   required_providers {
-    astronomer = {
-      source = "registry.terraform.io/astronomer/astronomer"
+    astro = {
+      source = "registry.terraform.io/astronomer/astro"
     }
   }
 }
 
-provider "astronomer" {
+provider "astro" {
   organization_id = "<cuid>"
 }
 
@@ -71,7 +71,7 @@ To run terraform with the provider, create a `.terraformrc` file in your home di
 ```hcl
 provider_installation {
   dev_overrides {
-    "registry.terraform.io/astronomer/astronomer" = "~/astronomer-terraform-provider/bin" # Your path to the provider binary
+    "registry.terraform.io/astronomer/astro" = "~/terraform-provider-astro/bin" # Your path to the provider binary
   }
   direct {}
 }
@@ -81,30 +81,30 @@ provider_installation {
 ```terraform
 terraform {
   required_providers {
-    astronomer = {
-      source = "registry.terraform.io/astronomer/astronomer"
+    astro = {
+      source = "registry.terraform.io/astronomer/astro"
     }
   }
 }
 
 # provider configuration
-provider "astronomer" {
+provider "astro" {
   organization_id = "<cuid>"
   host            = "https://api.astronomer-dev.io"
 }
 
 # get information on an existing workspace
-data "astronomer_workspace" "example" {
+data "astro_workspace" "example" {
   id = "<cuid>>"
 }
 
 # output the workspace data to the terminal
 output "data_workspace_example" {
-  value = data.astronomer_workspace.example
+  value = data.astro_workspace.example
 }
 
 # create a new workspace
-resource "astronomer_workspace" "tf_workspace" {
+resource "astro_workspace" "tf_workspace" {
   name                  = "my workspace"
   description           = "my first workspace"
   cicd_enforced_default = false
@@ -112,18 +112,18 @@ resource "astronomer_workspace" "tf_workspace" {
 
 # output the newly created workspace resource to the terminal
 output "terraform_workspace" {
-  value = astronomer_workspace.tf_workspace
+  value = astro_workspace.tf_workspace
 }
 
 # create a new cluster resource
-resource "astronomer_cluster" "tf_cluster" {
+resource "astro_cluster" "tf_cluster" {
     type = "DEDICATED"
     name = "my first cluster"
     region = "us-east-1"
     cloud_provider = "AWS"
     db_instance_type = "db.m6g.large"
     vpc_subnet_range = "172.20.0.0/20"
-    workspace_ids = [astronomer_workspace.tf_workspace.id, data.astronomer_workspace.example.id]
+    workspace_ids = [astro_workspace.tf_workspace.id, data.astro_workspace.example.id]
     timeouts = {
         create = "3h"
         update = "2h"
@@ -132,10 +132,10 @@ resource "astronomer_cluster" "tf_cluster" {
 }
 
 # create a new dedicated deployment resource in that cluster
-resource "astronomer_deployment" "tf_deployment" {
+resource "astro_deployment" "tf_deployment" {
   name        = "my first dedicated deployment"
   description = ""
-  cluster_id  = astronomer_cluster.tf_cluster.id
+  cluster_id  = astro_cluster.tf_cluster.id
   type = "DEDICATED"
   contact_emails = ["example@astronomer.io"]
   default_task_pod_cpu = "0.25"
@@ -148,7 +148,7 @@ resource "astronomer_deployment" "tf_deployment" {
   resource_quota_cpu = "10"
   resource_quota_memory = "20Gi"
   scheduler_size = "SMALL"
-  workspace_id = astronomer_workspace.tf_workspace.id
+  workspace_id = astro_workspace.tf_workspace.id
   environment_variables = [{
       key = "key1"
       value = "value1"
@@ -157,7 +157,7 @@ resource "astronomer_deployment" "tf_deployment" {
 }
 
 # create a new standard deployment resource
-resource "astronomer_standard_deployment" "tf_standard_deployment" {
+resource "astro_standard_deployment" "tf_standard_deployment" {
   name        = "my first standard deployment"
   description = ""
   type = "STANDARD"
@@ -174,7 +174,7 @@ resource "astronomer_standard_deployment" "tf_standard_deployment" {
   resource_quota_cpu = "10"
   resource_quota_memory = "20Gi"
   scheduler_size = "SMALL"
-  workspace_id = astronomer_workspace.tf_workspace.id
+  workspace_id = astro_workspace.tf_workspace.id
   environment_variables = []
   worker_queues = [{
       name = "default"

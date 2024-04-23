@@ -5,13 +5,13 @@ import (
 	"strconv"
 	"testing"
 
-	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"
+	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAcc_DataSourceDeploymentOptionsHosted(t *testing.T) {
 	resourceName := "test_hosted"
-	resourceVar := fmt.Sprintf("data.astronomer_deployment_options.%v", resourceName)
+	resourceVar := fmt.Sprintf("data.astro_deployment_options.%v", resourceName)
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			astronomerprovider.TestAccPreCheck(t)
@@ -72,7 +72,7 @@ func TestAcc_DataSourceDeploymentOptionsHosted(t *testing.T) {
 
 func TestAcc_DataSourceDeploymentOptionsHybrid(t *testing.T) {
 	resourceName := "test_hybrid"
-	resourceVar := fmt.Sprintf("data.astronomer_deployment_options.%v", resourceName)
+	resourceVar := fmt.Sprintf("data.astro_deployment_options.%v", resourceName)
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			astronomerprovider.TestAccPreCheck(t)
@@ -174,7 +174,7 @@ func CheckAttributeLengthIsNotEmpty(value string) error {
 
 func deploymentOptions(tfVarName, queryParams string) string {
 	return fmt.Sprintf(`
-data astronomer_deployment_options "%v" {
+data astro_deployment_options "%v" {
 	  %v
 }`, tfVarName, queryParams)
 }

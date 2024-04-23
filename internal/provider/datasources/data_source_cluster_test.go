@@ -5,14 +5,14 @@ import (
 	"os"
 	"testing"
 
-	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"
+	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAcc_DataSourceCluster(t *testing.T) {
 	hybridClusterId := os.Getenv("HYBRID_CLUSTER_ID")
 	resourceName := "test_data_cluster_hybrid"
-	resourceVar := fmt.Sprintf("data.astronomer_cluster.%v", resourceName)
+	resourceVar := fmt.Sprintf("data.astro_cluster.%v", resourceName)
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			astronomerprovider.TestAccPreCheck(t)
@@ -45,7 +45,7 @@ func TestAcc_DataSourceCluster(t *testing.T) {
 
 func cluster(resourceName, clusterId string) string {
 	return fmt.Sprintf(`
-data astronomer_cluster "%v" {
+data astro_cluster "%v" {
 	  id = "%v"
 }`, resourceName, clusterId)
 }

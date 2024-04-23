@@ -26,10 +26,10 @@ func CoreRequestEditor(
 	}
 	req.URL = requestURL
 	req.Header.Add("authorization", fmt.Sprintf("Bearer %v", token))
-	req.Header.Add("x-astro-client-identifier", "astronomer-terraform-provider")
+	req.Header.Add("x-astro-client-identifier", "terraform-provider-astro")
 	req.Header.Add("x-astro-client-version", version)
 	req.Header.Add("x-client-os-identifier", os+"-"+arch)
-	req.Header.Add("User-Agent", fmt.Sprintf("astronomer-terraform-provider/%s", version))
+	req.Header.Add("User-Agent", fmt.Sprintf("terraform-provider-astro/%s", version))
 	return nil
 }
 

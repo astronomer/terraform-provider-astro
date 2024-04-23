@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"
-	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
+	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
+	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/lucsky/cuid"
 
@@ -25,14 +25,14 @@ func TestAcc_DataSourceWorkspaces(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, true) + workspaces(workspaceName, ""),
 				Check: resource.ComposeTestCheckFunc(
 					// These checks are for the workspace data source (singular)
-					resource.TestCheckResourceAttrSet("data.astronomer_workspace.test_data_workspace", "id"),
-					resource.TestCheckResourceAttr("data.astronomer_workspace.test_data_workspace", "name", fmt.Sprintf("%v-1", workspaceName)),
-					resource.TestCheckResourceAttrSet("data.astronomer_workspace.test_data_workspace", "description"),
-					resource.TestCheckResourceAttr("data.astronomer_workspace.test_data_workspace", "cicd_enforced_default", "true"),
-					resource.TestCheckResourceAttrSet("data.astronomer_workspace.test_data_workspace", "created_by.id"),
-					resource.TestCheckResourceAttrSet("data.astronomer_workspace.test_data_workspace", "created_at"),
-					resource.TestCheckResourceAttrSet("data.astronomer_workspace.test_data_workspace", "updated_by.id"),
-					resource.TestCheckResourceAttrSet("data.astronomer_workspace.test_data_workspace", "updated_at"),
+					resource.TestCheckResourceAttrSet("data.astro_workspace.test_data_workspace", "id"),
+					resource.TestCheckResourceAttr("data.astro_workspace.test_data_workspace", "name", fmt.Sprintf("%v-1", workspaceName)),
+					resource.TestCheckResourceAttrSet("data.astro_workspace.test_data_workspace", "description"),
+					resource.TestCheckResourceAttr("data.astro_workspace.test_data_workspace", "cicd_enforced_default", "true"),
+					resource.TestCheckResourceAttrSet("data.astro_workspace.test_data_workspace", "created_by.id"),
+					resource.TestCheckResourceAttrSet("data.astro_workspace.test_data_workspace", "created_at"),
+					resource.TestCheckResourceAttrSet("data.astro_workspace.test_data_workspace", "updated_by.id"),
+					resource.TestCheckResourceAttrSet("data.astro_workspace.test_data_workspace", "updated_at"),
 
 					// These checks are for the workspaces data source (plural)
 					checkWorkspaces(workspaceName+"-1"),
@@ -41,7 +41,7 @@ func TestAcc_DataSourceWorkspaces(t *testing.T) {
 			},
 			// The following tests are for filtering the workspaces data source
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + workspaces(workspaceName, `workspace_ids = [astronomer_workspace.test_workspace1.id]`),
+				Config: astronomerprovider.ProviderConfig(t, true) + workspaces(workspaceName, `workspace_ids = [astro_workspace.test_workspace1.id]`),
 				Check: resource.ComposeTestCheckFunc(
 					checkWorkspaces(workspaceName + "-1"),
 				),
@@ -66,25 +66,25 @@ func TestAcc_DataSourceWorkspaces(t *testing.T) {
 
 func workspaces(name, filter string) string {
 	return fmt.Sprintf(`
-resource "astronomer_workspace" "test_workspace1" {
+resource "astro_workspace" "test_workspace1" {
 	name = "%v-1"
 	description = "%v"
 	cicd_enforced_default = true
 }
 
-resource "astronomer_workspace" "test_workspace2" {
+resource "astro_workspace" "test_workspace2" {
 	name = "%v-2"
 	description = "%v"
 	cicd_enforced_default = true
 }
 
-data astronomer_workspace "test_data_workspace" {
-	depends_on = [astronomer_workspace.test_workspace1]
-	id = astronomer_workspace.test_workspace1.id
+data astro_workspace "test_data_workspace" {
+	depends_on = [astro_workspace.test_workspace1]
+	id = astro_workspace.test_workspace1.id
 }
 
-data astronomer_workspaces "test_data_workspaces" {
-	depends_on = [astronomer_workspace.test_workspace1, astronomer_workspace.test_workspace2]
+data astro_workspaces "test_data_workspaces" {
+	depends_on = [astro_workspace.test_workspace1, astro_workspace.test_workspace2]
 	%v
 }`, name, utils.TestResourceDescription, name, utils.TestResourceDescription, filter)
 }

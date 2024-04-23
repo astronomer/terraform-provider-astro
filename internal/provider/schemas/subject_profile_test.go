@@ -6,11 +6,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/iam"
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/models"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/samber/lo"
 )

@@ -1,4 +1,4 @@
-resource "astronomer_cluster" "aws_example" {
+resource "astro_cluster" "aws_example" {
   type             = "DEDICATED"
   name             = "my first aws cluster"
   region           = "us-east-1"
@@ -13,7 +13,7 @@ resource "astronomer_cluster" "aws_example" {
   }
 }
 
-resource "astronomer_cluster" "azure_example" {
+resource "astro_cluster" "azure_example" {
   type             = "DEDICATED"
   name             = "my first azure cluster"
   region           = "westus2"
@@ -23,7 +23,7 @@ resource "astronomer_cluster" "azure_example" {
   workspace_ids    = ["clv4wcf6f003u01m3zp7gsvzg"]
 }
 
-resource "astronomer_cluster" "gcp_example" {
+resource "astro_cluster" "gcp_example" {
   type                  = "DEDICATED"
   name                  = "my first gcp cluster"
   region                = "us-central1"

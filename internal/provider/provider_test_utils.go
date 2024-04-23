@@ -15,7 +15,7 @@ import (
 // CLI command executed to create a provider server to which the CLI can
 // reattach.
 var TestAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"astronomer": providerserver.NewProtocol6WithError(New("test")()),
+	"astro": providerserver.NewProtocol6WithError(New("test")()),
 }
 
 func TestAccPreCheck(t *testing.T) {
@@ -60,7 +60,7 @@ func ProviderConfig(t *testing.T, isHosted bool) string {
 	}
 
 	return fmt.Sprintf(`
-provider "astronomer" {
+provider "astro" {
 	organization_id = "%v"
 	host = "%v"
 	token = "%v"

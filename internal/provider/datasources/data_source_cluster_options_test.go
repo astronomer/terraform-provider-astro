@@ -5,9 +5,9 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
+	"github.com/astronomer/terraform-provider-astro/internal/utils"
 
-	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"
+	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -41,7 +41,7 @@ func TestAcc_DataSourceClusterOptions(t *testing.T) {
 
 func clusterOptions(clusterType, provider string) string {
 	return fmt.Sprintf(`
-data astronomer_cluster_options "test_data_cluster_options" {
+data astro_cluster_options "test_data_cluster_options" {
   type = "%v"
   cloud_provider = "%v"
 }`, clusterType, provider)
@@ -49,7 +49,7 @@ data astronomer_cluster_options "test_data_cluster_options" {
 
 func clusterOptionsWithoutProviderFilter(clusterType string) string {
 	return fmt.Sprintf(`
-data astronomer_cluster_options "test_data_cluster_options" {
+data astro_cluster_options "test_data_cluster_options" {
   type = "%v"
 }`, clusterType)
 }
