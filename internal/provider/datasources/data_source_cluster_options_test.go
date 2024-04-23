@@ -2,6 +2,7 @@ package datasources_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
@@ -18,6 +19,10 @@ func TestAcc_DataSourceClusterOptions(t *testing.T) {
 		},
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
+			{
+				Config:      astronomerprovider.ProviderConfig(t, true) + clusterOptions("invalid", "AWS"),
+				ExpectError: regexp.MustCompile(`type value must be one of`),
+			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + clusterOptions("HYBRID", "AWS"),
 				Check: resource.ComposeTestCheckFunc(
