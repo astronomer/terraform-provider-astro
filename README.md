@@ -95,7 +95,7 @@ provider "astro" {
 
 # get information on an existing workspace
 data "astro_workspace" "example" {
-  id = "<cuid>>"
+  id = "<cuid>"
 }
 
 # output the workspace data to the terminal
@@ -132,7 +132,7 @@ resource "astro_cluster" "tf_cluster" {
 }
 
 # create a new dedicated deployment resource in that cluster
-resource "astro_deployment" "tf_deployment" {
+resource "astro_deployment" "tf_dedicated_deployment" {
   name        = "my first dedicated deployment"
   description = ""
   cluster_id  = astro_cluster.tf_cluster.id
@@ -157,7 +157,7 @@ resource "astro_deployment" "tf_deployment" {
 }
 
 # create a new standard deployment resource
-resource "astro_standard_deployment" "tf_standard_deployment" {
+resource "astro_deployment" "tf_standard_deployment" {
   name        = "my first standard deployment"
   description = ""
   type = "STANDARD"
