@@ -23,6 +23,9 @@ import (
 // We are also testing 'DEDICATED' deployment resources in these tests since they will be created in the clusters we create.
 
 func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
+	if os.Getenv("SKIP_CLUSTER_TESTS") == "True" {
+		t.Skip("Skipping dedicated cluster (and dedicated deployment) resource tests")
+	}
 	namePrefix := utils.GenerateTestResourceName(10)
 
 	workspaceName := fmt.Sprintf("%v_workspace", namePrefix)
@@ -199,6 +202,9 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 }
 
 func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
+	if os.Getenv("SKIP_CLUSTER_TESTS") == "True" {
+		t.Skip("Skipping dedicated cluster (and dedicated deployment) resource tests")
+	}
 	namePrefix := utils.GenerateTestResourceName(10)
 
 	workspaceName := fmt.Sprintf("%v_workspace", namePrefix)
@@ -269,6 +275,9 @@ func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
 }
 
 func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
+	if os.Getenv("SKIP_CLUSTER_TESTS") == "True" {
+		t.Skip("Skipping dedicated cluster (and dedicated deployment) resource tests")
+	}
 	namePrefix := utils.GenerateTestResourceName(10)
 
 	workspaceName := fmt.Sprintf("%v_workspace", namePrefix)
@@ -342,6 +351,9 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 }
 
 func TestAcc_ResourceClusterRemovedOutsideOfTerraform(t *testing.T) {
+	if os.Getenv("SKIP_CLUSTER_TESTS") == "True" {
+		t.Skip("Skipping dedicated cluster (and dedicated deployment) resource tests")
+	}
 	clusterName := utils.GenerateTestResourceName(10)
 	clusterResource := fmt.Sprintf("astro_cluster.%v", clusterName)
 	depInput := clusterInput{
