@@ -14,7 +14,7 @@ import (
 
 var hostedPlatformClient, hybridPlatformClient *platform.ClientWithResponses
 
-const TestResourceDescription = "Created by Terraform Acceptance Test - should self-cleanup"
+const TestResourceDescription = "Created by Terraform Acceptance Test - should self-cleanup but can delete manually if needed after 2 hours."
 
 func GenerateTestResourceName(numRandomChars int) string {
 	return fmt.Sprintf("TFAcceptanceTest_%v", strings.ToUpper(acctest.RandStringFromCharSet(numRandomChars, acctest.CharSetAlpha)))
