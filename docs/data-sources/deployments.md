@@ -134,7 +134,7 @@ Read-Only:
 - `schedules` (Attributes List) (see [below for nested schema](#nestedatt--deployments--scaling_spec--hibernation_spec--schedules))
 
 <a id="nestedatt--deployments--scaling_spec--hibernation_spec--override"></a>
-### Nested Schema for `deployments.scaling_spec.hibernation_spec.schedules`
+### Nested Schema for `deployments.scaling_spec.hibernation_spec.override`
 
 Read-Only:
 
