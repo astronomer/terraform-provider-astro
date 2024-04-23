@@ -30,8 +30,8 @@ type ClusterResource struct {
 	Type                types.String   `tfsdk:"type"`
 	TenantId            types.String   `tfsdk:"tenant_id"`
 	ProviderAccount     types.String   `tfsdk:"provider_account"`
-	NodePools           types.List     `tfsdk:"node_pools"`
-	WorkspaceIds        types.List     `tfsdk:"workspace_ids"`
+	NodePools           types.Set      `tfsdk:"node_pools"`
+	WorkspaceIds        types.Set      `tfsdk:"workspace_ids"`
 	IsLimited           types.Bool     `tfsdk:"is_limited"`
 	Timeouts            timeouts.Value `tfsdk:"timeouts"` // To allow users to set timeouts for the resource.
 }
@@ -54,9 +54,9 @@ type ClusterDataSource struct {
 	Type                types.String `tfsdk:"type"`
 	TenantId            types.String `tfsdk:"tenant_id"`
 	ProviderAccount     types.String `tfsdk:"provider_account"`
-	NodePools           types.List   `tfsdk:"node_pools"`
-	WorkspaceIds        types.List   `tfsdk:"workspace_ids"`
-	Tags                types.List   `tfsdk:"tags"`
+	NodePools           types.Set    `tfsdk:"node_pools"`
+	WorkspaceIds        types.Set    `tfsdk:"workspace_ids"`
+	Tags                types.Set    `tfsdk:"tags"`
 	IsLimited           types.Bool   `tfsdk:"is_limited"`
 }
 
@@ -73,7 +73,7 @@ type NodePool struct {
 	MaxNodeCount           types.Int64  `tfsdk:"max_node_count"`
 	NodeInstanceType       types.String `tfsdk:"node_instance_type"`
 	IsDefault              types.Bool   `tfsdk:"is_default"`
-	SupportedAstroMachines types.List   `tfsdk:"supported_astro_machines"`
+	SupportedAstroMachines types.Set    `tfsdk:"supported_astro_machines"`
 	CreatedAt              types.String `tfsdk:"created_at"`
 	UpdatedAt              types.String `tfsdk:"updated_at"`
 }
@@ -102,11 +102,11 @@ func (data *ClusterResource) ReadFromResponse(
 	data.Type = types.StringValue(string(cluster.Type))
 	data.TenantId = types.StringPointerValue(cluster.TenantId)
 	data.ProviderAccount = types.StringPointerValue(cluster.ProviderAccount)
-	data.NodePools, diags = utils.ObjectList(ctx, cluster.NodePools, schemas.NodePoolAttributeTypes(), NodePoolTypesObject)
+	data.NodePools, diags = utils.ObjectSet(ctx, cluster.NodePools, schemas.NodePoolAttributeTypes(), NodePoolTypesObject)
 	if diags.HasError() {
 		return diags
 	}
-	data.WorkspaceIds, diags = utils.StringList(cluster.WorkspaceIds)
+	data.WorkspaceIds, diags = utils.StringSet(cluster.WorkspaceIds)
 	if diags.HasError() {
 		return diags
 	}
@@ -139,15 +139,15 @@ func (data *ClusterDataSource) ReadFromResponse(
 	data.Type = types.StringValue(string(cluster.Type))
 	data.TenantId = types.StringPointerValue(cluster.TenantId)
 	data.ProviderAccount = types.StringPointerValue(cluster.ProviderAccount)
-	data.NodePools, diags = utils.ObjectList(ctx, cluster.NodePools, schemas.NodePoolAttributeTypes(), NodePoolTypesObject)
+	data.NodePools, diags = utils.ObjectSet(ctx, cluster.NodePools, schemas.NodePoolAttributeTypes(), NodePoolTypesObject)
 	if diags.HasError() {
 		return diags
 	}
-	data.WorkspaceIds, diags = utils.StringList(cluster.WorkspaceIds)
+	data.WorkspaceIds, diags = utils.StringSet(cluster.WorkspaceIds)
 	if diags.HasError() {
 		return diags
 	}
-	data.Tags, diags = utils.ObjectList(ctx, cluster.Tags, schemas.ClusterTagAttributeTypes(), ClusterTagTypesObject)
+	data.Tags, diags = utils.ObjectSet(ctx, cluster.Tags, schemas.ClusterTagAttributeTypes(), ClusterTagTypesObject)
 	if diags.HasError() {
 		return diags
 	}
@@ -172,7 +172,7 @@ func NodePoolTypesObject(
 	ctx context.Context,
 	nodePool platform.NodePool,
 ) (types.Object, diag.Diagnostics) {
-	supportedAstroMachines, diags := utils.StringList(nodePool.SupportedAstroMachines)
+	supportedAstroMachines, diags := utils.StringSet(nodePool.SupportedAstroMachines)
 	if diags.HasError() {
 		return types.ObjectNull(schemas.NodePoolAttributeTypes()), diags
 	}
@@ -194,7 +194,7 @@ func NodePoolTypesObject(
 
 type ClusterMetadata struct {
 	OidcIssuerUrl types.String `tfsdk:"oidc_issuer_url"`
-	ExternalIps   types.List   `tfsdk:"external_ips"`
+	ExternalIps   types.Set    `tfsdk:"external_ips"`
 }
 
 func ClusterMetadataTypesObject(
@@ -202,7 +202,7 @@ func ClusterMetadataTypesObject(
 	metadata *platform.ClusterMetadata,
 ) (types.Object, diag.Diagnostics) {
 	if metadata != nil {
-		externalIps, diags := utils.StringList(metadata.ExternalIPs)
+		externalIps, diags := utils.StringSet(metadata.ExternalIPs)
 		if diags.HasError() {
 			return types.ObjectNull(schemas.ClusterMetadataAttributeTypes()), diags
 		}

@@ -33,26 +33,26 @@ data "astro_cluster" "example" {
 - `is_limited` (Boolean) Whether the cluster is limited
 - `metadata` (Attributes) Cluster metadata (see [below for nested schema](#nestedatt--metadata))
 - `name` (String) Cluster name
-- `node_pools` (Attributes List) Cluster node pools (see [below for nested schema](#nestedatt--node_pools))
+- `node_pools` (Attributes Set) Cluster node pools (see [below for nested schema](#nestedatt--node_pools))
 - `pod_subnet_range` (String) Cluster pod subnet range
 - `provider_account` (String) Cluster provider account
 - `region` (String) Cluster region
 - `service_peering_range` (String) Cluster service peering range
 - `service_subnet_range` (String) Cluster service subnet range
 - `status` (String) Cluster status
-- `tags` (Attributes List) Cluster tags (see [below for nested schema](#nestedatt--tags))
+- `tags` (Attributes Set) Cluster tags (see [below for nested schema](#nestedatt--tags))
 - `tenant_id` (String) Cluster tenant ID
 - `type` (String) Cluster type
 - `updated_at` (String) Cluster last updated timestamp
 - `vpc_subnet_range` (String) Cluster VPC subnet range
-- `workspace_ids` (List of String) Cluster workspace IDs
+- `workspace_ids` (Set of String) Cluster workspace IDs
 
 <a id="nestedatt--metadata"></a>
 ### Nested Schema for `metadata`
 
 Read-Only:
 
-- `external_ips` (List of String) Cluster external IPs
+- `external_ips` (Set of String) Cluster external IPs
 - `oidc_issuer_url` (String) Cluster OIDC issuer URL
 
 
@@ -69,7 +69,7 @@ Read-Only:
 - `max_node_count` (Number) Node pool maximum node count
 - `name` (String) Node pool name
 - `node_instance_type` (String) Node pool node instance type
-- `supported_astro_machines` (List of String) Node pool supported Astro machines
+- `supported_astro_machines` (Set of String) Node pool supported Astro machines
 - `updated_at` (String) Node pool last updated timestamp
 
 

@@ -2,7 +2,7 @@ package schemas
 
 import (
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -30,15 +30,15 @@ func ClustersElementAttributeTypes() map[string]attr.Type {
 		"type":             types.StringType,
 		"tenant_id":        types.StringType,
 		"provider_account": types.StringType,
-		"node_pools": types.ListType{
+		"node_pools": types.SetType{
 			ElemType: types.ObjectType{
 				AttrTypes: NodePoolAttributeTypes(),
 			},
 		},
-		"workspace_ids": types.ListType{
+		"workspace_ids": types.SetType{
 			ElemType: types.StringType,
 		},
-		"tags": types.ListType{
+		"tags": types.SetType{
 			ElemType: types.ObjectType{
 				AttrTypes: ClusterTagAttributeTypes(),
 			},
@@ -49,7 +49,7 @@ func ClustersElementAttributeTypes() map[string]attr.Type {
 
 func ClustersDataSourceSchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
-		"clusters": schema.ListNestedAttribute{
+		"clusters": schema.SetNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: ClusterDataSourceSchemaAttributes(),
 			},
@@ -65,11 +65,11 @@ func ClustersDataSourceSchemaAttributes() map[string]schema.Attribute {
 				),
 			},
 		},
-		"names": schema.ListAttribute{
+		"names": schema.SetAttribute{
 			ElementType: types.StringType,
 			Optional:    true,
-			Validators: []validator.List{
-				listvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+			Validators: []validator.Set{
+				setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 			},
 		},
 	}

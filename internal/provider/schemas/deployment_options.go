@@ -12,7 +12,7 @@ import (
 
 func DeploymentOptionsDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
-		"executors": datasourceSchema.ListAttribute{
+		"executors": datasourceSchema.SetAttribute{
 			MarkdownDescription: "Available executors",
 			ElementType:         types.StringType,
 			Computed:            true,
@@ -22,21 +22,21 @@ func DeploymentOptionsDataSourceSchemaAttributes() map[string]datasourceSchema.A
 			Attributes:          ResourceQuotaOptionsDataSourceSchemaAttributes(),
 			Computed:            true,
 		},
-		"runtime_releases": datasourceSchema.ListAttribute{
+		"runtime_releases": datasourceSchema.SetAttribute{
 			MarkdownDescription: "Available Astro Runtime versions",
 			ElementType: types.ObjectType{
 				AttrTypes: RuntimeReleaseAttributeTypes(),
 			},
 			Computed: true,
 		},
-		"scheduler_machines": datasourceSchema.ListAttribute{
+		"scheduler_machines": datasourceSchema.SetAttribute{
 			MarkdownDescription: "Available scheduler sizes",
 			ElementType: types.ObjectType{
 				AttrTypes: SchedulerMachineAttributeTypes(),
 			},
 			Computed: true,
 		},
-		"worker_machines": datasourceSchema.ListAttribute{
+		"worker_machines": datasourceSchema.SetAttribute{
 			MarkdownDescription: "Available worker machine types",
 			ElementType: types.ObjectType{
 				AttrTypes: WorkerMachineAttributeTypes(),
@@ -48,7 +48,7 @@ func DeploymentOptionsDataSourceSchemaAttributes() map[string]datasourceSchema.A
 			Attributes:          WorkerQueueOptionsDataSourceSchemaAttributes(),
 			Computed:            true,
 		},
-		"workload_identity_options": datasourceSchema.ListAttribute{
+		"workload_identity_options": datasourceSchema.SetAttribute{
 			MarkdownDescription: "Available workload identity options",
 			ElementType: types.ObjectType{
 				AttrTypes: WorkloadIdentityOptionsAttributeTypes(),

@@ -12,9 +12,9 @@ import (
 
 // Workspaces describes the data source data model.
 type Workspaces struct {
-	Workspaces   types.List `tfsdk:"workspaces"`
-	WorkspaceIds types.List `tfsdk:"workspace_ids"` // query parameter
-	Names        types.List `tfsdk:"names"`         // query parameter
+	Workspaces   types.Set `tfsdk:"workspaces"`
+	WorkspaceIds types.Set `tfsdk:"workspace_ids"` // query parameter
+	Names        types.Set `tfsdk:"names"`         // query parameter
 }
 
 func (data *Workspaces) ReadFromResponse(
@@ -36,7 +36,7 @@ func (data *Workspaces) ReadFromResponse(
 		values[i] = objectValue
 	}
 	var diags diag.Diagnostics
-	data.Workspaces, diags = types.ListValue(types.ObjectType{AttrTypes: schemas.WorkspacesElementAttributeTypes()}, values)
+	data.Workspaces, diags = types.SetValue(types.ObjectType{AttrTypes: schemas.WorkspacesElementAttributeTypes()}, values)
 	if diags.HasError() {
 		return diags
 	}

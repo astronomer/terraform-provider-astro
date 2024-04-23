@@ -36,14 +36,14 @@ data "astro_cluster_options" "example_cluster_options_filter_by_provider" {
 
 ### Read-Only
 
-- `cluster_options` (Attributes List) (see [below for nested schema](#nestedatt--cluster_options))
+- `cluster_options` (Attributes Set) (see [below for nested schema](#nestedatt--cluster_options))
 
 <a id="nestedatt--cluster_options"></a>
 ### Nested Schema for `cluster_options`
 
 Read-Only:
 
-- `database_instances` (Attributes List) ClusterOption database instances (see [below for nested schema](#nestedatt--cluster_options--database_instances))
+- `database_instances` (Attributes Set) ClusterOption database instances (see [below for nested schema](#nestedatt--cluster_options--database_instances))
 - `default_database_instance` (Attributes) ClusterOption default database instance (see [below for nested schema](#nestedatt--cluster_options--default_database_instance))
 - `default_node_instance` (Attributes) ClusterOption default node instance (see [below for nested schema](#nestedatt--cluster_options--default_node_instance))
 - `default_pod_subnet_range` (String) ClusterOption default pod subnet range
@@ -54,9 +54,9 @@ Read-Only:
 - `node_count_default` (Number) ClusterOption node count default
 - `node_count_max` (Number) ClusterOption node count max
 - `node_count_min` (Number) ClusterOption node count min
-- `node_instances` (Attributes List) ClusterOption node instances (see [below for nested schema](#nestedatt--cluster_options--node_instances))
+- `node_instances` (Attributes Set) ClusterOption node instances (see [below for nested schema](#nestedatt--cluster_options--node_instances))
 - `provider` (String) ClusterOption provider
-- `regions` (Attributes List) ClusterOption regions (see [below for nested schema](#nestedatt--cluster_options--regions))
+- `regions` (Attributes Set) ClusterOption regions (see [below for nested schema](#nestedatt--cluster_options--regions))
 
 <a id="nestedatt--cluster_options--database_instances"></a>
 ### Nested Schema for `cluster_options.database_instances`
@@ -93,7 +93,7 @@ Read-Only:
 
 Read-Only:
 
-- `banned_instances` (List of String) Region banned instances
+- `banned_instances` (Set of String) Region banned instances
 - `limited` (Boolean) Region is limited bool
 - `name` (String) Region is limited bool
 
@@ -113,6 +113,6 @@ Read-Only:
 
 Read-Only:
 
-- `banned_instances` (List of String) Region banned instances
+- `banned_instances` (Set of String) Region banned instances
 - `limited` (Boolean) Region is limited bool
 - `name` (String) Region is limited bool

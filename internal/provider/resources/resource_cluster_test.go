@@ -22,9 +22,12 @@ import (
 // These acceptance tests are testing the creation of dedicated clusters in the Astronomer platform.
 // We are also testing 'DEDICATED' deployment resources in these tests since they will be created in the clusters we create.
 
+const SKIP_CLUSTER_RESOURCE_TESTS = "SKIP_CLUSTER_RESOURCE_TESTS"
+const SKIP_CLUSTER_RESOURCE_TESTS_REASON = "Skipping dedicated cluster (and dedicated deployment) resource tests. To run these tests, unset the SKIP_CLUSTER_RESOURCE_TESTS environment variable."
+
 func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
-	if os.Getenv("SKIP_CLUSTER_TESTS") == "True" {
-		t.Skip("Skipping dedicated cluster (and dedicated deployment) resource tests")
+	if os.Getenv(SKIP_CLUSTER_RESOURCE_TESTS) == "True" {
+		t.Skip(SKIP_CLUSTER_RESOURCE_TESTS_REASON)
 	}
 	namePrefix := utils.GenerateTestResourceName(10)
 
@@ -202,8 +205,8 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 }
 
 func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
-	if os.Getenv("SKIP_CLUSTER_TESTS") == "True" {
-		t.Skip("Skipping dedicated cluster (and dedicated deployment) resource tests")
+	if os.Getenv(SKIP_CLUSTER_RESOURCE_TESTS) == "True" {
+		t.Skip(SKIP_CLUSTER_RESOURCE_TESTS_REASON)
 	}
 	namePrefix := utils.GenerateTestResourceName(10)
 
@@ -275,8 +278,8 @@ func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
 }
 
 func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
-	if os.Getenv("SKIP_CLUSTER_TESTS") == "True" {
-		t.Skip("Skipping dedicated cluster (and dedicated deployment) resource tests")
+	if os.Getenv(SKIP_CLUSTER_RESOURCE_TESTS) == "True" {
+		t.Skip(SKIP_CLUSTER_RESOURCE_TESTS_REASON)
 	}
 	namePrefix := utils.GenerateTestResourceName(10)
 
@@ -351,8 +354,8 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 }
 
 func TestAcc_ResourceClusterRemovedOutsideOfTerraform(t *testing.T) {
-	if os.Getenv("SKIP_CLUSTER_TESTS") == "True" {
-		t.Skip("Skipping dedicated cluster (and dedicated deployment) resource tests")
+	if os.Getenv(SKIP_CLUSTER_RESOURCE_TESTS) == "True" {
+		t.Skip(SKIP_CLUSTER_RESOURCE_TESTS_REASON)
 	}
 	clusterName := utils.GenerateTestResourceName(10)
 	clusterResource := fmt.Sprintf("astro_cluster.%v", clusterName)

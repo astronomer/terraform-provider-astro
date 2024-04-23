@@ -26,7 +26,7 @@ type Deployment struct {
 	AstroRuntimeVersion      types.String `tfsdk:"astro_runtime_version"`
 	AirflowVersion           types.String `tfsdk:"airflow_version"`
 	Namespace                types.String `tfsdk:"namespace"`
-	ContactEmails            types.List   `tfsdk:"contact_emails"`
+	ContactEmails            types.Set    `tfsdk:"contact_emails"`
 	Executor                 types.String `tfsdk:"executor"`
 	SchedulerCpu             types.String `tfsdk:"scheduler_cpu"`
 	SchedulerMemory          types.String `tfsdk:"scheduler_memory"`
@@ -35,7 +35,7 @@ type Deployment struct {
 	ImageTag                 types.String `tfsdk:"image_tag"`
 	ImageRepository          types.String `tfsdk:"image_repository"`
 	ImageVersion             types.String `tfsdk:"image_version"`
-	EnvironmentVariables     types.List   `tfsdk:"environment_variables"`
+	EnvironmentVariables     types.Set    `tfsdk:"environment_variables"`
 	WebserverIngressHostname types.String `tfsdk:"webserver_ingress_hostname"`
 	WebserverUrl             types.String `tfsdk:"webserver_url"`
 	WebserverAirflowApiUrl   types.String `tfsdk:"webserver_airflow_api_url"`
@@ -46,9 +46,9 @@ type Deployment struct {
 	IsCicdEnforced           types.Bool   `tfsdk:"is_cicd_enforced"`
 	IsDagDeployEnabled       types.Bool   `tfsdk:"is_dag_deploy_enabled"`
 	WorkloadIdentity         types.String `tfsdk:"workload_identity"`
-	ExternalIps              types.List   `tfsdk:"external_ips"`
+	ExternalIps              types.Set    `tfsdk:"external_ips"`
 	OidcIssuerUrl            types.String `tfsdk:"oidc_issuer_url"`
-	WorkerQueues             types.List   `tfsdk:"worker_queues"`
+	WorkerQueues             types.Set    `tfsdk:"worker_queues"`
 
 	// Hybrid and dedicated specific fields
 	ClusterId types.String `tfsdk:"cluster_id"`
@@ -71,6 +71,7 @@ type Deployment struct {
 func (data *Deployment) ReadFromResponse(
 	ctx context.Context,
 	deployment *platform.Deployment,
+	isResource bool,
 ) diag.Diagnostics {
 	// Read common fields
 	data.Id = types.StringValue(deployment.Id)
@@ -99,7 +100,7 @@ func (data *Deployment) ReadFromResponse(
 	data.AstroRuntimeVersion = types.StringValue(deployment.AstroRuntimeVersion)
 	data.AirflowVersion = types.StringValue(deployment.AirflowVersion)
 	data.Namespace = types.StringValue(deployment.Namespace)
-	data.ContactEmails, diags = utils.StringList(deployment.ContactEmails)
+	data.ContactEmails, diags = utils.StringSet(deployment.ContactEmails)
 	if diags.HasError() {
 		return diags
 	}
@@ -114,7 +115,7 @@ func (data *Deployment) ReadFromResponse(
 	data.ImageTag = types.StringValue(deployment.ImageTag)
 	data.ImageRepository = types.StringValue(deployment.ImageRepository)
 	data.ImageVersion = types.StringPointerValue(deployment.ImageVersion)
-	data.EnvironmentVariables, diags = utils.ObjectList(ctx, deployment.EnvironmentVariables, schemas.DeploymentEnvironmentVariableAttributeTypes(), DeploymentEnvironmentVariableTypesObject)
+	data.EnvironmentVariables, diags = utils.ObjectSet(ctx, deployment.EnvironmentVariables, schemas.DeploymentEnvironmentVariableAttributeTypes(), DeploymentEnvironmentVariableTypesObject)
 	if diags.HasError() {
 		return diags
 	}
@@ -126,15 +127,22 @@ func (data *Deployment) ReadFromResponse(
 	data.Type = types.StringPointerValue((*string)(deployment.Type))
 	data.DagTarballVersion = types.StringPointerValue(deployment.DagTarballVersion)
 	data.DesiredDagTarballVersion = types.StringPointerValue(deployment.DesiredDagTarballVersion)
-	data.WorkerQueues, diags = utils.ObjectList(ctx, deployment.WorkerQueues, schemas.WorkerQueueAttributeTypes(), WorkerQueueTypesObject)
-	if diags.HasError() {
-		return diags
+	if isResource {
+		data.WorkerQueues, diags = utils.ObjectSet(ctx, deployment.WorkerQueues, schemas.WorkerQueueResourceAttributeTypes(), WorkerQueueResourceTypesObject)
+		if diags.HasError() {
+			return diags
+		}
+	} else {
+		data.WorkerQueues, diags = utils.ObjectSet(ctx, deployment.WorkerQueues, schemas.WorkerQueueDataSourceAttributeTypes(), WorkerQueueDataSourceTypesObject)
+		if diags.HasError() {
+			return diags
+		}
 	}
 	data.IsCicdEnforced = types.BoolValue(deployment.IsCicdEnforced)
 	data.IsDagDeployEnabled = types.BoolValue(deployment.IsDagDeployEnabled)
 
 	data.WorkloadIdentity = types.StringPointerValue(deployment.WorkloadIdentity)
-	data.ExternalIps, diags = utils.StringList(deployment.ExternalIPs)
+	data.ExternalIps, diags = utils.StringSet(deployment.ExternalIPs)
 	if diags.HasError() {
 		return diags
 	}
@@ -173,8 +181,20 @@ type DeploymentEnvironmentVariable struct {
 	IsSecret  types.Bool   `tfsdk:"is_secret"`
 }
 
-type WorkerQueue struct {
+type WorkerQueueDataSource struct {
 	Id                types.String `tfsdk:"id"`
+	Name              types.String `tfsdk:"name"`
+	AstroMachine      types.String `tfsdk:"astro_machine"`
+	IsDefault         types.Bool   `tfsdk:"is_default"`
+	MaxWorkerCount    types.Int64  `tfsdk:"max_worker_count"`
+	MinWorkerCount    types.Int64  `tfsdk:"min_worker_count"`
+	NodePoolId        types.String `tfsdk:"node_pool_id"`
+	PodCpu            types.String `tfsdk:"pod_cpu"`
+	PodMemory         types.String `tfsdk:"pod_memory"`
+	WorkerConcurrency types.Int64  `tfsdk:"worker_concurrency"`
+}
+
+type WorkerQueueResource struct {
 	Name              types.String `tfsdk:"name"`
 	AstroMachine      types.String `tfsdk:"astro_machine"`
 	IsDefault         types.Bool   `tfsdk:"is_default"`
@@ -200,11 +220,30 @@ func DeploymentEnvironmentVariableTypesObject(
 	return types.ObjectValueFrom(ctx, schemas.DeploymentEnvironmentVariableAttributeTypes(), obj)
 }
 
-func WorkerQueueTypesObject(
+func WorkerQueueResourceTypesObject(
 	ctx context.Context,
 	workerQueue platform.WorkerQueue,
 ) (types.Object, diag.Diagnostics) {
-	obj := WorkerQueue{
+	obj := WorkerQueueResource{
+		Name:              types.StringValue(workerQueue.Name),
+		AstroMachine:      types.StringPointerValue(workerQueue.AstroMachine),
+		IsDefault:         types.BoolValue(workerQueue.IsDefault),
+		MaxWorkerCount:    types.Int64Value(int64(workerQueue.MaxWorkerCount)),
+		MinWorkerCount:    types.Int64Value(int64(workerQueue.MinWorkerCount)),
+		NodePoolId:        types.StringPointerValue(workerQueue.NodePoolId),
+		PodCpu:            types.StringValue(workerQueue.PodCpu),
+		PodMemory:         types.StringValue(workerQueue.PodMemory),
+		WorkerConcurrency: types.Int64Value(int64(workerQueue.WorkerConcurrency)),
+	}
+
+	return types.ObjectValueFrom(ctx, schemas.WorkerQueueResourceAttributeTypes(), obj)
+}
+
+func WorkerQueueDataSourceTypesObject(
+	ctx context.Context,
+	workerQueue platform.WorkerQueue,
+) (types.Object, diag.Diagnostics) {
+	obj := WorkerQueueDataSource{
 		Id:                types.StringValue(workerQueue.Id),
 		Name:              types.StringValue(workerQueue.Name),
 		AstroMachine:      types.StringPointerValue(workerQueue.AstroMachine),
@@ -217,7 +256,7 @@ func WorkerQueueTypesObject(
 		WorkerConcurrency: types.Int64Value(int64(workerQueue.WorkerConcurrency)),
 	}
 
-	return types.ObjectValueFrom(ctx, schemas.WorkerQueueAttributeTypes(), obj)
+	return types.ObjectValueFrom(ctx, schemas.WorkerQueueDataSourceAttributeTypes(), obj)
 }
 
 type DeploymentScalingSpec struct {

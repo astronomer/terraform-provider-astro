@@ -63,7 +63,7 @@ resource "astro_cluster" "gcp_example" {
 - `region` (String) Cluster region - if changed, the cluster will be recreated.
 - `type` (String) Cluster type
 - `vpc_subnet_range` (String) Cluster VPC subnet range. If changed, the cluster will be recreated.
-- `workspace_ids` (List of String) Cluster workspace IDs
+- `workspace_ids` (Set of String) Cluster workspace IDs
 
 ### Optional
 
@@ -78,7 +78,7 @@ resource "astro_cluster" "gcp_example" {
 - `id` (String) Cluster identifier
 - `is_limited` (Boolean) Whether the cluster is limited
 - `metadata` (Attributes) Cluster metadata (see [below for nested schema](#nestedatt--metadata))
-- `node_pools` (Attributes List) Cluster node pools (see [below for nested schema](#nestedatt--node_pools))
+- `node_pools` (Attributes Set) Cluster node pools (see [below for nested schema](#nestedatt--node_pools))
 - `provider_account` (String) Cluster provider account
 - `status` (String) Cluster status
 - `tenant_id` (String) Cluster tenant ID
@@ -99,7 +99,7 @@ Optional:
 
 Read-Only:
 
-- `external_ips` (List of String) Cluster external IPs
+- `external_ips` (Set of String) Cluster external IPs
 - `oidc_issuer_url` (String) Cluster OIDC issuer URL
 
 
@@ -116,5 +116,5 @@ Read-Only:
 - `max_node_count` (Number) Node pool maximum node count
 - `name` (String) Node pool name
 - `node_instance_type` (String) Node pool node instance type
-- `supported_astro_machines` (List of String) Node pool supported Astro machines
+- `supported_astro_machines` (Set of String) Node pool supported Astro machines
 - `updated_at` (String) Node pool last updated timestamp

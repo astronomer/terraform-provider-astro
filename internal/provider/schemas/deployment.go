@@ -4,16 +4,17 @@ import (
 	"context"
 	"regexp"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -85,13 +86,12 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
-		"contact_emails": resourceSchema.ListAttribute{
+		"contact_emails": resourceSchema.SetAttribute{
 			ElementType:         types.StringType,
 			MarkdownDescription: "Deployment contact emails",
 			Required:            true,
-			Validators: []validator.List{
-				listvalidator.ValueStringsAre(stringvalidator.RegexMatches(regexp.MustCompile(validators.EmailString), "must be a valid email address")),
-				listvalidator.UniqueValues(),
+			Validators: []validator.Set{
+				setvalidator.ValueStringsAre(stringvalidator.RegexMatches(regexp.MustCompile(validators.EmailString), "must be a valid email address")),
 			},
 		},
 		"executor": resourceSchema.StringAttribute{
@@ -121,13 +121,9 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			MarkdownDescription: "Deployment image version",
 			Computed:            true,
 		},
-		"environment_variables": resourceSchema.ListNestedAttribute{
+		"environment_variables": resourceSchema.SetNestedAttribute{
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: DeploymentEnvironmentVariableResourceAttributes(),
-			},
-			Validators: []validator.List{
-				listvalidator.UniqueValues(),
-				listvalidator.UniqueValues(),
 			},
 			MarkdownDescription: "Deployment environment variables",
 			Required:            true,
@@ -177,12 +173,12 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			MarkdownDescription: "Whether DAG deploy is enabled - Changing this value may disrupt your deployment. Read more at https://docs.astronomer.io/astro/deploy-dags#enable-or-disable-dag-only-deploys-on-a-deployment",
 			Required:            true,
 		},
-		"external_ips": resourceSchema.ListAttribute{
+		"external_ips": resourceSchema.SetAttribute{
 			ElementType:         types.StringType,
 			MarkdownDescription: "Deployment external IPs",
 			Computed:            true,
-			PlanModifiers: []planmodifier.List{
-				listplanmodifier.UseStateForUnknown(),
+			PlanModifiers: []planmodifier.Set{
+				setplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"oidc_issuer_url": resourceSchema.StringAttribute{
@@ -206,16 +202,15 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 				stringplanmodifier.RequiresReplaceIfConfigured(),
 			},
 		},
-		"worker_queues": resourceSchema.ListNestedAttribute{
+		"worker_queues": resourceSchema.SetNestedAttribute{
 			Optional: true,
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: WorkerQueueResourceSchemaAttributes(),
 			},
 			MarkdownDescription: "Deployment worker queues - required for deployments with 'CELERY' executor",
-			Validators: []validator.List{
+			Validators: []validator.Set{
 				// Dynamic validation with 'executor' done in the resource.ValidateConfig function
-				listvalidator.SizeAtLeast(1),
-				listvalidator.UniqueValues(),
+				setvalidator.SizeAtLeast(1),
 			},
 		},
 		"scheduler_au": resourceSchema.Int64Attribute{
@@ -404,7 +399,7 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			MarkdownDescription: "Deployment namespace",
 			Computed:            true,
 		},
-		"contact_emails": datasourceSchema.ListAttribute{
+		"contact_emails": datasourceSchema.SetAttribute{
 			ElementType:         types.StringType,
 			MarkdownDescription: "Deployment contact emails",
 			Computed:            true,
@@ -441,7 +436,7 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			MarkdownDescription: "Deployment image version",
 			Computed:            true,
 		},
-		"environment_variables": datasourceSchema.ListNestedAttribute{
+		"environment_variables": datasourceSchema.SetNestedAttribute{
 			NestedObject: datasourceSchema.NestedAttributeObject{
 				Attributes: DeploymentEnvironmentVariableDataSourceAttributes(),
 			},
@@ -476,7 +471,7 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			MarkdownDescription: "Deployment desired DAG tarball version",
 			Computed:            true,
 		},
-		"worker_queues": datasourceSchema.ListNestedAttribute{
+		"worker_queues": datasourceSchema.SetNestedAttribute{
 			NestedObject: datasourceSchema.NestedAttributeObject{
 				Attributes: WorkerQueueDataSourceSchemaAttributes(),
 			},
@@ -515,7 +510,7 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			MarkdownDescription: "Deployment workload identity",
 			Computed:            true,
 		},
-		"external_ips": datasourceSchema.ListAttribute{
+		"external_ips": datasourceSchema.SetAttribute{
 			ElementType:         types.StringType,
 			MarkdownDescription: "Deployment external IPs",
 			Computed:            true,
@@ -605,7 +600,21 @@ func DeploymentEnvironmentVariableResourceAttributes() map[string]resourceSchema
 	}
 }
 
-func WorkerQueueAttributeTypes() map[string]attr.Type {
+func WorkerQueueResourceAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"name":               types.StringType,
+		"is_default":         types.BoolType,
+		"max_worker_count":   types.Int64Type,
+		"min_worker_count":   types.Int64Type,
+		"pod_cpu":            types.StringType,
+		"pod_memory":         types.StringType,
+		"worker_concurrency": types.Int64Type,
+		"node_pool_id":       types.StringType,
+		"astro_machine":      types.StringType,
+	}
+}
+
+func WorkerQueueDataSourceAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"id":                 types.StringType,
 		"name":               types.StringType,
@@ -667,10 +676,6 @@ func WorkerQueueDataSourceSchemaAttributes() map[string]datasourceSchema.Attribu
 
 func WorkerQueueResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
-		"id": resourceSchema.StringAttribute{
-			MarkdownDescription: "Worker queue identifier",
-			Computed:            true,
-		},
 		"name": resourceSchema.StringAttribute{
 			MarkdownDescription: "Worker queue name",
 			Required:            true,

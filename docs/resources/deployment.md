@@ -92,9 +92,9 @@ resource "astro_deployment" "hybrid" {
 
 ### Required
 
-- `contact_emails` (List of String) Deployment contact emails
+- `contact_emails` (Set of String) Deployment contact emails
 - `description` (String) Deployment description
-- `environment_variables` (Attributes List) Deployment environment variables (see [below for nested schema](#nestedatt--environment_variables))
+- `environment_variables` (Attributes Set) Deployment environment variables (see [below for nested schema](#nestedatt--environment_variables))
 - `executor` (String) Deployment executor
 - `is_cicd_enforced` (Boolean) Deployment CI/CD enforced
 - `is_dag_deploy_enabled` (Boolean) Whether DAG deploy is enabled - Changing this value may disrupt your deployment. Read more at https://docs.astronomer.io/astro/deploy-dags#enable-or-disable-dag-only-deploys-on-a-deployment
@@ -118,7 +118,7 @@ resource "astro_deployment" "hybrid" {
 - `scheduler_replicas` (Number) Deployment scheduler replicas - required for 'HYBRID' deployments
 - `scheduler_size` (String) Deployment scheduler size - required for 'STANDARD' and 'DEDICATED' deployments
 - `task_pod_node_pool_id` (String) Deployment task pod node pool identifier - required if executor is 'KUBERNETES' and type is 'HYBRID'
-- `worker_queues` (Attributes List) Deployment worker queues - required for deployments with 'CELERY' executor (see [below for nested schema](#nestedatt--worker_queues))
+- `worker_queues` (Attributes Set) Deployment worker queues - required for deployments with 'CELERY' executor (see [below for nested schema](#nestedatt--worker_queues))
 
 ### Read-Only
 
@@ -128,7 +128,7 @@ resource "astro_deployment" "hybrid" {
 - `created_by` (Attributes) Deployment creator (see [below for nested schema](#nestedatt--created_by))
 - `dag_tarball_version` (String) Deployment DAG tarball version
 - `desired_dag_tarball_version` (String) Deployment desired DAG tarball version
-- `external_ips` (List of String) Deployment external IPs
+- `external_ips` (Set of String) Deployment external IPs
 - `id` (String) Deployment identifier
 - `image_repository` (String) Deployment image repository
 - `image_tag` (String) Deployment image tag
@@ -174,7 +174,7 @@ Optional:
 Optional:
 
 - `override` (Attributes) (see [below for nested schema](#nestedatt--scaling_spec--hibernation_spec--override))
-- `schedules` (Attributes List) (see [below for nested schema](#nestedatt--scaling_spec--hibernation_spec--schedules))
+- `schedules` (Attributes Set) (see [below for nested schema](#nestedatt--scaling_spec--hibernation_spec--schedules))
 
 <a id="nestedatt--scaling_spec--hibernation_spec--override"></a>
 ### Nested Schema for `scaling_spec.hibernation_spec.override`
@@ -223,7 +223,6 @@ Optional:
 
 Read-Only:
 
-- `id` (String) Worker queue identifier
 - `pod_cpu` (String) Worker queue pod CPU
 - `pod_memory` (String) Worker queue pod memory
 

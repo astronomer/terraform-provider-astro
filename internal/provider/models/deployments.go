@@ -12,10 +12,10 @@ import (
 
 // Deployments describes the data source data model.
 type Deployments struct {
-	Deployments   types.List `tfsdk:"deployments"`
-	WorkspaceIds  types.List `tfsdk:"workspace_ids"`  // query parameter
-	DeploymentIds types.List `tfsdk:"deployment_ids"` // query parameter
-	Names         types.List `tfsdk:"names"`          // query parameter
+	Deployments   types.Set `tfsdk:"deployments"`
+	WorkspaceIds  types.Set `tfsdk:"workspace_ids"`  // query parameter
+	DeploymentIds types.Set `tfsdk:"deployment_ids"` // query parameter
+	Names         types.Set `tfsdk:"names"`          // query parameter
 }
 
 func (data *Deployments) ReadFromResponse(
@@ -25,7 +25,7 @@ func (data *Deployments) ReadFromResponse(
 	values := make([]attr.Value, len(deployments))
 	for i, deployment := range deployments {
 		var singleDeploymentData Deployment
-		diags := singleDeploymentData.ReadFromResponse(ctx, &deployment)
+		diags := singleDeploymentData.ReadFromResponse(ctx, &deployment, false)
 		if diags.HasError() {
 			return diags
 		}
@@ -37,7 +37,7 @@ func (data *Deployments) ReadFromResponse(
 		values[i] = objectValue
 	}
 	var diags diag.Diagnostics
-	data.Deployments, diags = types.ListValue(types.ObjectType{AttrTypes: schemas.DeploymentsElementAttributeTypes()}, values)
+	data.Deployments, diags = types.SetValue(types.ObjectType{AttrTypes: schemas.DeploymentsElementAttributeTypes()}, values)
 	if diags.HasError() {
 		return diags
 	}

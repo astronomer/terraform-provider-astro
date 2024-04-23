@@ -106,7 +106,7 @@ func (d *deploymentDataSource) Read(
 	}
 
 	// Populate the model with the response data
-	diags := data.ReadFromResponse(ctx, deployment.JSON200)
+	diags := data.ReadFromResponse(ctx, deployment.JSON200, false)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

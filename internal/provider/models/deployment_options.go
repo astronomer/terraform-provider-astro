@@ -13,13 +13,13 @@ import (
 )
 
 type DeploymentOptions struct {
-	Executors               types.List   `tfsdk:"executors"`
+	Executors               types.Set    `tfsdk:"executors"`
 	ResourceQuotas          types.Object `tfsdk:"resource_quotas"`
-	RuntimeReleases         types.List   `tfsdk:"runtime_releases"`
-	SchedulerMachines       types.List   `tfsdk:"scheduler_machines"`
-	WorkerMachines          types.List   `tfsdk:"worker_machines"`
+	RuntimeReleases         types.Set    `tfsdk:"runtime_releases"`
+	SchedulerMachines       types.Set    `tfsdk:"scheduler_machines"`
+	WorkerMachines          types.Set    `tfsdk:"worker_machines"`
 	WorkerQueues            types.Object `tfsdk:"worker_queues"`
-	WorkloadIdentityOptions types.List   `tfsdk:"workload_identity_options"`
+	WorkloadIdentityOptions types.Set    `tfsdk:"workload_identity_options"`
 
 	// Query params
 	DeploymentId   types.String `tfsdk:"deployment_id"`
@@ -87,7 +87,7 @@ func (data *DeploymentOptions) ReadFromResponse(
 	options *platform.DeploymentOptions,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
-	data.Executors, diags = utils.StringList(&options.Executors)
+	data.Executors, diags = utils.StringSet(&options.Executors)
 	if diags.HasError() {
 		return diags
 	}
@@ -95,15 +95,15 @@ func (data *DeploymentOptions) ReadFromResponse(
 	if diags.HasError() {
 		return diags
 	}
-	data.RuntimeReleases, diags = utils.ObjectList(ctx, &options.RuntimeReleases, schemas.RuntimeReleaseAttributeTypes(), RuntimeReleaseTypesObject)
+	data.RuntimeReleases, diags = utils.ObjectSet(ctx, &options.RuntimeReleases, schemas.RuntimeReleaseAttributeTypes(), RuntimeReleaseTypesObject)
 	if diags.HasError() {
 		return diags
 	}
-	data.SchedulerMachines, diags = utils.ObjectList(ctx, &options.SchedulerMachines, schemas.SchedulerMachineAttributeTypes(), SchedulerMachineTypesObject)
+	data.SchedulerMachines, diags = utils.ObjectSet(ctx, &options.SchedulerMachines, schemas.SchedulerMachineAttributeTypes(), SchedulerMachineTypesObject)
 	if diags.HasError() {
 		return diags
 	}
-	data.WorkerMachines, diags = utils.ObjectList(ctx, &options.WorkerMachines, schemas.WorkerMachineAttributeTypes(), WorkerMachineTypesObject)
+	data.WorkerMachines, diags = utils.ObjectSet(ctx, &options.WorkerMachines, schemas.WorkerMachineAttributeTypes(), WorkerMachineTypesObject)
 	if diags.HasError() {
 		return diags
 	}
@@ -111,7 +111,7 @@ func (data *DeploymentOptions) ReadFromResponse(
 	if diags.HasError() {
 		return diags
 	}
-	data.WorkloadIdentityOptions, diags = utils.ObjectList(ctx, options.WorkloadIdentityOptions, schemas.WorkloadIdentityOptionsAttributeTypes(), WorkloadIdentityOptionTypesObject)
+	data.WorkloadIdentityOptions, diags = utils.ObjectSet(ctx, options.WorkloadIdentityOptions, schemas.WorkloadIdentityOptionsAttributeTypes(), WorkloadIdentityOptionTypesObject)
 	if diags.HasError() {
 		return diags
 	}

@@ -89,13 +89,13 @@ func (d *workspacesDataSource) Read(
 		Limit: lo.ToPtr(1000),
 	}
 	var diags diag.Diagnostics
-	params.WorkspaceIds, diags = utils.TypesListToStringSlicePtr(ctx, data.WorkspaceIds)
+	params.WorkspaceIds, diags = utils.TypesSetToStringSlicePtr(ctx, data.WorkspaceIds)
 	if diags.HasError() {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read workspaces, got error %v", diags.Errors()[0].Summary()))
 		resp.Diagnostics.Append(diags...)
 		return
 	}
-	params.Names, diags = utils.TypesListToStringSlicePtr(ctx, data.Names)
+	params.Names, diags = utils.TypesSetToStringSlicePtr(ctx, data.Names)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

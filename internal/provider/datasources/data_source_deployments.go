@@ -89,17 +89,17 @@ func (d *deploymentsDataSource) Read(
 		Limit: lo.ToPtr(1000),
 	}
 	var diags diag.Diagnostics
-	params.DeploymentIds, diags = utils.TypesListToStringSlicePtr(ctx, data.DeploymentIds)
+	params.DeploymentIds, diags = utils.TypesSetToStringSlicePtr(ctx, data.DeploymentIds)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
 	}
-	params.WorkspaceIds, diags = utils.TypesListToStringSlicePtr(ctx, data.WorkspaceIds)
+	params.WorkspaceIds, diags = utils.TypesSetToStringSlicePtr(ctx, data.WorkspaceIds)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
 	}
-	params.Names, diags = utils.TypesListToStringSlicePtr(ctx, data.Names)
+	params.Names, diags = utils.TypesSetToStringSlicePtr(ctx, data.Names)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

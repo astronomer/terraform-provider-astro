@@ -29,12 +29,12 @@ data "astro_workspaces" "example_workspaces_filter_by_names" {
 
 ### Optional
 
-- `names` (List of String)
-- `workspace_ids` (List of String)
+- `names` (Set of String)
+- `workspace_ids` (Set of String)
 
 ### Read-Only
 
-- `workspaces` (Attributes List) (see [below for nested schema](#nestedatt--workspaces))
+- `workspaces` (Attributes Set) (see [below for nested schema](#nestedatt--workspaces))
 
 <a id="nestedatt--workspaces"></a>
 ### Nested Schema for `workspaces`
