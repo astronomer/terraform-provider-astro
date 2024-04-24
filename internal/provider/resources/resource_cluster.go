@@ -8,11 +8,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/models"
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
-	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
+	"github.com/astronomer/terraform-provider-astro/internal/clients"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
+	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -106,7 +106,7 @@ func (r *ClusterResource) Create(
 		}
 
 		// workspaceIds
-		createAwsDedicatedClusterRequest.WorkspaceIds, diags = utils.TypesListToStringSlicePtr(ctx, data.WorkspaceIds)
+		createAwsDedicatedClusterRequest.WorkspaceIds, diags = utils.TypesSetToStringSlicePtr(ctx, data.WorkspaceIds)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -135,7 +135,7 @@ func (r *ClusterResource) Create(
 		}
 
 		// workspaceIds
-		createAzureDedicatedClusterRequest.WorkspaceIds, diags = utils.TypesListToStringSlicePtr(ctx, data.WorkspaceIds)
+		createAzureDedicatedClusterRequest.WorkspaceIds, diags = utils.TypesSetToStringSlicePtr(ctx, data.WorkspaceIds)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -166,7 +166,7 @@ func (r *ClusterResource) Create(
 		}
 
 		// workspaceIds
-		createGcpDedicatedClusterRequest.WorkspaceIds, diags = utils.TypesListToStringSlicePtr(ctx, data.WorkspaceIds)
+		createGcpDedicatedClusterRequest.WorkspaceIds, diags = utils.TypesSetToStringSlicePtr(ctx, data.WorkspaceIds)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -318,7 +318,7 @@ func (r *ClusterResource) Update(
 	}
 
 	// workspaceIds
-	updateDedicatedClusterRequest.WorkspaceIds, diags = utils.TypesListToStringSlicePtr(ctx, data.WorkspaceIds)
+	updateDedicatedClusterRequest.WorkspaceIds, diags = utils.TypesSetToStringSlicePtr(ctx, data.WorkspaceIds)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

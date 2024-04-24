@@ -44,7 +44,7 @@ dep:
 
 .PHONY: build
 build:
-	go build -o ${ENVTEST_ASSETS_DIR}/terraform-provider-astronomer
+	go build -o ${ENVTEST_ASSETS_DIR}
 	go generate ./...
 
 .PHONY: api_client_gen

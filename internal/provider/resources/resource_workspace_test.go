@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
+	"github.com/astronomer/terraform-provider-astro/internal/clients"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
-	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"
-	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
+	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -36,9 +36,9 @@ func TestAcc_ResourceWorkspace(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + workspace("test", workspace1Name, "bad description", false),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("astronomer_workspace.test", "name", workspace1Name),
-					resource.TestCheckResourceAttr("astronomer_workspace.test", "description", "bad description"),
-					resource.TestCheckResourceAttr("astronomer_workspace.test", "cicd_enforced_default", "false"),
+					resource.TestCheckResourceAttr("astro_workspace.test", "name", workspace1Name),
+					resource.TestCheckResourceAttr("astro_workspace.test", "description", "bad description"),
+					resource.TestCheckResourceAttr("astro_workspace.test", "cicd_enforced_default", "false"),
 					// Check via API that workspace exists
 					testAccCheckWorkspaceExistence(t, workspace1Name, true),
 				),
@@ -47,16 +47,16 @@ func TestAcc_ResourceWorkspace(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + workspace("test", workspace2Name, utils.TestResourceDescription, true),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("astronomer_workspace.test", "name", workspace2Name),
-					resource.TestCheckResourceAttr("astronomer_workspace.test", "description", utils.TestResourceDescription),
-					resource.TestCheckResourceAttr("astronomer_workspace.test", "cicd_enforced_default", "true"),
+					resource.TestCheckResourceAttr("astro_workspace.test", "name", workspace2Name),
+					resource.TestCheckResourceAttr("astro_workspace.test", "description", utils.TestResourceDescription),
+					resource.TestCheckResourceAttr("astro_workspace.test", "cicd_enforced_default", "true"),
 					// Check via API that workspace exists
 					testAccCheckWorkspaceExistence(t, workspace2Name, true),
 				),
 			},
 			// Import existing workspace and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests
 			{
-				ResourceName:      "astronomer_workspace.test",
+				ResourceName:      "astro_workspace.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -80,8 +80,8 @@ func TestAcc_WorkspaceRemovedOutsideOfTerraform(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("astronomer_workspace.test", "name", workspaceName),
-					resource.TestCheckResourceAttr("astronomer_workspace.test", "description", utils.TestResourceDescription),
+					resource.TestCheckResourceAttr("astro_workspace.test", "name", workspaceName),
+					resource.TestCheckResourceAttr("astro_workspace.test", "description", utils.TestResourceDescription),
 					// Check via API that workspace exists
 					testAccCheckWorkspaceExistence(t, workspaceName, true),
 				),
@@ -96,8 +96,8 @@ func TestAcc_WorkspaceRemovedOutsideOfTerraform(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("astronomer_workspace.test", "name", workspaceName),
-					resource.TestCheckResourceAttr("astronomer_workspace.test", "description", utils.TestResourceDescription),
+					resource.TestCheckResourceAttr("astro_workspace.test", "name", workspaceName),
+					resource.TestCheckResourceAttr("astro_workspace.test", "description", utils.TestResourceDescription),
 					// Check via API that workspace exists
 					testAccCheckWorkspaceExistence(t, workspaceName, true),
 				),
@@ -112,7 +112,7 @@ variable "name" {
 	type = string
 }
 
-resource "astronomer_workspace" "test" {
+resource "astro_workspace" "test" {
 	name = var.name
 	description = "%s"
 	cicd_enforced_default = true
@@ -121,7 +121,7 @@ resource "astronomer_workspace" "test" {
 
 func workspace(tfVarName, name, description string, cicdEnforcedDefault bool) string {
 	return fmt.Sprintf(`
-resource "astronomer_workspace" "%s" {
+resource "astro_workspace" "%s" {
 	name = "%s"
 	description = "%s"
 	cicd_enforced_default = %t

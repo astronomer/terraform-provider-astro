@@ -2,7 +2,7 @@ package schemas
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -26,7 +26,7 @@ func HibernationSpecAttributeTypes() map[string]attr.Type {
 		"override": types.ObjectType{
 			AttrTypes: HibernationOverrideAttributeTypes(),
 		},
-		"schedules": types.ListType{
+		"schedules": types.SetType{
 			ElemType: types.ObjectType{
 				AttrTypes: HibernationScheduleAttributeTypes(),
 			},
@@ -49,7 +49,7 @@ func HibernationSpecDataSourceSchemaAttributes() map[string]datasourceSchema.Att
 			Attributes: HibernationOverrideDataSourceSchemaAttributes(),
 			Computed:   true,
 		},
-		"schedules": datasourceSchema.ListNestedAttribute{
+		"schedules": datasourceSchema.SetNestedAttribute{
 			NestedObject: datasourceSchema.NestedAttributeObject{
 				Attributes: HibernationScheduleDataSourceSchemaAttributes(),
 			},
@@ -111,12 +111,12 @@ func HibernationSpecResourceSchemaAttributes() map[string]resourceSchema.Attribu
 			Attributes: HibernationOverrideResourceSchemaAttributes(),
 			Optional:   true,
 		},
-		"schedules": resourceSchema.ListNestedAttribute{
+		"schedules": resourceSchema.SetNestedAttribute{
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: HibernationScheduleResourceSchemaAttributes(),
 			},
-			Validators: []validator.List{
-				listvalidator.SizeAtMost(10),
+			Validators: []validator.Set{
+				setvalidator.SizeAtMost(10),
 			},
 			Optional: true,
 		},

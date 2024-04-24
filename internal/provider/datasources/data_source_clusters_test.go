@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
+	"github.com/astronomer/terraform-provider-astro/internal/utils"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"
+	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -34,7 +34,7 @@ func TestAcc_DataSourceClustersHybrid(t *testing.T) {
 
 func clusters(tfVarName string) string {
 	return fmt.Sprintf(`
-data astronomer_clusters "%v" {}`, tfVarName)
+data astro_clusters "%v" {}`, tfVarName)
 }
 
 func checkClusters(tfVarName string) resource.TestCheckFunc {

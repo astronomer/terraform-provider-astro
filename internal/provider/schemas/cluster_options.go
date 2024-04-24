@@ -1,7 +1,7 @@
 package schemas
 
 import (
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -23,7 +23,7 @@ func ClusterOptionsElementAttributeTypes() map[string]attr.Type {
 		"default_region": types.ObjectType{
 			AttrTypes: RegionAttributeTypes(),
 		},
-		"regions": types.ListType{
+		"regions": types.SetType{
 			ElemType: types.ObjectType{
 				AttrTypes: RegionAttributeTypes(),
 			},
@@ -31,7 +31,7 @@ func ClusterOptionsElementAttributeTypes() map[string]attr.Type {
 		"default_node_instance": types.ObjectType{
 			AttrTypes: ProviderInstanceAttributeTypes(),
 		},
-		"node_instances": types.ListType{
+		"node_instances": types.SetType{
 			ElemType: types.ObjectType{
 				AttrTypes: ProviderInstanceAttributeTypes(),
 			},
@@ -39,7 +39,7 @@ func ClusterOptionsElementAttributeTypes() map[string]attr.Type {
 		"default_database_instance": types.ObjectType{
 			AttrTypes: ProviderInstanceAttributeTypes(),
 		},
-		"database_instances": types.ListType{
+		"database_instances": types.SetType{
 			ElemType: types.ObjectType{
 				AttrTypes: ProviderInstanceAttributeTypes(),
 			},
@@ -51,7 +51,7 @@ func RegionAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"name":    types.StringType,
 		"limited": types.BoolType,
-		"banned_instances": types.ListType{
+		"banned_instances": types.SetType{
 			ElemType: types.StringType,
 		},
 	}
@@ -74,7 +74,7 @@ func TemplateVersionAttributeTypes() map[string]attr.Type {
 
 func ClusterOptionsDataSourceSchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
-		"cluster_options": schema.ListNestedAttribute{
+		"cluster_options": schema.SetNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: ClusterOptionDataSourceSchemaAttributes(),
 			},
@@ -141,7 +141,7 @@ func ClusterOptionDataSourceSchemaAttributes() map[string]datasourceSchema.Attri
 			Computed:            true,
 			Attributes:          DatasourceRegionAttributes(),
 		},
-		"regions": datasourceSchema.ListNestedAttribute{
+		"regions": datasourceSchema.SetNestedAttribute{
 			MarkdownDescription: "ClusterOption regions",
 			Computed:            true,
 			NestedObject: schema.NestedAttributeObject{
@@ -153,7 +153,7 @@ func ClusterOptionDataSourceSchemaAttributes() map[string]datasourceSchema.Attri
 			Computed:            true,
 			Attributes:          DatasourceProviderInstanceAttributes(),
 		},
-		"node_instances": datasourceSchema.ListNestedAttribute{
+		"node_instances": datasourceSchema.SetNestedAttribute{
 			MarkdownDescription: "ClusterOption node instances",
 			Computed:            true,
 			NestedObject: schema.NestedAttributeObject{
@@ -165,7 +165,7 @@ func ClusterOptionDataSourceSchemaAttributes() map[string]datasourceSchema.Attri
 			Computed:            true,
 			Attributes:          DatasourceProviderInstanceAttributes(),
 		},
-		"database_instances": datasourceSchema.ListNestedAttribute{
+		"database_instances": datasourceSchema.SetNestedAttribute{
 			MarkdownDescription: "ClusterOption database instances",
 			Computed:            true,
 			NestedObject: schema.NestedAttributeObject{
@@ -185,7 +185,7 @@ func DatasourceRegionAttributes() map[string]datasourceSchema.Attribute {
 			Computed:            true,
 			MarkdownDescription: "Region is limited bool",
 		},
-		"banned_instances": datasourceSchema.ListAttribute{
+		"banned_instances": datasourceSchema.SetAttribute{
 			ElementType:         types.StringType,
 			MarkdownDescription: "Region banned instances",
 			Computed:            true,

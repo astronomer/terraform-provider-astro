@@ -1,8 +1,8 @@
 package schemas
 
 import (
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/validators"
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -30,7 +30,7 @@ func DeploymentsElementAttributeTypes() map[string]attr.Type {
 		"astro_runtime_version": types.StringType,
 		"airflow_version":       types.StringType,
 		"namespace":             types.StringType,
-		"contact_emails": types.ListType{
+		"contact_emails": types.SetType{
 			ElemType: types.StringType,
 		},
 		"executor":           types.StringType,
@@ -41,7 +41,7 @@ func DeploymentsElementAttributeTypes() map[string]attr.Type {
 		"image_tag":          types.StringType,
 		"image_repository":   types.StringType,
 		"image_version":      types.StringType,
-		"environment_variables": types.ListType{
+		"environment_variables": types.SetType{
 			ElemType: types.ObjectType{
 				AttrTypes: DeploymentEnvironmentVariableAttributeTypes(),
 			},
@@ -53,9 +53,9 @@ func DeploymentsElementAttributeTypes() map[string]attr.Type {
 		"status_reason":               types.StringType,
 		"dag_tarball_version":         types.StringType,
 		"desired_dag_tarball_version": types.StringType,
-		"worker_queues": types.ListType{
+		"worker_queues": types.SetType{
 			ElemType: types.ObjectType{
-				AttrTypes: WorkerQueueAttributeTypes(),
+				AttrTypes: WorkerQueueDataSourceAttributeTypes(),
 			},
 		},
 		"task_pod_node_pool_id": types.StringType,
@@ -66,7 +66,7 @@ func DeploymentsElementAttributeTypes() map[string]attr.Type {
 		"is_high_availability":  types.BoolType,
 		"is_development_mode":   types.BoolType,
 		"workload_identity":     types.StringType,
-		"external_ips": types.ListType{
+		"external_ips": types.SetType{
 			ElemType: types.StringType,
 		},
 		"oidc_issuer_url":         types.StringType,
@@ -85,34 +85,31 @@ func DeploymentsElementAttributeTypes() map[string]attr.Type {
 
 func DeploymentsDataSourceSchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
-		"deployments": schema.ListNestedAttribute{
+		"deployments": schema.SetNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: DeploymentDataSourceSchemaAttributes(),
 			},
 			Computed: true,
 		},
-		"deployment_ids": schema.ListAttribute{
+		"deployment_ids": schema.SetAttribute{
 			ElementType: types.StringType,
 			Optional:    true,
-			Validators: []validator.List{
-				listvalidator.ValueStringsAre(validators.IsCuid()),
-				listvalidator.UniqueValues(),
+			Validators: []validator.Set{
+				setvalidator.ValueStringsAre(validators.IsCuid()),
 			},
 		},
-		"workspace_ids": schema.ListAttribute{
+		"workspace_ids": schema.SetAttribute{
 			ElementType: types.StringType,
 			Optional:    true,
-			Validators: []validator.List{
-				listvalidator.ValueStringsAre(validators.IsCuid()),
-				listvalidator.UniqueValues(),
+			Validators: []validator.Set{
+				setvalidator.ValueStringsAre(validators.IsCuid()),
 			},
 		},
-		"names": schema.ListAttribute{
+		"names": schema.SetAttribute{
 			ElementType: types.StringType,
 			Optional:    true,
-			Validators: []validator.List{
-				listvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
-				listvalidator.UniqueValues(),
+			Validators: []validator.Set{
+				setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 			},
 		},
 	}

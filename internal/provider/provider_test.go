@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"testing"
 
-	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"
+	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -65,7 +65,7 @@ func TestAcc_Provider_config(t *testing.T) {
 			{
 				Config: explicitHostConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.astronomer_organization.test", "id"),
+					resource.TestCheckResourceAttrSet("data.astro_organization.test", "id"),
 				),
 			},
 		},
@@ -74,7 +74,7 @@ func TestAcc_Provider_config(t *testing.T) {
 
 func explicitHostConfig() string {
 	return fmt.Sprintf(`
-provider "astronomer" {
+provider "astro" {
 organization_id = "%v"
 host = "%v"
 token = "%v"
@@ -83,20 +83,20 @@ token = "%v"
 
 func missingOrganizationIdConfig() string {
 	return `
-provider "astronomer" {
+provider "astro" {
 }` + dataSourceConfig()
 }
 
 func organizationIdIsNotCuidConfig() string {
 	return `
-provider "astronomer" {
+provider "astro" {
 organization_id = "not-a-cuid"
 }` + dataSourceConfig()
 }
 
 func invalidHost() string {
 	return fmt.Sprintf(`
-provider "astronomer" {
+provider "astro" {
 organization_id = "%v"
 host = "https://api.astronomer.com"
 }`, os.Getenv("HOSTED_ORGANIZATION_ID")) + dataSourceConfig()
@@ -105,5 +105,5 @@ host = "https://api.astronomer.com"
 // dataSourceConfig is needed to actually run the "Configure" method in the provider
 func dataSourceConfig() string {
 	return `
-data "astronomer_organization" "test" {}`
+data "astro_organization" "test" {}`
 }

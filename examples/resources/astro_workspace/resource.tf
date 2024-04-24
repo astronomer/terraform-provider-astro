@@ -1,4 +1,4 @@
-resource "workspace_resource" "example" {
+resource "astro_workspace" "example" {
   name                  = "my-workspace"
   description           = "my first workspace"
   cicd_enforced_default = true

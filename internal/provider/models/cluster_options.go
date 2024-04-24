@@ -3,10 +3,10 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
+	"github.com/astronomer/terraform-provider-astro/internal/utils"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -14,7 +14,7 @@ import (
 
 // ClusterOptionsDataSource describes the data source data model.
 type ClusterOptionsDataSource struct {
-	ClusterOptions types.List   `tfsdk:"cluster_options"`
+	ClusterOptions types.Set    `tfsdk:"cluster_options"`
 	Type           types.String `tfsdk:"type"`
 	CloudProvider  types.String `tfsdk:"cloud_provider"`
 }
@@ -24,7 +24,7 @@ func (data *ClusterOptionsDataSource) ReadFromResponse(
 	clusterOptions []platform.ClusterOptions,
 ) diag.Diagnostics {
 	if len(clusterOptions) == 0 {
-		types.ListNull(types.ObjectType{AttrTypes: schemas.ClusterOptionsElementAttributeTypes()})
+		types.SetNull(types.ObjectType{AttrTypes: schemas.ClusterOptionsElementAttributeTypes()})
 	}
 
 	values := make([]attr.Value, len(clusterOptions))
@@ -42,7 +42,7 @@ func (data *ClusterOptionsDataSource) ReadFromResponse(
 		values[i] = objectValue
 	}
 	var diags diag.Diagnostics
-	data.ClusterOptions, diags = types.ListValue(types.ObjectType{AttrTypes: schemas.ClusterOptionsElementAttributeTypes()}, values)
+	data.ClusterOptions, diags = types.SetValue(types.ObjectType{AttrTypes: schemas.ClusterOptionsElementAttributeTypes()}, values)
 	if diags.HasError() {
 		return diags
 	}
@@ -60,11 +60,11 @@ type ClusterOptionDataSource struct {
 	NodeCountMax               types.Int64  `tfsdk:"node_count_max"`
 	NodeCountDefault           types.Int64  `tfsdk:"node_count_default"`
 	DefaultRegion              types.Object `tfsdk:"default_region"`
-	Regions                    types.List   `tfsdk:"regions"`
+	Regions                    types.Set    `tfsdk:"regions"`
 	DefaultNodeInstance        types.Object `tfsdk:"default_node_instance"`
-	NodeInstances              types.List   `tfsdk:"node_instances"`
+	NodeInstances              types.Set    `tfsdk:"node_instances"`
 	DefaultDatabaseInstance    types.Object `tfsdk:"default_database_instance"`
-	DatabaseInstances          types.List   `tfsdk:"database_instances"`
+	DatabaseInstances          types.Set    `tfsdk:"database_instances"`
 }
 
 func (data *ClusterOptionDataSource) ReadFromResponse(
@@ -85,7 +85,7 @@ func (data *ClusterOptionDataSource) ReadFromResponse(
 		return diags
 	}
 
-	data.Regions, diags = utils.ObjectList(ctx, &clusterOption.Regions, schemas.RegionAttributeTypes(), RegionTypesObject)
+	data.Regions, diags = utils.ObjectSet(ctx, &clusterOption.Regions, schemas.RegionAttributeTypes(), RegionTypesObject)
 	if diags.HasError() {
 		return diags
 	}
@@ -94,7 +94,7 @@ func (data *ClusterOptionDataSource) ReadFromResponse(
 		return diags
 	}
 
-	data.NodeInstances, diags = utils.ObjectList(ctx, &clusterOption.NodeInstances, schemas.ProviderInstanceAttributeTypes(), ProviderInstanceObject)
+	data.NodeInstances, diags = utils.ObjectSet(ctx, &clusterOption.NodeInstances, schemas.ProviderInstanceAttributeTypes(), ProviderInstanceObject)
 	if diags.HasError() {
 		return diags
 	}
@@ -104,7 +104,7 @@ func (data *ClusterOptionDataSource) ReadFromResponse(
 		return diags
 	}
 
-	data.DatabaseInstances, diags = utils.ObjectList(ctx, &clusterOption.DatabaseInstances, schemas.ProviderInstanceAttributeTypes(), ProviderInstanceObject)
+	data.DatabaseInstances, diags = utils.ObjectSet(ctx, &clusterOption.DatabaseInstances, schemas.ProviderInstanceAttributeTypes(), ProviderInstanceObject)
 	if diags.HasError() {
 		return diags
 	}
@@ -115,7 +115,7 @@ func (data *ClusterOptionDataSource) ReadFromResponse(
 type Region struct {
 	Name            types.String `tfsdk:"name"`
 	Limited         types.Bool   `tfsdk:"limited"`
-	BannedInstances types.List   `tfsdk:"banned_instances"`
+	BannedInstances types.Set    `tfsdk:"banned_instances"`
 }
 
 func RegionTypesObject(
@@ -125,7 +125,7 @@ func RegionTypesObject(
 	region := Region{
 		Name: types.StringValue(regionInput.Name),
 	}
-	region.BannedInstances, diags = utils.StringList(regionInput.BannedInstances)
+	region.BannedInstances, diags = utils.StringSet(regionInput.BannedInstances)
 	if diags.HasError() {
 		return regionOutput, diags
 	}

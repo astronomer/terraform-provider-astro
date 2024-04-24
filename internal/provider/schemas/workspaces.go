@@ -1,8 +1,8 @@
 package schemas
 
 import (
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/validators"
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -29,25 +29,23 @@ func WorkspacesElementAttributeTypes() map[string]attr.Type {
 
 func WorkspacesDataSourceSchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
-		"workspaces": schema.ListNestedAttribute{
+		"workspaces": schema.SetNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: WorkspaceDataSourceSchemaAttributes(),
 			},
 			Computed: true,
 		},
-		"workspace_ids": schema.ListAttribute{
+		"workspace_ids": schema.SetAttribute{
 			ElementType: types.StringType,
-			Validators: []validator.List{
-				listvalidator.ValueStringsAre(validators.IsCuid()),
-				listvalidator.UniqueValues(),
+			Validators: []validator.Set{
+				setvalidator.ValueStringsAre(validators.IsCuid()),
 			},
 			Optional: true,
 		},
-		"names": schema.ListAttribute{
+		"names": schema.SetAttribute{
 			ElementType: types.StringType,
-			Validators: []validator.List{
-				listvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
-				listvalidator.UniqueValues(),
+			Validators: []validator.Set{
+				setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 			},
 			Optional: true,
 		},

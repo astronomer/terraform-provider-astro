@@ -1,4 +1,4 @@
-module github.com/astronomer/astronomer-terraform-provider
+module github.com/astronomer/terraform-provider-astro
 
 go 1.21
 

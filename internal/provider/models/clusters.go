@@ -3,8 +3,8 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -12,9 +12,9 @@ import (
 
 // ClustersDataSource describes the data source data model.
 type ClustersDataSource struct {
-	Clusters      types.List   `tfsdk:"clusters"`
+	Clusters      types.Set    `tfsdk:"clusters"`
 	CloudProvider types.String `tfsdk:"cloud_provider"` // query parameter
-	Names         types.List   `tfsdk:"names"`          // query parameter
+	Names         types.Set    `tfsdk:"names"`          // query parameter
 }
 
 func (data *ClustersDataSource) ReadFromResponse(
@@ -36,7 +36,7 @@ func (data *ClustersDataSource) ReadFromResponse(
 		values[i] = objectValue
 	}
 	var diags diag.Diagnostics
-	data.Clusters, diags = types.ListValue(types.ObjectType{AttrTypes: schemas.ClustersElementAttributeTypes()}, values)
+	data.Clusters, diags = types.SetValue(types.ObjectType{AttrTypes: schemas.ClustersElementAttributeTypes()}, values)
 	if diags.HasError() {
 		return diags
 	}

@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
+	"github.com/astronomer/terraform-provider-astro/internal/clients"
 )
 
 func TestUnit_CoreRequestEditor(t *testing.T) {
@@ -19,10 +19,10 @@ func TestUnit_CoreRequestEditor(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "http://localhost/path", req.URL.String())
 	assert.Equal(t, "Bearer token", req.Header.Get("authorization"))
-	assert.Equal(t, "astronomer-terraform-provider", req.Header.Get("x-astro-client-identifier"))
+	assert.Equal(t, "terraform-provider-astro", req.Header.Get("x-astro-client-identifier"))
 	assert.NotEmpty(t, req.Header.Get("x-astro-client-version"))
 	assert.NotEmpty(t, req.Header.Get("x-client-os-identifier"))
-	assert.Equal(t, "astronomer-terraform-provider/v1", req.Header.Get("User-Agent"))
+	assert.Equal(t, "terraform-provider-astro/v1", req.Header.Get("User-Agent"))
 }
 
 func TestUnit_NormalizeAPIError(t *testing.T) {

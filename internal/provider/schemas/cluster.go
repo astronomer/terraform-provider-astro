@@ -3,17 +3,17 @@ package schemas
 import (
 	"context"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/validators"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -134,23 +134,22 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
-		"node_pools": resourceSchema.ListNestedAttribute{
+		"node_pools": resourceSchema.SetNestedAttribute{
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: NodePoolResourceSchemaAttributes(),
 			},
 			MarkdownDescription: "Cluster node pools",
 			Computed:            true,
-			PlanModifiers: []planmodifier.List{
-				listplanmodifier.UseStateForUnknown(),
+			PlanModifiers: []planmodifier.Set{
+				setplanmodifier.UseStateForUnknown(),
 			},
 		},
-		"workspace_ids": resourceSchema.ListAttribute{
+		"workspace_ids": resourceSchema.SetAttribute{
 			ElementType:         types.StringType,
 			MarkdownDescription: "Cluster workspace IDs",
 			Required:            true,
-			Validators: []validator.List{
-				listvalidator.ValueStringsAre(validators.IsCuid()),
-				listvalidator.UniqueValues(),
+			Validators: []validator.Set{
+				setvalidator.ValueStringsAre(validators.IsCuid()),
 			},
 		},
 		"is_limited": resourceSchema.BoolAttribute{
@@ -233,7 +232,7 @@ func ClusterDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 			MarkdownDescription: "Cluster provider account",
 			Computed:            true,
 		},
-		"node_pools": datasourceSchema.ListNestedAttribute{
+		"node_pools": datasourceSchema.SetNestedAttribute{
 			NestedObject: datasourceSchema.NestedAttributeObject{
 				Attributes: NodePoolDataSourceSchemaAttributes(),
 			},
@@ -241,12 +240,12 @@ func ClusterDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 			MarkdownDescription: "Cluster node pools",
 			Computed:            true,
 		},
-		"workspace_ids": datasourceSchema.ListAttribute{
+		"workspace_ids": datasourceSchema.SetAttribute{
 			ElementType:         types.StringType,
 			MarkdownDescription: "Cluster workspace IDs",
 			Computed:            true,
 		},
-		"tags": datasourceSchema.ListNestedAttribute{
+		"tags": datasourceSchema.SetNestedAttribute{
 			NestedObject: datasourceSchema.NestedAttributeObject{
 				Attributes: ClusterTagDataSourceAttributes(),
 			},
@@ -262,14 +261,14 @@ func ClusterDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 
 func ClusterMetadataAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"external_ips":    types.ListType{ElemType: types.StringType},
+		"external_ips":    types.SetType{ElemType: types.StringType},
 		"oidc_issuer_url": types.StringType,
 	}
 }
 
 func ClusterMetadataDataSourceAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
-		"external_ips": datasourceSchema.ListAttribute{
+		"external_ips": datasourceSchema.SetAttribute{
 			ElementType:         types.StringType,
 			MarkdownDescription: "Cluster external IPs",
 			Computed:            true,
@@ -283,7 +282,7 @@ func ClusterMetadataDataSourceAttributes() map[string]datasourceSchema.Attribute
 
 func ClusterMetadataResourceAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
-		"external_ips": resourceSchema.ListAttribute{
+		"external_ips": resourceSchema.SetAttribute{
 			ElementType:         types.StringType,
 			MarkdownDescription: "Cluster external IPs",
 			Computed:            true,
@@ -315,19 +314,6 @@ func ClusterTagDataSourceAttributes() map[string]datasourceSchema.Attribute {
 	}
 }
 
-func ClusterTagResourceAttributes() map[string]resourceSchema.Attribute {
-	return map[string]resourceSchema.Attribute{
-		"key": resourceSchema.StringAttribute{
-			MarkdownDescription: "Cluster tag key",
-			Required:            true,
-		},
-		"value": resourceSchema.StringAttribute{
-			MarkdownDescription: "Cluster tag value",
-			Required:            true,
-		},
-	}
-}
-
 func NodePoolAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"id":                 types.StringType,
@@ -337,7 +323,7 @@ func NodePoolAttributeTypes() map[string]attr.Type {
 		"max_node_count":     types.Int64Type,
 		"node_instance_type": types.StringType,
 		"is_default":         types.BoolType,
-		"supported_astro_machines": types.ListType{
+		"supported_astro_machines": types.SetType{
 			ElemType: types.StringType,
 		},
 		"created_at": types.StringType,
@@ -375,7 +361,7 @@ func NodePoolResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			MarkdownDescription: "Whether the node pool is the default node pool of the cluster",
 			Computed:            true,
 		},
-		"supported_astro_machines": resourceSchema.ListAttribute{
+		"supported_astro_machines": resourceSchema.SetAttribute{
 			ElementType:         types.StringType,
 			MarkdownDescription: "Node pool supported Astro machines",
 			Computed:            true,
@@ -421,7 +407,7 @@ func NodePoolDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute 
 			MarkdownDescription: "Whether the node pool is the default node pool of the cluster",
 			Computed:            true,
 		},
-		"supported_astro_machines": datasourceSchema.ListAttribute{
+		"supported_astro_machines": datasourceSchema.SetAttribute{
 			ElementType:         types.StringType,
 			MarkdownDescription: "Node pool supported Astro machines",
 			Computed:            true,

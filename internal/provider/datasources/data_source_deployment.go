@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/models"
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
-	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
+	"github.com/astronomer/terraform-provider-astro/internal/clients"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
+	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -106,7 +106,7 @@ func (d *deploymentDataSource) Read(
 	}
 
 	// Populate the model with the response data
-	diags := data.ReadFromResponse(ctx, deployment.JSON200)
+	diags := data.ReadFromResponse(ctx, deployment.JSON200, false)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

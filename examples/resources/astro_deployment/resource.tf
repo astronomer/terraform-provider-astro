@@ -1,4 +1,4 @@
-resource "astronomer_deployment" "dedicated" {
+resource "astro_deployment" "dedicated" {
   name                    = "my dedicated deployment"
   description             = "an example deployment"
   type                    = "DEDICATED"
@@ -22,7 +22,7 @@ resource "astronomer_deployment" "dedicated" {
   }]
 }
 
-resource "astronomer_deployment" "standard" {
+resource "astro_deployment" "standard" {
   name                    = "my standard deployment"
   description             = "an example deployment"
   type                    = "STANDARD"
@@ -51,7 +51,7 @@ resource "astronomer_deployment" "standard" {
   }]
 }
 
-resource "astronomer_deployment" "hybrid" {
+resource "astro_deployment" "hybrid" {
   name                  = "my hybrid deployment"
   description           = "an example deployment"
   type                  = "HYBRID"

@@ -11,11 +11,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/samber/lo"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/models"
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
-	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
+	"github.com/astronomer/terraform-provider-astro/internal/clients"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
+	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -144,7 +144,7 @@ func (r *DeploymentResource) Create(
 		}
 
 		// contact emails
-		createStandardDeploymentRequest.ContactEmails, diags = utils.TypesListToStringSlicePtr(ctx, data.ContactEmails)
+		createStandardDeploymentRequest.ContactEmails, diags = utils.TypesSetToStringSlicePtr(ctx, data.ContactEmails)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -203,7 +203,7 @@ func (r *DeploymentResource) Create(
 		}
 
 		// contact emails
-		createDedicatedDeploymentRequest.ContactEmails, diags = utils.TypesListToStringSlicePtr(ctx, data.ContactEmails)
+		createDedicatedDeploymentRequest.ContactEmails, diags = utils.TypesSetToStringSlicePtr(ctx, data.ContactEmails)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -260,7 +260,7 @@ func (r *DeploymentResource) Create(
 		}
 
 		// contact emails
-		createHybridDeploymentRequest.ContactEmails, diags = utils.TypesListToStringSlicePtr(ctx, data.ContactEmails)
+		createHybridDeploymentRequest.ContactEmails, diags = utils.TypesSetToStringSlicePtr(ctx, data.ContactEmails)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -311,7 +311,7 @@ func (r *DeploymentResource) Create(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, deployment.JSON200)
+	diags = data.ReadFromResponse(ctx, deployment.JSON200, true)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -363,7 +363,7 @@ func (r *DeploymentResource) Read(
 		return
 	}
 
-	diags := data.ReadFromResponse(ctx, deployment.JSON200)
+	diags := data.ReadFromResponse(ctx, deployment.JSON200, true)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -412,7 +412,7 @@ func (r *DeploymentResource) Update(
 		}
 
 		// contact emails
-		updateStandardDeploymentRequest.ContactEmails, diags = utils.TypesListToStringSlicePtr(ctx, data.ContactEmails)
+		updateStandardDeploymentRequest.ContactEmails, diags = utils.TypesSetToStringSlicePtr(ctx, data.ContactEmails)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -469,7 +469,7 @@ func (r *DeploymentResource) Update(
 		}
 
 		// contact emails
-		updateDedicatedDeploymentRequest.ContactEmails, diags = utils.TypesListToStringSlicePtr(ctx, data.ContactEmails)
+		updateDedicatedDeploymentRequest.ContactEmails, diags = utils.TypesSetToStringSlicePtr(ctx, data.ContactEmails)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -524,7 +524,7 @@ func (r *DeploymentResource) Update(
 		}
 
 		// contact emails
-		updateHybridDeploymentRequest.ContactEmails, diags = utils.TypesListToStringSlicePtr(ctx, data.ContactEmails)
+		updateHybridDeploymentRequest.ContactEmails, diags = utils.TypesSetToStringSlicePtr(ctx, data.ContactEmails)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -576,7 +576,7 @@ func (r *DeploymentResource) Update(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, deployment.JSON200)
+	diags = data.ReadFromResponse(ctx, deployment.JSON200, true)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -744,7 +744,7 @@ func validateHybridConfig(ctx context.Context, data *models.Deployment) diag.Dia
 
 	// Need to check worker_queues for hybrid deployments have `node_pool_id` and do not have `astro_machine`
 	if len(data.WorkerQueues.Elements()) > 0 {
-		var workerQueues []models.WorkerQueue
+		var workerQueues []models.WorkerQueueResource
 		diags = append(diags, data.WorkerQueues.ElementsAs(ctx, &workerQueues, false)...)
 		for _, workerQueue := range workerQueues {
 			if !workerQueue.AstroMachine.IsNull() {
@@ -882,7 +882,7 @@ func validateHostedConfig(ctx context.Context, data *models.Deployment) diag.Dia
 
 	// Need to check worker_queues for hosted deployments have `astro_machine` and do not have `node_pool_id`
 	if len(data.WorkerQueues.Elements()) > 0 {
-		var workerQueues []models.WorkerQueue
+		var workerQueues []models.WorkerQueueResource
 		diags = append(diags, data.WorkerQueues.ElementsAs(ctx, &workerQueues, false)...)
 		for _, workerQueue := range workerQueues {
 			if workerQueue.AstroMachine.IsNull() {
@@ -965,18 +965,18 @@ func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*plat
 	return platformScalingSpec, nil
 }
 
-// RequestHostedWorkerQueues converts a Terraform list to a list of platform.WorkerQueueRequest to be used in create and update requests
-func RequestHostedWorkerQueues(ctx context.Context, workerQueuesObjList types.List) (*[]platform.WorkerQueueRequest, diag.Diagnostics) {
-	if len(workerQueuesObjList.Elements()) == 0 {
+// RequestHostedWorkerQueues converts a Terraform set to a list of platform.WorkerQueueRequest to be used in create and update requests
+func RequestHostedWorkerQueues(ctx context.Context, workerQueuesObjSet types.Set) (*[]platform.WorkerQueueRequest, diag.Diagnostics) {
+	if len(workerQueuesObjSet.Elements()) == 0 {
 		return nil, nil
 	}
 
-	var workerQueues []models.WorkerQueue
-	diags := workerQueuesObjList.ElementsAs(ctx, &workerQueues, false)
+	var workerQueues []models.WorkerQueueResource
+	diags := workerQueuesObjSet.ElementsAs(ctx, &workerQueues, false)
 	if diags.HasError() {
 		return nil, diags
 	}
-	platformWorkerQueues := lo.Map(workerQueues, func(workerQueue models.WorkerQueue, _ int) platform.WorkerQueueRequest {
+	platformWorkerQueues := lo.Map(workerQueues, func(workerQueue models.WorkerQueueResource, _ int) platform.WorkerQueueRequest {
 		return platform.WorkerQueueRequest{
 			AstroMachine:      platform.WorkerQueueRequestAstroMachine(workerQueue.AstroMachine.ValueString()),
 			IsDefault:         workerQueue.IsDefault.ValueBool(),
@@ -989,20 +989,19 @@ func RequestHostedWorkerQueues(ctx context.Context, workerQueuesObjList types.Li
 	return &platformWorkerQueues, nil
 }
 
-// RequestHybridWorkerQueues converts a Terraform list to a list of platform.WorkerQueueRequest to be used in create and update requests
-func RequestHybridWorkerQueues(ctx context.Context, workerQueuesObjList types.List) (*[]platform.HybridWorkerQueueRequest, diag.Diagnostics) {
-	if len(workerQueuesObjList.Elements()) == 0 {
+// RequestHybridWorkerQueues converts a Terraform set to a list of platform.WorkerQueueRequest to be used in create and update requests
+func RequestHybridWorkerQueues(ctx context.Context, workerQueuesObjSet types.Set) (*[]platform.HybridWorkerQueueRequest, diag.Diagnostics) {
+	if len(workerQueuesObjSet.Elements()) == 0 {
 		return nil, nil
 	}
 
-	var workerQueues []models.WorkerQueue
-	diags := workerQueuesObjList.ElementsAs(ctx, &workerQueues, false)
+	var workerQueues []models.WorkerQueueResource
+	diags := workerQueuesObjSet.ElementsAs(ctx, &workerQueues, false)
 	if diags.HasError() {
 		return nil, diags
 	}
-	platformWorkerQueues := lo.Map(workerQueues, func(workerQueue models.WorkerQueue, _ int) platform.HybridWorkerQueueRequest {
+	platformWorkerQueues := lo.Map(workerQueues, func(workerQueue models.WorkerQueueResource, _ int) platform.HybridWorkerQueueRequest {
 		return platform.HybridWorkerQueueRequest{
-			Id:                nil,
 			IsDefault:         workerQueue.IsDefault.ValueBool(),
 			MaxWorkerCount:    int(workerQueue.MaxWorkerCount.ValueInt64()),
 			MinWorkerCount:    int(workerQueue.MinWorkerCount.ValueInt64()),
@@ -1014,14 +1013,14 @@ func RequestHybridWorkerQueues(ctx context.Context, workerQueuesObjList types.Li
 	return &platformWorkerQueues, nil
 }
 
-// RequestDeploymentEnvironmentVariables converts a Terraform list to a list of platform.DeploymentEnvironmentVariableRequest to be used in create and update requests
-func RequestDeploymentEnvironmentVariables(ctx context.Context, environmentVariablesObjList types.List) ([]platform.DeploymentEnvironmentVariableRequest, diag.Diagnostics) {
-	if len(environmentVariablesObjList.Elements()) == 0 {
+// RequestDeploymentEnvironmentVariables converts a Terraform set to a list of platform.DeploymentEnvironmentVariableRequest to be used in create and update requests
+func RequestDeploymentEnvironmentVariables(ctx context.Context, environmentVariablesObjSet types.Set) ([]platform.DeploymentEnvironmentVariableRequest, diag.Diagnostics) {
+	if len(environmentVariablesObjSet.Elements()) == 0 {
 		return []platform.DeploymentEnvironmentVariableRequest{}, nil
 	}
 
 	var envVars []models.DeploymentEnvironmentVariable
-	diags := environmentVariablesObjList.ElementsAs(ctx, &envVars, false)
+	diags := environmentVariablesObjSet.ElementsAs(ctx, &envVars, false)
 	if diags.HasError() {
 		return nil, diags
 	}

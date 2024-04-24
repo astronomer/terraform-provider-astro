@@ -8,11 +8,11 @@ import (
 
 	"github.com/samber/lo"
 
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients"
-	"github.com/astronomer/astronomer-terraform-provider/internal/clients/platform"
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/models"
-	"github.com/astronomer/astronomer-terraform-provider/internal/provider/schemas"
-	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
+	"github.com/astronomer/terraform-provider-astro/internal/clients"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
+	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -92,7 +92,7 @@ func (d *clustersDataSource) Read(
 	if len(data.CloudProvider.ValueString()) > 0 {
 		params.Provider = (*platform.ListClustersParamsProvider)(data.CloudProvider.ValueStringPointer())
 	}
-	params.Names, diags = utils.TypesListToStringSlicePtr(ctx, data.Names)
+	params.Names, diags = utils.TypesSetToStringSlicePtr(ctx, data.Names)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

@@ -6,8 +6,8 @@ import (
 
 	"github.com/lucsky/cuid"
 
-	astronomerprovider "github.com/astronomer/astronomer-terraform-provider/internal/provider"
-	"github.com/astronomer/astronomer-terraform-provider/internal/utils"
+	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
+	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -28,47 +28,47 @@ func TestAcc_DataSourceDeployments(t *testing.T) {
 					// Doing all checks in one step because we do not want to unnecessarily create multiple deployments for the data sources test
 
 					// These checks are for the deployment data source (singular)
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "id"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "name", fmt.Sprintf("%v-1", deploymentName)),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "description"),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "workspace_id"),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "created_by.id"),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "created_at"),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "updated_by.id"),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "updated_at"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "region", "us-east4"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "cloud_provider", "GCP"),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "astro_runtime_version"),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "airflow_version"),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "namespace"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "contact_emails.0", "preview@astronomer.test"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "executor", "KUBERNETES"),
-					resource.TestCheckNoResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "worker_queues"),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "scheduler_replicas"),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "image_tag"),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "image_repository"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "environment_variables.0.key", "key1"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "environment_variables.0.value", "value1"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "environment_variables.0.is_secret", "false"),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "webserver_ingress_hostname"),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "webserver_url"),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "webserver_airflow_api_url"),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "status"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "is_cicd_enforced", "true"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "type", "STANDARD"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "is_dag_deploy_enabled", "true"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "scheduler_size", "SMALL"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "is_high_availability", "true"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "is_development_mode", "false"),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "workload_identity"),
-					resource.TestCheckResourceAttrSet("data.astronomer_deployment.test_data_deployment_kubernetes", "external_ips.0"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "resource_quota_cpu", "10"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "resource_quota_memory", "20Gi"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "default_task_pod_cpu", "0.25"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_kubernetes", "default_task_pod_memory", "0.5Gi"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "id"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "name", fmt.Sprintf("%v-1", deploymentName)),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "description"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "workspace_id"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "created_by.id"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "created_at"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "updated_by.id"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "updated_at"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "region", "us-east4"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "cloud_provider", "GCP"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "astro_runtime_version"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "airflow_version"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "namespace"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "contact_emails.0", "preview@astronomer.test"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "executor", "KUBERNETES"),
+					resource.TestCheckNoResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "worker_queues"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "scheduler_replicas"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "image_tag"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "image_repository"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "environment_variables.0.key", "key1"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "environment_variables.0.value", "value1"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "environment_variables.0.is_secret", "false"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "webserver_ingress_hostname"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "webserver_url"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "webserver_airflow_api_url"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "status"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "is_cicd_enforced", "true"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "type", "STANDARD"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "is_dag_deploy_enabled", "true"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "is_high_availability", "true"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "is_development_mode", "false"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "workload_identity"),
+					resource.TestCheckResourceAttrSet("data.astro_deployment.test_data_deployment_kubernetes", "external_ips.0"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "resource_quota_cpu", "10"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "resource_quota_memory", "20Gi"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "default_task_pod_cpu", "0.25"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_kubernetes", "default_task_pod_memory", "0.5Gi"),
 
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_celery", "executor", "CELERY"),
-					resource.TestCheckResourceAttr("data.astronomer_deployment.test_data_deployment_celery", "worker_queues.0.name", "default"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_celery", "executor", "CELERY"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_celery", "worker_queues.0.name", "default"),
 
 					// These checks are for the deployments data source (plural)
 					checkDeployments("test_data_deployments_no_filters", deploymentName+"-1"),
@@ -106,18 +106,18 @@ func TestAcc_DataSourceDeployments(t *testing.T) {
 
 func hybridDeployments() string {
 	return `
-data astronomer_deployments "test_data_deployments_hybrid_no_filters" {}`
+data astro_deployments "test_data_deployments_hybrid_no_filters" {}`
 }
 
 func hostedDeployments(name string) string {
 	return fmt.Sprintf(`
-resource "astronomer_workspace" "test_workspace" {
+resource "astro_workspace" "test_workspace" {
 	name = "%v"
 	description = "%v"
 	cicd_enforced_default = true
 }
 
-resource "astronomer_deployment" "test_deployment_kubernetes" {
+resource "astro_deployment" "test_deployment_kubernetes" {
 	name = "%v-1"
 	description = "%v"
 	type = "STANDARD"
@@ -134,7 +134,7 @@ resource "astronomer_deployment" "test_deployment_kubernetes" {
 	resource_quota_cpu = "10"
 	resource_quota_memory = "20Gi"
 	scheduler_size = "SMALL"
-	workspace_id = astronomer_workspace.test_workspace.id
+	workspace_id = astro_workspace.test_workspace.id
 	environment_variables = [{
 		key = "key1"
 		value = "value1"
@@ -142,7 +142,7 @@ resource "astronomer_deployment" "test_deployment_kubernetes" {
 	}]
 }
 
-resource "astronomer_deployment" "test_deployment_celery" {
+resource "astro_deployment" "test_deployment_celery" {
 	name = "%v-2"
 	description = "%v"
 	type = "STANDARD"
@@ -159,7 +159,7 @@ resource "astronomer_deployment" "test_deployment_celery" {
 	resource_quota_cpu = "10"
 	resource_quota_memory = "20Gi"
 	scheduler_size = "SMALL"
-	workspace_id = astronomer_workspace.test_workspace.id
+	workspace_id = astro_workspace.test_workspace.id
 	environment_variables = []
 	worker_queues = [{
 		name = "default"
@@ -171,47 +171,47 @@ resource "astronomer_deployment" "test_deployment_celery" {
 	}]
 }
 
-data astronomer_deployment "test_data_deployment_kubernetes" {
-	depends_on = [astronomer_deployment.test_deployment_kubernetes]
-	id = astronomer_deployment.test_deployment_kubernetes.id
+data astro_deployment "test_data_deployment_kubernetes" {
+	depends_on = [astro_deployment.test_deployment_kubernetes]
+	id = astro_deployment.test_deployment_kubernetes.id
 }
 
-data astronomer_deployment "test_data_deployment_celery" {
-	depends_on = [astronomer_deployment.test_deployment_celery]
-	id = astronomer_deployment.test_deployment_celery.id
+data astro_deployment "test_data_deployment_celery" {
+	depends_on = [astro_deployment.test_deployment_celery]
+	id = astro_deployment.test_deployment_celery.id
 }
 
-data astronomer_deployments "test_data_deployments_no_filters" {
-	depends_on = [astronomer_deployment.test_deployment_kubernetes, astronomer_deployment.test_deployment_celery]
+data astro_deployments "test_data_deployments_no_filters" {
+	depends_on = [astro_deployment.test_deployment_kubernetes, astro_deployment.test_deployment_celery]
 }
 
-data astronomer_deployments "test_data_deployments_workspace_ids_filter" {
-	depends_on = [astronomer_deployment.test_deployment_kubernetes, astronomer_deployment.test_deployment_celery]
-	workspace_ids = [astronomer_workspace.test_workspace.id]
+data astro_deployments "test_data_deployments_workspace_ids_filter" {
+	depends_on = [astro_deployment.test_deployment_kubernetes, astro_deployment.test_deployment_celery]
+	workspace_ids = [astro_workspace.test_workspace.id]
 }
 
-data astronomer_deployments "test_data_deployments_deployment_ids_filter" {
-	depends_on = [astronomer_deployment.test_deployment_kubernetes, astronomer_deployment.test_deployment_celery]
-	deployment_ids = [astronomer_deployment.test_deployment_kubernetes.id]
+data astro_deployments "test_data_deployments_deployment_ids_filter" {
+	depends_on = [astro_deployment.test_deployment_kubernetes, astro_deployment.test_deployment_celery]
+	deployment_ids = [astro_deployment.test_deployment_kubernetes.id]
 }
 
-data astronomer_deployments "test_data_deployments_names_filter" {
-	depends_on = [astronomer_deployment.test_deployment_kubernetes, astronomer_deployment.test_deployment_celery]
+data astro_deployments "test_data_deployments_names_filter" {
+	depends_on = [astro_deployment.test_deployment_kubernetes, astro_deployment.test_deployment_celery]
 	names = ["%v-1"]
 }
 
-data astronomer_deployments "test_data_deployments_incorrect_workspace_ids_filter" {
-	depends_on = [astronomer_deployment.test_deployment_kubernetes, astronomer_deployment.test_deployment_celery]
+data astro_deployments "test_data_deployments_incorrect_workspace_ids_filter" {
+	depends_on = [astro_deployment.test_deployment_kubernetes, astro_deployment.test_deployment_celery]
 	workspace_ids = ["%v"]
 }
 
-data astronomer_deployments "test_data_deployments_incorrect_deployment_ids_filter" {
-	depends_on = [astronomer_deployment.test_deployment_kubernetes, astronomer_deployment.test_deployment_celery]
+data astro_deployments "test_data_deployments_incorrect_deployment_ids_filter" {
+	depends_on = [astro_deployment.test_deployment_kubernetes, astro_deployment.test_deployment_celery]
 	deployment_ids = ["%v"]
 }
 
-data astronomer_deployments "test_data_deployments_incorrect_names_filter" {
-	depends_on = [astronomer_deployment.test_deployment_kubernetes, astronomer_deployment.test_deployment_celery]
+data astro_deployments "test_data_deployments_incorrect_names_filter" {
+	depends_on = [astro_deployment.test_deployment_kubernetes, astro_deployment.test_deployment_celery]
 	names = ["%v"]
 }
 `, name, utils.TestResourceDescription, name, utils.TestResourceDescription, name, utils.TestResourceDescription, name, cuid.New(), cuid.New(), cuid.New())
