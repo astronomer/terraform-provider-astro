@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"time"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
@@ -324,7 +325,7 @@ func ScalingSpecTypesObject(
 				IsActive:      types.BoolPointerValue(scalingSpec.HibernationSpec.Override.IsActive),
 			}
 			if scalingSpec.HibernationSpec.Override.OverrideUntil != nil {
-				obj.HibernationSpec.Override.OverrideUntil = types.StringValue(scalingSpec.HibernationSpec.Override.OverrideUntil.String())
+				obj.HibernationSpec.Override.OverrideUntil = types.StringValue(scalingSpec.HibernationSpec.Override.OverrideUntil.Format(time.RFC3339))
 			}
 		}
 		if scalingSpec.HibernationSpec.Schedules != nil {
