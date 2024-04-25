@@ -131,7 +131,7 @@ func HibernationOverrideResourceSchemaAttributes() map[string]resourceSchema.Att
 		"is_hibernating": resourceSchema.BoolAttribute{
 			Optional: true,
 			Validators: []validator.Bool{
-				boolvalidator.AlsoRequires(path.MatchRoot("override_until")),
+				boolvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("override_until")),
 			},
 		},
 		"override_until": resourceSchema.StringAttribute{
