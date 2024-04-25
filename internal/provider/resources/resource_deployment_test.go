@@ -446,7 +446,7 @@ resource "astro_deployment" "%v" {
 	%v
 	%v
 	%v
-}
+  }
 `,
 		input.Name, input.Name, utils.TestResourceDescription, input.Name, input.Name, input.Description, input.ClusterId, input.Executor, input.SchedulerAu, input.Name,
 		envVarsStr(input.IncludeEnvironmentVariables), wqStr, taskPodNodePoolIdStr)
@@ -467,6 +467,23 @@ func standardDeployment(input standardDeploymentInput) string {
 	wqStr := ""
 	if input.Executor == string(platform.DeploymentExecutorCELERY) {
 		wqStr = workerQueuesStr("")
+	}
+	var scalingSpecStr string
+
+	if input.IsDevelopmentMode == true {
+		scalingSpecStr = `scaling_spec            = {
+      hibernation_spec      = {
+        schedules             = [{
+          hibernate_at_cron    = "1 * * * *"
+          is_enabled           = true
+          wake_at_cron         = "59 * * * *"
+        }]
+        override            = {
+          is_hibernating      = true
+          override_until     = "2025-04-25T12:58:00+05:30"
+        }
+      }
+    }`
 	}
 	return fmt.Sprintf(`
 resource "astro_workspace" "%v_workspace" {
@@ -495,10 +512,11 @@ resource "astro_deployment" "%v" {
 	workspace_id = astro_workspace.%v_workspace.id
 	%v
 	%v
+    %v
 }
 `,
 		input.Name, input.Name, utils.TestResourceDescription, input.Name, input.Name, input.Description, input.Region, input.CloudProvider, input.Executor, input.IsDevelopmentMode, input.SchedulerSize, input.Name,
-		envVarsStr(input.IncludeEnvironmentVariables), wqStr)
+		envVarsStr(input.IncludeEnvironmentVariables), wqStr, scalingSpecStr)
 }
 
 func standardDeploymentWithVariableName(input standardDeploymentInput) string {
