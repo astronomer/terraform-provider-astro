@@ -271,7 +271,7 @@ resource "astro_deployment" "team_3_dev_deployment" {
   resource_quota_cpu      = "10"
   resource_quota_memory   = "20Gi"
   scheduler_size          = "SMALL"
-  workspace_id            = astro_workspace.team_3_workspace.id
+  workspace_id            = astro_workspace.team_3_workspace_non_prod.id
   environment_variables   = []
   worker_queues = [{
     name               = "default"
@@ -308,7 +308,7 @@ resource "astro_deployment" "team_3_stage_deployment" {
   resource_quota_cpu      = "10"
   resource_quota_memory   = "20Gi"
   scheduler_size          = "SMALL"
-  workspace_id            = astro_workspace.team_3_workspace.id
+  workspace_id            = astro_workspace.team_3_workspace_non_prod.id
   environment_variables   = []
   worker_queues = [{
     name               = "default"
@@ -365,7 +365,7 @@ resource "astro_deployment" "team_3_prod_deployment" {
   resource_quota_cpu      = "10"
   resource_quota_memory   = "20Gi"
   scheduler_size          = "SMALL"
-  workspace_id            = astro_workspace.team_3_workspace.id
+  workspace_id            = astro_workspace.team_3_workspace_prod.id
   environment_variables = [{
     key       = "key1"
     value     = "value1"
