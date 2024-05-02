@@ -16,7 +16,7 @@ resource "astro_deployment" "team_1_dev_deployment" {
   executor                = "CELERY"
   is_cicd_enforced        = true
   is_dag_deploy_enabled   = true
-  is_development_mode     = false
+  is_development_mode     = true
   is_high_availability    = false
   resource_quota_cpu      = "10"
   resource_quota_memory   = "20Gi"
@@ -35,7 +35,7 @@ resource "astro_deployment" "team_1_dev_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }
@@ -53,7 +53,7 @@ resource "astro_deployment" "team_1_stage_deployment" {
   executor                = "CELERY"
   is_cicd_enforced        = true
   is_dag_deploy_enabled   = true
-  is_development_mode     = false
+  is_development_mode     = true
   is_high_availability    = false
   resource_quota_cpu      = "10"
   resource_quota_memory   = "20Gi"
@@ -72,7 +72,7 @@ resource "astro_deployment" "team_1_stage_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }
@@ -141,7 +141,7 @@ resource "astro_deployment" "team_2_dev_deployment" {
   executor                = "CELERY"
   is_cicd_enforced        = true
   is_dag_deploy_enabled   = true
-  is_development_mode     = false
+  is_development_mode     = true
   is_high_availability    = false
   resource_quota_cpu      = "10"
   resource_quota_memory   = "20Gi"
@@ -160,7 +160,7 @@ resource "astro_deployment" "team_2_dev_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }
@@ -178,7 +178,7 @@ resource "astro_deployment" "team_2_stage_deployment" {
   executor                = "CELERY"
   is_cicd_enforced        = true
   is_dag_deploy_enabled   = true
-  is_development_mode     = false
+  is_development_mode     = true
   is_high_availability    = false
   resource_quota_cpu      = "10"
   resource_quota_memory   = "20Gi"
@@ -197,7 +197,7 @@ resource "astro_deployment" "team_2_stage_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }
@@ -266,7 +266,7 @@ resource "astro_deployment" "team_3_dev_deployment" {
   executor                = "CELERY"
   is_cicd_enforced        = true
   is_dag_deploy_enabled   = true
-  is_development_mode     = false
+  is_development_mode     = true
   is_high_availability    = false
   resource_quota_cpu      = "10"
   resource_quota_memory   = "20Gi"
@@ -285,7 +285,7 @@ resource "astro_deployment" "team_3_dev_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }
@@ -303,7 +303,7 @@ resource "astro_deployment" "team_3_stage_deployment" {
   executor                = "CELERY"
   is_cicd_enforced        = true
   is_dag_deploy_enabled   = true
-  is_development_mode     = false
+  is_development_mode     = true
   is_high_availability    = false
   resource_quota_cpu      = "10"
   resource_quota_memory   = "20Gi"
@@ -322,7 +322,7 @@ resource "astro_deployment" "team_3_stage_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }

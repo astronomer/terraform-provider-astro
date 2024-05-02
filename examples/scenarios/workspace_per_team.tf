@@ -50,7 +50,7 @@ resource "astro_deployment" "team_1_dev_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }
@@ -87,7 +87,7 @@ resource "astro_deployment" "team_1_stage_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }
@@ -169,7 +169,7 @@ resource "astro_deployment" "team_2_dev_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }
@@ -206,7 +206,7 @@ resource "astro_deployment" "team_2_stage_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }
@@ -288,7 +288,7 @@ resource "astro_deployment" "team_3_dev_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }
@@ -325,7 +325,7 @@ resource "astro_deployment" "team_3_stage_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }

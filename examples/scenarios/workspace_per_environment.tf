@@ -10,7 +10,7 @@ resource "astro_deployment" "team_1_dev_deployment" {
   type                    = "STANDARD"
   cloud_provider          = "AWS"
   region                  = "us-east-1"
-  contact_emails          = ["preview@astronomer.io"]
+  contact_emails          = []
   default_task_pod_cpu    = "0.25"
   default_task_pod_memory = "0.5Gi"
   executor                = "CELERY"
@@ -35,7 +35,7 @@ resource "astro_deployment" "team_1_dev_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }
@@ -72,7 +72,7 @@ resource "astro_deployment" "team_2_dev_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }
@@ -109,7 +109,7 @@ resource "astro_deployment" "team_3_dev_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }
@@ -152,7 +152,7 @@ resource "astro_deployment" "team_1_staging_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }
@@ -189,7 +189,7 @@ resource "astro_deployment" "team_2_staging_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }
@@ -226,7 +226,7 @@ resource "astro_deployment" "team_3_staging_deployment" {
     hibernation_spec = {
       override = {
         is_hibernating = true
-        override_until = "2024-03-01T13:00:00Z"
+        override_until = "2025-03-01T13:00:00Z"
       }
     }
   }
