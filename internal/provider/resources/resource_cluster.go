@@ -3,7 +3,6 @@ package resources
 import (
 	"context"
 	"fmt"
-	"math/rand/v2"
 	"net/http"
 	"time"
 
@@ -196,7 +195,6 @@ func (r *ClusterResource) Create(
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
-	time.Sleep(time.Duration(rand.IntN(120)+5) * time.Second)
 	cluster, err := r.platformClient.CreateClusterWithResponse(
 		ctx,
 		r.organizationId,
