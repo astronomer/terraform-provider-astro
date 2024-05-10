@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"fmt"
+	"math/rand/v2"
 	"net/http"
 	"time"
 
@@ -106,7 +107,8 @@ func (r *ClusterResource) Create(
 		}
 
 		// workspaceIds
-		createAwsDedicatedClusterRequest.WorkspaceIds, diags = utils.TypesSetToStringSlicePtr(ctx, data.WorkspaceIds)
+		workspaceIds, diags := utils.TypesSetToStringSlice(ctx, data.WorkspaceIds)
+		createAwsDedicatedClusterRequest.WorkspaceIds = &workspaceIds
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -135,7 +137,8 @@ func (r *ClusterResource) Create(
 		}
 
 		// workspaceIds
-		createAzureDedicatedClusterRequest.WorkspaceIds, diags = utils.TypesSetToStringSlicePtr(ctx, data.WorkspaceIds)
+		workspaceIds, diags := utils.TypesSetToStringSlice(ctx, data.WorkspaceIds)
+		createAzureDedicatedClusterRequest.WorkspaceIds = &workspaceIds
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -166,7 +169,8 @@ func (r *ClusterResource) Create(
 		}
 
 		// workspaceIds
-		createGcpDedicatedClusterRequest.WorkspaceIds, diags = utils.TypesSetToStringSlicePtr(ctx, data.WorkspaceIds)
+		workspaceIds, diags := utils.TypesSetToStringSlice(ctx, data.WorkspaceIds)
+		createGcpDedicatedClusterRequest.WorkspaceIds = &workspaceIds
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -192,6 +196,7 @@ func (r *ClusterResource) Create(
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
+	time.Sleep(time.Duration(rand.IntN(120)+5) * time.Second)
 	cluster, err := r.platformClient.CreateClusterWithResponse(
 		ctx,
 		r.organizationId,
@@ -318,7 +323,8 @@ func (r *ClusterResource) Update(
 	}
 
 	// workspaceIds
-	updateDedicatedClusterRequest.WorkspaceIds, diags = utils.TypesSetToStringSlicePtr(ctx, data.WorkspaceIds)
+	workspaceIds, diags := utils.TypesSetToStringSlice(ctx, data.WorkspaceIds)
+	updateDedicatedClusterRequest.WorkspaceIds = &workspaceIds
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
