@@ -54,10 +54,11 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, true) +
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
 					cluster(clusterInput{
-						Name:           awsClusterName,
-						Region:         "us-east-1",
-						CloudProvider:  "AWS",
-						DbInstanceType: "db.m6g.large",
+						Name:                               awsClusterName,
+						Region:                             "us-east-1",
+						CloudProvider:                      "AWS",
+						DbInstanceType:                     "db.m6g.large",
+						RestrictedWorkspaceResourceVarName: workspaceResourceVar,
 					}) +
 					dedicatedDeployment(dedicatedDeploymentInput{
 						ClusterResourceVar:   awsResourceVar,
@@ -73,7 +74,7 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
 					resource.TestCheckResourceAttr(awsResourceVar, "db_instance_type", "db.m6g.large"),
 					resource.TestCheckResourceAttrSet(awsResourceVar, "vpc_subnet_range"),
-					resource.TestCheckResourceAttr(awsResourceVar, "workspace_ids.#", "0"),
+					resource.TestCheckResourceAttr(awsResourceVar, "workspace_ids.#", "1"),
 
 					// Check via API that cluster exists
 					testAccCheckClusterExistence(t, awsClusterName, true, true),
@@ -88,7 +89,7 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
 				),
 			},
-			// Just update cluster
+			// Just update cluster and remove workspace restrictions
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) +
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
@@ -128,6 +129,7 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 				),
 			},
 			// Change properties of cluster and deployment and check they have been updated in terraform state
+			// Add back workspace restrictions
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) +
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +

@@ -480,7 +480,7 @@ func standardDeployment(input standardDeploymentInput) string {
         }]
         override            = {
           is_hibernating      = true
-          override_until     = "2025-04-25T12:58:00+05:30"
+          override_until     = "2030-04-25T12:58:00+05:30"
         }
       }
     }`
