@@ -39,13 +39,11 @@ func ObjectSet[T any](ctx context.Context, values *[]T, objectAttributeTypes map
 	return types.SetValue(types.ObjectType{AttrTypes: objectAttributeTypes}, objs)
 }
 
-// TypesSetToStringSlicePtr converts a types.Set to a pointer to a slice of strings
+// TypesSetToStringSlice converts a types.Set to a slice of strings
 // This is useful for converting a set of strings from the Terraform framework to a slice of strings used for calling the API
-// We prefer to use a pointer to a slice of strings because our API client query params usually have type *[]string
-// and we can easily assign the query param to the result of this function (regardless if the result is nil or not)
-func TypesSetToStringSlicePtr(ctx context.Context, s types.Set) (*[]string, diag.Diagnostics) {
+func TypesSetToStringSlice(ctx context.Context, s types.Set) ([]string, diag.Diagnostics) {
 	if len(s.Elements()) == 0 {
-		return nil, nil
+		return []string{}, nil
 	}
 	var typesStringSlice []types.String
 	diags := s.ElementsAs(ctx, &typesStringSlice, false)
@@ -55,5 +53,5 @@ func TypesSetToStringSlicePtr(ctx context.Context, s types.Set) (*[]string, diag
 	resp := lo.Map(typesStringSlice, func(v types.String, _ int) string {
 		return v.ValueString()
 	})
-	return &resp, nil
+	return resp, nil
 }
