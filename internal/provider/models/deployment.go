@@ -163,13 +163,23 @@ func (data *Deployment) ReadFromResponse(
 	data.SchedulerSize = types.StringPointerValue((*string)(deployment.SchedulerSize))
 	data.IsHighAvailability = types.BoolPointerValue(deployment.IsHighAvailability)
 	data.IsDevelopmentMode = types.BoolPointerValue(deployment.IsDevelopmentMode)
-	data.ScalingStatus, diags = ScalingStatusTypesObject(ctx, deployment.ScalingStatus)
-	if diags.HasError() {
-		return diags
-	}
-	data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, deployment.ScalingSpec)
-	if diags.HasError() {
-		return diags
+
+	// Currently, the scaling status and spec are only available in development mode
+	// However, there is a bug in the API where the scaling status and spec are returned even if the deployment is not in development mode for updated deployments
+	// This is a workaround to handle the bug until the API is fixed
+	// Issue here: https://github.com/astronomer/astro/issues/21073
+	if deployment.IsDevelopmentMode != nil && *deployment.IsDevelopmentMode {
+		data.ScalingStatus, diags = ScalingStatusTypesObject(ctx, deployment.ScalingStatus)
+		if diags.HasError() {
+			return diags
+		}
+		data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, deployment.ScalingSpec)
+		if diags.HasError() {
+			return diags
+		}
+	} else {
+		data.ScalingStatus = types.ObjectNull(schemas.ScalingStatusAttributeTypes())
+		data.ScalingSpec = types.ObjectNull(schemas.ScalingSpecAttributeTypes())
 	}
 
 	return nil
