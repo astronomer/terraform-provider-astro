@@ -106,7 +106,8 @@ func (r *ClusterResource) Create(
 		}
 
 		// workspaceIds
-		createAwsDedicatedClusterRequest.WorkspaceIds, diags = utils.TypesSetToStringSlicePtr(ctx, data.WorkspaceIds)
+		workspaceIds, diags := utils.TypesSetToStringSlice(ctx, data.WorkspaceIds)
+		createAwsDedicatedClusterRequest.WorkspaceIds = &workspaceIds
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -135,7 +136,8 @@ func (r *ClusterResource) Create(
 		}
 
 		// workspaceIds
-		createAzureDedicatedClusterRequest.WorkspaceIds, diags = utils.TypesSetToStringSlicePtr(ctx, data.WorkspaceIds)
+		workspaceIds, diags := utils.TypesSetToStringSlice(ctx, data.WorkspaceIds)
+		createAzureDedicatedClusterRequest.WorkspaceIds = &workspaceIds
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -166,7 +168,8 @@ func (r *ClusterResource) Create(
 		}
 
 		// workspaceIds
-		createGcpDedicatedClusterRequest.WorkspaceIds, diags = utils.TypesSetToStringSlicePtr(ctx, data.WorkspaceIds)
+		workspaceIds, diags := utils.TypesSetToStringSlice(ctx, data.WorkspaceIds)
+		createGcpDedicatedClusterRequest.WorkspaceIds = &workspaceIds
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -318,7 +321,8 @@ func (r *ClusterResource) Update(
 	}
 
 	// workspaceIds
-	updateDedicatedClusterRequest.WorkspaceIds, diags = utils.TypesSetToStringSlicePtr(ctx, data.WorkspaceIds)
+	workspaceIds, diags := utils.TypesSetToStringSlice(ctx, data.WorkspaceIds)
+	updateDedicatedClusterRequest.WorkspaceIds = &workspaceIds
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

@@ -33,20 +33,20 @@ func TestUnit_StringSet(t *testing.T) {
 	})
 }
 
-func TestUnit_TypesSetToStringSlicePtr(t *testing.T) {
+func TestUnit_TypesSetToStringSlice(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		s := types.SetValueMust(types.StringType, []attr.Value{})
 
-		result, diags := utils.TypesSetToStringSlicePtr(context.Background(), s)
+		result, diags := utils.TypesSetToStringSlice(context.Background(), s)
 		assert.Nil(t, diags)
-		assert.Nil(t, result)
+		assert.Empty(t, result)
 	})
 
 	t.Run("with values", func(t *testing.T) {
 		s := types.SetValueMust(types.StringType, []attr.Value{types.StringValue("string1"), types.StringValue("string2")})
 
-		expected := &[]string{"string1", "string2"}
-		result, diags := utils.TypesSetToStringSlicePtr(context.Background(), s)
+		expected := []string{"string1", "string2"}
+		result, diags := utils.TypesSetToStringSlice(context.Background(), s)
 		assert.Nil(t, diags)
 		assert.Equal(t, expected, result)
 	})

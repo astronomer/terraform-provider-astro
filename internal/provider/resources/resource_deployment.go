@@ -144,7 +144,8 @@ func (r *DeploymentResource) Create(
 		}
 
 		// contact emails
-		createStandardDeploymentRequest.ContactEmails, diags = utils.TypesSetToStringSlicePtr(ctx, data.ContactEmails)
+		contactEmails, diags := utils.TypesSetToStringSlice(ctx, data.ContactEmails)
+		createStandardDeploymentRequest.ContactEmails = &contactEmails
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -203,7 +204,8 @@ func (r *DeploymentResource) Create(
 		}
 
 		// contact emails
-		createDedicatedDeploymentRequest.ContactEmails, diags = utils.TypesSetToStringSlicePtr(ctx, data.ContactEmails)
+		contactEmails, diags := utils.TypesSetToStringSlice(ctx, data.ContactEmails)
+		createDedicatedDeploymentRequest.ContactEmails = &contactEmails
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -260,7 +262,8 @@ func (r *DeploymentResource) Create(
 		}
 
 		// contact emails
-		createHybridDeploymentRequest.ContactEmails, diags = utils.TypesSetToStringSlicePtr(ctx, data.ContactEmails)
+		contactEmails, diags := utils.TypesSetToStringSlice(ctx, data.ContactEmails)
+		createHybridDeploymentRequest.ContactEmails = &contactEmails
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -412,7 +415,8 @@ func (r *DeploymentResource) Update(
 		}
 
 		// contact emails
-		updateStandardDeploymentRequest.ContactEmails, diags = utils.TypesSetToStringSlicePtr(ctx, data.ContactEmails)
+		contactEmails, diags := utils.TypesSetToStringSlice(ctx, data.ContactEmails)
+		updateStandardDeploymentRequest.ContactEmails = &contactEmails
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -469,7 +473,8 @@ func (r *DeploymentResource) Update(
 		}
 
 		// contact emails
-		updateDedicatedDeploymentRequest.ContactEmails, diags = utils.TypesSetToStringSlicePtr(ctx, data.ContactEmails)
+		contactEmails, diags := utils.TypesSetToStringSlice(ctx, data.ContactEmails)
+		updateDedicatedDeploymentRequest.ContactEmails = &contactEmails
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -524,7 +529,8 @@ func (r *DeploymentResource) Update(
 		}
 
 		// contact emails
-		updateHybridDeploymentRequest.ContactEmails, diags = utils.TypesSetToStringSlicePtr(ctx, data.ContactEmails)
+		contactEmails, diags := utils.TypesSetToStringSlice(ctx, data.ContactEmails)
+		updateHybridDeploymentRequest.ContactEmails = &contactEmails
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
