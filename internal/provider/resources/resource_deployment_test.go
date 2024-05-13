@@ -434,7 +434,7 @@ resource "astro_workspace" "%v_workspace" {
 data "astro_deployment_options" "deployment_options" {}
 
 resource "astro_deployment" "%v" {
-	astro_runtime_version = data.astro_deployment_options.deployment_options.runtime_releases[0].version
+	astro_runtime_version = tolist(data.astro_deployment_options.deployment_options.runtime_releases)[0].version
 	name = "%s"
 	description = "%s"
 	type = "HYBRID"
@@ -498,7 +498,7 @@ resource "astro_workspace" "%v_workspace" {
 data "astro_deployment_options" "deployment_options" {}
 
 resource "astro_deployment" "%v" {
-	astro_runtime_version = data.astro_deployment_options.deployment_options.runtime_releases[0].version
+	astro_runtime_version = tolist(data.astro_deployment_options.deployment_options.runtime_releases)[0].version
 	name = "%s"
 	description = "%s"
 	type = "STANDARD"
