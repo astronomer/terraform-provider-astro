@@ -72,8 +72,11 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			},
 		},
 		"astro_runtime_version": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment Astro Runtime version. The terraform provider will use the latest Astro runtime version for the Deployment. The Astro runtime version can be updated with your Astro project Dockerfile",
-			Computed:            true,
+			MarkdownDescription: "Deployment Astro Runtime version. The terraform provider will use this provided Astro runtime version to create the Deployment. The Astro runtime version can be updated with your Astro project Dockerfile, but if changed, the Terraform provider will have the original (and incorrect) Astro runtime version in its response. If the Terraform value is updated, the Deployment will be recreated with the new Astro runtime version.",
+			Required:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplaceIfConfigured(),
+			},
 		},
 		"airflow_version": resourceSchema.StringAttribute{
 			MarkdownDescription: "Deployment Airflow version",

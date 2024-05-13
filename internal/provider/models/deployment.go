@@ -73,6 +73,7 @@ func (data *Deployment) ReadFromResponse(
 	ctx context.Context,
 	deployment *platform.Deployment,
 	isResource bool,
+	astroRuntimeVersion *string,
 ) diag.Diagnostics {
 	// Read common fields
 	data.Id = types.StringValue(deployment.Id)
@@ -98,7 +99,16 @@ func (data *Deployment) ReadFromResponse(
 	data.WorkspaceId = types.StringValue(deployment.WorkspaceId)
 	data.Region = types.StringPointerValue(deployment.Region)
 	data.CloudProvider = types.StringPointerValue((*string)(deployment.CloudProvider))
-	data.AstroRuntimeVersion = types.StringValue(deployment.AstroRuntimeVersion)
+
+	// If astroRuntimeVersion is provided, use it. Otherwise, use the value from the deployment.
+	// This is a workaround to handle the fact that the actual astroRuntimeVersion may differ from the one in the terraform state
+	// And terraform will complain if the value in the state is different from the one in the config
+	if astroRuntimeVersion != nil {
+		data.AstroRuntimeVersion = types.StringValue(*astroRuntimeVersion)
+	} else {
+		data.AstroRuntimeVersion = types.StringValue(deployment.AstroRuntimeVersion)
+	}
+
 	data.AirflowVersion = types.StringValue(deployment.AirflowVersion)
 	data.Namespace = types.StringValue(deployment.Namespace)
 	data.ContactEmails, diags = utils.StringSet(deployment.ContactEmails)

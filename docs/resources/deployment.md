@@ -14,6 +14,7 @@ Deployment resource
 
 ```terraform
 resource "astro_deployment" "dedicated" {
+  astro_runtime_version   = "11.3.0"
   name                    = "my dedicated deployment"
   description             = "an example deployment"
   type                    = "DEDICATED"
@@ -38,6 +39,7 @@ resource "astro_deployment" "dedicated" {
 }
 
 resource "astro_deployment" "standard" {
+  astro_runtime_version   = "11.3.0"
   name                    = "my standard deployment"
   description             = "an example deployment"
   type                    = "STANDARD"
@@ -67,6 +69,7 @@ resource "astro_deployment" "standard" {
 }
 
 resource "astro_deployment" "hybrid" {
+  astro_runtime_version = "11.3.0"
   name                  = "my hybrid deployment"
   description           = "an example deployment"
   type                  = "HYBRID"
@@ -92,6 +95,7 @@ resource "astro_deployment" "hybrid" {
 
 ### Required
 
+- `astro_runtime_version` (String) Deployment Astro Runtime version. The terraform provider will use this provided Astro runtime version to create the Deployment. The Astro runtime version can be updated with your Astro project Dockerfile, but if changed, the Terraform provider will have the original (and incorrect) Astro runtime version in its response. If the Terraform value is updated, the Deployment will be recreated with the new Astro runtime version.
 - `contact_emails` (Set of String) Deployment contact emails
 - `description` (String) Deployment description
 - `environment_variables` (Attributes Set) Deployment environment variables (see [below for nested schema](#nestedatt--environment_variables))
@@ -123,7 +127,6 @@ resource "astro_deployment" "hybrid" {
 ### Read-Only
 
 - `airflow_version` (String) Deployment Airflow version
-- `astro_runtime_version` (String) Deployment Astro Runtime version. The terraform provider will use the latest Astro runtime version for the Deployment. The Astro runtime version can be updated with your Astro project Dockerfile
 - `created_at` (String) Deployment creation timestamp
 - `created_by` (Attributes) Deployment creator (see [below for nested schema](#nestedatt--created_by))
 - `dag_tarball_version` (String) Deployment DAG tarball version

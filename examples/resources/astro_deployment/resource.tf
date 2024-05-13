@@ -1,4 +1,5 @@
 resource "astro_deployment" "dedicated" {
+  astro_runtime_version   = "11.3.0"
   name                    = "my dedicated deployment"
   description             = "an example deployment"
   type                    = "DEDICATED"
@@ -23,6 +24,7 @@ resource "astro_deployment" "dedicated" {
 }
 
 resource "astro_deployment" "standard" {
+  astro_runtime_version   = "11.3.0"
   name                    = "my standard deployment"
   description             = "an example deployment"
   type                    = "STANDARD"
@@ -52,6 +54,7 @@ resource "astro_deployment" "standard" {
 }
 
 resource "astro_deployment" "hybrid" {
+  astro_runtime_version = "11.3.0"
   name                  = "my hybrid deployment"
   description           = "an example deployment"
   type                  = "HYBRID"

@@ -87,34 +87,7 @@ func (r *DeploymentResource) Create(
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	deploymentOptions, err := r.platformClient.GetDeploymentOptionsWithResponse(ctx, r.organizationId, &platform.GetDeploymentOptionsParams{
-		DeploymentType: lo.ToPtr(platform.GetDeploymentOptionsParamsDeploymentType(data.Type.ValueString())),
-		Executor:       lo.ToPtr(platform.GetDeploymentOptionsParamsExecutor(data.Executor.ValueString())),
-		CloudProvider:  lo.ToPtr(platform.GetDeploymentOptionsParamsCloudProvider(data.CloudProvider.ValueString())),
-	})
-	if err != nil {
-		tflog.Error(ctx, "failed to get deployment options", map[string]interface{}{"error": err})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to get deployment options for deployment creation, got error: %s", err),
-		)
-		return
-	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, deploymentOptions.HTTPResponse, deploymentOptions.Body)
-	if diagnostic != nil {
-		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if deploymentOptions.JSON200 == nil || len(deploymentOptions.JSON200.RuntimeReleases) == 0 {
-		resp.Diagnostics.AddError(
-			"Client Error",
-			"Unable to get runtime releases for deployment creation, got empty runtime releases",
-		)
 		return
 	}
 
@@ -124,7 +97,7 @@ func (r *DeploymentResource) Create(
 	switch data.Type.ValueString() {
 	case string(platform.DeploymentTypeSTANDARD):
 		createStandardDeploymentRequest := platform.CreateStandardDeploymentRequest{
-			AstroRuntimeVersion:  deploymentOptions.JSON200.RuntimeReleases[0].Version,
+			AstroRuntimeVersion:  data.AstroRuntimeVersion.ValueString(),
 			CloudProvider:        (*platform.CreateStandardDeploymentRequestCloudProvider)(data.CloudProvider.ValueStringPointer()),
 			DefaultTaskPodCpu:    data.DefaultTaskPodCpu.ValueString(),
 			DefaultTaskPodMemory: data.DefaultTaskPodMemory.ValueString(),
@@ -173,7 +146,7 @@ func (r *DeploymentResource) Create(
 			return
 		}
 
-		err = createDeploymentRequest.FromCreateStandardDeploymentRequest(createStandardDeploymentRequest)
+		err := createDeploymentRequest.FromCreateStandardDeploymentRequest(createStandardDeploymentRequest)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("failed to create standard deployment error: %v", err))
 			resp.Diagnostics.AddError(
@@ -185,7 +158,7 @@ func (r *DeploymentResource) Create(
 
 	case string(platform.DeploymentTypeDEDICATED):
 		createDedicatedDeploymentRequest := platform.CreateDedicatedDeploymentRequest{
-			AstroRuntimeVersion:  deploymentOptions.JSON200.RuntimeReleases[0].Version,
+			AstroRuntimeVersion:  data.AstroRuntimeVersion.ValueString(),
 			ClusterId:            data.ClusterId.ValueString(),
 			DefaultTaskPodCpu:    data.DefaultTaskPodCpu.ValueString(),
 			DefaultTaskPodMemory: data.DefaultTaskPodMemory.ValueString(),
@@ -233,7 +206,7 @@ func (r *DeploymentResource) Create(
 			return
 		}
 
-		err = createDeploymentRequest.FromCreateDedicatedDeploymentRequest(createDedicatedDeploymentRequest)
+		err := createDeploymentRequest.FromCreateDedicatedDeploymentRequest(createDedicatedDeploymentRequest)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("failed to create dedicated deployment error: %v", err))
 			resp.Diagnostics.AddError(
@@ -245,7 +218,7 @@ func (r *DeploymentResource) Create(
 
 	case string(platform.DeploymentTypeHYBRID):
 		createHybridDeploymentRequest := platform.CreateHybridDeploymentRequest{
-			AstroRuntimeVersion: deploymentOptions.JSON200.RuntimeReleases[0].Version,
+			AstroRuntimeVersion: data.AstroRuntimeVersion.ValueString(),
 			ClusterId:           data.ClusterId.ValueString(),
 			Description:         data.Description.ValueStringPointer(),
 			Executor:            platform.CreateHybridDeploymentRequestExecutor(data.Executor.ValueString()),
@@ -284,7 +257,7 @@ func (r *DeploymentResource) Create(
 			return
 		}
 
-		err = createDeploymentRequest.FromCreateHybridDeploymentRequest(createHybridDeploymentRequest)
+		err := createDeploymentRequest.FromCreateHybridDeploymentRequest(createHybridDeploymentRequest)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("failed to create hybrid deployment error: %v", err))
 			resp.Diagnostics.AddError(
@@ -308,13 +281,13 @@ func (r *DeploymentResource) Create(
 		)
 		return
 	}
-	_, diagnostic = clients.NormalizeAPIError(ctx, deployment.HTTPResponse, deployment.Body)
+	_, diagnostic := clients.NormalizeAPIError(ctx, deployment.HTTPResponse, deployment.Body)
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, deployment.JSON200, true)
+	diags = data.ReadFromResponse(ctx, deployment.JSON200, true, data.AstroRuntimeVersion.ValueStringPointer())
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -335,7 +308,6 @@ func (r *DeploymentResource) Read(
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -366,7 +338,7 @@ func (r *DeploymentResource) Read(
 		return
 	}
 
-	diags := data.ReadFromResponse(ctx, deployment.JSON200, true)
+	diags := data.ReadFromResponse(ctx, deployment.JSON200, true, data.AstroRuntimeVersion.ValueStringPointer())
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -582,7 +554,7 @@ func (r *DeploymentResource) Update(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, deployment.JSON200, true)
+	diags = data.ReadFromResponse(ctx, deployment.JSON200, true, data.AstroRuntimeVersion.ValueStringPointer())
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

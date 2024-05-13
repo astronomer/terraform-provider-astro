@@ -414,7 +414,11 @@ type dedicatedDeploymentInput struct {
 }
 
 func dedicatedDeployment(input dedicatedDeploymentInput) string {
-	return fmt.Sprintf(`resource "astro_deployment" "%v" {
+	return fmt.Sprintf(`
+data "astro_deployment_options" "deployment_options" {}
+
+resource "astro_deployment" "%v" {
+	astro_runtime_version = data.astro_deployment_options.deployment_options.runtime_releases[0].version
 	name = "%s"
 	description = "%s"
 	type = "DEDICATED"
