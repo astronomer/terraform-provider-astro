@@ -554,7 +554,7 @@ func (r *DeploymentResource) Update(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, deployment.JSON200, data.AstroRuntimeVersion.ValueStringPointer())
+	diags = data.ReadFromResponse(ctx, deployment.JSON200, data.OriginalAstroRuntimeVersion.ValueStringPointer())
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
