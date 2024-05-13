@@ -83,7 +83,7 @@ func (r *DeploymentResource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	var data models.Deployment
+	var data models.DeploymentResource
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -97,7 +97,7 @@ func (r *DeploymentResource) Create(
 	switch data.Type.ValueString() {
 	case string(platform.DeploymentTypeSTANDARD):
 		createStandardDeploymentRequest := platform.CreateStandardDeploymentRequest{
-			AstroRuntimeVersion:  data.AstroRuntimeVersion.ValueString(),
+			AstroRuntimeVersion:  data.OriginalAstroRuntimeVersion.ValueString(),
 			CloudProvider:        (*platform.CreateStandardDeploymentRequestCloudProvider)(data.CloudProvider.ValueStringPointer()),
 			DefaultTaskPodCpu:    data.DefaultTaskPodCpu.ValueString(),
 			DefaultTaskPodMemory: data.DefaultTaskPodMemory.ValueString(),
@@ -158,7 +158,7 @@ func (r *DeploymentResource) Create(
 
 	case string(platform.DeploymentTypeDEDICATED):
 		createDedicatedDeploymentRequest := platform.CreateDedicatedDeploymentRequest{
-			AstroRuntimeVersion:  data.AstroRuntimeVersion.ValueString(),
+			AstroRuntimeVersion:  data.OriginalAstroRuntimeVersion.ValueString(),
 			ClusterId:            data.ClusterId.ValueString(),
 			DefaultTaskPodCpu:    data.DefaultTaskPodCpu.ValueString(),
 			DefaultTaskPodMemory: data.DefaultTaskPodMemory.ValueString(),
@@ -218,7 +218,7 @@ func (r *DeploymentResource) Create(
 
 	case string(platform.DeploymentTypeHYBRID):
 		createHybridDeploymentRequest := platform.CreateHybridDeploymentRequest{
-			AstroRuntimeVersion: data.AstroRuntimeVersion.ValueString(),
+			AstroRuntimeVersion: data.OriginalAstroRuntimeVersion.ValueString(),
 			ClusterId:           data.ClusterId.ValueString(),
 			Description:         data.Description.ValueStringPointer(),
 			Executor:            platform.CreateHybridDeploymentRequestExecutor(data.Executor.ValueString()),
@@ -287,7 +287,7 @@ func (r *DeploymentResource) Create(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, deployment.JSON200, true, data.AstroRuntimeVersion.ValueStringPointer())
+	diags = data.ReadFromResponse(ctx, deployment.JSON200, data.OriginalAstroRuntimeVersion.ValueStringPointer())
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -304,7 +304,7 @@ func (r *DeploymentResource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	var data models.Deployment
+	var data models.DeploymentResource
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -338,7 +338,7 @@ func (r *DeploymentResource) Read(
 		return
 	}
 
-	diags := data.ReadFromResponse(ctx, deployment.JSON200, true, data.AstroRuntimeVersion.ValueStringPointer())
+	diags := data.ReadFromResponse(ctx, deployment.JSON200, data.OriginalAstroRuntimeVersion.ValueStringPointer())
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -355,7 +355,7 @@ func (r *DeploymentResource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	var data models.Deployment
+	var data models.DeploymentResource
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -554,7 +554,7 @@ func (r *DeploymentResource) Update(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, deployment.JSON200, true, data.AstroRuntimeVersion.ValueStringPointer())
+	diags = data.ReadFromResponse(ctx, deployment.JSON200, data.AstroRuntimeVersion.ValueStringPointer())
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -571,7 +571,7 @@ func (r *DeploymentResource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	var data models.Deployment
+	var data models.DeploymentResource
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -619,7 +619,7 @@ func (r *DeploymentResource) ValidateConfig(
 	req resource.ValidateConfigRequest,
 	resp *resource.ValidateConfigResponse,
 ) {
-	var data models.Deployment
+	var data models.DeploymentResource
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -654,7 +654,7 @@ func (r *DeploymentResource) ValidateConfig(
 	}
 }
 
-func validateHybridConfig(ctx context.Context, data *models.Deployment) diag.Diagnostics {
+func validateHybridConfig(ctx context.Context, data *models.DeploymentResource) diag.Diagnostics {
 	var diags diag.Diagnostics
 	// Required hybrid values
 	if data.SchedulerAu.IsNull() {
@@ -750,7 +750,7 @@ func validateHybridConfig(ctx context.Context, data *models.Deployment) diag.Dia
 	return diags
 }
 
-func validateStandardConfig(ctx context.Context, data *models.Deployment) diag.Diagnostics {
+func validateStandardConfig(ctx context.Context, data *models.DeploymentResource) diag.Diagnostics {
 	var diags diag.Diagnostics
 	// Required standard values
 	if data.Region.IsNull() {
@@ -776,7 +776,7 @@ func validateStandardConfig(ctx context.Context, data *models.Deployment) diag.D
 	return diags
 }
 
-func validateHostedConfig(ctx context.Context, data *models.Deployment) diag.Diagnostics {
+func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) diag.Diagnostics {
 	// Required hosted values
 	var diags diag.Diagnostics
 	if data.SchedulerSize.IsNull() {
@@ -881,7 +881,7 @@ func validateHostedConfig(ctx context.Context, data *models.Deployment) diag.Dia
 	return diags
 }
 
-func validateClusterIdConfig(ctx context.Context, data *models.Deployment) diag.Diagnostics {
+func validateClusterIdConfig(ctx context.Context, data *models.DeploymentResource) diag.Diagnostics {
 	var diags diag.Diagnostics
 	// Required clusterId value
 	if data.ClusterId.IsNull() {
