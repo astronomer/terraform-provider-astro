@@ -94,10 +94,21 @@ func (r *DeploymentResource) Create(
 	var diags diag.Diagnostics
 	var createDeploymentRequest platform.CreateDeploymentRequest
 
+	originalAstroRuntimeVersion := data.OriginalAstroRuntimeVersion.ValueString()
+	if len(originalAstroRuntimeVersion) == 0 {
+		var diagnostic diag.Diagnostic
+		originalAstroRuntimeVersion, diagnostic = r.GetLatestAstroRuntimeVersion(ctx, &data)
+		if diagnostic != nil {
+			resp.Diagnostics.Append(diagnostic)
+			return
+
+		}
+	}
+
 	switch data.Type.ValueString() {
 	case string(platform.DeploymentTypeSTANDARD):
 		createStandardDeploymentRequest := platform.CreateStandardDeploymentRequest{
-			AstroRuntimeVersion:  data.OriginalAstroRuntimeVersion.ValueString(),
+			AstroRuntimeVersion:  originalAstroRuntimeVersion,
 			CloudProvider:        (*platform.CreateStandardDeploymentRequestCloudProvider)(data.CloudProvider.ValueStringPointer()),
 			DefaultTaskPodCpu:    data.DefaultTaskPodCpu.ValueString(),
 			DefaultTaskPodMemory: data.DefaultTaskPodMemory.ValueString(),
@@ -158,7 +169,7 @@ func (r *DeploymentResource) Create(
 
 	case string(platform.DeploymentTypeDEDICATED):
 		createDedicatedDeploymentRequest := platform.CreateDedicatedDeploymentRequest{
-			AstroRuntimeVersion:  data.OriginalAstroRuntimeVersion.ValueString(),
+			AstroRuntimeVersion:  originalAstroRuntimeVersion,
 			ClusterId:            data.ClusterId.ValueString(),
 			DefaultTaskPodCpu:    data.DefaultTaskPodCpu.ValueString(),
 			DefaultTaskPodMemory: data.DefaultTaskPodMemory.ValueString(),
@@ -218,7 +229,7 @@ func (r *DeploymentResource) Create(
 
 	case string(platform.DeploymentTypeHYBRID):
 		createHybridDeploymentRequest := platform.CreateHybridDeploymentRequest{
-			AstroRuntimeVersion: data.OriginalAstroRuntimeVersion.ValueString(),
+			AstroRuntimeVersion: originalAstroRuntimeVersion,
 			ClusterId:           data.ClusterId.ValueString(),
 			Description:         data.Description.ValueStringPointer(),
 			Executor:            platform.CreateHybridDeploymentRequestExecutor(data.Executor.ValueString()),
@@ -1010,4 +1021,30 @@ func RequestDeploymentEnvironmentVariables(ctx context.Context, environmentVaria
 		}
 	})
 	return platformEnvVars, nil
+}
+
+func (r *DeploymentResource) GetLatestAstroRuntimeVersion(ctx context.Context, data *models.DeploymentResource) (string, diag.Diagnostic) {
+	deploymentOptions, err := r.platformClient.GetDeploymentOptionsWithResponse(ctx, r.organizationId, &platform.GetDeploymentOptionsParams{
+		DeploymentType: lo.ToPtr(platform.GetDeploymentOptionsParamsDeploymentType(data.Type.ValueString())),
+		Executor:       lo.ToPtr(platform.GetDeploymentOptionsParamsExecutor(data.Executor.ValueString())),
+		CloudProvider:  lo.ToPtr(platform.GetDeploymentOptionsParamsCloudProvider(data.CloudProvider.ValueString())),
+	})
+	if err != nil {
+		tflog.Error(ctx, "failed to get deployment options", map[string]interface{}{"error": err})
+		return "", diag.NewErrorDiagnostic(
+			"Client Error",
+			fmt.Sprintf("Unable to get deployment options for deployment creation, got error: %s", err),
+		)
+	}
+	_, diagnostic := clients.NormalizeAPIError(ctx, deploymentOptions.HTTPResponse, deploymentOptions.Body)
+	if diagnostic != nil {
+		return "", diagnostic
+	}
+	if deploymentOptions.JSON200 == nil || len(deploymentOptions.JSON200.RuntimeReleases) == 0 {
+		return "", diag.NewErrorDiagnostic(
+			"Client Error",
+			"Unable to get runtime releases for deployment creation, got empty runtime releases",
+		)
+	}
+	return deploymentOptions.JSON200.RuntimeReleases[0].Version, nil
 }
