@@ -92,7 +92,10 @@ func (d *clustersDataSource) Read(
 	if len(data.CloudProvider.ValueString()) > 0 {
 		params.Provider = (*platform.ListClustersParamsProvider)(data.CloudProvider.ValueStringPointer())
 	}
-	params.Names, diags = utils.TypesSetToStringSlicePtr(ctx, data.Names)
+	names, diags := utils.TypesSetToStringSlice(ctx, data.Names)
+	if len(names) > 0 {
+		params.Names = &names
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
