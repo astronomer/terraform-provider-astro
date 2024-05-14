@@ -38,7 +38,6 @@ resource "astro_deployment" "team_1_dev_deployment" {
   name                    = "Team 1 Dev Deployment"
   description             = "Team 1 Dev Deployment"
   type                    = "STANDARD"
-  astro_runtime_version   = "11.3.0"
   cloud_provider          = "AWS"
   region                  = "us-east-1"
   contact_emails          = []
@@ -64,11 +63,11 @@ resource "astro_deployment" "team_1_dev_deployment" {
   }]
   scaling_spec = {
     hibernation_spec = {
-      schedules = {
+      schedules = [{
         is_enabled        = true
         hibernate_at_cron = "20 * * * *"
         wake_at_cron      = "10 * * * *"
-      }
+      }]
     }
   }
 }
@@ -77,7 +76,6 @@ resource "astro_deployment" "team_2_dev_deployment" {
   name                    = "Team 2 Dev Deployment"
   description             = "Team 2 Dev Deployment"
   type                    = "STANDARD"
-  astro_runtime_version   = "11.3.0"
   cloud_provider          = "AWS"
   region                  = "us-east-1"
   contact_emails          = []
@@ -103,11 +101,11 @@ resource "astro_deployment" "team_2_dev_deployment" {
   }]
   scaling_spec = {
     hibernation_spec = {
-      schedules = {
+      schedules = [{
         is_enabled        = true
         hibernate_at_cron = "20 * * * *"
         wake_at_cron      = "10 * * * *"
-      }
+      }]
     }
   }
 }
@@ -116,7 +114,6 @@ resource "astro_deployment" "team_3_dev_deployment" {
   name                    = "Team 3 Dev Deployment"
   description             = "Team 3 Dev Deployment"
   type                    = "STANDARD"
-  astro_runtime_version   = "11.3.0"
   cloud_provider          = "AWS"
   region                  = "us-east-1"
   contact_emails          = []
@@ -142,11 +139,11 @@ resource "astro_deployment" "team_3_dev_deployment" {
   }]
   scaling_spec = {
     hibernation_spec = {
-      schedules = {
+      schedules = [{
         is_enabled        = true
         hibernate_at_cron = "20 * * * *"
         wake_at_cron      = "10 * * * *"
-      }
+      }]
     }
   }
 }
@@ -161,7 +158,6 @@ resource "astro_deployment" "team_1_staging_deployment" {
   name                    = "Team 1 Staging Deployment"
   description             = "Team 1 Staging Deployment"
   type                    = "STANDARD"
-  astro_runtime_version   = "11.3.0"
   cloud_provider          = "AWS"
   region                  = "us-east-1"
   contact_emails          = []
@@ -187,11 +183,11 @@ resource "astro_deployment" "team_1_staging_deployment" {
   }]
   scaling_spec = {
     hibernation_spec = {
-      schedules = {
+      schedules = [{
         is_enabled        = true
         hibernate_at_cron = "20 * * * *"
         wake_at_cron      = "10 * * * *"
-      }
+      }]
     }
   }
 }
@@ -200,7 +196,6 @@ resource "astro_deployment" "team_2_staging_deployment" {
   name                    = "Team 2 Staging Deployment"
   description             = "Team 2 Staging Deployment"
   type                    = "STANDARD"
-  astro_runtime_version   = "11.3.0"
   cloud_provider          = "AWS"
   region                  = "us-east-1"
   contact_emails          = []
@@ -226,11 +221,11 @@ resource "astro_deployment" "team_2_staging_deployment" {
   }]
   scaling_spec = {
     hibernation_spec = {
-      schedules = {
+      schedules = [{
         is_enabled        = true
         hibernate_at_cron = "20 * * * *"
         wake_at_cron      = "10 * * * *"
-      }
+      }]
     }
   }
 }
@@ -239,7 +234,6 @@ resource "astro_deployment" "team_3_staging_deployment" {
   name                    = "Team 3 Staging Deployment"
   description             = "Team 3 Staging Deployment"
   type                    = "STANDARD"
-  astro_runtime_version   = "11.3.0"
   cloud_provider          = "AWS"
   region                  = "us-east-1"
   contact_emails          = []
@@ -265,11 +259,11 @@ resource "astro_deployment" "team_3_staging_deployment" {
   }]
   scaling_spec = {
     hibernation_spec = {
-      schedules = {
+      schedules = [{
         is_enabled        = true
         hibernate_at_cron = "20 * * * *"
         wake_at_cron      = "10 * * * *"
-      }
+      }]
     }
   }
 }
@@ -299,7 +293,6 @@ resource "astro_deployment" "team_1_prod_deployment" {
   name                    = "Team 1 Prod Deployment"
   description             = "Team 1 Prod Deployment"
   type                    = "DEDICATED"
-  astro_runtime_version   = "11.3.0"
   cluster_id              = astro_cluster.prod_aws_cluster.id
   contact_emails          = ["preview@astronomer.test"]
   default_task_pod_cpu    = "0.25"
@@ -324,7 +317,6 @@ resource "astro_deployment" "team_2_prod_deployment" {
   name                    = "Team 2 Prod Deployment"
   description             = "Team 2 Prod Deployment"
   type                    = "DEDICATED"
-  astro_runtime_version   = "11.3.0"
   cluster_id              = astro_cluster.prod_aws_cluster.id
   contact_emails          = ["preview@astronomer.test"]
   default_task_pod_cpu    = "0.25"
@@ -349,7 +341,6 @@ resource "astro_deployment" "team_3_prod_deployment" {
   name                    = "Team 3 Prod Deployment"
   description             = "Team 3 Prod Deployment"
   type                    = "DEDICATED"
-  astro_runtime_version   = "11.3.0"
   cluster_id              = astro_cluster.prod_aws_cluster.id
   contact_emails          = ["preview@astronomer.test"]
   default_task_pod_cpu    = "0.25"

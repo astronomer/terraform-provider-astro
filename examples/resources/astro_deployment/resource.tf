@@ -2,7 +2,6 @@ resource "astro_deployment" "dedicated" {
   name                    = "my dedicated deployment"
   description             = "an example deployment"
   type                    = "DEDICATED"
-  astro_runtime_version   = "11.3.0"
   cluster_id              = "clv17vgft000801kkydsws63x"
   contact_emails          = ["preview@astronomer.test"]
   default_task_pod_cpu    = "0.25"
@@ -27,7 +26,6 @@ resource "astro_deployment" "standard" {
   name                    = "my standard deployment"
   description             = "an example deployment"
   type                    = "STANDARD"
-  astro_runtime_version   = "11.3.0"
   cloud_provider          = "AWS"
   region                  = "us-east-1"
   contact_emails          = []
@@ -57,7 +55,6 @@ resource "astro_deployment" "hybrid" {
   name                  = "my hybrid deployment"
   description           = "an example deployment"
   type                  = "HYBRID"
-  astro_runtime_version = "11.3.0"
   cluster_id            = "clnp86ly5000401ndagu20g81"
   task_pod_node_pool_id = "clnp86ly5000301ndzfxz895w"
   contact_emails        = ["example@astronomer.io"]
