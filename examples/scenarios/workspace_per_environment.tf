@@ -1,13 +1,44 @@
+/* Workspace Per Environment
+
+Dev workspace
+- Team 1 Dev Deployment
+- Team 2 Dev Deployment
+- Team 3 Dev Deployment
+
+Staging Workspace
+- Team 1 Staging Deployment
+- Team 2 Staging Deployment
+- Team 3 Staging Deployment
+
+Prod Workspace
+- Team 1 Prod Deployment
+- Team 2 Prod Deployment
+- Team 3 Prod Deployment
+*/
+
+terraform {
+  required_providers {
+    astro = {
+      source = "registry.terraform.io/astronomer/astro"
+    }
+  }
+}
+
+provider "astro" {
+  organization_id = "XXXXX"
+}
+
 resource "astro_workspace" "dev_workspace" {
-  name                  = "dev-workspace"
+  name                  = "Dev Workspace"
   description           = "Dev Workspace"
   cicd_enforced_default = true
 }
 
 resource "astro_deployment" "team_1_dev_deployment" {
-  name                    = "team-1-dev-deployment"
+  name                    = "Team 1 Dev Deployment"
   description             = "Team 1 Dev Deployment"
   type                    = "STANDARD"
+  astro_runtime_version   = "11.3.0"
   cloud_provider          = "AWS"
   region                  = "us-east-1"
   contact_emails          = []
@@ -33,18 +64,20 @@ resource "astro_deployment" "team_1_dev_deployment" {
   }]
   scaling_spec = {
     hibernation_spec = {
-      override = {
-        is_hibernating = true
-        override_until = "2025-03-01T13:00:00Z"
+      schedules = {
+        is_enabled        = true
+        hibernate_at_cron = "20 * * * *"
+        wake_at_cron      = "10 * * * *"
       }
     }
   }
 }
 
 resource "astro_deployment" "team_2_dev_deployment" {
-  name                    = "team-2-dev-deployment"
+  name                    = "Team 2 Dev Deployment"
   description             = "Team 2 Dev Deployment"
   type                    = "STANDARD"
+  astro_runtime_version   = "11.3.0"
   cloud_provider          = "AWS"
   region                  = "us-east-1"
   contact_emails          = []
@@ -70,18 +103,20 @@ resource "astro_deployment" "team_2_dev_deployment" {
   }]
   scaling_spec = {
     hibernation_spec = {
-      override = {
-        is_hibernating = true
-        override_until = "2025-03-01T13:00:00Z"
+      schedules = {
+        is_enabled        = true
+        hibernate_at_cron = "20 * * * *"
+        wake_at_cron      = "10 * * * *"
       }
     }
   }
 }
 
 resource "astro_deployment" "team_3_dev_deployment" {
-  name                    = "team-3-dev-deployment"
+  name                    = "Team 3 Dev Deployment"
   description             = "Team 3 Dev Deployment"
   type                    = "STANDARD"
+  astro_runtime_version   = "11.3.0"
   cloud_provider          = "AWS"
   region                  = "us-east-1"
   contact_emails          = []
@@ -107,24 +142,26 @@ resource "astro_deployment" "team_3_dev_deployment" {
   }]
   scaling_spec = {
     hibernation_spec = {
-      override = {
-        is_hibernating = true
-        override_until = "2025-03-01T13:00:00Z"
+      schedules = {
+        is_enabled        = true
+        hibernate_at_cron = "20 * * * *"
+        wake_at_cron      = "10 * * * *"
       }
     }
   }
 }
 
 resource "astro_workspace" "staging_workspace" {
-  name                  = "staging-workspace"
+  name                  = "Staging Workspace"
   description           = "Staging Workspace"
   cicd_enforced_default = true
 }
 
 resource "astro_deployment" "team_1_staging_deployment" {
-  name                    = "team-1-staging-deployment"
+  name                    = "Team 1 Staging Deployment"
   description             = "Team 1 Staging Deployment"
   type                    = "STANDARD"
+  astro_runtime_version   = "11.3.0"
   cloud_provider          = "AWS"
   region                  = "us-east-1"
   contact_emails          = []
@@ -150,18 +187,20 @@ resource "astro_deployment" "team_1_staging_deployment" {
   }]
   scaling_spec = {
     hibernation_spec = {
-      override = {
-        is_hibernating = true
-        override_until = "2025-03-01T13:00:00Z"
+      schedules = {
+        is_enabled        = true
+        hibernate_at_cron = "20 * * * *"
+        wake_at_cron      = "10 * * * *"
       }
     }
   }
 }
 
 resource "astro_deployment" "team_2_staging_deployment" {
-  name                    = "team-2-staging-deployment"
+  name                    = "Team 2 Staging Deployment"
   description             = "Team 2 Staging Deployment"
   type                    = "STANDARD"
+  astro_runtime_version   = "11.3.0"
   cloud_provider          = "AWS"
   region                  = "us-east-1"
   contact_emails          = []
@@ -187,18 +226,20 @@ resource "astro_deployment" "team_2_staging_deployment" {
   }]
   scaling_spec = {
     hibernation_spec = {
-      override = {
-        is_hibernating = true
-        override_until = "2025-03-01T13:00:00Z"
+      schedules = {
+        is_enabled        = true
+        hibernate_at_cron = "20 * * * *"
+        wake_at_cron      = "10 * * * *"
       }
     }
   }
 }
 
 resource "astro_deployment" "team_3_staging_deployment" {
-  name                    = "team-3-staging-deployment"
+  name                    = "Team 3 Staging Deployment"
   description             = "Team 3 Staging Deployment"
   type                    = "STANDARD"
+  astro_runtime_version   = "11.3.0"
   cloud_provider          = "AWS"
   region                  = "us-east-1"
   contact_emails          = []
@@ -224,23 +265,24 @@ resource "astro_deployment" "team_3_staging_deployment" {
   }]
   scaling_spec = {
     hibernation_spec = {
-      override = {
-        is_hibernating = true
-        override_until = "2025-03-01T13:00:00Z"
+      schedules = {
+        is_enabled        = true
+        hibernate_at_cron = "20 * * * *"
+        wake_at_cron      = "10 * * * *"
       }
     }
   }
 }
 
 resource "astro_workspace" "prod_workspace" {
-  name                  = "prod-workspace"
+  name                  = "Prod Workspace"
   description           = "Prod Workspace"
   cicd_enforced_default = true
 }
 
 resource "astro_cluster" "prod_aws_cluster" {
   type             = "DEDICATED"
-  name             = "prod-aws-cluster"
+  name             = "Prod AWS Cluster"
   region           = "us-east-1"
   cloud_provider   = "AWS"
   db_instance_type = "db.m6g.large"
@@ -249,14 +291,15 @@ resource "astro_cluster" "prod_aws_cluster" {
   timeouts = {
     create = "3h"
     update = "2h"
-    delete = "1m"
+    delete = "1h"
   }
 }
 
 resource "astro_deployment" "team_1_prod_deployment" {
-  name                    = "team-1-prod-deployment"
+  name                    = "Team 1 Prod Deployment"
   description             = "Team 1 Prod Deployment"
   type                    = "DEDICATED"
+  astro_runtime_version   = "11.3.0"
   cluster_id              = astro_cluster.prod_aws_cluster.id
   contact_emails          = ["preview@astronomer.test"]
   default_task_pod_cpu    = "0.25"
@@ -278,9 +321,10 @@ resource "astro_deployment" "team_1_prod_deployment" {
 }
 
 resource "astro_deployment" "team_2_prod_deployment" {
-  name                    = "team-2-prod-deployment"
+  name                    = "Team 2 Prod Deployment"
   description             = "Team 2 Prod Deployment"
   type                    = "DEDICATED"
+  astro_runtime_version   = "11.3.0"
   cluster_id              = astro_cluster.prod_aws_cluster.id
   contact_emails          = ["preview@astronomer.test"]
   default_task_pod_cpu    = "0.25"
@@ -302,9 +346,10 @@ resource "astro_deployment" "team_2_prod_deployment" {
 }
 
 resource "astro_deployment" "team_3_prod_deployment" {
-  name                    = "team-3-prod-deployment"
+  name                    = "Team 3 Prod Deployment"
   description             = "Team 3 Prod Deployment"
   type                    = "DEDICATED"
+  astro_runtime_version   = "11.3.0"
   cluster_id              = astro_cluster.prod_aws_cluster.id
   contact_emails          = ["preview@astronomer.test"]
   default_task_pod_cpu    = "0.25"
