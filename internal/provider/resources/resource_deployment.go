@@ -120,6 +120,7 @@ func (r *DeploymentResource) Create(
 
 	var diags diag.Diagnostics
 	var createDeploymentRequest platform.CreateDeploymentRequest
+	var envVars []platform.DeploymentEnvironmentVariableRequest
 
 	switch data.Type.ValueString() {
 	case string(platform.DeploymentTypeSTANDARD):
@@ -152,7 +153,7 @@ func (r *DeploymentResource) Create(
 		}
 
 		// env vars
-		envVars, diags := RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
+		envVars, diags = RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -314,7 +315,7 @@ func (r *DeploymentResource) Create(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, deployment.JSON200, true)
+	diags = data.ReadFromResponse(ctx, deployment.JSON200, true, &envVars)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -333,10 +334,17 @@ func (r *DeploymentResource) Read(
 ) {
 	var data models.Deployment
 
+	tflog.Debug(ctx, fmt.Sprintf("reading a deployment resource"))
+
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	envVars, diags := RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
 		return
 	}
 
@@ -366,7 +374,7 @@ func (r *DeploymentResource) Read(
 		return
 	}
 
-	diags := data.ReadFromResponse(ctx, deployment.JSON200, true)
+	diags = data.ReadFromResponse(ctx, deployment.JSON200, true, &envVars)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -394,6 +402,7 @@ func (r *DeploymentResource) Update(
 	// update request
 	var diags diag.Diagnostics
 	var updateDeploymentRequest platform.UpdateDeploymentRequest
+	var envVars []platform.DeploymentEnvironmentVariableRequest
 
 	switch data.Type.ValueString() {
 	case string(platform.DeploymentTypeSTANDARD):
@@ -423,7 +432,7 @@ func (r *DeploymentResource) Update(
 		}
 
 		// env vars
-		envVars, diags := RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
+		envVars, diags = RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -481,7 +490,7 @@ func (r *DeploymentResource) Update(
 		}
 
 		// env vars
-		envVars, diags := RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
+		envVars, diags = RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -537,7 +546,7 @@ func (r *DeploymentResource) Update(
 		}
 
 		// env vars
-		envVars, diags := RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
+		envVars, diags = RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -582,7 +591,7 @@ func (r *DeploymentResource) Update(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, deployment.JSON200, true)
+	diags = data.ReadFromResponse(ctx, deployment.JSON200, true, &envVars)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

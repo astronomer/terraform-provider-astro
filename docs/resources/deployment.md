@@ -154,6 +154,9 @@ Required:
 
 - `is_secret` (Boolean) Whether Environment variable is a secret
 - `key` (String) Environment variable key
+
+Optional:
+
 - `value` (String, Sensitive) Environment variable value
 
 Read-Only:

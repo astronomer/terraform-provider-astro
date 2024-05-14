@@ -25,7 +25,7 @@ func (data *Deployments) ReadFromResponse(
 	values := make([]attr.Value, len(deployments))
 	for i, deployment := range deployments {
 		var singleDeploymentData Deployment
-		diags := singleDeploymentData.ReadFromResponse(ctx, &deployment, false)
+		diags := singleDeploymentData.ReadFromResponse(ctx, &deployment, false, nil)
 		if diags.HasError() {
 			return diags
 		}

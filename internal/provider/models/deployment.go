@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/samber/lo"
+
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -73,6 +75,7 @@ func (data *Deployment) ReadFromResponse(
 	ctx context.Context,
 	deployment *platform.Deployment,
 	isResource bool,
+	requestEnvVars *[]platform.DeploymentEnvironmentVariableRequest,
 ) diag.Diagnostics {
 	// Read common fields
 	data.Id = types.StringValue(deployment.Id)
@@ -116,7 +119,30 @@ func (data *Deployment) ReadFromResponse(
 	data.ImageTag = types.StringValue(deployment.ImageTag)
 	data.ImageRepository = types.StringValue(deployment.ImageRepository)
 	data.ImageVersion = types.StringPointerValue(deployment.ImageVersion)
-	data.EnvironmentVariables, diags = utils.ObjectSet(ctx, deployment.EnvironmentVariables, schemas.DeploymentEnvironmentVariableAttributeTypes(), DeploymentEnvironmentVariableTypesObject)
+
+	// Environment variables are a special case
+	// Since terraform wants to know the values of the secret values in the request at all times, and our API does not send back the secret values in the response
+	// We must use the request value and set it in the Terraform response to keep Terraform from emitting errors
+	// Since the value is marked as sensitive, Terraform will not output the actual value in the plan/apply output
+	envVars := *deployment.EnvironmentVariables
+	if requestEnvVars != nil && deployment.EnvironmentVariables != nil {
+		requestEnvVarsMap := lo.SliceToMap(*requestEnvVars, func(envVar platform.DeploymentEnvironmentVariableRequest) (string, platform.DeploymentEnvironmentVariable) {
+			return envVar.Key, platform.DeploymentEnvironmentVariable{
+				Key:      envVar.Key,
+				Value:    envVar.Value,
+				IsSecret: envVar.IsSecret,
+			}
+		})
+		for i, envVar := range envVars {
+			if envVar.IsSecret {
+				if requestEnvVar, ok := requestEnvVarsMap[envVar.Key]; ok {
+					// If the envVar has a secret value, update the value in the response
+					envVars[i].Value = requestEnvVar.Value
+				}
+			}
+		}
+	}
+	data.EnvironmentVariables, diags = utils.ObjectSet(ctx, &envVars, schemas.DeploymentEnvironmentVariableAttributeTypes(), DeploymentEnvironmentVariableTypesObject)
 	if diags.HasError() {
 		return diags
 	}
@@ -223,8 +249,8 @@ func DeploymentEnvironmentVariableTypesObject(
 ) (types.Object, diag.Diagnostics) {
 	obj := DeploymentEnvironmentVariable{
 		Key:       types.StringValue(envVar.Key),
-		Value:     types.StringPointerValue(envVar.Value),
 		UpdatedAt: types.StringValue(envVar.UpdatedAt),
+		Value:     types.StringPointerValue(envVar.Value),
 		IsSecret:  types.BoolValue(envVar.IsSecret),
 	}
 
