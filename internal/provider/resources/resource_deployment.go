@@ -213,7 +213,7 @@ func (r *DeploymentResource) Create(
 		}
 
 		// env vars
-		envVars, diags := RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
+		envVars, diags = RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -271,7 +271,7 @@ func (r *DeploymentResource) Create(
 		}
 
 		// env vars
-		envVars, diags := RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
+		envVars, diags = RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
