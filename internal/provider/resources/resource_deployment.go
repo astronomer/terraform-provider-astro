@@ -334,8 +334,6 @@ func (r *DeploymentResource) Read(
 ) {
 	var data models.Deployment
 
-	tflog.Debug(ctx, fmt.Sprintf("reading a deployment resource"))
-
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
