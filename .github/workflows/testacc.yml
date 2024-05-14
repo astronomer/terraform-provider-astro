@@ -1,16 +1,22 @@
 name: Acceptance Tests
 
-# In the future, we will need to figure out how we want to run acceptance tests
-# since creation of deployments and clusters are costly
 on:
   pull_request:
     paths-ignore:
       - 'README.md'
+      - 'LICENSE'
+      - 'docs/**'
+      - 'examples/**'
   push:
     branches:
       - main
     paths-ignore:
       - 'README.md'
+      - 'LICENSE'
+      - 'docs/**'
+      - 'examples/**'
+  schedule:
+    - cron: '30 21 * * *'  # Runs at 2:30pm PDT every day
 
 # Testing only needs permissions to read the repository contents.
 permissions:
@@ -31,7 +37,6 @@ jobs:
       - run: go build -v .
 
   testacc:
-    # This job runs on push to main branch.
     name: Terraform Provider Acceptance Tests
     needs: build
     timeout-minutes: 180 # 3 hours since cluster creation and cluster updates can take a while
@@ -88,3 +93,58 @@ jobs:
           TESTARGS: "-failfast"
         run: make testacc
 
+  daily-stage-testacc:
+    name: Daily Stage Terraform Provider Acceptance Tests
+    needs: build
+    if: github.event.schedule
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
+      - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - uses: hashicorp/setup-terraform@651471c36a6092792c552e8b1bef71e592b462d8
+        with:
+          terraform_version: 'latest'
+          terraform_wrapper: false
+      - run: go mod download
+      - env:
+          TF_ACC: "1"
+          HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HYBRID_ORGANIZATION_API_TOKEN }}
+          HYBRID_ORGANIZATION_ID: ckon5obsu03322822nvm6yumk
+          HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HOSTED_ORGANIZATION_API_TOKEN }}
+          HOSTED_ORGANIZATION_ID: clczfo8a111cz0t140nck8ubn
+          HYBRID_CLUSTER_ID: clqqongl40fmv01m96dvxh2nu
+          HYBRID_NODE_POOL_ID: clqqongl40fmu01m94pwp4kct
+          ASTRO_API_HOST: https://api.astronomer-stage.io
+          TESTARGS: "-failfast"
+        run: make testacc
+
+  daily-prod-testacc:
+    name: Daily Stage Terraform Provider Acceptance Tests
+    needs: build
+    if: github.event.schedule
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
+      - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - uses: hashicorp/setup-terraform@651471c36a6092792c552e8b1bef71e592b462d8
+        with:
+          terraform_version: 'latest'
+          terraform_wrapper: false
+      - run: go mod download
+      - env:
+          TF_ACC: "1"
+          HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.PROD_HYBRID_ORGANIZATION_API_TOKEN }}
+          HYBRID_ORGANIZATION_ID: cl9h3o0ap0qyk0ty9bxst6sdy
+          HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.PROD_HOSTED_ORGANIZATION_API_TOKEN }}
+          HOSTED_ORGANIZATION_ID: clczfq8dg14sz0t2udidq5syh
+          HYBRID_CLUSTER_ID: clk31op94000l01jk3f3a286y
+          HYBRID_NODE_POOL_ID: clk31op94000k01jkr2o3ftww
+          ASTRO_API_HOST: https://api.astronomer.io
+          TESTARGS: "-failfast"
+        run: make testacc
