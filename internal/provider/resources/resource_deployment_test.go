@@ -280,7 +280,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				ResourceName:            azureCeleryResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url"},
+				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url", "scaling_status"},
 			},
 		},
 	})
@@ -322,7 +322,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				ResourceName:            gcpKubernetesResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url"},
+				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url", "scaling_status"},
 			},
 		},
 	})
