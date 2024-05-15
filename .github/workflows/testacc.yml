@@ -45,6 +45,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b # v4.1.5
+        with:
+          fetch-depth: 0 # Fetch all history for all tags and branches
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
         with:
           go-version-file: 'go.mod'
@@ -69,7 +71,7 @@ jobs:
            "internal/provider/resources/resource_deployment.go"
          )
          for file in "${FILES_TO_CHECK[@]}"; do
-           if git diff --name-only origin/${{ github.base_ref }} origin/${{ github.head_ref }} | grep -q "$file"; then
+           if git diff --name-only ${{ github.base_ref }} ${{ github.head_ref }} | grep -q "$file"; then
              SKIP_TESTS="False"
              break
            fi
