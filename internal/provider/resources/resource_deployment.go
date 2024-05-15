@@ -293,7 +293,7 @@ func (r *DeploymentResource) Create(
 		)
 		return
 	}
-	_, diagnostic = clients.NormalizeAPIError(ctx, deployment.HTTPResponse, deployment.Body)
+	_, diagnostic := clients.NormalizeAPIError(ctx, deployment.HTTPResponse, deployment.Body)
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return
