@@ -117,7 +117,10 @@ resource "astro_workspace" "test_workspace" {
 	cicd_enforced_default = true
 }
 
+data "astro_deployment_options" "deployment_options" {}
+
 resource "astro_deployment" "test_deployment_kubernetes" {
+	original_astro_runtime_version = tolist(data.astro_deployment_options.deployment_options.runtime_releases)[0].version
 	name = "%v-1"
 	description = "%v"
 	type = "STANDARD"
@@ -143,6 +146,7 @@ resource "astro_deployment" "test_deployment_kubernetes" {
 }
 
 resource "astro_deployment" "test_deployment_celery" {
+	original_astro_runtime_version = tolist(data.astro_deployment_options.deployment_options.runtime_releases)[0].version
 	name = "%v-2"
 	description = "%v"
 	type = "STANDARD"

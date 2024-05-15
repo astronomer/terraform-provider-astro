@@ -51,7 +51,7 @@ func (r *ClusterResource) Schema(
 ) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Cluster resource",
+		MarkdownDescription: "Cluster resource. If creating multiple clusters, add a delay between each cluster creation to avoid cluster creation limiting errors.",
 		Attributes:          schemas.ClusterResourceSchemaAttributes(ctx),
 	}
 }
