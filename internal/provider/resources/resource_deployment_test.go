@@ -240,7 +240,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				ResourceName:            awsResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips"},
+				ImportStateVerifyIgnore: []string{"external_ips", "environment_variables.1.value"}, // environment_variables.1.value is a secret value
 			},
 		},
 	})
@@ -282,7 +282,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				ResourceName:            azureCeleryResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url"},
+				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url", "environment_variables.1.value"}, // environment_variables.0.value is a secret value
 			},
 		},
 	})
@@ -324,7 +324,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				ResourceName:            gcpKubernetesResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url"},
+				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url", "environment_variables.1.value"}, // environment_variables.0.value is a secret value
 			},
 		},
 	})
