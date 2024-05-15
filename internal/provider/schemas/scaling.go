@@ -1,7 +1,6 @@
 package schemas
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -99,8 +98,9 @@ func HibernationScheduleDataSourceSchemaAttributes() map[string]datasourceSchema
 func ScalingSpecResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
 		"hibernation_spec": resourceSchema.SingleNestedAttribute{
-			Attributes: HibernationSpecResourceSchemaAttributes(),
-			Optional:   true,
+			Attributes:          HibernationSpecResourceSchemaAttributes(),
+			Required:            true,
+			MarkdownDescription: "Hibernation configuration for the deployment. The deployment will hibernate according to the schedules defined in this configuration. To remove the hibernation configuration, set scaling_spec to null.",
 		},
 	}
 }
@@ -108,10 +108,12 @@ func ScalingSpecResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 func HibernationSpecResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
 		"override": resourceSchema.SingleNestedAttribute{
-			Attributes: HibernationOverrideResourceSchemaAttributes(),
-			Optional:   true,
+			MarkdownDescription: "Hibernation override configuration. Set to null to remove the override.",
+			Attributes:          HibernationOverrideResourceSchemaAttributes(),
+			Optional:            true,
 		},
 		"schedules": resourceSchema.SetNestedAttribute{
+			MarkdownDescription: "List of hibernation schedules. Set to null to remove all schedules.",
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: HibernationScheduleResourceSchemaAttributes(),
 			},
@@ -130,13 +132,13 @@ func HibernationOverrideResourceSchemaAttributes() map[string]resourceSchema.Att
 			Computed: true,
 		},
 		"is_hibernating": resourceSchema.BoolAttribute{
-			Optional: true,
-			Validators: []validator.Bool{
-				boolvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("override_until")),
-			},
+			Required: true,
 		},
 		"override_until": resourceSchema.StringAttribute{
 			Optional: true,
+			Validators: []validator.String{
+				stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("is_hibernating")),
+			},
 		},
 	}
 }

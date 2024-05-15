@@ -321,8 +321,10 @@ func HibernationOverrideTypesObject(
 	}
 	obj := HibernationSpecOverride{
 		IsHibernating: types.BoolPointerValue(hibernationOverride.IsHibernating),
-		OverrideUntil: types.StringValue(hibernationOverride.OverrideUntil.Format(time.RFC3339)),
 		IsActive:      types.BoolPointerValue(hibernationOverride.IsActive),
+	}
+	if hibernationOverride.OverrideUntil != nil {
+		obj.OverrideUntil = types.StringValue(hibernationOverride.OverrideUntil.Format(time.RFC3339))
 	}
 	return types.ObjectValueFrom(ctx, schemas.HibernationOverrideAttributeTypes(), obj)
 }
@@ -344,9 +346,10 @@ func HibernationSpecTypesObject(
 	ctx context.Context,
 	hibernationSpec *platform.DeploymentHibernationSpec,
 ) (types.Object, diag.Diagnostics) {
-	if hibernationSpec == nil {
+	if hibernationSpec == nil || (hibernationSpec.Override == nil && hibernationSpec.Schedules == nil) {
 		return types.ObjectNull(schemas.HibernationSpecAttributeTypes()), nil
 	}
+
 	override, diags := HibernationOverrideTypesObject(ctx, hibernationSpec.Override)
 	if diags.HasError() {
 		tflog.Error(ctx, "Failed to create HibernationOverride object", map[string]interface{}{"error": diags})
