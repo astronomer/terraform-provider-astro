@@ -3,12 +3,12 @@
 page_title: "astro_cluster Resource - astro"
 subcategory: ""
 description: |-
-  Cluster resource
+  Cluster resource. If creating multiple clusters, add a delay between each cluster creation to avoid cluster creation limiting errors.
 ---
 
 # astro_cluster (Resource)
 
-Cluster resource
+Cluster resource. If creating multiple clusters, add a delay between each cluster creation to avoid cluster creation limiting errors.
 
 ## Example Usage
 

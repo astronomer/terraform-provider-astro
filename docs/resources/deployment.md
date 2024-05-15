@@ -14,22 +14,23 @@ Deployment resource
 
 ```terraform
 resource "astro_deployment" "dedicated" {
-  name                    = "my dedicated deployment"
-  description             = "an example deployment"
-  type                    = "DEDICATED"
-  cluster_id              = "clv17vgft000801kkydsws63x"
-  contact_emails          = ["preview@astronomer.test"]
-  default_task_pod_cpu    = "0.25"
-  default_task_pod_memory = "0.5Gi"
-  executor                = "KUBERNETES"
-  is_cicd_enforced        = true
-  is_dag_deploy_enabled   = true
-  is_development_mode     = false
-  is_high_availability    = true
-  resource_quota_cpu      = "10"
-  resource_quota_memory   = "20Gi"
-  scheduler_size          = "SMALL"
-  workspace_id            = "clnp86ly5000401ndaga21g81"
+  original_astro_runtime_version = "11.3.0"
+  name                           = "my dedicated deployment"
+  description                    = "an example deployment"
+  type                           = "DEDICATED"
+  cluster_id                     = "clv17vgft000801kkydsws63x"
+  contact_emails                 = ["preview@astronomer.test"]
+  default_task_pod_cpu           = "0.25"
+  default_task_pod_memory        = "0.5Gi"
+  executor                       = "KUBERNETES"
+  is_cicd_enforced               = true
+  is_dag_deploy_enabled          = true
+  is_development_mode            = false
+  is_high_availability           = true
+  resource_quota_cpu             = "10"
+  resource_quota_memory          = "20Gi"
+  scheduler_size                 = "SMALL"
+  workspace_id                   = "clnp86ly5000401ndaga21g81"
   environment_variables = [{
     key       = "key1"
     value     = "value1"
@@ -38,24 +39,25 @@ resource "astro_deployment" "dedicated" {
 }
 
 resource "astro_deployment" "standard" {
-  name                    = "my standard deployment"
-  description             = "an example deployment"
-  type                    = "STANDARD"
-  cloud_provider          = "AWS"
-  region                  = "us-east-1"
-  contact_emails          = []
-  default_task_pod_cpu    = "0.25"
-  default_task_pod_memory = "0.5Gi"
-  executor                = "CELERY"
-  is_cicd_enforced        = true
-  is_dag_deploy_enabled   = true
-  is_development_mode     = false
-  is_high_availability    = false
-  resource_quota_cpu      = "10"
-  resource_quota_memory   = "20Gi"
-  scheduler_size          = "SMALL"
-  workspace_id            = "clnp86ly500a401ndaga20g81"
-  environment_variables   = []
+  original_astro_runtime_version = "11.3.0"
+  name                           = "my standard deployment"
+  description                    = "an example deployment"
+  type                           = "STANDARD"
+  cloud_provider                 = "AWS"
+  region                         = "us-east-1"
+  contact_emails                 = []
+  default_task_pod_cpu           = "0.25"
+  default_task_pod_memory        = "0.5Gi"
+  executor                       = "CELERY"
+  is_cicd_enforced               = true
+  is_dag_deploy_enabled          = true
+  is_development_mode            = false
+  is_high_availability           = false
+  resource_quota_cpu             = "10"
+  resource_quota_memory          = "20Gi"
+  scheduler_size                 = "SMALL"
+  workspace_id                   = "clnp86ly500a401ndaga20g81"
+  environment_variables          = []
   worker_queues = [{
     name               = "default"
     is_default         = true
@@ -67,18 +69,19 @@ resource "astro_deployment" "standard" {
 }
 
 resource "astro_deployment" "hybrid" {
-  name                  = "my hybrid deployment"
-  description           = "an example deployment"
-  type                  = "HYBRID"
-  cluster_id            = "clnp86ly5000401ndagu20g81"
-  task_pod_node_pool_id = "clnp86ly5000301ndzfxz895w"
-  contact_emails        = ["example@astronomer.io"]
-  executor              = "KUBERNETES"
-  is_cicd_enforced      = true
-  is_dag_deploy_enabled = true
-  scheduler_replicas    = 1
-  scheduler_au          = 5
-  workspace_id          = "clnp86ly5000401ndaga20g81"
+  original_astro_runtime_version = "11.3.0"
+  name                           = "my hybrid deployment"
+  description                    = "an example deployment"
+  type                           = "HYBRID"
+  cluster_id                     = "clnp86ly5000401ndagu20g81"
+  task_pod_node_pool_id          = "clnp86ly5000301ndzfxz895w"
+  contact_emails                 = ["example@astronomer.io"]
+  executor                       = "KUBERNETES"
+  is_cicd_enforced               = true
+  is_dag_deploy_enabled          = true
+  scheduler_replicas             = 1
+  scheduler_au                   = 5
+  workspace_id                   = "clnp86ly5000401ndaga20g81"
   environment_variables = [{
     key       = "key1"
     value     = "value1"
@@ -110,6 +113,7 @@ resource "astro_deployment" "hybrid" {
 - `default_task_pod_memory` (String) Deployment default task pod memory - required for 'STANDARD' and 'DEDICATED' deployments
 - `is_development_mode` (Boolean) Deployment development mode - required for 'STANDARD' and 'DEDICATED' deployments. If changing from 'False' to 'True', the deployment will be recreated
 - `is_high_availability` (Boolean) Deployment high availability - required for 'STANDARD' and 'DEDICATED' deployments
+- `original_astro_runtime_version` (String) Deployment's original Astro Runtime version. The Terraform provider will use this provided Astro runtime version to create the Deployment. The Astro runtime version can be updated with your Astro project Dockerfile, but if this value is changed, the Deployment will be recreated with this new Astro runtime version.
 - `region` (String) Deployment region - required for 'STANDARD' deployments. If changing this value, the deployment will be recreated in the new region
 - `resource_quota_cpu` (String) Deployment resource quota CPU - required for 'STANDARD' and 'DEDICATED' deployments
 - `resource_quota_memory` (String) Deployment resource quota memory - required for 'STANDARD' and 'DEDICATED' deployments
@@ -123,7 +127,7 @@ resource "astro_deployment" "hybrid" {
 ### Read-Only
 
 - `airflow_version` (String) Deployment Airflow version
-- `astro_runtime_version` (String) Deployment Astro Runtime version. The terraform provider will use the latest Astro runtime version for the Deployment. The Astro runtime version can be updated with your Astro project Dockerfile
+- `astro_runtime_version` (String) Deployment's current Astro Runtime version
 - `created_at` (String) Deployment creation timestamp
 - `created_by` (Attributes) Deployment creator (see [below for nested schema](#nestedatt--created_by))
 - `dag_tarball_version` (String) Deployment DAG tarball version
