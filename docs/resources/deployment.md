@@ -127,7 +127,7 @@ resource "astro_deployment" "hybrid" {
 ### Read-Only
 
 - `airflow_version` (String) Deployment Airflow version
-- `astro_runtime_version` (String) Deployment's actual Astro Runtime version
+- `astro_runtime_version` (String) Deployment's current Astro Runtime version
 - `created_at` (String) Deployment creation timestamp
 - `created_by` (Attributes) Deployment creator (see [below for nested schema](#nestedatt--created_by))
 - `dag_tarball_version` (String) Deployment DAG tarball version

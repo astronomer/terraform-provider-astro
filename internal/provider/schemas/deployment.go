@@ -79,7 +79,7 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			},
 		},
 		"astro_runtime_version": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment's actual Astro Runtime version",
+			MarkdownDescription: "Deployment's current Astro Runtime version",
 			Computed:            true,
 		},
 		"airflow_version": resourceSchema.StringAttribute{
