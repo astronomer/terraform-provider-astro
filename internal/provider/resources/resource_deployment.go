@@ -91,32 +91,6 @@ func (r *DeploymentResource) Create(
 		return
 	}
 
-	deploymentOptions, err := r.platformClient.GetDeploymentOptionsWithResponse(ctx, r.organizationId, &platform.GetDeploymentOptionsParams{
-		DeploymentType: lo.ToPtr(platform.GetDeploymentOptionsParamsDeploymentType(data.Type.ValueString())),
-		Executor:       lo.ToPtr(platform.GetDeploymentOptionsParamsExecutor(data.Executor.ValueString())),
-		CloudProvider:  lo.ToPtr(platform.GetDeploymentOptionsParamsCloudProvider(data.CloudProvider.ValueString())),
-	})
-	if err != nil {
-		tflog.Error(ctx, "failed to get deployment options", map[string]interface{}{"error": err})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to get deployment options for deployment creation, got error: %s", err),
-		)
-		return
-	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, deploymentOptions.HTTPResponse, deploymentOptions.Body)
-	if diagnostic != nil {
-		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if deploymentOptions.JSON200 == nil || len(deploymentOptions.JSON200.RuntimeReleases) == 0 {
-		resp.Diagnostics.AddError(
-			"Client Error",
-			"Unable to get runtime releases for deployment creation, got empty runtime releases",
-		)
-		return
-	}
-
 	var diags diag.Diagnostics
 	var createDeploymentRequest platform.CreateDeploymentRequest
 	var envVars []platform.DeploymentEnvironmentVariableRequest
