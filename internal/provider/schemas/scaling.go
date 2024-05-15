@@ -117,6 +117,7 @@ func HibernationSpecResourceSchemaAttributes() map[string]resourceSchema.Attribu
 			},
 			Validators: []validator.Set{
 				setvalidator.SizeAtMost(10),
+				setvalidator.SizeAtLeast(1),
 			},
 			Optional: true,
 		},

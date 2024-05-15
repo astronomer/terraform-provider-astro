@@ -118,7 +118,7 @@ func (r *DeploymentResource) Create(
 		return
 	}
 
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 	var createDeploymentRequest platform.CreateDeploymentRequest
 
 	switch data.Type.ValueString() {
@@ -392,7 +392,7 @@ func (r *DeploymentResource) Update(
 	}
 
 	// update request
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 	var updateDeploymentRequest platform.UpdateDeploymentRequest
 
 	switch data.Type.ValueString() {
@@ -683,7 +683,7 @@ func (r *DeploymentResource) ValidateConfig(
 }
 
 func validateHybridConfig(ctx context.Context, data *models.Deployment) diag.Diagnostics {
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 	// Required hybrid values
 	if data.SchedulerAu.IsNull() {
 		diags.AddError(
@@ -779,7 +779,7 @@ func validateHybridConfig(ctx context.Context, data *models.Deployment) diag.Dia
 }
 
 func validateStandardConfig(ctx context.Context, data *models.Deployment) diag.Diagnostics {
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 	// Required standard values
 	if data.Region.IsNull() {
 		diags.AddError(
@@ -806,7 +806,7 @@ func validateStandardConfig(ctx context.Context, data *models.Deployment) diag.D
 
 func validateHostedConfig(ctx context.Context, data *models.Deployment) diag.Diagnostics {
 	// Required hosted values
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 	if data.SchedulerSize.IsNull() {
 		diags.AddError(
 			"scheduler_size is required for 'STANDARD' and 'DEDICATED' deployment",
@@ -910,7 +910,7 @@ func validateHostedConfig(ctx context.Context, data *models.Deployment) diag.Dia
 }
 
 func validateClusterIdConfig(ctx context.Context, data *models.Deployment) diag.Diagnostics {
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 	// Required clusterId value
 	if data.ClusterId.IsNull() {
 		diags.AddError(
@@ -943,22 +943,51 @@ func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*plat
 
 	var scalingSpec models.DeploymentScalingSpec
 	diags := scalingSpecObj.As(ctx, &scalingSpec, basetypes.ObjectAsOptions{
-		UnhandledNullAsEmpty:    false,
-		UnhandledUnknownAsEmpty: false,
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
 	})
 	if diags.HasError() {
+		tflog.Error(ctx, "failed to convert scaling spec", map[string]interface{}{"error": diags})
 		return nil, diags
 	}
+
+	var hibernationSpec models.HibernationSpec
+	diags = scalingSpec.HibernationSpec.As(ctx, &hibernationSpec, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		tflog.Error(ctx, "failed to convert hibernation spec", map[string]interface{}{"error": diags})
+		return nil, diags
+	}
+
+	var override models.HibernationSpecOverride
+	diags = hibernationSpec.Override.As(ctx, &override, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		tflog.Error(ctx, "failed to convert hibernation override", map[string]interface{}{"error": diags})
+		return nil, diags
+	}
+
+	var schedules []models.HibernationSchedule
+	diags = hibernationSpec.Schedules.ElementsAs(ctx, &schedules, false)
+	if diags.HasError() {
+		tflog.Error(ctx, "failed to convert hibernation schedules", map[string]interface{}{"error": diags})
+		return nil, diags
+	}
+
 	platformScalingSpec := &platform.DeploymentScalingSpecRequest{
 		HibernationSpec: &platform.DeploymentHibernationSpecRequest{
 			Override: &platform.DeploymentHibernationOverrideRequest{
-				IsHibernating: scalingSpec.HibernationSpec.Override.IsHibernating.ValueBoolPointer(),
-				OverrideUntil: scalingSpec.HibernationSpec.Override.OverrideUntil.ValueStringPointer(),
+				IsHibernating: override.IsHibernating.ValueBoolPointer(),
+				OverrideUntil: override.OverrideUntil.ValueStringPointer(),
 			},
 		},
 	}
-	if len(scalingSpec.HibernationSpec.Schedules) > 0 {
-		schedules := lo.Map(scalingSpec.HibernationSpec.Schedules, func(schedule models.HibernationSchedule, _ int) platform.DeploymentHibernationSchedule {
+	if len(schedules) > 0 {
+		schedules := lo.Map(schedules, func(schedule models.HibernationSchedule, _ int) platform.DeploymentHibernationSchedule {
 			return platform.DeploymentHibernationSchedule{
 				Description:     schedule.Description.ValueStringPointer(),
 				HibernateAtCron: schedule.HibernateAtCron.ValueString(),
