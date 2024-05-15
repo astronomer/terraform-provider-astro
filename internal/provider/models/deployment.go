@@ -58,16 +58,16 @@ type DeploymentResource struct {
 	// Hybrid deployment specific fields
 	TaskPodNodePoolId types.String `tfsdk:"task_pod_node_pool_id"`
 
-	// Hosted deployment specific fields
+	// Hosted (standard and dedicated) deployment specific fields
 	ResourceQuotaCpu     types.String `tfsdk:"resource_quota_cpu"`
 	ResourceQuotaMemory  types.String `tfsdk:"resource_quota_memory"`
 	DefaultTaskPodCpu    types.String `tfsdk:"default_task_pod_cpu"`
 	DefaultTaskPodMemory types.String `tfsdk:"default_task_pod_memory"`
-	ScalingStatus        types.Object `tfsdk:"scaling_status"`
-	ScalingSpec          types.Object `tfsdk:"scaling_spec"`
 	SchedulerSize        types.String `tfsdk:"scheduler_size"`
 	IsDevelopmentMode    types.Bool   `tfsdk:"is_development_mode"`
 	IsHighAvailability   types.Bool   `tfsdk:"is_high_availability"`
+	ScalingStatus        types.Object `tfsdk:"scaling_status"`
+	ScalingSpec          types.Object `tfsdk:"scaling_spec"`
 }
 
 type DeploymentDataSource struct {
@@ -155,6 +155,7 @@ func (data *DeploymentResource) ReadFromResponse(
 		return diags
 	}
 	data.WorkspaceId = types.StringValue(deployment.WorkspaceId)
+	data.Type = types.StringPointerValue((*string)(deployment.Type))
 	data.Region = types.StringPointerValue(deployment.Region)
 	data.CloudProvider = types.StringPointerValue((*string)(deployment.CloudProvider))
 
@@ -169,12 +170,12 @@ func (data *DeploymentResource) ReadFromResponse(
 		return diags
 	}
 	data.Executor = types.StringPointerValue((*string)(deployment.Executor))
+	data.SchedulerCpu = types.StringValue(deployment.SchedulerCpu)
+	data.SchedulerMemory = types.StringValue(deployment.SchedulerMemory)
 	if deployment.SchedulerAu != nil {
 		deploymentSchedulerAu := int64(*deployment.SchedulerAu)
 		data.SchedulerAu = types.Int64Value(deploymentSchedulerAu)
 	}
-	data.SchedulerCpu = types.StringValue(deployment.SchedulerCpu)
-	data.SchedulerMemory = types.StringValue(deployment.SchedulerMemory)
 	data.SchedulerReplicas = types.Int64Value(int64(deployment.SchedulerReplicas))
 	data.ImageTag = types.StringValue(deployment.ImageTag)
 	data.ImageRepository = types.StringValue(deployment.ImageRepository)
@@ -188,22 +189,20 @@ func (data *DeploymentResource) ReadFromResponse(
 	data.WebserverAirflowApiUrl = types.StringValue(deployment.WebServerAirflowApiUrl)
 	data.Status = types.StringValue(string(deployment.Status))
 	data.StatusReason = types.StringPointerValue(deployment.StatusReason)
-	data.Type = types.StringPointerValue((*string)(deployment.Type))
 	data.DagTarballVersion = types.StringPointerValue(deployment.DagTarballVersion)
 	data.DesiredDagTarballVersion = types.StringPointerValue(deployment.DesiredDagTarballVersion)
-	data.WorkerQueues, diags = utils.ObjectSet(ctx, deployment.WorkerQueues, schemas.WorkerQueueResourceAttributeTypes(), WorkerQueueResourceTypesObject)
-	if diags.HasError() {
-		return diags
-	}
 	data.IsCicdEnforced = types.BoolValue(deployment.IsCicdEnforced)
 	data.IsDagDeployEnabled = types.BoolValue(deployment.IsDagDeployEnabled)
-
 	data.WorkloadIdentity = types.StringPointerValue(deployment.WorkloadIdentity)
 	data.ExternalIps, diags = utils.StringSet(deployment.ExternalIPs)
 	if diags.HasError() {
 		return diags
 	}
 	data.OidcIssuerUrl = types.StringPointerValue(deployment.OidcIssuerUrl)
+	data.WorkerQueues, diags = utils.ObjectSet(ctx, deployment.WorkerQueues, schemas.WorkerQueueResourceAttributeTypes(), WorkerQueueResourceTypesObject)
+	if diags.HasError() {
+		return diags
+	}
 
 	// Read hybrid and dedicated specific fields
 	data.ClusterId = types.StringPointerValue(deployment.ClusterId)
@@ -217,8 +216,8 @@ func (data *DeploymentResource) ReadFromResponse(
 	data.DefaultTaskPodCpu = types.StringPointerValue(deployment.DefaultTaskPodCpu)
 	data.DefaultTaskPodMemory = types.StringPointerValue(deployment.DefaultTaskPodMemory)
 	data.SchedulerSize = types.StringPointerValue((*string)(deployment.SchedulerSize))
-	data.IsHighAvailability = types.BoolPointerValue(deployment.IsHighAvailability)
 	data.IsDevelopmentMode = types.BoolPointerValue(deployment.IsDevelopmentMode)
+	data.IsHighAvailability = types.BoolPointerValue(deployment.IsHighAvailability)
 
 	// Currently, the scaling status and spec are only available in development mode
 	// However, there is a bug in the API where the scaling status and spec are returned even if the deployment is not in development mode for updated deployments
@@ -267,6 +266,7 @@ func (data *DeploymentDataSource) ReadFromResponse(
 		return diags
 	}
 	data.WorkspaceId = types.StringValue(deployment.WorkspaceId)
+	data.Type = types.StringPointerValue((*string)(deployment.Type))
 	data.Region = types.StringPointerValue(deployment.Region)
 	data.CloudProvider = types.StringPointerValue((*string)(deployment.CloudProvider))
 	data.AstroRuntimeVersion = types.StringValue(deployment.AstroRuntimeVersion)
@@ -296,22 +296,20 @@ func (data *DeploymentDataSource) ReadFromResponse(
 	data.WebserverAirflowApiUrl = types.StringValue(deployment.WebServerAirflowApiUrl)
 	data.Status = types.StringValue(string(deployment.Status))
 	data.StatusReason = types.StringPointerValue(deployment.StatusReason)
-	data.Type = types.StringPointerValue((*string)(deployment.Type))
 	data.DagTarballVersion = types.StringPointerValue(deployment.DagTarballVersion)
 	data.DesiredDagTarballVersion = types.StringPointerValue(deployment.DesiredDagTarballVersion)
-	data.WorkerQueues, diags = utils.ObjectSet(ctx, deployment.WorkerQueues, schemas.WorkerQueueDataSourceAttributeTypes(), WorkerQueueDataSourceTypesObject)
-	if diags.HasError() {
-		return diags
-	}
 	data.IsCicdEnforced = types.BoolValue(deployment.IsCicdEnforced)
 	data.IsDagDeployEnabled = types.BoolValue(deployment.IsDagDeployEnabled)
-
 	data.WorkloadIdentity = types.StringPointerValue(deployment.WorkloadIdentity)
 	data.ExternalIps, diags = utils.StringSet(deployment.ExternalIPs)
 	if diags.HasError() {
 		return diags
 	}
 	data.OidcIssuerUrl = types.StringPointerValue(deployment.OidcIssuerUrl)
+	data.WorkerQueues, diags = utils.ObjectSet(ctx, deployment.WorkerQueues, schemas.WorkerQueueDataSourceAttributeTypes(), WorkerQueueDataSourceTypesObject)
+	if diags.HasError() {
+		return diags
+	}
 
 	// Read hybrid and dedicated specific fields
 	data.ClusterId = types.StringPointerValue(deployment.ClusterId)
@@ -325,8 +323,8 @@ func (data *DeploymentDataSource) ReadFromResponse(
 	data.DefaultTaskPodCpu = types.StringPointerValue(deployment.DefaultTaskPodCpu)
 	data.DefaultTaskPodMemory = types.StringPointerValue(deployment.DefaultTaskPodMemory)
 	data.SchedulerSize = types.StringPointerValue((*string)(deployment.SchedulerSize))
-	data.IsHighAvailability = types.BoolPointerValue(deployment.IsHighAvailability)
 	data.IsDevelopmentMode = types.BoolPointerValue(deployment.IsDevelopmentMode)
+	data.IsHighAvailability = types.BoolPointerValue(deployment.IsHighAvailability)
 
 	// Currently, the scaling status and spec are only available in development mode
 	// However, there is a bug in the API where the scaling status and spec are returned even if the deployment is not in development mode for updated deployments
