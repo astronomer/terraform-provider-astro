@@ -89,7 +89,6 @@ func (r *ClusterResource) Create(
 		return
 	}
 
-	var diags diag.Diagnostics
 	var createClusterRequest platform.CreateClusterRequest
 
 	switch platform.ClusterCloudProvider(data.CloudProvider.ValueString()) {
@@ -493,7 +492,7 @@ func (r *ClusterResource) ValidateConfig(
 }
 
 func validateAwsConfig(ctx context.Context, data *models.ClusterResource) diag.Diagnostics {
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 
 	// Unallowed values
 	if !data.TenantId.IsNull() {
@@ -524,7 +523,7 @@ func validateAwsConfig(ctx context.Context, data *models.ClusterResource) diag.D
 }
 
 func validateAzureConfig(ctx context.Context, data *models.ClusterResource) diag.Diagnostics {
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 
 	// Unallowed values
 	if !data.ServicePeeringRange.IsNull() {
@@ -549,7 +548,7 @@ func validateAzureConfig(ctx context.Context, data *models.ClusterResource) diag
 }
 
 func validateGcpConfig(ctx context.Context, data *models.ClusterResource) diag.Diagnostics {
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 
 	// required values
 	if data.ServicePeeringRange.IsNull() {
