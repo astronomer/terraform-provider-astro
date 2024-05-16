@@ -24,8 +24,8 @@ func (data *Deployments) ReadFromResponse(
 ) diag.Diagnostics {
 	values := make([]attr.Value, len(deployments))
 	for i, deployment := range deployments {
-		var singleDeploymentData Deployment
-		diags := singleDeploymentData.ReadFromResponse(ctx, &deployment, false)
+		var singleDeploymentData DeploymentDataSource
+		diags := singleDeploymentData.ReadFromResponse(ctx, &deployment)
 		if diags.HasError() {
 			return diags
 		}

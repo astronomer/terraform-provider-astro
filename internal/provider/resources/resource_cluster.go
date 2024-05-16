@@ -51,7 +51,7 @@ func (r *ClusterResource) Schema(
 ) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Cluster resource",
+		MarkdownDescription: "Cluster resource. If creating multiple clusters, add a delay between each cluster creation to avoid cluster creation limiting errors.",
 		Attributes:          schemas.ClusterResourceSchemaAttributes(ctx),
 	}
 }
@@ -228,6 +228,7 @@ func (r *ClusterResource) Create(
 	readyCluster, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Cluster creation failed", err.Error())
+		return
 	}
 
 	diags = data.ReadFromResponse(ctx, readyCluster.(*platform.Cluster))
@@ -381,6 +382,7 @@ func (r *ClusterResource) Update(
 	readyCluster, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Cluster update failed", err.Error())
+		return
 	}
 
 	diags = data.ReadFromResponse(ctx, readyCluster.(*platform.Cluster))
@@ -451,6 +453,7 @@ func (r *ClusterResource) Delete(
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Cluster deletion failed", err.Error())
+		return
 	}
 
 	tflog.Trace(ctx, fmt.Sprintf("deleted a cluster resource: %v", data.Id.ValueString()))
