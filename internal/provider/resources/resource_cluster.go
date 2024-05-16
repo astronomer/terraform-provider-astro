@@ -220,7 +220,6 @@ func (r *ClusterResource) Create(
 		Refresh:    r.resourceRefreshFunc(ctx, cluster.JSON200.Id),
 		Timeout:    3 * time.Hour,
 		MinTimeout: 1 * time.Minute,
-		Delay:      5 * time.Minute,
 	}
 
 	// readyCluster is the final state of the cluster after it has reached a target status
@@ -374,7 +373,6 @@ func (r *ClusterResource) Update(
 		Refresh:    r.resourceRefreshFunc(ctx, cluster.JSON200.Id),
 		Timeout:    3 * time.Hour,
 		MinTimeout: 1 * time.Minute,
-		Delay:      5 * time.Minute,
 	}
 
 	// readyCluster is the final state of the cluster after it has reached a target status
@@ -446,7 +444,6 @@ func (r *ClusterResource) Delete(
 		Refresh:    r.resourceRefreshFunc(ctx, data.Id.ValueString()),
 		Timeout:    1 * time.Hour,
 		MinTimeout: 30 * time.Second,
-		Delay:      1 * time.Minute,
 	}
 
 	_, err = stateConf.WaitForStateContext(ctx)
@@ -599,6 +596,18 @@ func (r *ClusterResource) resourceRefreshFunc(ctx context.Context, clusterId str
 		if diagnostic != nil {
 			return nil, "", fmt.Errorf("error getting cluster %s", diagnostic.Detail())
 		}
-		return cluster.JSON200, string(cluster.JSON200.Status), nil
+		if cluster != nil && cluster.JSON200 != nil {
+			switch cluster.JSON200.Status {
+			case platform.ClusterStatusCREATED:
+				return cluster.JSON200, string(cluster.JSON200.Status), nil
+			case platform.ClusterStatusUPDATEFAILED, platform.ClusterStatusCREATEFAILED:
+				return cluster.JSON200, string(cluster.JSON200.Status), fmt.Errorf("cluster mutation failed for cluster '%v'", cluster.JSON200.Id)
+			case platform.ClusterStatusCREATING, platform.ClusterStatusUPDATING:
+				return cluster.JSON200, string(cluster.JSON200.Status), nil
+			default:
+				return cluster.JSON200, string(cluster.JSON200.Status), fmt.Errorf("unexpected cluster status '%v' for cluster '%v'", cluster.JSON200.Status, cluster.JSON200.Id)
+			}
+		}
+		return nil, "", fmt.Errorf("error getting cluster %s", clusterId)
 	}
 }
