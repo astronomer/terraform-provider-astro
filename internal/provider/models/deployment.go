@@ -6,8 +6,6 @@ import (
 
 	"github.com/samber/lo"
 
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -530,12 +528,10 @@ func HibernationSpecTypesObject(
 
 	override, diags := HibernationOverrideTypesObject(ctx, hibernationSpec.Override)
 	if diags.HasError() {
-		tflog.Error(ctx, "Failed to create HibernationOverride object", map[string]interface{}{"error": diags})
 		return types.ObjectNull(schemas.HibernationSpecAttributeTypes()), diags
 	}
 	schedules, diags := utils.ObjectSet(ctx, hibernationSpec.Schedules, schemas.HibernationScheduleAttributeTypes(), HibernationScheduleTypesObject)
 	if diags.HasError() {
-		tflog.Error(ctx, "Failed to create HibernationSchedule object", map[string]interface{}{"error": diags})
 		return types.ObjectNull(schemas.HibernationSpecAttributeTypes()), diags
 	}
 	obj := HibernationSpec{
@@ -555,7 +551,6 @@ func ScalingStatusTypesObject(
 
 	hibernationStatus, diags := HibernationStatusTypesObject(ctx, scalingStatus.HibernationStatus)
 	if diags.HasError() {
-		tflog.Error(ctx, "Failed to create HibernationStatus object", map[string]interface{}{"error": diags})
 		return types.ObjectNull(schemas.ScalingStatusAttributeTypes()), diags
 	}
 	obj := DeploymentStatus{
@@ -574,7 +569,6 @@ func ScalingSpecTypesObject(
 
 	hibernationSpec, diags := HibernationSpecTypesObject(ctx, scalingSpec.HibernationSpec)
 	if diags.HasError() {
-		tflog.Error(ctx, "Failed to create HibernationSpec object", map[string]interface{}{"error": diags})
 		return types.ObjectNull(schemas.ScalingSpecAttributeTypes()), diags
 	}
 	obj := DeploymentScalingSpec{
