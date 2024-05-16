@@ -343,112 +343,57 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
-					Name:              scalingSpecDeploymentName,
-					Description:       utils.TestResourceDescription,
-					Region:            "us-east4",
-					CloudProvider:     "GCP",
-					Executor:          "CELERY",
-					SchedulerSize:     "SMALL",
-					IsDevelopmentMode: true,
-					ScalingSpec:       `scaling_spec = {}`,
-				}),
+				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+					`scaling_spec = {}`,
+				),
 				ExpectError: regexp.MustCompile(`Inappropriate value for attribute "scaling_spec"`),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
-					Name:              scalingSpecDeploymentName,
-					Description:       utils.TestResourceDescription,
-					Region:            "us-east4",
-					CloudProvider:     "GCP",
-					Executor:          "CELERY",
-					SchedulerSize:     "SMALL",
-					IsDevelopmentMode: true,
-					ScalingSpec: `
-						scaling_spec = {
-							hibernation_spec = {}
-						}`}),
+				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+					`scaling_spec = {
+									hibernation_spec = {}
+								}`),
 				ExpectError: regexp.MustCompile(`scaling_spec \(hibernation\) must have either override or schedules`),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
-					Name:              scalingSpecDeploymentName,
-					Description:       utils.TestResourceDescription,
-					Region:            "us-east4",
-					CloudProvider:     "GCP",
-					Executor:          "CELERY",
-					SchedulerSize:     "SMALL",
-					IsDevelopmentMode: true,
-					ScalingSpec: `
+				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+					`
 						scaling_spec = {
 							hibernation_spec = {
 								override = {}
 							}
-						}`}),
+						}`),
 				ExpectError: regexp.MustCompile(`Inappropriate value for attribute "scaling_spec"`),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
-					Name:              scalingSpecDeploymentName,
-					Description:       utils.TestResourceDescription,
-					Region:            "us-east4",
-					CloudProvider:     "GCP",
-					Executor:          "CELERY",
-					SchedulerSize:     "SMALL",
-					IsDevelopmentMode: true,
-					ScalingSpec: `
-						scaling_spec = {
+				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+					`scaling_spec = {
 							hibernation_spec = {
 								override = {
 									override_until = "2075-01-01T00:00:00Z"
 								}
 							}
-						}`}),
+						}`),
 				ExpectError: regexp.MustCompile(`Inappropriate value for attribute "scaling_spec"`),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
-					Name:              scalingSpecDeploymentName,
-					Description:       utils.TestResourceDescription,
-					Region:            "us-east4",
-					CloudProvider:     "GCP",
-					Executor:          "CELERY",
-					SchedulerSize:     "SMALL",
-					IsDevelopmentMode: true,
-					ScalingSpec: `
-						scaling_spec = {
+				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+					`scaling_spec = {
 							hibernation_spec = {
 								schedules = []
 							}
-						}`}),
-				ExpectError: regexp.MustCompile(`Invalid Attribute Value`), // schedules must have at least one element
+						}`),
+				ExpectError: regexp.MustCompile(`Attribute scaling_spec.hibernation_spec.schedules set must contain at least 1`), // schedules must have at least one element
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
-					Name:              scalingSpecDeploymentName,
-					Description:       utils.TestResourceDescription,
-					Region:            "us-east4",
-					CloudProvider:     "GCP",
-					Executor:          "CELERY",
-					SchedulerSize:     "SMALL",
-					IsDevelopmentMode: true,
-					ScalingSpec:       ` `, // no scaling spec should be allowed
-				}),
+				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName, ` `), // no scaling spec should be allowed,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckNoResourceAttr(scalingSpecResourceVar, "scaling_spec"),
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
-					Name:              scalingSpecDeploymentName,
-					Description:       utils.TestResourceDescription,
-					Region:            "us-east4",
-					CloudProvider:     "GCP",
-					Executor:          "CELERY",
-					SchedulerSize:     "SMALL",
-					IsDevelopmentMode: true,
-					ScalingSpec: `
-						scaling_spec = {
+				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+					`scaling_spec = {
 							hibernation_spec = {
 								schedules = [{
 								  hibernate_at_cron    = "1 * * * *"
@@ -456,7 +401,7 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 								  wake_at_cron         = "59 * * * *"
 								}]
 							}
-						}`}),
+						}`),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.hibernation_spec.schedules.0.hibernate_at_cron", "1 * * * *"),
 					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.hibernation_spec.schedules.0.is_enabled", "true"),
@@ -465,45 +410,29 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
-					Name:              scalingSpecDeploymentName,
-					Description:       utils.TestResourceDescription,
-					Region:            "us-east4",
-					CloudProvider:     "GCP",
-					Executor:          "CELERY",
-					SchedulerSize:     "SMALL",
-					IsDevelopmentMode: true,
-					ScalingSpec: `
-						scaling_spec = {
+				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+					`scaling_spec = {
 							hibernation_spec = {
 								override = {
 								  is_hibernating = true
 								}
 							}
-						}`}),
+						}`),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.hibernation_spec.override.is_hibernating", "true"),
 					resource.TestCheckNoResourceAttr(scalingSpecResourceVar, "scaling_spec.hibernation_spec.schedules"),
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
-					Name:              scalingSpecDeploymentName,
-					Description:       utils.TestResourceDescription,
-					Region:            "us-east4",
-					CloudProvider:     "GCP",
-					Executor:          "CELERY",
-					SchedulerSize:     "SMALL",
-					IsDevelopmentMode: true,
-					ScalingSpec: `
-						scaling_spec = {
+				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+					`scaling_spec = {
 							hibernation_spec = {
 								override = {
 								  is_hibernating = true
 								  override_until = "2075-01-01T00:00:00Z"
 								}
 							}
-						}`}),
+						}`),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.hibernation_spec.override.is_hibernating", "true"),
 					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.hibernation_spec.override.override_until", "2075-01-01T00:00:00Z"),
@@ -511,28 +440,20 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
-					Name:              scalingSpecDeploymentName,
-					Description:       utils.TestResourceDescription,
-					Region:            "us-east4",
-					CloudProvider:     "GCP",
-					Executor:          "CELERY",
-					SchedulerSize:     "SMALL",
-					IsDevelopmentMode: true,
-					ScalingSpec: `
-						scaling_spec = {
-							hibernation_spec = {
-								schedules = [{
-								  hibernate_at_cron    = "1 * * * *"
-								  is_enabled           = true
-								  wake_at_cron         = "59 * * * *"
-								}],
-								override = {
-								  is_hibernating = true
-								  override_until = "2075-01-01T00:00:00Z"
-								}
+				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+					`scaling_spec = {
+						hibernation_spec = {
+							schedules = [{
+							  hibernate_at_cron    = "1 * * * *"
+							  is_enabled           = true
+							  wake_at_cron         = "59 * * * *"
+							}],
+							override = {
+							  is_hibernating = true
+							  override_until = "2075-01-01T00:00:00Z"
 							}
-						}`}),
+						}
+					}`),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.hibernation_spec.override.is_hibernating", "true"),
 					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.hibernation_spec.override.override_until", "2075-01-01T00:00:00Z"),
@@ -680,6 +601,19 @@ resource "astro_deployment" "%v" {
 `,
 		input.Name, input.Name, utils.TestResourceDescription, input.Name, input.Name, input.Description, input.ClusterId, input.Executor, input.SchedulerAu, input.Name,
 		envVarsStr(input.IncludeEnvironmentVariables), wqStr, taskPodNodePoolIdStr)
+}
+
+func developmentDeployment(scalingSpecDeploymentName, scalingSpec string) string {
+	return standardDeployment(standardDeploymentInput{
+		Name:              scalingSpecDeploymentName,
+		Description:       utils.TestResourceDescription,
+		Region:            "us-east4",
+		CloudProvider:     "GCP",
+		Executor:          "CELERY",
+		SchedulerSize:     "SMALL",
+		IsDevelopmentMode: true,
+		ScalingSpec:       scalingSpec,
+	})
 }
 
 type standardDeploymentInput struct {
