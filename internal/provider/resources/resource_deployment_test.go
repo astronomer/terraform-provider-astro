@@ -151,6 +151,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					resource.TestCheckNoResourceAttr(awsResourceVar, "worker_queues"),
 					resource.TestCheckResourceAttr(awsResourceVar, "scheduler_size", "SMALL"),
 					resource.TestCheckResourceAttrSet(awsResourceVar, "environment_variables.0.key"),
+					resource.TestCheckResourceAttrSet(awsResourceVar, "environment_variables.1.key"),
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
 				),
@@ -222,12 +223,14 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					CloudProvider:               "AWS",
 					Executor:                    "KUBERNETES",
 					SchedulerSize:               "SMALL",
-					IncludeEnvironmentVariables: false,
+					IncludeEnvironmentVariables: true,
 					IsDevelopmentMode:           false,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(awsResourceVar, "scheduler_size", "SMALL"),
 					resource.TestCheckResourceAttr(awsResourceVar, "is_development_mode", "false"),
+					resource.TestCheckResourceAttrSet(awsResourceVar, "environment_variables.0.key"),
+					resource.TestCheckResourceAttrSet(awsResourceVar, "environment_variables.1.key"),
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
 				),
@@ -237,7 +240,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				ResourceName:            awsResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips"},
+				ImportStateVerifyIgnore: []string{"external_ips", "environment_variables.1.value"}, // environment_variables.1.value is a secret value
 			},
 		},
 	})
@@ -279,7 +282,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				ResourceName:            azureCeleryResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url"},
+				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url", "environment_variables.1.value"}, // environment_variables.0.value is a secret value
 			},
 		},
 	})
@@ -321,7 +324,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				ResourceName:            gcpKubernetesResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url"},
+				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url", "environment_variables.1.value"}, // environment_variables.0.value is a secret value
 			},
 		},
 	})
@@ -401,6 +404,11 @@ func envVarsStr(includeEnvVars bool) string {
 		key = "key1"
 		value = "value1"
 		is_secret = false
+	},
+	{
+		key = "key2"
+		value = "value2"
+		is_secret = true
 	}]`
 	}
 	return fmt.Sprintf("environment_variables = %v", environmentVariables)

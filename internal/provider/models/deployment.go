@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/samber/lo"
+
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -132,6 +134,7 @@ func (data *DeploymentResource) ReadFromResponse(
 	ctx context.Context,
 	deployment *platform.Deployment,
 	originalAstroRuntimeVersion *string,
+	requestEnvVars *[]platform.DeploymentEnvironmentVariableRequest,
 ) diag.Diagnostics {
 	// Read common fields
 	data.Id = types.StringValue(deployment.Id)
@@ -180,7 +183,30 @@ func (data *DeploymentResource) ReadFromResponse(
 	data.ImageTag = types.StringValue(deployment.ImageTag)
 	data.ImageRepository = types.StringValue(deployment.ImageRepository)
 	data.ImageVersion = types.StringPointerValue(deployment.ImageVersion)
-	data.EnvironmentVariables, diags = utils.ObjectSet(ctx, deployment.EnvironmentVariables, schemas.DeploymentEnvironmentVariableAttributeTypes(), DeploymentEnvironmentVariableTypesObject)
+
+	// Environment variables are a special case
+	// Since terraform wants to know the values of the secret values in the request at all times, and our API does not send back the secret values in the response
+	// We must use the request value and set it in the Terraform response to keep Terraform from emitting errors
+	// Since the value is marked as sensitive, Terraform will not output the actual value in the plan/apply output
+	envVars := *deployment.EnvironmentVariables
+	if requestEnvVars != nil && deployment.EnvironmentVariables != nil {
+		requestEnvVarsMap := lo.SliceToMap(*requestEnvVars, func(envVar platform.DeploymentEnvironmentVariableRequest) (string, platform.DeploymentEnvironmentVariable) {
+			return envVar.Key, platform.DeploymentEnvironmentVariable{
+				Key:      envVar.Key,
+				Value:    envVar.Value,
+				IsSecret: envVar.IsSecret,
+			}
+		})
+		for i, envVar := range envVars {
+			if envVar.IsSecret {
+				if requestEnvVar, ok := requestEnvVarsMap[envVar.Key]; ok {
+					// If the envVar has a secret value, update the value in the response
+					envVars[i].Value = requestEnvVar.Value
+				}
+			}
+		}
+	}
+	data.EnvironmentVariables, diags = utils.ObjectSet(ctx, &envVars, schemas.DeploymentEnvironmentVariableAttributeTypes(), DeploymentEnvironmentVariableTypesObject)
 	if diags.HasError() {
 		return diags
 	}
@@ -210,7 +236,7 @@ func (data *DeploymentResource) ReadFromResponse(
 	// Read hybrid deployment specific fields
 	data.TaskPodNodePoolId = types.StringPointerValue(deployment.TaskPodNodePoolId)
 
-	// Read hosted deployment specific fields
+	// Read hosted (standard and dedicated) deployment specific fields
 	data.ResourceQuotaCpu = types.StringPointerValue(deployment.ResourceQuotaCpu)
 	data.ResourceQuotaMemory = types.StringPointerValue(deployment.ResourceQuotaMemory)
 	data.DefaultTaskPodCpu = types.StringPointerValue(deployment.DefaultTaskPodCpu)
@@ -277,12 +303,12 @@ func (data *DeploymentDataSource) ReadFromResponse(
 		return diags
 	}
 	data.Executor = types.StringPointerValue((*string)(deployment.Executor))
+	data.SchedulerCpu = types.StringValue(deployment.SchedulerCpu)
+	data.SchedulerMemory = types.StringValue(deployment.SchedulerMemory)
 	if deployment.SchedulerAu != nil {
 		deploymentSchedulerAu := int64(*deployment.SchedulerAu)
 		data.SchedulerAu = types.Int64Value(deploymentSchedulerAu)
 	}
-	data.SchedulerCpu = types.StringValue(deployment.SchedulerCpu)
-	data.SchedulerMemory = types.StringValue(deployment.SchedulerMemory)
 	data.SchedulerReplicas = types.Int64Value(int64(deployment.SchedulerReplicas))
 	data.ImageTag = types.StringValue(deployment.ImageTag)
 	data.ImageRepository = types.StringValue(deployment.ImageRepository)
@@ -317,7 +343,7 @@ func (data *DeploymentDataSource) ReadFromResponse(
 	// Read hybrid deployment specific fields
 	data.TaskPodNodePoolId = types.StringPointerValue(deployment.TaskPodNodePoolId)
 
-	// Read hosted deployment specific fields
+	// Read hosted (standard and dedicated) deployment specific fields
 	data.ResourceQuotaCpu = types.StringPointerValue(deployment.ResourceQuotaCpu)
 	data.ResourceQuotaMemory = types.StringPointerValue(deployment.ResourceQuotaMemory)
 	data.DefaultTaskPodCpu = types.StringPointerValue(deployment.DefaultTaskPodCpu)

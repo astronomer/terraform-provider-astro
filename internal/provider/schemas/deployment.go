@@ -593,7 +593,7 @@ func DeploymentEnvironmentVariableResourceAttributes() map[string]resourceSchema
 		},
 		"value": resourceSchema.StringAttribute{
 			MarkdownDescription: "Environment variable value",
-			Required:            true,
+			Optional:            true,
 			Sensitive:           true,
 		},
 		"updated_at": resourceSchema.StringAttribute{
