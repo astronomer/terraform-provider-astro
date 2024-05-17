@@ -11,6 +11,10 @@ on:
       - main
     paths-ignore:
       - 'README.md'
+  schedule:
+    - cron: '21 30 * * MON'  # Runs every Monday at 2:30PST for stage environment
+    - cron: '21 30 * * TUE'  # Runs every Tuesday at 2:30PST for dev environment
+    - cron: '21 30 * * FRI'  # Runs every Friday at 2:30PST for dev environment
 
 # Testing only needs permissions to read the repository contents.
 permissions:
@@ -90,3 +94,82 @@ jobs:
           TESTARGS: "-failfast"
         run: make testacc
 
+  testacc-stage:
+    # This job runs every Monday.
+    name: Terraform Provider Acceptance Tests - Stage
+    needs: build
+    if: github.event_name == 'schedule' && github.event.schedule == 'cron(21 30 * * MON)'
+    timeout-minutes: 180 # 3 hours since cluster creation and cluster updates can take a while
+    strategy:
+      fail-fast: true
+      matrix:
+        terraform:
+          - latest
+        provider_version:
+          - latest
+          - main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b # v4.1.5
+        with:
+          ref: ${{ matrix.provider_version }}
+      - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - uses: hashicorp/setup-terraform@651471c36a6092792c552e8b1bef71e592b462d8 # v3.1.1
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+      - run: go mod download
+      - env:
+          TF_ACC: "1"
+          HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HYBRID_ORGANIZATION_API_TOKEN }}
+          HYBRID_ORGANIZATION_ID: ckon5obsu03322822nvm6yumk
+          HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HOSTED_ORGANIZATION_API_TOKEN }}
+          HOSTED_ORGANIZATION_ID: clczfo8a111cz0t140nck8ubn
+          HYBRID_CLUSTER_ID: clqqongl40fmv01m96dvxh2nu
+          HYBRID_NODE_POOL_ID: clqqongl40fmu01m94pwp4kct
+          ASTRO_API_HOST: https://api.astronomer-stage.io
+          TESTARGS: "-failfast"
+        run: make testacc
+
+  testacc-dev:
+    # This job runs every Friday and Tuesday.
+    name: Terraform Provider Acceptance Tests - Dev
+    needs: build
+    if: github.event_name == 'schedule' && (github.event.schedule == 'cron(21 30 * * FRI)' || github.event.schedule == 'cron(21 30 * * TUE)')
+    timeout-minutes: 180 # 3 hours since cluster creation and cluster updates can take a while
+    strategy:
+      fail-fast: true
+      matrix:
+        terraform:
+          - latest
+        provider_version:
+          - latest
+          - main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b # v4.1.5
+        with:
+          ref: ${{ matrix.provider_version }}
+      - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - uses: hashicorp/setup-terraform@651471c36a6092792c552e8b1bef71e592b462d8 # v3.1.1
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+      - run: go mod download
+      - env:
+          TF_ACC: "1"
+          HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HYBRID_ORGANIZATION_API_TOKEN }}
+          HYBRID_ORGANIZATION_ID: ckmzjm22937931d35puw3tcdo
+          HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
+          HOSTED_ORGANIZATION_ID: clczfgzc3001o01kjlphpi6hv
+          HYBRID_CLUSTER_ID: clnp86ly5000401ndagu20g81
+          HYBRID_NODE_POOL_ID: clnp86ly5000301ndzfxz895w
+          ASTRO_API_HOST: https://api.astronomer-dev.io
+          TESTARGS: "-failfast"
+        run: make testacc
