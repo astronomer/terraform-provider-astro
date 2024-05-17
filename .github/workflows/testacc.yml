@@ -12,9 +12,8 @@ on:
     paths-ignore:
       - 'README.md'
   schedule:
-    - cron: '21 30 * * MON'  # Runs every Monday at 2:30PST for stage environment
-    - cron: '21 30 * * TUE'  # Runs every Tuesday at 2:30PST for dev environment
-    - cron: '21 30 * * FRI'  # Runs every Friday at 2:30PST for dev environment
+    - cron: '30 21 * * 1'  # Runs every Monday at 2:30PST for stage environment
+    - cron: '30 21 * * 2,5'  # Runs every Tuesday and Friday at 2:30PST for dev environment
 
 # Testing only needs permissions to read the repository contents.
 permissions:
@@ -98,7 +97,7 @@ jobs:
     # This job runs every Monday.
     name: Terraform Provider Acceptance Tests - Stage
     needs: build
-    if: github.event_name == 'schedule' && github.event.schedule == 'cron(21 30 * * MON)'
+    if: github.event_name == 'schedule' && github.event.schedule == 'cron(30 21 * * 1)'
     timeout-minutes: 180 # 3 hours since cluster creation and cluster updates can take a while
     strategy:
       fail-fast: true
@@ -138,7 +137,7 @@ jobs:
     # This job runs every Friday and Tuesday.
     name: Terraform Provider Acceptance Tests - Dev
     needs: build
-    if: github.event_name == 'schedule' && (github.event.schedule == 'cron(21 30 * * FRI)' || github.event.schedule == 'cron(21 30 * * TUE)')
+    if: github.event_name == 'schedule' && (github.event.schedule == 'cron(30 21 * * 2,5)')
     timeout-minutes: 180 # 3 hours since cluster creation and cluster updates can take a while
     strategy:
       fail-fast: true
