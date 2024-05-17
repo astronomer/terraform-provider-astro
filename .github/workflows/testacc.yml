@@ -111,6 +111,8 @@ jobs:
     steps:
       - uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b # v4.1.5
         with:
+          repository: astronomer/terraform-provider-astro
+          token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ matrix.provider_version }}
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
         with:
@@ -151,6 +153,8 @@ jobs:
     steps:
       - uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b # v4.1.5
         with:
+          repository: astronomer/terraform-provider-astro
+          token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ matrix.provider_version }}
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
         with:
