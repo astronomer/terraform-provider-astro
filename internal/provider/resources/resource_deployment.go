@@ -382,7 +382,7 @@ func (r *DeploymentResource) Update(
 	}
 
 	// update request
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 	var updateDeploymentRequest platform.UpdateDeploymentRequest
 	var envVars []platform.DeploymentEnvironmentVariableRequest
 
@@ -674,7 +674,7 @@ func (r *DeploymentResource) ValidateConfig(
 }
 
 func validateHybridConfig(ctx context.Context, data *models.DeploymentResource) diag.Diagnostics {
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 	// Required hybrid values
 	if data.SchedulerAu.IsNull() {
 		diags.AddError(
@@ -770,7 +770,7 @@ func validateHybridConfig(ctx context.Context, data *models.DeploymentResource) 
 }
 
 func validateStandardConfig(ctx context.Context, data *models.DeploymentResource) diag.Diagnostics {
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 	// Required standard values
 	if data.Region.IsNull() {
 		diags.AddError(
@@ -797,7 +797,7 @@ func validateStandardConfig(ctx context.Context, data *models.DeploymentResource
 
 func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) diag.Diagnostics {
 	// Required hosted values
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 	if data.SchedulerSize.IsNull() {
 		diags.AddError(
 			"scheduler_size is required for 'STANDARD' and 'DEDICATED' deployment",
@@ -877,6 +877,37 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 		)
 	}
 
+	// Need to check that scaling_spec has either override or schedules
+	if !data.ScalingSpec.IsNull() {
+		var scalingSpec models.DeploymentScalingSpec
+		diags = append(diags, data.ScalingSpec.As(ctx, &scalingSpec, basetypes.ObjectAsOptions{
+			UnhandledNullAsEmpty:    true,
+			UnhandledUnknownAsEmpty: true,
+		})...)
+		if diags.HasError() {
+			tflog.Error(ctx, "failed to convert scaling spec", map[string]interface{}{"error": diags})
+			return diags
+		}
+
+		// scalingSpec.HibernationSpec is required if ScalingSpec is set via schemas/deployment.go
+		var hibernationSpec models.HibernationSpec
+		diags = scalingSpec.HibernationSpec.As(ctx, &hibernationSpec, basetypes.ObjectAsOptions{
+			UnhandledNullAsEmpty:    true,
+			UnhandledUnknownAsEmpty: true,
+		})
+		if diags.HasError() {
+			tflog.Error(ctx, "failed to convert hibernation spec", map[string]interface{}{"error": diags})
+			return diags
+		}
+		if hibernationSpec.Override.IsNull() && hibernationSpec.Schedules.IsNull() {
+			diags.AddError(
+				"scaling_spec (hibernation) must have either override or schedules",
+				"Please provide either override or schedules in 'scaling_spec.hibernation_spec'",
+			)
+			return diags
+		}
+	}
+
 	// Need to check worker_queues for hosted deployments have `astro_machine` and do not have `node_pool_id`
 	if len(data.WorkerQueues.Elements()) > 0 {
 		var workerQueues []models.WorkerQueueResource
@@ -901,7 +932,7 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 }
 
 func validateClusterIdConfig(ctx context.Context, data *models.DeploymentResource) diag.Diagnostics {
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 	// Required clusterId value
 	if data.ClusterId.IsNull() {
 		diags.AddError(
@@ -929,27 +960,63 @@ func validateClusterIdConfig(ctx context.Context, data *models.DeploymentResourc
 // RequestScalingSpec converts a Terraform object to a platform.DeploymentScalingSpecRequest to be used in create and update requests
 func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*platform.DeploymentScalingSpecRequest, diag.Diagnostics) {
 	if scalingSpecObj.IsNull() {
+		// If the scaling spec is not set, return nil for the request
 		return nil, nil
 	}
-
 	var scalingSpec models.DeploymentScalingSpec
 	diags := scalingSpecObj.As(ctx, &scalingSpec, basetypes.ObjectAsOptions{
-		UnhandledNullAsEmpty:    false,
-		UnhandledUnknownAsEmpty: false,
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
 	})
 	if diags.HasError() {
+		tflog.Error(ctx, "failed to convert scaling spec", map[string]interface{}{"error": diags})
 		return nil, diags
 	}
-	platformScalingSpec := &platform.DeploymentScalingSpecRequest{
-		HibernationSpec: &platform.DeploymentHibernationSpecRequest{
-			Override: &platform.DeploymentHibernationOverrideRequest{
-				IsHibernating: scalingSpec.HibernationSpec.Override.IsHibernating.ValueBoolPointer(),
-				OverrideUntil: scalingSpec.HibernationSpec.Override.OverrideUntil.ValueStringPointer(),
-			},
-		},
+
+	platformScalingSpec := &platform.DeploymentScalingSpecRequest{}
+	if scalingSpec.HibernationSpec.IsNull() {
+		// If the hibernation spec is not set, return a scaling spec without hibernation spec for the request
+		platformScalingSpec.HibernationSpec = nil
+		return platformScalingSpec, nil
 	}
-	if len(scalingSpec.HibernationSpec.Schedules) > 0 {
-		schedules := lo.Map(scalingSpec.HibernationSpec.Schedules, func(schedule models.HibernationSchedule, _ int) platform.DeploymentHibernationSchedule {
+	var hibernationSpec models.HibernationSpec
+	diags = scalingSpec.HibernationSpec.As(ctx, &hibernationSpec, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		tflog.Error(ctx, "failed to convert hibernation spec", map[string]interface{}{"error": diags})
+		return nil, diags
+	}
+	platformScalingSpec.HibernationSpec = &platform.DeploymentHibernationSpecRequest{}
+
+	if hibernationSpec.Override.IsNull() && hibernationSpec.Schedules.IsNull() {
+		// If the hibernation spec is set but both override and schedules are not set, return an empty hibernation spec for the request
+		return platformScalingSpec, nil
+	}
+	if !hibernationSpec.Override.IsNull() {
+		var override models.HibernationSpecOverride
+		diags = hibernationSpec.Override.As(ctx, &override, basetypes.ObjectAsOptions{
+			UnhandledNullAsEmpty:    true,
+			UnhandledUnknownAsEmpty: true,
+		})
+		if diags.HasError() {
+			tflog.Error(ctx, "failed to convert hibernation override", map[string]interface{}{"error": diags})
+			return nil, diags
+		}
+		platformScalingSpec.HibernationSpec.Override = &platform.DeploymentHibernationOverrideRequest{
+			IsHibernating: override.IsHibernating.ValueBoolPointer(),
+			OverrideUntil: override.OverrideUntil.ValueStringPointer(),
+		}
+	}
+	if !hibernationSpec.Schedules.IsNull() {
+		var schedules []models.HibernationSchedule
+		diags = hibernationSpec.Schedules.ElementsAs(ctx, &schedules, false)
+		if diags.HasError() {
+			tflog.Error(ctx, "failed to convert hibernation schedules", map[string]interface{}{"error": diags})
+			return nil, diags
+		}
+		requestSchedules := lo.Map(schedules, func(schedule models.HibernationSchedule, _ int) platform.DeploymentHibernationSchedule {
 			return platform.DeploymentHibernationSchedule{
 				Description:     schedule.Description.ValueStringPointer(),
 				HibernateAtCron: schedule.HibernateAtCron.ValueString(),
@@ -957,8 +1024,9 @@ func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*plat
 				WakeAtCron:      schedule.WakeAtCron.ValueString(),
 			}
 		})
-		platformScalingSpec.HibernationSpec.Schedules = &schedules
+		platformScalingSpec.HibernationSpec.Schedules = &requestSchedules
 	}
+
 	return platformScalingSpec, nil
 }
 

@@ -171,24 +171,27 @@ Read-Only:
 <a id="nestedatt--scaling_spec"></a>
 ### Nested Schema for `scaling_spec`
 
-Optional:
+Required:
 
-- `hibernation_spec` (Attributes) (see [below for nested schema](#nestedatt--scaling_spec--hibernation_spec))
+- `hibernation_spec` (Attributes) Hibernation configuration for the deployment. The deployment will hibernate according to the schedules defined in this configuration. To remove the hibernation configuration, set scaling_spec to null. (see [below for nested schema](#nestedatt--scaling_spec--hibernation_spec))
 
 <a id="nestedatt--scaling_spec--hibernation_spec"></a>
 ### Nested Schema for `scaling_spec.hibernation_spec`
 
 Optional:
 
-- `override` (Attributes) (see [below for nested schema](#nestedatt--scaling_spec--hibernation_spec--override))
-- `schedules` (Attributes Set) (see [below for nested schema](#nestedatt--scaling_spec--hibernation_spec--schedules))
+- `override` (Attributes) Hibernation override configuration. Set to null to remove the override. (see [below for nested schema](#nestedatt--scaling_spec--hibernation_spec--override))
+- `schedules` (Attributes Set) List of hibernation schedules. Set to null to remove all schedules. (see [below for nested schema](#nestedatt--scaling_spec--hibernation_spec--schedules))
 
 <a id="nestedatt--scaling_spec--hibernation_spec--override"></a>
 ### Nested Schema for `scaling_spec.hibernation_spec.override`
 
-Optional:
+Required:
 
 - `is_hibernating` (Boolean)
+
+Optional:
+
 - `override_until` (String)
 
 Read-Only:

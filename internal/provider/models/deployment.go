@@ -244,23 +244,13 @@ func (data *DeploymentResource) ReadFromResponse(
 	data.SchedulerSize = types.StringPointerValue((*string)(deployment.SchedulerSize))
 	data.IsDevelopmentMode = types.BoolPointerValue(deployment.IsDevelopmentMode)
 	data.IsHighAvailability = types.BoolPointerValue(deployment.IsHighAvailability)
-
-	// Currently, the scaling status and spec are only available in development mode
-	// However, there is a bug in the API where the scaling status and spec are returned even if the deployment is not in development mode for updated deployments
-	// This is a workaround to handle the bug until the API is fixed
-	// Issue here: https://github.com/astronomer/astro/issues/21073
-	if deployment.IsDevelopmentMode != nil && *deployment.IsDevelopmentMode {
-		data.ScalingStatus, diags = ScalingStatusTypesObject(ctx, deployment.ScalingStatus)
-		if diags.HasError() {
-			return diags
-		}
-		data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, deployment.ScalingSpec)
-		if diags.HasError() {
-			return diags
-		}
-	} else {
-		data.ScalingStatus = types.ObjectNull(schemas.ScalingStatusAttributeTypes())
-		data.ScalingSpec = types.ObjectNull(schemas.ScalingSpecAttributeTypes())
+	data.ScalingStatus, diags = ScalingStatusTypesObject(ctx, deployment.ScalingStatus)
+	if diags.HasError() {
+		return diags
+	}
+	data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, deployment.ScalingSpec)
+	if diags.HasError() {
+		return diags
 	}
 
 	return nil
@@ -351,23 +341,13 @@ func (data *DeploymentDataSource) ReadFromResponse(
 	data.SchedulerSize = types.StringPointerValue((*string)(deployment.SchedulerSize))
 	data.IsDevelopmentMode = types.BoolPointerValue(deployment.IsDevelopmentMode)
 	data.IsHighAvailability = types.BoolPointerValue(deployment.IsHighAvailability)
-
-	// Currently, the scaling status and spec are only available in development mode
-	// However, there is a bug in the API where the scaling status and spec are returned even if the deployment is not in development mode for updated deployments
-	// This is a workaround to handle the bug until the API is fixed
-	// Issue here: https://github.com/astronomer/astro/issues/21073
-	if deployment.IsDevelopmentMode != nil && *deployment.IsDevelopmentMode {
-		data.ScalingStatus, diags = ScalingStatusTypesObject(ctx, deployment.ScalingStatus)
-		if diags.HasError() {
-			return diags
-		}
-		data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, deployment.ScalingSpec)
-		if diags.HasError() {
-			return diags
-		}
-	} else {
-		data.ScalingStatus = types.ObjectNull(schemas.ScalingStatusAttributeTypes())
-		data.ScalingSpec = types.ObjectNull(schemas.ScalingSpecAttributeTypes())
+	data.ScalingStatus, diags = ScalingStatusTypesObject(ctx, deployment.ScalingStatus)
+	if diags.HasError() {
+		return diags
+	}
+	data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, deployment.ScalingSpec)
+	if diags.HasError() {
+		return diags
 	}
 
 	return nil
@@ -459,11 +439,11 @@ func WorkerQueueDataSourceTypesObject(
 }
 
 type DeploymentScalingSpec struct {
-	HibernationSpec HibernationSpec `tfsdk:"hibernation_spec"`
+	HibernationSpec types.Object `tfsdk:"hibernation_spec"`
 }
 
 type DeploymentStatus struct {
-	HibernationStatus HibernationStatus `tfsdk:"hibernation_status"`
+	HibernationStatus types.Object `tfsdk:"hibernation_status"`
 }
 
 type HibernationStatus struct {
@@ -474,8 +454,8 @@ type HibernationStatus struct {
 }
 
 type HibernationSpec struct {
-	Override  HibernationSpecOverride `tfsdk:"override"`
-	Schedules []HibernationSchedule   `tfsdk:"schedules"`
+	Override  types.Object `tfsdk:"override"`
+	Schedules types.Set    `tfsdk:"schedules"`
 }
 
 type HibernationSpecOverride struct {
@@ -491,54 +471,108 @@ type HibernationSchedule struct {
 	WakeAtCron      types.String `tfsdk:"wake_at_cron"`
 }
 
+func HibernationStatusTypesObject(
+	ctx context.Context,
+	hibernationStatus *platform.DeploymentHibernationStatus,
+) (types.Object, diag.Diagnostics) {
+	if hibernationStatus == nil {
+		return types.ObjectNull(schemas.HibernationStatusAttributeTypes()), nil
+	}
+
+	obj := HibernationStatus{
+		IsHibernating: types.BoolValue(hibernationStatus.IsHibernating),
+		NextEventType: types.StringPointerValue((*string)(hibernationStatus.NextEventType)),
+		NextEventAt:   types.StringPointerValue(hibernationStatus.NextEventAt),
+		Reason:        types.StringPointerValue(hibernationStatus.Reason),
+	}
+	return types.ObjectValueFrom(ctx, schemas.HibernationStatusAttributeTypes(), obj)
+}
+
+func HibernationOverrideTypesObject(
+	ctx context.Context,
+	hibernationOverride *platform.DeploymentHibernationOverride,
+) (types.Object, diag.Diagnostics) {
+	if hibernationOverride == nil {
+		return types.ObjectNull(schemas.HibernationOverrideAttributeTypes()), nil
+	}
+	obj := HibernationSpecOverride{
+		IsHibernating: types.BoolPointerValue(hibernationOverride.IsHibernating),
+		IsActive:      types.BoolPointerValue(hibernationOverride.IsActive),
+	}
+	if hibernationOverride.OverrideUntil != nil {
+		obj.OverrideUntil = types.StringValue(hibernationOverride.OverrideUntil.Format(time.RFC3339))
+	}
+	return types.ObjectValueFrom(ctx, schemas.HibernationOverrideAttributeTypes(), obj)
+}
+
+func HibernationScheduleTypesObject(
+	ctx context.Context,
+	schedule platform.DeploymentHibernationSchedule,
+) (types.Object, diag.Diagnostics) {
+	obj := HibernationSchedule{
+		Description:     types.StringPointerValue(schedule.Description),
+		HibernateAtCron: types.StringValue(schedule.HibernateAtCron),
+		IsEnabled:       types.BoolValue(schedule.IsEnabled),
+		WakeAtCron:      types.StringValue(schedule.WakeAtCron),
+	}
+	return types.ObjectValueFrom(ctx, schemas.HibernationScheduleAttributeTypes(), obj)
+}
+
+func HibernationSpecTypesObject(
+	ctx context.Context,
+	hibernationSpec *platform.DeploymentHibernationSpec,
+) (types.Object, diag.Diagnostics) {
+	if hibernationSpec == nil || (hibernationSpec.Override == nil && hibernationSpec.Schedules == nil) {
+		return types.ObjectNull(schemas.HibernationSpecAttributeTypes()), nil
+	}
+
+	override, diags := HibernationOverrideTypesObject(ctx, hibernationSpec.Override)
+	if diags.HasError() {
+		return types.ObjectNull(schemas.HibernationSpecAttributeTypes()), diags
+	}
+	schedules, diags := utils.ObjectSet(ctx, hibernationSpec.Schedules, schemas.HibernationScheduleAttributeTypes(), HibernationScheduleTypesObject)
+	if diags.HasError() {
+		return types.ObjectNull(schemas.HibernationSpecAttributeTypes()), diags
+	}
+	obj := HibernationSpec{
+		Override:  override,
+		Schedules: schedules,
+	}
+	return types.ObjectValueFrom(ctx, schemas.HibernationSpecAttributeTypes(), obj)
+}
+
 func ScalingStatusTypesObject(
 	ctx context.Context,
 	scalingStatus *platform.DeploymentScalingStatus,
 ) (types.Object, diag.Diagnostics) {
-	if scalingStatus != nil && scalingStatus.HibernationStatus != nil {
-		obj := DeploymentStatus{
-			HibernationStatus: HibernationStatus{
-				IsHibernating: types.BoolValue(scalingStatus.HibernationStatus.IsHibernating),
-				NextEventType: types.StringPointerValue((*string)(scalingStatus.HibernationStatus.NextEventType)),
-				NextEventAt:   types.StringPointerValue(scalingStatus.HibernationStatus.NextEventAt),
-				Reason:        types.StringPointerValue(scalingStatus.HibernationStatus.Reason),
-			},
-		}
-		return types.ObjectValueFrom(ctx, schemas.ScalingStatusAttributeTypes(), obj)
+	if scalingStatus == nil {
+		return types.ObjectNull(schemas.ScalingStatusAttributeTypes()), nil
 	}
-	return types.ObjectNull(schemas.ScalingStatusAttributeTypes()), nil
+
+	hibernationStatus, diags := HibernationStatusTypesObject(ctx, scalingStatus.HibernationStatus)
+	if diags.HasError() {
+		return types.ObjectNull(schemas.ScalingStatusAttributeTypes()), diags
+	}
+	obj := DeploymentStatus{
+		HibernationStatus: hibernationStatus,
+	}
+	return types.ObjectValueFrom(ctx, schemas.ScalingStatusAttributeTypes(), obj)
 }
 
 func ScalingSpecTypesObject(
 	ctx context.Context,
 	scalingSpec *platform.DeploymentScalingSpec,
 ) (types.Object, diag.Diagnostics) {
-	if scalingSpec != nil && scalingSpec.HibernationSpec != nil && (scalingSpec.HibernationSpec.Override != nil || scalingSpec.HibernationSpec.Schedules != nil) {
-		obj := DeploymentScalingSpec{
-			HibernationSpec: HibernationSpec{},
-		}
-		if scalingSpec.HibernationSpec.Override != nil {
-			obj.HibernationSpec.Override = HibernationSpecOverride{
-				IsHibernating: types.BoolPointerValue(scalingSpec.HibernationSpec.Override.IsHibernating),
-				IsActive:      types.BoolPointerValue(scalingSpec.HibernationSpec.Override.IsActive),
-			}
-			if scalingSpec.HibernationSpec.Override.OverrideUntil != nil {
-				obj.HibernationSpec.Override.OverrideUntil = types.StringValue(scalingSpec.HibernationSpec.Override.OverrideUntil.Format(time.RFC3339))
-			}
-		}
-		if scalingSpec.HibernationSpec.Schedules != nil {
-			schedules := make([]HibernationSchedule, 0, len(*scalingSpec.HibernationSpec.Schedules))
-			for _, schedule := range *scalingSpec.HibernationSpec.Schedules {
-				schedules = append(schedules, HibernationSchedule{
-					Description:     types.StringPointerValue(schedule.Description),
-					HibernateAtCron: types.StringValue(schedule.HibernateAtCron),
-					IsEnabled:       types.BoolValue(schedule.IsEnabled),
-					WakeAtCron:      types.StringValue(schedule.WakeAtCron),
-				})
-			}
-			obj.HibernationSpec.Schedules = schedules
-		}
-		return types.ObjectValueFrom(ctx, schemas.ScalingSpecAttributeTypes(), obj)
+	if scalingSpec == nil {
+		return types.ObjectNull(schemas.ScalingSpecAttributeTypes()), nil
 	}
-	return types.ObjectNull(schemas.ScalingSpecAttributeTypes()), nil
+
+	hibernationSpec, diags := HibernationSpecTypesObject(ctx, scalingSpec.HibernationSpec)
+	if diags.HasError() {
+		return types.ObjectNull(schemas.ScalingSpecAttributeTypes()), diags
+	}
+	obj := DeploymentScalingSpec{
+		HibernationSpec: hibernationSpec,
+	}
+	return types.ObjectValueFrom(ctx, schemas.ScalingSpecAttributeTypes(), obj)
 }
