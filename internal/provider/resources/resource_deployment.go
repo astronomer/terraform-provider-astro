@@ -83,48 +83,33 @@ func (r *DeploymentResource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	var data models.Deployment
+	var data models.DeploymentResource
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	deploymentOptions, err := r.platformClient.GetDeploymentOptionsWithResponse(ctx, r.organizationId, &platform.GetDeploymentOptionsParams{
-		DeploymentType: lo.ToPtr(platform.GetDeploymentOptionsParamsDeploymentType(data.Type.ValueString())),
-		Executor:       lo.ToPtr(platform.GetDeploymentOptionsParamsExecutor(data.Executor.ValueString())),
-		CloudProvider:  lo.ToPtr(platform.GetDeploymentOptionsParamsCloudProvider(data.CloudProvider.ValueString())),
-	})
-	if err != nil {
-		tflog.Error(ctx, "failed to get deployment options", map[string]interface{}{"error": err})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to get deployment options for deployment creation, got error: %s", err),
-		)
-		return
-	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, deploymentOptions.HTTPResponse, deploymentOptions.Body)
-	if diagnostic != nil {
-		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if deploymentOptions.JSON200 == nil || len(deploymentOptions.JSON200.RuntimeReleases) == 0 {
-		resp.Diagnostics.AddError(
-			"Client Error",
-			"Unable to get runtime releases for deployment creation, got empty runtime releases",
-		)
 		return
 	}
 
 	var diags diag.Diagnostics
 	var createDeploymentRequest platform.CreateDeploymentRequest
+	var envVars []platform.DeploymentEnvironmentVariableRequest
+
+	originalAstroRuntimeVersion := data.OriginalAstroRuntimeVersion.ValueString()
+	if len(originalAstroRuntimeVersion) == 0 {
+		var diagnostic diag.Diagnostic
+		originalAstroRuntimeVersion, diagnostic = r.GetLatestAstroRuntimeVersion(ctx, &data)
+		if diagnostic != nil {
+			resp.Diagnostics.Append(diagnostic)
+			return
+
+		}
+	}
 
 	switch data.Type.ValueString() {
 	case string(platform.DeploymentTypeSTANDARD):
 		createStandardDeploymentRequest := platform.CreateStandardDeploymentRequest{
-			AstroRuntimeVersion:  deploymentOptions.JSON200.RuntimeReleases[0].Version,
+			AstroRuntimeVersion:  originalAstroRuntimeVersion,
 			CloudProvider:        (*platform.CreateStandardDeploymentRequestCloudProvider)(data.CloudProvider.ValueStringPointer()),
 			DefaultTaskPodCpu:    data.DefaultTaskPodCpu.ValueString(),
 			DefaultTaskPodMemory: data.DefaultTaskPodMemory.ValueString(),
@@ -152,7 +137,7 @@ func (r *DeploymentResource) Create(
 		}
 
 		// env vars
-		envVars, diags := RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
+		envVars, diags = RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -173,7 +158,7 @@ func (r *DeploymentResource) Create(
 			return
 		}
 
-		err = createDeploymentRequest.FromCreateStandardDeploymentRequest(createStandardDeploymentRequest)
+		err := createDeploymentRequest.FromCreateStandardDeploymentRequest(createStandardDeploymentRequest)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("failed to create standard deployment error: %v", err))
 			resp.Diagnostics.AddError(
@@ -185,7 +170,7 @@ func (r *DeploymentResource) Create(
 
 	case string(platform.DeploymentTypeDEDICATED):
 		createDedicatedDeploymentRequest := platform.CreateDedicatedDeploymentRequest{
-			AstroRuntimeVersion:  deploymentOptions.JSON200.RuntimeReleases[0].Version,
+			AstroRuntimeVersion:  originalAstroRuntimeVersion,
 			ClusterId:            data.ClusterId.ValueString(),
 			DefaultTaskPodCpu:    data.DefaultTaskPodCpu.ValueString(),
 			DefaultTaskPodMemory: data.DefaultTaskPodMemory.ValueString(),
@@ -212,7 +197,7 @@ func (r *DeploymentResource) Create(
 		}
 
 		// env vars
-		envVars, diags := RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
+		envVars, diags = RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -233,7 +218,7 @@ func (r *DeploymentResource) Create(
 			return
 		}
 
-		err = createDeploymentRequest.FromCreateDedicatedDeploymentRequest(createDedicatedDeploymentRequest)
+		err := createDeploymentRequest.FromCreateDedicatedDeploymentRequest(createDedicatedDeploymentRequest)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("failed to create dedicated deployment error: %v", err))
 			resp.Diagnostics.AddError(
@@ -245,7 +230,7 @@ func (r *DeploymentResource) Create(
 
 	case string(platform.DeploymentTypeHYBRID):
 		createHybridDeploymentRequest := platform.CreateHybridDeploymentRequest{
-			AstroRuntimeVersion: deploymentOptions.JSON200.RuntimeReleases[0].Version,
+			AstroRuntimeVersion: originalAstroRuntimeVersion,
 			ClusterId:           data.ClusterId.ValueString(),
 			Description:         data.Description.ValueStringPointer(),
 			Executor:            platform.CreateHybridDeploymentRequestExecutor(data.Executor.ValueString()),
@@ -270,7 +255,7 @@ func (r *DeploymentResource) Create(
 		}
 
 		// env vars
-		envVars, diags := RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
+		envVars, diags = RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -284,7 +269,7 @@ func (r *DeploymentResource) Create(
 			return
 		}
 
-		err = createDeploymentRequest.FromCreateHybridDeploymentRequest(createHybridDeploymentRequest)
+		err := createDeploymentRequest.FromCreateHybridDeploymentRequest(createHybridDeploymentRequest)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("failed to create hybrid deployment error: %v", err))
 			resp.Diagnostics.AddError(
@@ -308,13 +293,13 @@ func (r *DeploymentResource) Create(
 		)
 		return
 	}
-	_, diagnostic = clients.NormalizeAPIError(ctx, deployment.HTTPResponse, deployment.Body)
+	_, diagnostic := clients.NormalizeAPIError(ctx, deployment.HTTPResponse, deployment.Body)
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, deployment.JSON200, true)
+	diags = data.ReadFromResponse(ctx, deployment.JSON200, data.OriginalAstroRuntimeVersion.ValueStringPointer(), &envVars)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -331,12 +316,17 @@ func (r *DeploymentResource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	var data models.Deployment
+	var data models.DeploymentResource
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	envVars, diags := RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
 		return
 	}
 
@@ -366,7 +356,7 @@ func (r *DeploymentResource) Read(
 		return
 	}
 
-	diags := data.ReadFromResponse(ctx, deployment.JSON200, true)
+	diags = data.ReadFromResponse(ctx, deployment.JSON200, data.OriginalAstroRuntimeVersion.ValueStringPointer(), &envVars)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -383,7 +373,7 @@ func (r *DeploymentResource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	var data models.Deployment
+	var data models.DeploymentResource
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -392,8 +382,9 @@ func (r *DeploymentResource) Update(
 	}
 
 	// update request
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 	var updateDeploymentRequest platform.UpdateDeploymentRequest
+	var envVars []platform.DeploymentEnvironmentVariableRequest
 
 	switch data.Type.ValueString() {
 	case string(platform.DeploymentTypeSTANDARD):
@@ -423,7 +414,7 @@ func (r *DeploymentResource) Update(
 		}
 
 		// env vars
-		envVars, diags := RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
+		envVars, diags = RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -481,7 +472,7 @@ func (r *DeploymentResource) Update(
 		}
 
 		// env vars
-		envVars, diags := RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
+		envVars, diags = RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -537,7 +528,7 @@ func (r *DeploymentResource) Update(
 		}
 
 		// env vars
-		envVars, diags := RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
+		envVars, diags = RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -582,7 +573,7 @@ func (r *DeploymentResource) Update(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, deployment.JSON200, true)
+	diags = data.ReadFromResponse(ctx, deployment.JSON200, data.OriginalAstroRuntimeVersion.ValueStringPointer(), &envVars)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -599,7 +590,7 @@ func (r *DeploymentResource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	var data models.Deployment
+	var data models.DeploymentResource
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -647,7 +638,7 @@ func (r *DeploymentResource) ValidateConfig(
 	req resource.ValidateConfigRequest,
 	resp *resource.ValidateConfigResponse,
 ) {
-	var data models.Deployment
+	var data models.DeploymentResource
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -682,8 +673,8 @@ func (r *DeploymentResource) ValidateConfig(
 	}
 }
 
-func validateHybridConfig(ctx context.Context, data *models.Deployment) diag.Diagnostics {
-	var diags diag.Diagnostics
+func validateHybridConfig(ctx context.Context, data *models.DeploymentResource) diag.Diagnostics {
+	diags := make(diag.Diagnostics, 0)
 	// Required hybrid values
 	if data.SchedulerAu.IsNull() {
 		diags.AddError(
@@ -778,8 +769,8 @@ func validateHybridConfig(ctx context.Context, data *models.Deployment) diag.Dia
 	return diags
 }
 
-func validateStandardConfig(ctx context.Context, data *models.Deployment) diag.Diagnostics {
-	var diags diag.Diagnostics
+func validateStandardConfig(ctx context.Context, data *models.DeploymentResource) diag.Diagnostics {
+	diags := make(diag.Diagnostics, 0)
 	// Required standard values
 	if data.Region.IsNull() {
 		diags.AddError(
@@ -804,9 +795,9 @@ func validateStandardConfig(ctx context.Context, data *models.Deployment) diag.D
 	return diags
 }
 
-func validateHostedConfig(ctx context.Context, data *models.Deployment) diag.Diagnostics {
+func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) diag.Diagnostics {
 	// Required hosted values
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 	if data.SchedulerSize.IsNull() {
 		diags.AddError(
 			"scheduler_size is required for 'STANDARD' and 'DEDICATED' deployment",
@@ -886,6 +877,37 @@ func validateHostedConfig(ctx context.Context, data *models.Deployment) diag.Dia
 		)
 	}
 
+	// Need to check that scaling_spec has either override or schedules
+	if !data.ScalingSpec.IsNull() {
+		var scalingSpec models.DeploymentScalingSpec
+		diags = append(diags, data.ScalingSpec.As(ctx, &scalingSpec, basetypes.ObjectAsOptions{
+			UnhandledNullAsEmpty:    true,
+			UnhandledUnknownAsEmpty: true,
+		})...)
+		if diags.HasError() {
+			tflog.Error(ctx, "failed to convert scaling spec", map[string]interface{}{"error": diags})
+			return diags
+		}
+
+		// scalingSpec.HibernationSpec is required if ScalingSpec is set via schemas/deployment.go
+		var hibernationSpec models.HibernationSpec
+		diags = scalingSpec.HibernationSpec.As(ctx, &hibernationSpec, basetypes.ObjectAsOptions{
+			UnhandledNullAsEmpty:    true,
+			UnhandledUnknownAsEmpty: true,
+		})
+		if diags.HasError() {
+			tflog.Error(ctx, "failed to convert hibernation spec", map[string]interface{}{"error": diags})
+			return diags
+		}
+		if hibernationSpec.Override.IsNull() && hibernationSpec.Schedules.IsNull() {
+			diags.AddError(
+				"scaling_spec (hibernation) must have either override or schedules",
+				"Please provide either override or schedules in 'scaling_spec.hibernation_spec'",
+			)
+			return diags
+		}
+	}
+
 	// Need to check worker_queues for hosted deployments have `astro_machine` and do not have `node_pool_id`
 	if len(data.WorkerQueues.Elements()) > 0 {
 		var workerQueues []models.WorkerQueueResource
@@ -909,8 +931,8 @@ func validateHostedConfig(ctx context.Context, data *models.Deployment) diag.Dia
 	return diags
 }
 
-func validateClusterIdConfig(ctx context.Context, data *models.Deployment) diag.Diagnostics {
-	var diags diag.Diagnostics
+func validateClusterIdConfig(ctx context.Context, data *models.DeploymentResource) diag.Diagnostics {
+	diags := make(diag.Diagnostics, 0)
 	// Required clusterId value
 	if data.ClusterId.IsNull() {
 		diags.AddError(
@@ -938,27 +960,63 @@ func validateClusterIdConfig(ctx context.Context, data *models.Deployment) diag.
 // RequestScalingSpec converts a Terraform object to a platform.DeploymentScalingSpecRequest to be used in create and update requests
 func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*platform.DeploymentScalingSpecRequest, diag.Diagnostics) {
 	if scalingSpecObj.IsNull() {
+		// If the scaling spec is not set, return nil for the request
 		return nil, nil
 	}
-
 	var scalingSpec models.DeploymentScalingSpec
 	diags := scalingSpecObj.As(ctx, &scalingSpec, basetypes.ObjectAsOptions{
-		UnhandledNullAsEmpty:    false,
-		UnhandledUnknownAsEmpty: false,
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
 	})
 	if diags.HasError() {
+		tflog.Error(ctx, "failed to convert scaling spec", map[string]interface{}{"error": diags})
 		return nil, diags
 	}
-	platformScalingSpec := &platform.DeploymentScalingSpecRequest{
-		HibernationSpec: &platform.DeploymentHibernationSpecRequest{
-			Override: &platform.DeploymentHibernationOverrideRequest{
-				IsHibernating: scalingSpec.HibernationSpec.Override.IsHibernating.ValueBoolPointer(),
-				OverrideUntil: scalingSpec.HibernationSpec.Override.OverrideUntil.ValueStringPointer(),
-			},
-		},
+
+	platformScalingSpec := &platform.DeploymentScalingSpecRequest{}
+	if scalingSpec.HibernationSpec.IsNull() {
+		// If the hibernation spec is not set, return a scaling spec without hibernation spec for the request
+		platformScalingSpec.HibernationSpec = nil
+		return platformScalingSpec, nil
 	}
-	if len(scalingSpec.HibernationSpec.Schedules) > 0 {
-		schedules := lo.Map(scalingSpec.HibernationSpec.Schedules, func(schedule models.HibernationSchedule, _ int) platform.DeploymentHibernationSchedule {
+	var hibernationSpec models.HibernationSpec
+	diags = scalingSpec.HibernationSpec.As(ctx, &hibernationSpec, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		tflog.Error(ctx, "failed to convert hibernation spec", map[string]interface{}{"error": diags})
+		return nil, diags
+	}
+	platformScalingSpec.HibernationSpec = &platform.DeploymentHibernationSpecRequest{}
+
+	if hibernationSpec.Override.IsNull() && hibernationSpec.Schedules.IsNull() {
+		// If the hibernation spec is set but both override and schedules are not set, return an empty hibernation spec for the request
+		return platformScalingSpec, nil
+	}
+	if !hibernationSpec.Override.IsNull() {
+		var override models.HibernationSpecOverride
+		diags = hibernationSpec.Override.As(ctx, &override, basetypes.ObjectAsOptions{
+			UnhandledNullAsEmpty:    true,
+			UnhandledUnknownAsEmpty: true,
+		})
+		if diags.HasError() {
+			tflog.Error(ctx, "failed to convert hibernation override", map[string]interface{}{"error": diags})
+			return nil, diags
+		}
+		platformScalingSpec.HibernationSpec.Override = &platform.DeploymentHibernationOverrideRequest{
+			IsHibernating: override.IsHibernating.ValueBoolPointer(),
+			OverrideUntil: override.OverrideUntil.ValueStringPointer(),
+		}
+	}
+	if !hibernationSpec.Schedules.IsNull() {
+		var schedules []models.HibernationSchedule
+		diags = hibernationSpec.Schedules.ElementsAs(ctx, &schedules, false)
+		if diags.HasError() {
+			tflog.Error(ctx, "failed to convert hibernation schedules", map[string]interface{}{"error": diags})
+			return nil, diags
+		}
+		requestSchedules := lo.Map(schedules, func(schedule models.HibernationSchedule, _ int) platform.DeploymentHibernationSchedule {
 			return platform.DeploymentHibernationSchedule{
 				Description:     schedule.Description.ValueStringPointer(),
 				HibernateAtCron: schedule.HibernateAtCron.ValueString(),
@@ -966,8 +1024,9 @@ func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*plat
 				WakeAtCron:      schedule.WakeAtCron.ValueString(),
 			}
 		})
-		platformScalingSpec.HibernationSpec.Schedules = &schedules
+		platformScalingSpec.HibernationSpec.Schedules = &requestSchedules
 	}
+
 	return platformScalingSpec, nil
 }
 
@@ -1038,4 +1097,30 @@ func RequestDeploymentEnvironmentVariables(ctx context.Context, environmentVaria
 		}
 	})
 	return platformEnvVars, nil
+}
+
+func (r *DeploymentResource) GetLatestAstroRuntimeVersion(ctx context.Context, data *models.DeploymentResource) (string, diag.Diagnostic) {
+	deploymentOptions, err := r.platformClient.GetDeploymentOptionsWithResponse(ctx, r.organizationId, &platform.GetDeploymentOptionsParams{
+		DeploymentType: lo.ToPtr(platform.GetDeploymentOptionsParamsDeploymentType(data.Type.ValueString())),
+		Executor:       lo.ToPtr(platform.GetDeploymentOptionsParamsExecutor(data.Executor.ValueString())),
+		CloudProvider:  lo.ToPtr(platform.GetDeploymentOptionsParamsCloudProvider(data.CloudProvider.ValueString())),
+	})
+	if err != nil {
+		tflog.Error(ctx, "failed to get deployment options", map[string]interface{}{"error": err})
+		return "", diag.NewErrorDiagnostic(
+			"Client Error",
+			fmt.Sprintf("Unable to get deployment options for deployment creation, got error: %s", err),
+		)
+	}
+	_, diagnostic := clients.NormalizeAPIError(ctx, deploymentOptions.HTTPResponse, deploymentOptions.Body)
+	if diagnostic != nil {
+		return "", diagnostic
+	}
+	if deploymentOptions.JSON200 == nil || len(deploymentOptions.JSON200.RuntimeReleases) == 0 {
+		return "", diag.NewErrorDiagnostic(
+			"Client Error",
+			"Unable to get runtime releases for deployment creation, got empty runtime releases",
+		)
+	}
+	return deploymentOptions.JSON200.RuntimeReleases[0].Version, nil
 }

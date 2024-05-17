@@ -26,6 +26,7 @@ const SKIP_CLUSTER_RESOURCE_TESTS = "SKIP_CLUSTER_RESOURCE_TESTS"
 const SKIP_CLUSTER_RESOURCE_TESTS_REASON = "Skipping dedicated cluster (and dedicated deployment) resource tests. To run these tests, unset the SKIP_CLUSTER_RESOURCE_TESTS environment variable."
 
 func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
+	t.Skip("AWS cluster creation is currently not working on dev")
 	if os.Getenv(SKIP_CLUSTER_RESOURCE_TESTS) == "True" {
 		t.Skip(SKIP_CLUSTER_RESOURCE_TESTS_REASON)
 	}
@@ -363,9 +364,9 @@ func TestAcc_ResourceClusterRemovedOutsideOfTerraform(t *testing.T) {
 	clusterResource := fmt.Sprintf("astro_cluster.%v", clusterName)
 	depInput := clusterInput{
 		Name:           clusterName,
-		Region:         "us-east-1",
-		CloudProvider:  "AWS",
-		DbInstanceType: "db.m6g.large",
+		Region:         "us-central1",
+		CloudProvider:  "GCP",
+		DbInstanceType: "Small General Purpose",
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
@@ -414,7 +415,8 @@ type dedicatedDeploymentInput struct {
 }
 
 func dedicatedDeployment(input dedicatedDeploymentInput) string {
-	return fmt.Sprintf(`resource "astro_deployment" "%v" {
+	return fmt.Sprintf(`
+resource "astro_deployment" "%v" {
 	name = "%s"
 	description = "%s"
 	type = "DEDICATED"

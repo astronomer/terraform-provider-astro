@@ -21,7 +21,7 @@ make build
 ## Adding Dependencies
 
 This provider uses [Go modules](https://github.com/golang/go/wiki/Modules).
-Please see the Go documentation for the most up to date information about using Go modules.
+Please see the Go documentation for the most up-to-date information about using Go modules.
 
 To add a new dependency `github.com/author/dependency` to your Terraform provider:
 
@@ -90,7 +90,6 @@ terraform {
 # provider configuration
 provider "astro" {
   organization_id = "<cuid>"
-  host            = "https://api.astronomer-dev.io"
 }
 
 # get information on an existing workspace

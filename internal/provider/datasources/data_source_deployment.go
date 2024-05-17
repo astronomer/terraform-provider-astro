@@ -73,7 +73,7 @@ func (d *deploymentDataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var data models.Deployment
+	var data models.DeploymentDataSource
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -106,7 +106,7 @@ func (d *deploymentDataSource) Read(
 	}
 
 	// Populate the model with the response data
-	diags := data.ReadFromResponse(ctx, deployment.JSON200, false)
+	diags := data.ReadFromResponse(ctx, deployment.JSON200)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

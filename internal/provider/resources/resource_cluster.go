@@ -51,7 +51,7 @@ func (r *ClusterResource) Schema(
 ) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Cluster resource",
+		MarkdownDescription: "Cluster resource. If creating multiple clusters, add a delay between each cluster creation to avoid cluster creation limiting errors.",
 		Attributes:          schemas.ClusterResourceSchemaAttributes(ctx),
 	}
 }
@@ -89,7 +89,6 @@ func (r *ClusterResource) Create(
 		return
 	}
 
-	var diags diag.Diagnostics
 	var createClusterRequest platform.CreateClusterRequest
 
 	switch platform.ClusterCloudProvider(data.CloudProvider.ValueString()) {
@@ -221,13 +220,13 @@ func (r *ClusterResource) Create(
 		Refresh:    r.resourceRefreshFunc(ctx, cluster.JSON200.Id),
 		Timeout:    3 * time.Hour,
 		MinTimeout: 1 * time.Minute,
-		Delay:      5 * time.Minute,
 	}
 
 	// readyCluster is the final state of the cluster after it has reached a target status
 	readyCluster, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Cluster creation failed", err.Error())
+		return
 	}
 
 	diags = data.ReadFromResponse(ctx, readyCluster.(*platform.Cluster))
@@ -374,13 +373,13 @@ func (r *ClusterResource) Update(
 		Refresh:    r.resourceRefreshFunc(ctx, cluster.JSON200.Id),
 		Timeout:    3 * time.Hour,
 		MinTimeout: 1 * time.Minute,
-		Delay:      5 * time.Minute,
 	}
 
 	// readyCluster is the final state of the cluster after it has reached a target status
 	readyCluster, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Cluster update failed", err.Error())
+		return
 	}
 
 	diags = data.ReadFromResponse(ctx, readyCluster.(*platform.Cluster))
@@ -445,12 +444,12 @@ func (r *ClusterResource) Delete(
 		Refresh:    r.resourceRefreshFunc(ctx, data.Id.ValueString()),
 		Timeout:    1 * time.Hour,
 		MinTimeout: 30 * time.Second,
-		Delay:      1 * time.Minute,
 	}
 
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Cluster deletion failed", err.Error())
+		return
 	}
 
 	tflog.Trace(ctx, fmt.Sprintf("deleted a cluster resource: %v", data.Id.ValueString()))
@@ -490,7 +489,7 @@ func (r *ClusterResource) ValidateConfig(
 }
 
 func validateAwsConfig(ctx context.Context, data *models.ClusterResource) diag.Diagnostics {
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 
 	// Unallowed values
 	if !data.TenantId.IsNull() {
@@ -521,7 +520,7 @@ func validateAwsConfig(ctx context.Context, data *models.ClusterResource) diag.D
 }
 
 func validateAzureConfig(ctx context.Context, data *models.ClusterResource) diag.Diagnostics {
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 
 	// Unallowed values
 	if !data.ServicePeeringRange.IsNull() {
@@ -546,7 +545,7 @@ func validateAzureConfig(ctx context.Context, data *models.ClusterResource) diag
 }
 
 func validateGcpConfig(ctx context.Context, data *models.ClusterResource) diag.Diagnostics {
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0)
 
 	// required values
 	if data.ServicePeeringRange.IsNull() {
@@ -597,6 +596,18 @@ func (r *ClusterResource) resourceRefreshFunc(ctx context.Context, clusterId str
 		if diagnostic != nil {
 			return nil, "", fmt.Errorf("error getting cluster %s", diagnostic.Detail())
 		}
-		return cluster.JSON200, string(cluster.JSON200.Status), nil
+		if cluster != nil && cluster.JSON200 != nil {
+			switch cluster.JSON200.Status {
+			case platform.ClusterStatusCREATED:
+				return cluster.JSON200, string(cluster.JSON200.Status), nil
+			case platform.ClusterStatusUPDATEFAILED, platform.ClusterStatusCREATEFAILED:
+				return cluster.JSON200, string(cluster.JSON200.Status), fmt.Errorf("cluster mutation failed for cluster '%v'", cluster.JSON200.Id)
+			case platform.ClusterStatusCREATING, platform.ClusterStatusUPDATING:
+				return cluster.JSON200, string(cluster.JSON200.Status), nil
+			default:
+				return cluster.JSON200, string(cluster.JSON200.Status), fmt.Errorf("unexpected cluster status '%v' for cluster '%v'", cluster.JSON200.Status, cluster.JSON200.Id)
+			}
+		}
+		return nil, "", fmt.Errorf("error getting cluster %s", clusterId)
 	}
 }
