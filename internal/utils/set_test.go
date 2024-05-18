@@ -3,6 +3,10 @@ package utils_test
 import (
 	"context"
 	"fmt"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
+	"github.com/lucsky/cuid"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -47,6 +51,26 @@ func TestUnit_TypesSetToStringSlice(t *testing.T) {
 
 		expected := []string{"string1", "string2"}
 		result, diags := utils.TypesSetToStringSlice(context.Background(), s)
+		assert.Nil(t, diags)
+		assert.Equal(t, expected, result)
+	})
+}
+
+func TestUnit_TypesSetToObjectSlice(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		s := types.SetNull(types.ObjectType{AttrTypes: schemas.WorkspaceRoleAttributeTypes()})
+		result, diags := utils.TypesSetToObjectSlice[iam.WorkspaceRole](context.Background(), s)
+		assert.Nil(t, diags)
+		assert.Empty(t, result)
+	})
+
+	t.Run("with values", func(t *testing.T) {
+		workspaceId := cuid.New()
+		workspaceRole := iam.WORKSPACEOWNER
+		s, diags := utils.ObjectSet(context.Background(), &[]iam.WorkspaceRole{{WorkspaceId: workspaceId, Role: workspaceRole}}, schemas.WorkspaceRoleAttributeTypes(), models.WorkspaceRoleTypesObject)
+		assert.Nil(t, diags)
+		result, diags := utils.TypesSetToObjectSlice[models.WorkspaceRole](context.Background(), s)
+		expected := []models.WorkspaceRole{{WorkspaceId: types.StringValue(workspaceId), Role: types.StringValue(string(workspaceRole))}}
 		assert.Nil(t, diags)
 		assert.Equal(t, expected, result)
 	})

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"os"
 	"strconv"
 	"strings"
@@ -13,11 +14,38 @@ import (
 )
 
 var hostedPlatformClient, hybridPlatformClient *platform.ClientWithResponses
+var hostedIamClient, hybridIamClient *iam.ClientWithResponses
 
 const TestResourceDescription = "Created by Terraform Acceptance Test - should self-cleanup but can delete manually if needed after 2 hours."
 
 func GenerateTestResourceName(numRandomChars int) string {
 	return fmt.Sprintf("TFAcceptanceTest_%v", strings.ToUpper(acctest.RandStringFromCharSet(numRandomChars, acctest.CharSetAlpha)))
+}
+
+func GetTestIamClient(isHosted bool) (*iam.ClientWithResponses, error) {
+	if isHosted {
+		return GetTestHostedIamClient()
+	} else {
+		return GetTestHybridIamClient()
+	}
+}
+
+func GetTestHybridIamClient() (*iam.ClientWithResponses, error) {
+	if hybridIamClient != nil {
+		return hybridIamClient, nil
+	}
+	var err error
+	hybridIamClient, err = iam.NewIamClient(os.Getenv("ASTRO_API_HOST"), os.Getenv("HYBRID_ORGANIZATION_API_TOKEN"), "acceptancetests")
+	return hybridIamClient, err
+}
+
+func GetTestHostedIamClient() (*iam.ClientWithResponses, error) {
+	if hostedIamClient != nil {
+		return hostedIamClient, nil
+	}
+	var err error
+	hostedIamClient, err = iam.NewIamClient(os.Getenv("ASTRO_API_HOST"), os.Getenv("HOSTED_ORGANIZATION_API_TOKEN"), "acceptancetests")
+	return hostedIamClient, err
 }
 
 func GetTestPlatformClient(isHosted bool) (*platform.ClientWithResponses, error) {

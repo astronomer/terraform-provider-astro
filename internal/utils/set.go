@@ -2,7 +2,6 @@ package utils
 
 import (
 	"context"
-
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -54,4 +53,18 @@ func TypesSetToStringSlice(ctx context.Context, s types.Set) ([]string, diag.Dia
 		return v.ValueString()
 	})
 	return resp, nil
+}
+
+// TypesSetToObjectSlice converts a types.Set to a slice of the object type
+// This is useful for converting a set of objects from the Terraform framework to a slice of objects used for calling the API
+func TypesSetToObjectSlice[T any](ctx context.Context, s types.Set) ([]T, diag.Diagnostics) {
+	if len(s.Elements()) == 0 {
+		return []T{}, nil
+	}
+	var slice []T
+	diags := s.ElementsAs(ctx, &slice, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+	return slice, nil
 }

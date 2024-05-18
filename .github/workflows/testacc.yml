@@ -87,6 +87,7 @@ jobs:
           HYBRID_NODE_POOL_ID: clnp86ly5000301ndzfxz895w
           ASTRO_API_HOST: https://api.astronomer-dev.io
           SKIP_CLUSTER_RESOURCE_TESTS: ${{ env.SKIP_CLUSTER_RESOURCE_TESTS }}
+          HOSTED_TEAM_ID: clwbclrc100bl01ozjj5s4jmq
           TESTARGS: "-failfast"
         run: make testacc
 
