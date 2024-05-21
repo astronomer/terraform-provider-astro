@@ -5,5 +5,5 @@ data "astro_clusters" "example_clusters_filter_by_names" {
 }
 
 data "astro_clusters" "example_clusters_filter_by_cloud_provider" {
-  cloud_provider = ["AWS"]
+  cloud_provider = "AWS"
 }

@@ -58,7 +58,6 @@ jobs:
           terraform_wrapper: false
       - run: go mod download
       - name: Determine if expensive tests should run
-        if: github.event_name == 'pull_request'
         run: |
          git fetch --all
          echo "CHECKING FILES FOR SKIP LOGIC..."
