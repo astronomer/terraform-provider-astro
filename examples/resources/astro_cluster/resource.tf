@@ -9,7 +9,7 @@ resource "astro_cluster" "aws_example" {
   timeouts = {
     create = "3h"
     update = "2h"
-    delete = "1m"
+    delete = "1h"
   }
 }
 
