@@ -3,6 +3,7 @@ package resources_test
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
@@ -84,11 +85,12 @@ type hybridClusterWorkspaceAuthorizationInput struct {
 }
 
 func hybridClusterWorkspaceAuthorization(input hybridClusterWorkspaceAuthorizationInput) string {
+	workspaceIds := strings.Join(input.WorkspaceIds, "\",\"")
 	return fmt.Sprintf(`
 		resource "astro_cluster_workspace_authorization" "%s" {
 			cluster_id = "%s"
-			workspace_ids = %v
-		}`, input.Name, input.ClusterId, input.WorkspaceIds)
+			workspace_ids = ["%s"]
+		}`, input.Name, input.ClusterId, workspaceIds)
 }
 
 func testAccCheckHybridClusterWorkspaceAuthorizationExistence(t *testing.T, name string, shouldExist bool) func(state *terraform.State) error {
