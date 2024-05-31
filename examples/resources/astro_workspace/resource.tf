@@ -3,3 +3,14 @@ resource "astro_workspace" "example" {
   description           = "my first workspace"
   cicd_enforced_default = true
 }
+
+// Import an existing workspace
+import = {
+    id = "clozc036j01to01jrlgvu798d"
+    to = astro_workspace.imported_workspace
+}
+resource "astro_workspace" "imported_workspace" {
+  name                  = "import me"
+  description           = "an existing workspace"
+  cicd_enforced_default = true
+}
