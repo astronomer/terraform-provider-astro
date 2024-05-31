@@ -25,6 +25,7 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 
 	clusterId := os.Getenv("HYBRID_CLUSTER_ID")
 	clusterWorkspaceAuth := fmt.Sprintf("%v_auth", namePrefix)
+	resourceVar := fmt.Sprintf("astro_hybrid_cluster_workspace_authorization.%v", clusterWorkspaceAuth)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
@@ -44,8 +45,8 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check hybrid cluster workspace authorization
-					resource.TestCheckResourceAttr(clusterWorkspaceAuth, "cluster_id", clusterId),
-					resource.TestCheckResourceAttr(clusterWorkspaceAuth, "workspace_ids.#", "2"),
+					resource.TestCheckResourceAttr(resourceVar, "cluster_id", clusterId),
+					resource.TestCheckResourceAttr(resourceVar, "workspace_ids.#", "2"),
 
 					testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, true),
 				),
@@ -60,11 +61,17 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check hybrid cluster workspace authorization
-					resource.TestCheckResourceAttr(clusterWorkspaceAuth, "cluster_id", clusterId),
-					resource.TestCheckResourceAttr(clusterWorkspaceAuth, "workspace_ids.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar, "cluster_id", clusterId),
+					resource.TestCheckResourceAttr(resourceVar, "workspace_ids.#", "1"),
 
 					testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, true),
 				),
+			},
+			// Import existing hybrid cluster workspace authorization
+			{
+				ResourceName:      resourceVar,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

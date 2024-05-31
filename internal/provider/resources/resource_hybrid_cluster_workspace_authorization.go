@@ -74,18 +74,10 @@ func (r *hybridClusterWorkspaceAuthorizationResource) Configure(
 	r.organizationId = apiClients.OrganizationId
 }
 
-func (r *hybridClusterWorkspaceAuthorizationResource) Create(
+func (r *hybridClusterWorkspaceAuthorizationResource) MutateRoles(
 	ctx context.Context,
-	req resource.CreateRequest,
-	resp *resource.CreateResponse,
-) {
-	var data models.HybridClusterWorkspaceAuthorizationResource
-
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
+	data *models.HybridClusterWorkspaceAuthorizationResource,
+) diag.Diagnostics {
 	var diags diag.Diagnostics
 	var updateClusterRequest platform.UpdateClusterRequest
 	updateHybridClusterRequest := platform.UpdateHybridClusterRequest{}
@@ -95,34 +87,33 @@ func (r *hybridClusterWorkspaceAuthorizationResource) Create(
 		workspaceIds, diags := utils.TypesSetToStringSlice(ctx, data.WorkspaceIds)
 		updateHybridClusterRequest.WorkspaceIds = &workspaceIds
 		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
+			return diags
 		}
 	}
 
 	err := updateClusterRequest.FromUpdateHybridClusterRequest(updateHybridClusterRequest)
 	if err != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create hybrid cluster workspace authorization error: %v", err))
-		resp.Diagnostics.AddError(
+		tflog.Error(ctx, fmt.Sprintf("Failed to mutate hybrid cluster workspace authorization error: %v", err))
+		diags.AddError(
 			"Client Error",
-			fmt.Sprintf("Failed to create hybrid cluster workspace authorization, got error: %s", err),
+			fmt.Sprintf("Failed to mutate hybrid cluster workspace authorization, got error: %s", err),
 		)
-		return
+		return diags
 	}
 
 	cluster, err := r.platformClient.UpdateClusterWithResponse(ctx, r.organizationId, data.ClusterId.ValueString(), updateClusterRequest)
 	if err != nil {
-		tflog.Error(ctx, "failed to create hybrid cluster workspace authorization", map[string]interface{}{"error": err})
-		resp.Diagnostics.AddError(
+		tflog.Error(ctx, "failed to mutate hybrid cluster workspace authorization", map[string]interface{}{"error": err})
+		diags.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to create hybrid cluster workspace authorization, got error: %s", err),
+			fmt.Sprintf("Unable to mutate hybrid cluster workspace authorization, got error: %s", err),
 		)
-		return
+		return diags
 	}
 	_, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
 	if diagnostic != nil {
-		resp.Diagnostics.Append(diagnostic)
-		return
+		diags.Append(diagnostic)
+		return diags
 	}
 
 	// Wait for the cluster to be updated (or fail)
@@ -137,11 +128,31 @@ func (r *hybridClusterWorkspaceAuthorizationResource) Create(
 	// readyCluster is the final state of the cluster after it has reached a target status
 	readyCluster, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("Hybrid cluster authorization creation", err.Error())
-		return
+		diags.AddError("Hybrid cluster authorization mutation", err.Error())
+		return diags
 	}
 
 	diags = data.ReadFromResponse(readyCluster.(*platform.Cluster))
+	if diags.HasError() {
+		return diags
+	}
+
+	return nil
+}
+
+func (r *hybridClusterWorkspaceAuthorizationResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
+	var data models.HybridClusterWorkspaceAuthorizationResource
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	diags := r.MutateRoles(ctx, &data)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -209,62 +220,7 @@ func (r *hybridClusterWorkspaceAuthorizationResource) Update(
 		return
 	}
 
-	var diags diag.Diagnostics
-	var updateClusterRequest platform.UpdateClusterRequest
-	updateDedicatedClusterRequest := platform.UpdateDedicatedClusterRequest{}
-
-	// workspaceIds
-	if !data.WorkspaceIds.IsNull() {
-		workspaceIds, diags := utils.TypesSetToStringSlice(ctx, data.WorkspaceIds)
-		updateDedicatedClusterRequest.WorkspaceIds = &workspaceIds
-		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
-		}
-	}
-
-	err := updateClusterRequest.FromUpdateDedicatedClusterRequest(updateDedicatedClusterRequest)
-	if err != nil {
-		tflog.Error(ctx, fmt.Sprintf("failed to update hybrid cluster workspace authorization error: %v", err))
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to update hybrid cluster workspace authorization, got error: %s", err),
-		)
-		return
-	}
-
-	cluster, err := r.platformClient.UpdateClusterWithResponse(ctx, r.organizationId, data.ClusterId.ValueString(), updateClusterRequest)
-	if err != nil {
-		tflog.Error(ctx, "failed to update hybrid cluster workspace authorization", map[string]interface{}{"error": err})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to update hybrid cluster workspace authorization, got error: %s", err),
-		)
-		return
-	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
-	if diagnostic != nil {
-		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-
-	// Wait for the cluster to be updated (or fail)
-	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING)},
-		Target:     []string{string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED)},
-		Refresh:    ResourceRefreshFunc(ctx, r.platformClient, r.organizationId, cluster.JSON200.Id),
-		Timeout:    3 * time.Hour,
-		MinTimeout: 1 * time.Minute,
-	}
-
-	// readyCluster is the final state of the cluster after it has reached a target status
-	readyCluster, err := stateConf.WaitForStateContext(ctx)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to update hybrid cluster workspace authorization", err.Error())
-		return
-	}
-
-	diags = data.ReadFromResponse(readyCluster.(*platform.Cluster))
+	diags := r.MutateRoles(ctx, &data)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -325,7 +281,7 @@ func (r *hybridClusterWorkspaceAuthorizationResource) Delete(
 		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING)},
 		Target:     []string{string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED)},
 		Refresh:    ResourceRefreshFunc(ctx, r.platformClient, r.organizationId, cluster.JSON200.Id),
-		Timeout:    3 * time.Hour,
+		Timeout:    1 * time.Hour,
 		MinTimeout: 1 * time.Minute,
 	}
 

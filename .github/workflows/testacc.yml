@@ -125,6 +125,7 @@ jobs:
           TF_ACC: "1"
           HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HYBRID_ORGANIZATION_API_TOKEN }}
           HYBRID_ORGANIZATION_ID: ckon5obsu03322822nvm6yumk
+          HYBRID_WORKSPACE_ID: clwv06sva08vg01hovu1j7znw
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clczfo8a111cz0t140nck8ubn
           HYBRID_CLUSTER_ID: clqqongl40fmv01m96dvxh2nu

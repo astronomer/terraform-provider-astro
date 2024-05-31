@@ -217,7 +217,7 @@ func (r *ClusterResource) Create(
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING)},
 		Target:     []string{string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED)},
-		Refresh:    r.resourceRefreshFunc(ctx, cluster.JSON200.Id),
+		Refresh:    ResourceRefreshFunc(ctx, r.platformClient, r.organizationId, cluster.JSON200.Id),
 		Timeout:    3 * time.Hour,
 		MinTimeout: 1 * time.Minute,
 	}
@@ -370,7 +370,7 @@ func (r *ClusterResource) Update(
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING)},
 		Target:     []string{string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED)},
-		Refresh:    r.resourceRefreshFunc(ctx, cluster.JSON200.Id),
+		Refresh:    ResourceRefreshFunc(ctx, r.platformClient, r.organizationId, cluster.JSON200.Id),
 		Timeout:    3 * time.Hour,
 		MinTimeout: 1 * time.Minute,
 	}
@@ -441,7 +441,7 @@ func (r *ClusterResource) Delete(
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING), string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED)},
 		Target:     []string{"DELETED"},
-		Refresh:    r.resourceRefreshFunc(ctx, data.Id.ValueString()),
+		Refresh:    ResourceRefreshFunc(ctx, r.platformClient, r.organizationId, data.Id.ValueString()),
 		Timeout:    1 * time.Hour,
 		MinTimeout: 30 * time.Second,
 	}
@@ -575,39 +575,4 @@ func validateGcpConfig(ctx context.Context, data *models.ClusterResource) diag.D
 		)
 	}
 	return diags
-}
-
-// resourceRefreshFunc returns a retry.StateRefreshFunc that polls the platform API for the cluster status
-// If the cluster is not found, it returns "DELETED" status
-// If the cluster is found, it returns the cluster status
-// If there is an error, it returns the error
-// WaitForStateContext will keep polling until the target status is reached, the timeout is reached or an err is returned
-func (r *ClusterResource) resourceRefreshFunc(ctx context.Context, clusterId string) retry.StateRefreshFunc {
-	return func() (any, string, error) {
-		cluster, err := r.platformClient.GetClusterWithResponse(ctx, r.organizationId, clusterId)
-		if err != nil {
-			tflog.Error(ctx, "failed to get cluster while polling for cluster 'CREATED' status", map[string]interface{}{"error": err})
-			return nil, "", err
-		}
-		statusCode, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
-		if statusCode == http.StatusNotFound {
-			return &platform.Cluster{}, "DELETED", nil
-		}
-		if diagnostic != nil {
-			return nil, "", fmt.Errorf("error getting cluster %s", diagnostic.Detail())
-		}
-		if cluster != nil && cluster.JSON200 != nil {
-			switch cluster.JSON200.Status {
-			case platform.ClusterStatusCREATED:
-				return cluster.JSON200, string(cluster.JSON200.Status), nil
-			case platform.ClusterStatusUPDATEFAILED, platform.ClusterStatusCREATEFAILED:
-				return cluster.JSON200, string(cluster.JSON200.Status), fmt.Errorf("cluster mutation failed for cluster '%v'", cluster.JSON200.Id)
-			case platform.ClusterStatusCREATING, platform.ClusterStatusUPDATING:
-				return cluster.JSON200, string(cluster.JSON200.Status), nil
-			default:
-				return cluster.JSON200, string(cluster.JSON200.Status), fmt.Errorf("unexpected cluster status '%v' for cluster '%v'", cluster.JSON200.Status, cluster.JSON200.Id)
-			}
-		}
-		return nil, "", fmt.Errorf("error getting cluster %s", clusterId)
-	}
 }
