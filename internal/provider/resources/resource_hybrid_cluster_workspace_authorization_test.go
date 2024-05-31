@@ -41,7 +41,7 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 					hybridClusterWorkspaceAuthorization(hybridClusterWorkspaceAuthorizationInput{
 						Name:         clusterWorkspaceAuth,
 						ClusterId:    clusterId,
-						WorkspaceIds: []string{hybridWorkspaceId, fmt.Sprintf("%v.id", workspaceResourceVar)},
+						WorkspaceIds: []string{fmt.Sprintf("%v", hybridWorkspaceId), fmt.Sprintf("%v.id", workspaceResourceVar)},
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check hybrid cluster workspace authorization
@@ -57,7 +57,7 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 					hybridClusterWorkspaceAuthorization(hybridClusterWorkspaceAuthorizationInput{
 						Name:         clusterWorkspaceAuth,
 						ClusterId:    clusterId,
-						WorkspaceIds: []string{hybridWorkspaceId},
+						WorkspaceIds: []string{fmt.Sprintf("%v", hybridWorkspaceId)},
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check hybrid cluster workspace authorization
