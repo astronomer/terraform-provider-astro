@@ -6,8 +6,8 @@ resource "astro_workspace" "example" {
 
 // Import an existing workspace
 import = {
-    id = "clozc036j01to01jrlgvu798d"
-    to = astro_workspace.imported_workspace
+  id = "clozc036j01to01jrlgvu798d" // CUID of the existing workspace
+  to = astro_workspace.imported_workspace
 }
 resource "astro_workspace" "imported_workspace" {
   name                  = "import me"

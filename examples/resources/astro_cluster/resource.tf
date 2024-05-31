@@ -38,12 +38,12 @@ resource "astro_cluster" "gcp_example" {
 
 // Import an existing cluster
 import = {
-    id = "clozc036j01to01jrlgvuf98d"
-    to = astro_cluster.imported_cluster
+  id = "clozc036j01to01jrlgvuf98d" // CUID of the existing cluster
+  to = astro_cluster.imported_cluster
 }
 resource "astro_cluster" "imported_cluster" {
   type                  = "DEDICATED"
-  name                  = "my first gcp cluster"
+  name                  = "an existing cluster to import"
   region                = "us-central1"
   cloud_provider        = "GCP"
   db_instance_type      = "Small General Purpose"

@@ -76,8 +76,8 @@ resource "astro_deployment" "hybrid" {
 
 // Import an existing deployment
 import = {
-    id = "clv17vgft000801kkydsws63x"
-    to = astro_deployment.imported_deployment
+  id = "clv17vgft000801kkydsws63x" // CUID of the existing deployment
+  to = astro_deployment.imported_deployment
 }
 resource "astro_deployment" "imported_deployment" {
   original_astro_runtime_version = "11.3.0"
@@ -97,5 +97,5 @@ resource "astro_deployment" "imported_deployment" {
   resource_quota_memory          = "20Gi"
   scheduler_size                 = "SMALL"
   workspace_id                   = "clnp86ly5000401ndaga21g81"
-  environment_variables = []
+  environment_variables          = []
 }
