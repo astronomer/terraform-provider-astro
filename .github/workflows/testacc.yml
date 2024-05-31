@@ -130,6 +130,7 @@ jobs:
           HYBRID_CLUSTER_ID: clqqongl40fmv01m96dvxh2nu
           HYBRID_NODE_POOL_ID: clqqongl40fmu01m94pwp4kct
           ASTRO_API_HOST: https://api.astronomer-stage.io
+          HOSTED_TEAM_ID: clwv0r0x7091n01l0t1fm4vxy
           TESTARGS: "-failfast"
         run: make testacc
 
@@ -170,5 +171,6 @@ jobs:
           HYBRID_CLUSTER_ID: clnp86ly5000401ndagu20g81
           HYBRID_NODE_POOL_ID: clnp86ly5000301ndzfxz895w
           ASTRO_API_HOST: https://api.astronomer-dev.io
+          HOSTED_TEAM_ID: clwbclrc100bl01ozjj5s4jmq
           TESTARGS: "-failfast"
         run: make testacc
