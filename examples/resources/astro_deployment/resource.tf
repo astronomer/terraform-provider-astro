@@ -73,3 +73,29 @@ resource "astro_deployment" "hybrid" {
     is_secret = false
   }]
 }
+
+// Import an existing deployment
+import = {
+  id = "clv17vgft000801kkydsws63x" // ID of the existing deployment
+  to = astro_deployment.imported_deployment
+}
+resource "astro_deployment" "imported_deployment" {
+  original_astro_runtime_version = "11.3.0"
+  name                           = "import me"
+  description                    = "an existing deployment"
+  type                           = "DEDICATED"
+  cluster_id                     = "clv17vgft000801kkydsws63x"
+  contact_emails                 = ["preview@astronomer.test"]
+  default_task_pod_cpu           = "0.25"
+  default_task_pod_memory        = "0.5Gi"
+  executor                       = "KUBERNETES"
+  is_cicd_enforced               = true
+  is_dag_deploy_enabled          = true
+  is_development_mode            = false
+  is_high_availability           = true
+  resource_quota_cpu             = "10"
+  resource_quota_memory          = "20Gi"
+  scheduler_size                 = "SMALL"
+  workspace_id                   = "clnp86ly5000401ndaga21g81"
+  environment_variables          = []
+}
