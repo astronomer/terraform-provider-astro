@@ -115,7 +115,7 @@ func hybridClusterWorkspaceAuthorization(input hybridClusterWorkspaceAuthorizati
 	return fmt.Sprintf(`
 		resource "astro_hybrid_cluster_workspace_authorization" "%s" {
 			cluster_id = "%s"
-			workspace_ids = %v
+			workspace_ids = [%v]
 		}`, input.Name, input.ClusterId, workspaceIds)
 }
 
