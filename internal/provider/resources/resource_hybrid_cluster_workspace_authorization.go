@@ -122,7 +122,7 @@ func (r *hybridClusterWorkspaceAuthorizationResource) MutateRoles(
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING)},
 		Target:     []string{string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED)},
-		Refresh:    ResourceRefreshFunc(ctx, r.platformClient, r.organizationId, cluster.JSON200.Id),
+		Refresh:    ClusterResourceRefreshFunc(ctx, r.platformClient, r.organizationId, cluster.JSON200.Id),
 		Timeout:    1 * time.Hour,
 		MinTimeout: 1 * time.Minute,
 	}
@@ -282,7 +282,7 @@ func (r *hybridClusterWorkspaceAuthorizationResource) Delete(
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING)},
 		Target:     []string{string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED)},
-		Refresh:    ResourceRefreshFunc(ctx, r.platformClient, r.organizationId, cluster.JSON200.Id),
+		Refresh:    ClusterResourceRefreshFunc(ctx, r.platformClient, r.organizationId, cluster.JSON200.Id),
 		Timeout:    1 * time.Hour,
 		MinTimeout: 1 * time.Minute,
 	}

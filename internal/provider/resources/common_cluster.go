@@ -11,12 +11,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
-// resourceRefreshFunc returns a retry.StateRefreshFunc that polls the platform API for the cluster status
+// ClusterResourceRefreshFunc returns a retry.StateRefreshFunc that polls the platform API for the cluster status
 // If the cluster is not found, it returns "DELETED" status
 // If the cluster is found, it returns the cluster status
 // If there is an error, it returns the error
 // WaitForStateContext will keep polling until the target status is reached, the timeout is reached or an err is returned
-func ResourceRefreshFunc(ctx context.Context, platformClient *platform.ClientWithResponses, organizationId string, clusterId string) retry.StateRefreshFunc {
+func ClusterResourceRefreshFunc(ctx context.Context, platformClient *platform.ClientWithResponses, organizationId string, clusterId string) retry.StateRefreshFunc {
 	return func() (any, string, error) {
 		cluster, err := platformClient.GetClusterWithResponse(ctx, organizationId, clusterId)
 		if err != nil {

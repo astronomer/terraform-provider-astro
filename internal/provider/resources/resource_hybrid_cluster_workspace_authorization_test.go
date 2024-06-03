@@ -69,6 +69,22 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 					testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, true),
 				),
 			},
+			// Test with no workspaceIds
+			{
+				Config: astronomerprovider.ProviderConfig(t, true) +
+					hybridClusterWorkspaceAuthorization(hybridClusterWorkspaceAuthorizationInput{
+						Name:         clusterWorkspaceAuth,
+						ClusterId:    clusterId,
+						WorkspaceIds: nil,
+					}),
+				Check: resource.ComposeTestCheckFunc(
+					// Check hybrid cluster workspace authorization
+					resource.TestCheckResourceAttr(resourceVar, "cluster_id", clusterId),
+					resource.TestCheckResourceAttr(resourceVar, "workspace_ids.#", "0"),
+
+					testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, true),
+				),
+			},
 			// Import existing hybrid cluster workspace authorization
 			{
 				ResourceName:      resourceVar,
@@ -90,13 +106,12 @@ func hybridClusterWorkspaceAuthorization(input hybridClusterWorkspaceAuthorizati
 
 	for _, id := range input.WorkspaceIds {
 		if cuid.IsCuid(id) == nil {
-			workspaceIds = append(workspaceIds, fmt.Sprintf("${%s}", id))
+			workspaceIds = append(workspaceIds, fmt.Sprintf(`"%v"`, id))
 		} else {
 			workspaceIds = append(workspaceIds, id)
 		}
 	}
 
-	fmt.Print("workspaceIds:", workspaceIds, "\n")
 	return fmt.Sprintf(`
 		resource "astro_hybrid_cluster_workspace_authorization" "%s" {
 			cluster_id = "%s"
