@@ -62,7 +62,7 @@ terraform apply # performs a plan just like terraform plan does, but then actual
 
 If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (see [Requirements](#requirements) above).
 
-To compile the provider, see [Building The Provider](## Building The Provider).
+To compile the provider, see [Building The Provider](#building-the-provider).
 
 To add example docs, add the correspond `.tf` files to the `examples` directory. These should be added for every new data source and resource.
 
@@ -200,12 +200,7 @@ Using the terraform-plugin-testing framework, each `resource.Test` runs an accep
   - `Check`: function that will verify the state of the resources after the `terraform apply` command has run.
 
 In order to run the full suite of Acceptance tests, run `make testacc`.
-You will also need to set the following environment variables:
-- `ASTRO_API_HOST`
-- `HOSTED_ORGANIZATION_ID`
-- `HOSTED_ORGANIZATION_API_TOKEN` - an organization owner API token for the above organization
-- `HYBRID_ORGANIZATION_ID`
-- `HYBRID_ORGANIZATION_API_TOKEN` - an organization owner API token for the above organization
+You will also need to set all the environment variables described in `internal/provider/provider_test_utils.go`.
 
 The acceptance tests will run against the Astronomer API and create/read/update/delete real resources.
 
