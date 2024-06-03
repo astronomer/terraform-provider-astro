@@ -91,7 +91,7 @@ resource "astro_deployment" "hybrid" {
 
 // Import an existing deployment
 import = {
-  id = "clv17vgft000801kkydsws63x" // CUID of the existing deployment
+  id = "clv17vgft000801kkydsws63x" // ID of the existing deployment
   to = astro_deployment.imported_deployment
 }
 resource "astro_deployment" "imported_deployment" {
