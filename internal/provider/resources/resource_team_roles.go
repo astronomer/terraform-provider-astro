@@ -224,7 +224,7 @@ func (r *teamRolesResource) Update(
 		resp.Diagnostics.Append(diags...)
 		return
 	}
-
+tflog.Trace(ctx, fmt.Sprintf("updated a team_roles resource for team '%v'", data.TeamId.ValueString()))
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
