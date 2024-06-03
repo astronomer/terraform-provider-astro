@@ -35,7 +35,7 @@ func DeploymentRoleTypesObject(
 ) (types.Object, diag.Diagnostics) {
 	obj := DeploymentRole{
 		DeploymentId: types.StringValue(role.DeploymentId),
-		Role:         types.StringValue(string(role.Role)),
+		Role:         types.StringValue(role.Role),
 	}
 	return types.ObjectValueFrom(ctx, schemas.DeploymentRoleAttributeTypes(), obj)
 }
