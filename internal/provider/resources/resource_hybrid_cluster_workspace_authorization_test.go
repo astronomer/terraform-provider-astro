@@ -3,12 +3,12 @@ package resources_test
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/lucsky/cuid"
 	"github.com/stretchr/testify/assert"
 
 	"os"
@@ -85,14 +85,21 @@ type hybridClusterWorkspaceAuthorizationInput struct {
 }
 
 func hybridClusterWorkspaceAuthorization(input hybridClusterWorkspaceAuthorizationInput) string {
-	fmt.Print("workspaceIds input", input.WorkspaceIds, "\n")
-	workspaceIds := strings.Join(input.WorkspaceIds, "\",\"")
-	fmt.Print("workspaceIds", workspaceIds, "\n")
-	fmt.Printf("workspaceIds formatted: [\"%s\"] \n", workspaceIds)
+	var workspaceIds []string
+
+	for _, id := range input.WorkspaceIds {
+		if cuid.IsCuid(id) == nil {
+			workspaceIds = append(workspaceIds, fmt.Sprintf("${%s}", id))
+		} else {
+			workspaceIds = append(workspaceIds, id)
+		}
+	}
+
+	fmt.Print("workspaceIds:", workspaceIds, "\n")
 	return fmt.Sprintf(`
 		resource "astro_hybrid_cluster_workspace_authorization" "%s" {
 			cluster_id = "%s"
-			workspace_ids = ["%s"]
+			workspace_ids = %v
 		}`, input.Name, input.ClusterId, workspaceIds)
 }
 
