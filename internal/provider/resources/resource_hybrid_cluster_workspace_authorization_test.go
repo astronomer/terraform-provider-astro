@@ -36,6 +36,7 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 			testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, false),
 		),
 		Steps: []resource.TestStep{
+			// Test with two workspaces, an existing one and one created through terraform
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) +
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
@@ -52,7 +53,7 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 					testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, true),
 				),
 			},
-			// Remove workspace from cluster workspace authorization
+			// Remove terraform created workspace from cluster workspace authorization
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) +
 					hybridClusterWorkspaceAuthorization(hybridClusterWorkspaceAuthorizationInput{
