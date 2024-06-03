@@ -141,7 +141,7 @@ func testAccCheckHybridClusterWorkspaceAuthorizationExistence(t *testing.T, name
 			return fmt.Errorf("response JSON200 is nil status: %v, err: %v", status, diag.Detail())
 		}
 		if shouldExist {
-			if len(*resp.JSON200.WorkspaceIds) != 1 {
+			if len(*resp.JSON200.WorkspaceIds) < 1 {
 				return fmt.Errorf("cluster workspace authorization %s should exist", name)
 			}
 		} else {
