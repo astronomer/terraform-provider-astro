@@ -85,7 +85,9 @@ type hybridClusterWorkspaceAuthorizationInput struct {
 }
 
 func hybridClusterWorkspaceAuthorization(input hybridClusterWorkspaceAuthorizationInput) string {
+	fmt.Print("workspaceIds input", input.WorkspaceIds)
 	workspaceIds := strings.Join(input.WorkspaceIds, "\",\"")
+	fmt.Print("workspaceIds", workspaceIds)
 	return fmt.Sprintf(`
 		resource "astro_hybrid_cluster_workspace_authorization" "%s" {
 			cluster_id = "%s"
