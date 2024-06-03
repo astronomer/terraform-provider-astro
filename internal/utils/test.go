@@ -2,10 +2,11 @@ package utils
 
 import (
 	"fmt"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 

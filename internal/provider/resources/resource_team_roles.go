@@ -3,10 +3,11 @@ package resources
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/samber/lo"
-	"net/http"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
@@ -142,7 +143,7 @@ func (r *teamRolesResource) Create(
 		resp.Diagnostics.Append(diags...)
 		return
 	}
-tflog.Trace(ctx, fmt.Sprintf("created a team_roles resource for team '%v'", data.TeamId.ValueString()))
+	tflog.Trace(ctx, fmt.Sprintf("created a team_roles resource for team '%v'", data.TeamId.ValueString()))
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -224,7 +225,7 @@ func (r *teamRolesResource) Update(
 		resp.Diagnostics.Append(diags...)
 		return
 	}
-tflog.Trace(ctx, fmt.Sprintf("updated a team_roles resource for team '%v'", data.TeamId.ValueString()))
+	tflog.Trace(ctx, fmt.Sprintf("updated a team_roles resource for team '%v'", data.TeamId.ValueString()))
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

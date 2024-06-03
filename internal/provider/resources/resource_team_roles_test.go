@@ -3,11 +3,12 @@ package resources_test
 import (
 	"context"
 	"fmt"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"os"
 	"regexp"
 	"testing"
+
+	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 
