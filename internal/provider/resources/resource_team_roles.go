@@ -142,7 +142,7 @@ func (r *teamRolesResource) Create(
 		resp.Diagnostics.Append(diags...)
 		return
 	}
-
+tflog.Trace(ctx, fmt.Sprintf("created a team_roles resource for team '%v'", data.TeamId.ValueString()))
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
