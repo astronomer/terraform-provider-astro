@@ -80,7 +80,9 @@ func (r *hybridClusterWorkspaceAuthorizationResource) MutateRoles(
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 	var updateClusterRequest platform.UpdateClusterRequest
-	updateHybridClusterRequest := platform.UpdateHybridClusterRequest{}
+	updateHybridClusterRequest := platform.UpdateHybridClusterRequest{
+		ClusterType: platform.UpdateHybridClusterRequestClusterTypeHYBRID,
+	}
 
 	// workspaceIds
 	if !data.WorkspaceIds.IsNull() {
