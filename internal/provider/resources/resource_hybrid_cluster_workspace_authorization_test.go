@@ -3,6 +3,7 @@ package resources_test
 import (
 	"context"
 	"fmt"
+	"github.com/samber/lo"
 	"strings"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
@@ -44,7 +45,7 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 					hybridClusterWorkspaceAuthorization(hybridClusterWorkspaceAuthorizationInput{
 						Name:         clusterWorkspaceAuth,
 						ClusterId:    clusterId,
-						WorkspaceIds: []string{fmt.Sprintf("%v", hybridWorkspaceId), fmt.Sprintf("%v.id", workspaceResourceVar)},
+						WorkspaceIds: []string{hybridWorkspaceId, fmt.Sprintf("%v.id", workspaceResourceVar)},
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check hybrid cluster workspace authorization
@@ -60,7 +61,7 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 					hybridClusterWorkspaceAuthorization(hybridClusterWorkspaceAuthorizationInput{
 						Name:         clusterWorkspaceAuth,
 						ClusterId:    clusterId,
-						WorkspaceIds: []string{fmt.Sprintf("%v", hybridWorkspaceId)},
+						WorkspaceIds: []string{hybridWorkspaceId},
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check hybrid cluster workspace authorization
@@ -103,16 +104,12 @@ type hybridClusterWorkspaceAuthorizationInput struct {
 }
 
 func hybridClusterWorkspaceAuthorization(input hybridClusterWorkspaceAuthorizationInput) string {
-	var workspaceIds []string
-
-	for _, id := range input.WorkspaceIds {
+	workspaceIds := lo.Map(input.WorkspaceIds, func(id string, _ int) string {
 		if cuid.IsCuid(id) == nil {
-			workspaceIds = append(workspaceIds, fmt.Sprintf(`"%v"`, id))
-		} else {
-			workspaceIds = append(workspaceIds, id)
+			return fmt.Sprintf(`"%v"`, id)
 		}
-	}
-
+		return id
+	})
 	workspaceIdsString := strings.Join(workspaceIds, ", ")
 
 	return fmt.Sprintf(`
