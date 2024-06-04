@@ -78,7 +78,7 @@ func (r *hybridClusterWorkspaceAuthorizationResource) MutateRoles(
 	ctx context.Context,
 	data *models.HybridClusterWorkspaceAuthorizationResource,
 ) diag.Diagnostics {
-	var diags diag.Diagnostics
+	diags := diag.Diagnostics{}
 	var updateClusterRequest platform.UpdateClusterRequest
 	updateHybridClusterRequest := platform.UpdateHybridClusterRequest{
 		ClusterType: platform.UpdateHybridClusterRequestClusterTypeHYBRID,
@@ -250,6 +250,7 @@ func (r *hybridClusterWorkspaceAuthorizationResource) Delete(
 	var diags diag.Diagnostics
 	var updateClusterRequest platform.UpdateClusterRequest
 	updateHybridClusterRequest := platform.UpdateHybridClusterRequest{
+		ClusterType:  platform.UpdateHybridClusterRequestClusterTypeHYBRID,
 		WorkspaceIds: nil,
 	}
 

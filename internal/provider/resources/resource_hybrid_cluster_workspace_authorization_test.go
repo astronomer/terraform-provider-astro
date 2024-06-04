@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/samber/lo"
+	"strconv"
 	"strings"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
@@ -51,7 +52,7 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					// Check hybrid cluster workspace authorization
 					resource.TestCheckResourceAttr(resourceVar, "cluster_id", clusterId),
-					resource.TestCheckResourceAttr(resourceVar, "workspace_ids.#", "2"),
+					resource.TestCheckResourceAttr(resourceVar, "workspace_ids.#", strconv.Itoa(len(hybridWorkspaceIds)+1)),
 
 					testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, true),
 				),
@@ -67,7 +68,7 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					// Check hybrid cluster workspace authorization
 					resource.TestCheckResourceAttr(resourceVar, "cluster_id", clusterId),
-					resource.TestCheckResourceAttr(resourceVar, "workspace_ids.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar, "workspace_ids.#", strconv.Itoa(len(hybridWorkspaceIds))),
 
 					testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, true),
 				),
