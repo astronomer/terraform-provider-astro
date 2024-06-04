@@ -70,6 +70,7 @@ jobs:
            "internal/provider/resources/resource_cluster.go"
            "internal/provider/resources/resource_cluster_test.go"
            "internal/provider/resources/resource_deployment.go"
+           "internal/provider/resources/common_cluster.go"
          )
          for file in "${FILES_TO_CHECK[@]}"; do
            if git diff --name-only remotes/origin/${{ github.base_ref }} remotes/origin/${{ github.head_ref }} | grep -q "$file"; then
@@ -90,6 +91,7 @@ jobs:
           ASTRO_API_HOST: https://api.astronomer-dev.io
           SKIP_CLUSTER_RESOURCE_TESTS: ${{ env.SKIP_CLUSTER_RESOURCE_TESTS }}
           HOSTED_TEAM_ID: clwbclrc100bl01ozjj5s4jmq
+          HYBRID_WORKSPACE_IDS: cl70oe7cu445571iynrkthtybl,cl8wpve4993871i37qe1k152c
           TESTARGS: "-failfast"
         run: make testacc
 
@@ -131,6 +133,7 @@ jobs:
           HYBRID_NODE_POOL_ID: clqqongl40fmu01m94pwp4kct
           ASTRO_API_HOST: https://api.astronomer-stage.io
           HOSTED_TEAM_ID: clwv0r0x7091n01l0t1fm4vxy
+          HYBRID_WORKSPACE_IDS: clwv06sva08vg01hovu1j7znw
           TESTARGS: "-failfast"
         run: make testacc
 
@@ -172,5 +175,6 @@ jobs:
           HYBRID_NODE_POOL_ID: clnp86ly5000301ndzfxz895w
           ASTRO_API_HOST: https://api.astronomer-dev.io
           HOSTED_TEAM_ID: clwbclrc100bl01ozjj5s4jmq
+          HYBRID_WORKSPACE_IDS: cl70oe7cu445571iynrkthtybl,cl8wpve4993871i37qe1k152c
           TESTARGS: "-failfast"
         run: make testacc
