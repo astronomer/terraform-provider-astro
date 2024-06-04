@@ -83,13 +83,14 @@ jobs:
           TF_ACC: "1"
           HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HYBRID_ORGANIZATION_API_TOKEN }}
           HYBRID_ORGANIZATION_ID: ckmzjm22937931d35puw3tcdo
-          HYBRID_WORKSPACE_ID: clwtxr0y9002101omjt7a8pqj
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clczfgzc3001o01kjlphpi6hv
           HYBRID_CLUSTER_ID: clnp86ly5000401ndagu20g81
           HYBRID_NODE_POOL_ID: clnp86ly5000301ndzfxz895w
           ASTRO_API_HOST: https://api.astronomer-dev.io
           SKIP_CLUSTER_RESOURCE_TESTS: True
+          HOSTED_TEAM_ID: clwbclrc100bl01ozjj5s4jmq
+          HYBRID_WORKSPACE_ID: clwtxr0y9002101omjt7a8pqj
           TESTARGS: "-failfast"
         run: make testacc
 
@@ -125,12 +126,13 @@ jobs:
           TF_ACC: "1"
           HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HYBRID_ORGANIZATION_API_TOKEN }}
           HYBRID_ORGANIZATION_ID: ckon5obsu03322822nvm6yumk
-          HYBRID_WORKSPACE_ID: clwv06sva08vg01hovu1j7znw
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clczfo8a111cz0t140nck8ubn
           HYBRID_CLUSTER_ID: clqqongl40fmv01m96dvxh2nu
           HYBRID_NODE_POOL_ID: clqqongl40fmu01m94pwp4kct
           ASTRO_API_HOST: https://api.astronomer-stage.io
+          HOSTED_TEAM_ID: clwv0r0x7091n01l0t1fm4vxy
+          HYBRID_WORKSPACE_ID: clwv06sva08vg01hovu1j7znw
           TESTARGS: "-failfast"
         run: make testacc
 
@@ -166,11 +168,12 @@ jobs:
           TF_ACC: "1"
           HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HYBRID_ORGANIZATION_API_TOKEN }}
           HYBRID_ORGANIZATION_ID: ckmzjm22937931d35puw3tcdo
-          HYBRID_WORKSPACE_ID: clwtxr0y9002101omjt7a8pqj
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clczfgzc3001o01kjlphpi6hv
           HYBRID_CLUSTER_ID: clnp86ly5000401ndagu20g81
           HYBRID_NODE_POOL_ID: clnp86ly5000301ndzfxz895w
           ASTRO_API_HOST: https://api.astronomer-dev.io
+          HOSTED_TEAM_ID: clwbclrc100bl01ozjj5s4jmq
+          HYBRID_WORKSPACE_ID: clwtxr0y9002101omjt7a8pqj
           TESTARGS: "-failfast"
         run: make testacc

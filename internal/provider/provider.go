@@ -123,6 +123,7 @@ func (p *AstroProvider) Resources(ctx context.Context) []func() resource.Resourc
 		resources.NewWorkspaceResource,
 		resources.NewDeploymentResource,
 		resources.NewClusterResource,
+		resources.NewTeamRolesResource,
 		resources.NewHybridClusterWorkspaceAuthorizationResource,
 	}
 }

@@ -47,6 +47,9 @@ func TestAccPreCheck(t *testing.T) {
 	if hybridNodePoolId := os.Getenv("HYBRID_NODE_POOL_ID"); len(hybridNodePoolId) == 0 {
 		missingEnvVars = append(missingEnvVars, "HYBRID_NODE_POOL_ID")
 	}
+	if hostedTeamId := os.Getenv("HOSTED_TEAM_ID"); len(hostedTeamId) == 0 {
+		missingEnvVars = append(missingEnvVars, "HOSTED_TEAM_ID")
+	}
 	if len(missingEnvVars) > 0 {
 		t.Fatalf("Pre-check failed: %+v must be set for acceptance tests", strings.Join(missingEnvVars, ", "))
 	}
