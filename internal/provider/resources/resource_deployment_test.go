@@ -20,8 +20,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// We will test dedicated deployment resources once dedicated_cluster_resource is implemented
-
 func TestAcc_ResourceDeploymentHybrid(t *testing.T) {
 	namePrefix := utils.GenerateTestResourceName(10)
 
@@ -576,13 +574,9 @@ func hybridDeployment(input hybridDeploymentInput) string {
 	} else {
 		taskPodNodePoolIdStr = fmt.Sprintf(`task_pod_node_pool_id = "%v"`, input.NodePoolId)
 	}
-	return fmt.Sprintf(`
-resource "astro_workspace" "%v_workspace" {
-	name = "%s"
-	description = "%s"
-	cicd_enforced_default = true
-}
 
+	workspaceId := strings.Split(os.Getenv("HYBRID_WORKSPACE_IDS"), ",")[0]
+	return fmt.Sprintf(`
 resource "astro_deployment" "%v" {
 	name = "%s"
 	description = "%s"
@@ -594,13 +588,13 @@ resource "astro_deployment" "%v" {
 	is_dag_deploy_enabled = true
 	scheduler_au = %v
 	scheduler_replicas = 1
-	workspace_id = astro_workspace.%v_workspace.id
+	workspace_id = "%v"
 	%v
 	%v
 	%v
   }
 `,
-		input.Name, input.Name, utils.TestResourceDescription, input.Name, input.Name, input.Description, input.ClusterId, input.Executor, input.SchedulerAu, input.Name,
+		input.Name, input.Name, utils.TestResourceDescription, input.ClusterId, input.Executor, input.SchedulerAu, workspaceId,
 		envVarsStr(input.IncludeEnvironmentVariables), wqStr, taskPodNodePoolIdStr)
 }
 

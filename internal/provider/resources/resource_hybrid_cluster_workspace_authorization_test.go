@@ -40,7 +40,7 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 			testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, false),
 		),
 		Steps: []resource.TestStep{
-			// Test with two workspaces, an existing one and one created through terraform
+			// Test with existing workspaces and one created through terraform
 			{
 				Config: astronomerprovider.ProviderConfig(t, false) +
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
@@ -73,6 +73,12 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 					testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, true),
 				),
 			},
+			// Import existing hybrid cluster workspace authorization
+			{
+				ResourceName:      resourceVar,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 			// Test with no workspaceIds
 			{
 				Config: astronomerprovider.ProviderConfig(t, false) +
@@ -88,12 +94,6 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 
 					testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, true),
 				),
-			},
-			// Import existing hybrid cluster workspace authorization
-			{
-				ResourceName:      resourceVar,
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
