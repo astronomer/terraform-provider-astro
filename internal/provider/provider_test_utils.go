@@ -35,8 +35,8 @@ func TestAccPreCheck(t *testing.T) {
 	if hybridOrgId := os.Getenv("HYBRID_ORGANIZATION_ID"); len(hybridOrgId) == 0 {
 		missingEnvVars = append(missingEnvVars, "HYBRID_ORGANIZATION_ID")
 	}
-	if hybridWorkspaceId := os.Getenv("HYBRID_WORKSPACE_ID"); len(hybridWorkspaceId) == 0 {
-		missingEnvVars = append(missingEnvVars, "HYBRID_WORKSPACE_ID")
+	if hybridWorkspaceIds := os.Getenv("HYBRID_WORKSPACE_IDS"); len(hybridWorkspaceIds) == 0 {
+		missingEnvVars = append(missingEnvVars, "HYBRID_WORKSPACE_IDS")
 	}
 	if host := os.Getenv("ASTRO_API_HOST"); len(host) == 0 {
 		missingEnvVars = append(missingEnvVars, "ASTRO_API_HOST")
