@@ -70,6 +70,7 @@ jobs:
            "internal/provider/resources/resource_cluster.go"
            "internal/provider/resources/resource_cluster_test.go"
            "internal/provider/resources/resource_deployment.go"
+           "internal/provider/resources/resource_hybrid_cluster_workspace_authorization.go"
          )
          for file in "${FILES_TO_CHECK[@]}"; do
            if git diff --name-only remotes/origin/${{ github.base_ref }} remotes/origin/${{ github.head_ref }} | grep -q "$file"; then
@@ -78,7 +79,7 @@ jobs:
            fi
          done
          echo "SKIP_CLUSTER_RESOURCE_TESTS=$SKIP_TESTS"
-         echo "SKIP_CLUSTER_RESOURCE_TESTS=$SKIP_TESTS" >> $GITHUB_ENV
+#         echo "SKIP_CLUSTER_RESOURCE_TESTS=$SKIP_TESTS" >> $GITHUB_ENV
       - env:
           TF_ACC: "1"
           HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HYBRID_ORGANIZATION_API_TOKEN }}
