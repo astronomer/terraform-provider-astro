@@ -92,7 +92,7 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					// Check hybrid cluster workspace authorization
 					resource.TestCheckResourceAttr(resourceVar, "cluster_id", clusterId),
-					resource.TestCheckResourceAttr(resourceVar, "workspace_ids.#", "0"),
+					resource.TestCheckNoResourceAttr(resourceVar, "workspace_ids"),
 
 					testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, true),
 				),
@@ -148,7 +148,7 @@ func testAccCheckHybridClusterWorkspaceAuthorizationExistence(t *testing.T, name
 			return fmt.Errorf("response JSON200 is nil status: %v, err: %v", status, diag.Detail())
 		}
 		if shouldExist {
-			if len(*resp.JSON200.WorkspaceIds) < 1 {
+			if resp.JSON200.WorkspaceIds == nil || len(*resp.JSON200.WorkspaceIds) < 1 {
 				return fmt.Errorf("cluster workspace authorization %s should exist", name)
 			}
 		} else {
