@@ -91,6 +91,8 @@ func (r *hybridClusterWorkspaceAuthorizationResource) MutateRoles(
 		if diags.HasError() {
 			return diags
 		}
+	} else {
+		updateHybridClusterRequest.WorkspaceIds = &[]string{}
 	}
 
 	err := updateClusterRequest.FromUpdateHybridClusterRequest(updateHybridClusterRequest)
@@ -251,7 +253,7 @@ func (r *hybridClusterWorkspaceAuthorizationResource) Delete(
 	var updateClusterRequest platform.UpdateClusterRequest
 	updateHybridClusterRequest := platform.UpdateHybridClusterRequest{
 		ClusterType:  platform.UpdateHybridClusterRequestClusterTypeHYBRID,
-		WorkspaceIds: nil,
+		WorkspaceIds: &[]string{},
 	}
 
 	err := updateClusterRequest.FromUpdateHybridClusterRequest(updateHybridClusterRequest)

@@ -17,10 +17,13 @@ func (data *HybridClusterWorkspaceAuthorizationResource) ReadFromResponse(
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.ClusterId = types.StringValue(cluster.Id)
-
-	data.WorkspaceIds, diags = utils.StringSet(cluster.WorkspaceIds)
-	if diags.HasError() {
-		return diags
+	if cluster.WorkspaceIds == nil || len(*cluster.WorkspaceIds) == 0 {
+		data.WorkspaceIds = types.SetNull(types.StringType)
+	} else {
+		data.WorkspaceIds, diags = utils.StringSet(cluster.WorkspaceIds)
+		if diags.HasError() {
+			return diags
+		}
 	}
 
 	return nil
