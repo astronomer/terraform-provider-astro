@@ -75,9 +75,11 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 			},
 			// Import existing hybrid cluster workspace authorization
 			{
-				ResourceName:      resourceVar,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:                         resourceVar,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateId:                        clusterId,
+				ImportStateVerifyIdentifierAttribute: "cluster_id",
 			},
 			// Test with no workspaceIds
 			{
