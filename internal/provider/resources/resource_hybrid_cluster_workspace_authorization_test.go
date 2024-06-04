@@ -3,9 +3,10 @@ package resources_test
 import (
 	"context"
 	"fmt"
-	"github.com/samber/lo"
 	"strconv"
 	"strings"
+
+	"github.com/samber/lo"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
@@ -85,9 +86,8 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, false) +
 					hybridClusterWorkspaceAuthorization(hybridClusterWorkspaceAuthorizationInput{
-						Name:         clusterWorkspaceAuth,
-						ClusterId:    clusterId,
-						WorkspaceIds: nil,
+						Name:      clusterWorkspaceAuth,
+						ClusterId: clusterId,
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check hybrid cluster workspace authorization
