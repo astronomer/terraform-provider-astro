@@ -124,7 +124,7 @@ func hybridClusterWorkspaceAuthorization(input hybridClusterWorkspaceAuthorizati
 func testAccCheckHybridClusterWorkspaceAuthorizationExistence(t *testing.T, name string, shouldExist bool) func(state *terraform.State) error {
 	t.Helper()
 	return func(state *terraform.State) error {
-		client, err := utils.GetTestHostedPlatformClient()
+		client, err := utils.GetTestHybridPlatformClient()
 		assert.NoError(t, err)
 
 		organizationId := os.Getenv("HYBRID_ORGANIZATION_ID")
