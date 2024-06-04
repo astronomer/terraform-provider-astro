@@ -64,11 +64,11 @@ jobs:
          SKIP_TESTS="True"
          FILES_TO_CHECK=(
            "internal/provider/schemas/deployment.go"
-#           "internal/provider/schemas/cluster.go"
+           "internal/provider/schemas/cluster.go"
            "internal/provider/models/deployment.go"
-#           "internal/provider/models/cluster.go"
-#           "internal/provider/resources/resource_cluster.go"
-#           "internal/provider/resources/resource_cluster_test.go"
+           "internal/provider/models/cluster.go"
+           "internal/provider/resources/resource_cluster.go"
+           "internal/provider/resources/resource_cluster_test.go"
            "internal/provider/resources/resource_deployment.go"
            "internal/provider/resources/resource_hybrid_cluster_workspace_authorization.go"
          )
@@ -78,8 +78,8 @@ jobs:
              break
            fi
          done
-         echo "SKIP_CLUSTER_RESOURCE_TESTS=$SKIP_TESTS"
-         echo "SKIP_CLUSTER_RESOURCE_TESTS=$SKIP_TESTS" >> $GITHUB_ENV
+#         echo "SKIP_CLUSTER_RESOURCE_TESTS=$SKIP_TESTS"
+#         echo "SKIP_CLUSTER_RESOURCE_TESTS=$SKIP_TESTS" >> $GITHUB_ENV
       - env:
           TF_ACC: "1"
           HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HYBRID_ORGANIZATION_API_TOKEN }}
