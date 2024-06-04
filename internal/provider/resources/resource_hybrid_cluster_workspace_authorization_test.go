@@ -74,6 +74,14 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 					testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, true),
 				),
 			},
+			// Import existing hybrid cluster workspace authorization
+			{
+				ResourceName:                         resourceVar,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateId:                        clusterId,
+				ImportStateVerifyIdentifierAttribute: "cluster_id",
+			},
 			// Test with no workspaceIds
 			{
 				Config: astronomerprovider.ProviderConfig(t, false) +
@@ -86,16 +94,8 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "cluster_id", clusterId),
 					resource.TestCheckNoResourceAttr(resourceVar, "workspace_ids"),
 
-					testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, true),
+					testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, false),
 				),
-			},
-			// Import existing hybrid cluster workspace authorization
-			{
-				ResourceName:                         resourceVar,
-				ImportState:                          true,
-				ImportStateVerify:                    true,
-				ImportStateId:                        clusterId,
-				ImportStateVerifyIdentifierAttribute: "cluster_id",
 			},
 		},
 	})
