@@ -75,9 +75,11 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 			},
 			// Import existing hybrid cluster workspace authorization
 			{
-				ResourceName:      resourceVar,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:                         resourceVar,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateId:                        clusterId,
+				ImportStateVerifyIdentifierAttribute: "cluster_id",
 			},
 			// Test with no workspaceIds
 			{
@@ -112,12 +114,15 @@ func hybridClusterWorkspaceAuthorization(input hybridClusterWorkspaceAuthorizati
 		}
 		return id
 	})
-	workspaceIdsString := strings.Join(workspaceIds, ", ")
+	var workspaceIdsString string
+	if len(workspaceIds) > 0 {
+		workspaceIdsString = fmt.Sprintf("workspace_ids = [%v]", strings.Join(workspaceIds, ", "))
+	}
 
 	return fmt.Sprintf(`
 		resource "astro_hybrid_cluster_workspace_authorization" "%s" {
 			cluster_id = "%s"
-			workspace_ids = [%v]
+			%v
 		}`, input.Name, input.ClusterId, workspaceIdsString)
 }
 
