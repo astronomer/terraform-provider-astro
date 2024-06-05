@@ -3,6 +3,7 @@ name: Acceptance Tests
 # In the future, we will need to figure out how we want to run acceptance tests
 # since creation of deployments and clusters are costly
 on:
+  pull_request:
   push:
     branches:
       - main
