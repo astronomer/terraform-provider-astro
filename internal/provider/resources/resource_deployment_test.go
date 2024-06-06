@@ -598,7 +598,9 @@ resource "astro_deployment" "%v" {
 	%v
   }
 `,
-		input.Name, input.Name, utils.TestResourceDescription, input.ClusterId, input.Executor, input.SchedulerAu, input.Name,
+		input.Name, input.Name, utils.TestResourceDescription,
+		input.Name, input.Name, utils.TestResourceDescription,
+		input.ClusterId, input.Executor, input.SchedulerAu, input.Name,
 		envVarsStr(input.IncludeEnvironmentVariables), wqStr, taskPodNodePoolIdStr)
 }
 
