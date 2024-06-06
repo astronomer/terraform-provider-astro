@@ -22,7 +22,7 @@ Team 3 workspace prod
 terraform {
   required_providers {
     astro = {
-      source = "registry.terraform.io/astronomer/astro"
+      source = "astronomer/astro"
     }
   }
 }

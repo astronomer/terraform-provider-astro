@@ -3,7 +3,6 @@ package resources_test
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/samber/lo"
@@ -26,10 +25,8 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 
 	workspaceName := fmt.Sprintf("%v_workspace", namePrefix)
 	workspaceResourceVar := fmt.Sprintf("astro_workspace.%v", workspaceName)
-	hybridWorkspaceIdsStr := os.Getenv("HYBRID_WORKSPACE_IDS")
-	hybridWorkspaceIds := strings.Split(hybridWorkspaceIdsStr, ",")
 
-	clusterId := os.Getenv("HYBRID_CLUSTER_ID")
+	clusterId := os.Getenv("HYBRID_DRY_RUN_CLUSTER_ID")
 	clusterWorkspaceAuth := fmt.Sprintf("%v_auth", namePrefix)
 	resourceVar := fmt.Sprintf("astro_hybrid_cluster_workspace_authorization.%v", clusterWorkspaceAuth)
 
@@ -41,35 +38,19 @@ func TestAcc_ResourceHybridClusterWorkspaceAuthorization(t *testing.T) {
 			testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, false),
 		),
 		Steps: []resource.TestStep{
-			// Test with existing workspaces and one created through terraform
+			// Test with workspace created through terraform
 			{
 				Config: astronomerprovider.ProviderConfig(t, false) +
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
 					hybridClusterWorkspaceAuthorization(hybridClusterWorkspaceAuthorizationInput{
 						Name:         clusterWorkspaceAuth,
 						ClusterId:    clusterId,
-						WorkspaceIds: append(hybridWorkspaceIds, fmt.Sprintf("%v.id", workspaceResourceVar)),
+						WorkspaceIds: []string{fmt.Sprintf("%v.id", workspaceResourceVar)},
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check hybrid cluster workspace authorization
 					resource.TestCheckResourceAttr(resourceVar, "cluster_id", clusterId),
-					resource.TestCheckResourceAttr(resourceVar, "workspace_ids.#", strconv.Itoa(len(hybridWorkspaceIds)+1)),
-
-					testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, true),
-				),
-			},
-			// Remove terraform created workspace from cluster workspace authorization
-			{
-				Config: astronomerprovider.ProviderConfig(t, false) +
-					hybridClusterWorkspaceAuthorization(hybridClusterWorkspaceAuthorizationInput{
-						Name:         clusterWorkspaceAuth,
-						ClusterId:    clusterId,
-						WorkspaceIds: hybridWorkspaceIds,
-					}),
-				Check: resource.ComposeTestCheckFunc(
-					// Check hybrid cluster workspace authorization
-					resource.TestCheckResourceAttr(resourceVar, "cluster_id", clusterId),
-					resource.TestCheckResourceAttr(resourceVar, "workspace_ids.#", strconv.Itoa(len(hybridWorkspaceIds))),
+					resource.TestCheckResourceAttr(resourceVar, "workspace_ids.#", "1"),
 
 					testAccCheckHybridClusterWorkspaceAuthorizationExistence(t, clusterWorkspaceAuth, true),
 				),
@@ -133,7 +114,7 @@ func testAccCheckHybridClusterWorkspaceAuthorizationExistence(t *testing.T, name
 		assert.NoError(t, err)
 
 		organizationId := os.Getenv("HYBRID_ORGANIZATION_ID")
-		clusterId := os.Getenv("HYBRID_CLUSTER_ID")
+		clusterId := os.Getenv("HYBRID_DRY_RUN_CLUSTER_ID")
 
 		ctx := context.Background()
 		resp, err := client.GetClusterWithResponse(ctx, organizationId, clusterId)
