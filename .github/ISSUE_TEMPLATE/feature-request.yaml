@@ -6,7 +6,7 @@ body:
   - type: textarea
     attributes:
       label: Description
-      description: Provide context that lets your future self and others enough information to pick up this issue.
+      description: Provide context that gives your future self and others enough information to pick up this issue.
   - type: textarea
     attributes:
       label: Acceptance Criteria
