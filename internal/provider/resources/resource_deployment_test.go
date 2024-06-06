@@ -500,7 +500,7 @@ func TestAcc_ResourceDeploymentStandardRemovedOutsideOfTerraform(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(standardDeploymentResource, "name", standardDeploymentName),
 					resource.TestCheckResourceAttr(standardDeploymentResource, "description", utils.TestResourceDescription),
-					// Check via API that workspace exists
+					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, standardDeploymentName, true, true),
 				),
 			},
@@ -516,7 +516,7 @@ func TestAcc_ResourceDeploymentStandardRemovedOutsideOfTerraform(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(standardDeploymentResource, "name", standardDeploymentName),
 					resource.TestCheckResourceAttr(standardDeploymentResource, "description", utils.TestResourceDescription),
-					// Check via API that workspace exists
+					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, standardDeploymentName, true, true),
 				),
 			},
@@ -575,8 +575,12 @@ func hybridDeployment(input hybridDeploymentInput) string {
 		taskPodNodePoolIdStr = fmt.Sprintf(`task_pod_node_pool_id = "%v"`, input.NodePoolId)
 	}
 
-	workspaceId := strings.Split(os.Getenv("HYBRID_WORKSPACE_IDS"), ",")[0]
 	return fmt.Sprintf(`
+resource "astro_workspace" "%v_workspace" {
+	name = "%s"
+	description = "%s"
+	cicd_enforced_default = true
+}
 resource "astro_deployment" "%v" {
 	name = "%s"
 	description = "%s"
@@ -588,13 +592,13 @@ resource "astro_deployment" "%v" {
 	is_dag_deploy_enabled = true
 	scheduler_au = %v
 	scheduler_replicas = 1
-	workspace_id = "%v"
+	workspace_id = astro_workspace.%v_workspace.id
 	%v
 	%v
 	%v
   }
 `,
-		input.Name, input.Name, utils.TestResourceDescription, input.ClusterId, input.Executor, input.SchedulerAu, workspaceId,
+		input.Name, input.Name, utils.TestResourceDescription, input.ClusterId, input.Executor, input.SchedulerAu,
 		envVarsStr(input.IncludeEnvironmentVariables), wqStr, taskPodNodePoolIdStr)
 }
 
