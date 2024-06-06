@@ -48,10 +48,10 @@ func TeamsDataSourceSchemaAttributes() map[string]schema.Attribute {
 		},
 		"names": schema.SetAttribute{
 			ElementType: types.StringType,
+			Optional:    true,
 			Validators: []validator.Set{
 				setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 			},
-			Optional: true,
 		},
 	}
 }

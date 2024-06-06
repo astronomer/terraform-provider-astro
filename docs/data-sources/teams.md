@@ -29,40 +29,19 @@ Teams data source
 Required:
 
 - `id` (String) Team identifier
-- `organization_role` (String) The role to assign to the organization
-
-Optional:
-
-- `deployment_roles` (Attributes Set) The roles to assign to the deployments (see [below for nested schema](#nestedatt--teams--deployment_roles))
-- `workspace_roles` (Attributes Set) The roles to assign to the workspaces (see [below for nested schema](#nestedatt--teams--workspace_roles))
 
 Read-Only:
 
 - `created_at` (String) Workspace creation timestamp
 - `created_by` (Attributes) Workspace creator (see [below for nested schema](#nestedatt--teams--created_by))
+- `deployment_roles` (Attributes Set) The roles to assign to the deployments (see [below for nested schema](#nestedatt--teams--deployment_roles))
 - `description` (String) Team description
 - `is_idp_managed` (Boolean) Whether the team is managed by an identity provider
 - `name` (String) Team name
+- `organization_role` (String) The role to assign to the organization
 - `updated_at` (String) Workspace last updated timestamp
 - `updated_by` (Attributes) Workspace updater (see [below for nested schema](#nestedatt--teams--updated_by))
-
-<a id="nestedatt--teams--deployment_roles"></a>
-### Nested Schema for `teams.deployment_roles`
-
-Required:
-
-- `deployment_id` (String) The ID of the deployment to assign the role to
-- `role` (String) The role to assign to the deployment
-
-
-<a id="nestedatt--teams--workspace_roles"></a>
-### Nested Schema for `teams.workspace_roles`
-
-Required:
-
-- `role` (String) The role to assign to the workspace
-- `workspace_id` (String) The ID of the workspace to assign the role to
-
+- `workspace_roles` (Attributes Set) The roles to assign to the workspaces (see [below for nested schema](#nestedatt--teams--workspace_roles))
 
 <a id="nestedatt--teams--created_by"></a>
 ### Nested Schema for `teams.created_by`
@@ -77,6 +56,15 @@ Read-Only:
 - `username` (String)
 
 
+<a id="nestedatt--teams--deployment_roles"></a>
+### Nested Schema for `teams.deployment_roles`
+
+Required:
+
+- `deployment_id` (String) The ID of the deployment to assign the role to
+- `role` (String) The role to assign to the deployment
+
+
 <a id="nestedatt--teams--updated_by"></a>
 ### Nested Schema for `teams.updated_by`
 
@@ -88,3 +76,12 @@ Read-Only:
 - `id` (String)
 - `subject_type` (String)
 - `username` (String)
+
+
+<a id="nestedatt--teams--workspace_roles"></a>
+### Nested Schema for `teams.workspace_roles`
+
+Required:
+
+- `role` (String) The role to assign to the workspace
+- `workspace_id` (String) The ID of the workspace to assign the role to
