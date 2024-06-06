@@ -19,8 +19,7 @@ Team 3
 terraform {
   required_providers {
     astro = {
-      source  = "astronomer/astro"
-      version = "0.2.0"
+      source = "astronomer/astro"
     }
   }
 }

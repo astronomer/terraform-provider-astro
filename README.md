@@ -40,7 +40,6 @@ terraform {
   required_providers {
     astro = {
       source = "astronomer/astro"
-      version >= "0.0.0"
     }
   }
 }
@@ -84,7 +83,6 @@ terraform {
   required_providers {
     astro = {
       source = "astronomer/astro"
-      version >= "0.0.0"
     }
   }
 }
