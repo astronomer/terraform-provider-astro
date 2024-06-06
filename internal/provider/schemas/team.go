@@ -44,6 +44,10 @@ func TeamDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 			Computed:            true,
 			MarkdownDescription: "The roles to assign to the deployments",
 		},
+		"roles_count": resourceSchema.Int64Attribute{
+			MarkdownDescription: "Number of roles assigned to the team",
+			Computed:            true,
+		},
 		"created_at": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace creation timestamp",
 			Computed:            true,

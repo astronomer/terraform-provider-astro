@@ -51,6 +51,7 @@ Read-Only:
 - `is_idp_managed` (Boolean) Whether the team is managed by an identity provider
 - `name` (String) Team name
 - `organization_role` (String) The role to assign to the organization
+- `roles_count` (Number) Number of roles assigned to the team
 - `updated_at` (String) Workspace last updated timestamp
 - `updated_by` (Attributes) Workspace updater (see [below for nested schema](#nestedatt--teams--updated_by))
 - `workspace_roles` (Attributes Set) The roles to assign to the workspaces (see [below for nested schema](#nestedatt--teams--workspace_roles))
