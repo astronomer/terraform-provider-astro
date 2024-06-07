@@ -117,7 +117,7 @@ func testCheckResourceAttrSet(is *terraform.InstanceState, name string, key stri
 		}
 	}
 
-	if ok && val != nil {
+	if ok && val != "" {
 		return nil
 	}
 
