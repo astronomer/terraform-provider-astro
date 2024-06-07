@@ -5,6 +5,7 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -42,6 +43,19 @@ func ResourceWorkspaceRoleSchemaAttributes() map[string]resourceSchema.Attribute
 	}
 }
 
+func DataSourceWorkspaceRoleSchemaAttributes() map[string]datasourceSchema.Attribute {
+	return map[string]datasourceSchema.Attribute{
+		"workspace_id": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The ID of the workspace the role is assigned to",
+			Computed:            true,
+		},
+		"role": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The role assigned to the workspace",
+			Computed:            true,
+		},
+	}
+}
+
 func DeploymentRoleAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"deployment_id": types.StringType,
@@ -64,6 +78,19 @@ func ResourceDeploymentRoleSchemaAttributes() map[string]resourceSchema.Attribut
 			Validators: []validator.String{
 				stringvalidator.LengthAtLeast(1),
 			},
+		},
+	}
+}
+
+func DataSourceDeploymentRoleSchemaAttributes() map[string]datasourceSchema.Attribute {
+	return map[string]datasourceSchema.Attribute{
+		"deployment_id": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The ID of the deployment the role is assigned to",
+			Computed:            true,
+		},
+		"role": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The role assigned to the deployment",
+			Computed:            true,
 		},
 	}
 }
