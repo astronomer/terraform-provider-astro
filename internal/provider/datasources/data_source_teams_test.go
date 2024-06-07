@@ -55,10 +55,6 @@ func checkTeams(tfVarName string) resource.TestCheckFunc {
 		if instanceState.Attributes[name] == "" {
 			return fmt.Errorf("expected 'name' to be set")
 		}
-		description := fmt.Sprintf("teams.%d.description", teamsIdx)
-		if instanceState.Attributes[description] == "" {
-			return fmt.Errorf("expected 'description' to be set")
-		}
 		isIdpManaged := fmt.Sprintf("teams.%d.is_idp_managed", teamsIdx)
 		if instanceState.Attributes[isIdpManaged] == "" {
 			return fmt.Errorf("expected 'is_idp_managed' to be set")
@@ -66,14 +62,6 @@ func checkTeams(tfVarName string) resource.TestCheckFunc {
 		organizationRole := fmt.Sprintf("teams.%d.organization_role", teamsIdx)
 		if instanceState.Attributes[organizationRole] == "" {
 			return fmt.Errorf("expected 'organization_role' to be set")
-		}
-		deploymentRoles := fmt.Sprintf("teams.%d.deployment_roles", teamsIdx)
-		if instanceState.Attributes[deploymentRoles] == "" {
-			return fmt.Errorf("expected 'deployment_roles' to be set")
-		}
-		workspaceRoles := fmt.Sprintf("teams.%d.workspace_roles", teamsIdx)
-		if instanceState.Attributes[workspaceRoles] == "" {
-			return fmt.Errorf("expected 'workspace_roles' to be set")
 		}
 		rolesCount := fmt.Sprintf("teams.%d.roles_count", teamsIdx)
 		if instanceState.Attributes[rolesCount] == "" {

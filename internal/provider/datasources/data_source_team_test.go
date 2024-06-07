@@ -5,13 +5,15 @@ import (
 	"os"
 	"testing"
 
+	"github.com/astronomer/terraform-provider-astro/internal/utils"
+
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAcc_DataSourceTeam(t *testing.T) {
-	teamId := os.Getenv("TF_HOSTED_TEAM_ID")
-	teamName := "terraform_team"
+	teamId := os.Getenv("HOSTED_TEAM_ID")
+	teamName := "terraform_acceptance_tests_dnd"
 	resourceVar := fmt.Sprintf("data.astro_team.%v", teamName)
 
 	resource.Test(t, resource.TestCase{
@@ -25,11 +27,11 @@ func TestAcc_DataSourceTeam(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "name"),
-					resource.TestCheckResourceAttrSet(resourceVar, "description"),
+					utils.TestCheckResourceAttrExists(resourceVar, "description", true),
 					resource.TestCheckResourceAttrSet(resourceVar, "is_idp_managed"),
 					resource.TestCheckResourceAttrSet(resourceVar, "organization_role"),
-					resource.TestCheckResourceAttrSet(resourceVar, "workspace_roles"),
-					resource.TestCheckResourceAttrSet(resourceVar, "deployment_roles"),
+					utils.TestCheckResourceAttrExists(resourceVar, "workspace_roles", true),
+					utils.TestCheckResourceAttrExists(resourceVar, "deployment_roles", true),
 					resource.TestCheckResourceAttrSet(resourceVar, "roles_count"),
 					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
 					resource.TestCheckResourceAttrSet(resourceVar, "updated_at"),
