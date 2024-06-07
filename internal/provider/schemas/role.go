@@ -46,24 +46,12 @@ func ResourceWorkspaceRoleSchemaAttributes() map[string]resourceSchema.Attribute
 func DataSourceWorkspaceRoleSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"workspace_id": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The ID of the workspace to assign the role to",
-			Required:            true,
-			Validators: []validator.String{
-				validators.IsCuid(),
-			},
+			MarkdownDescription: "The ID of the workspace the role is assigned to",
+			Computed:            true,
 		},
 		"role": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The role to assign to the workspace",
-			Required:            true,
-			Validators: []validator.String{
-				stringvalidator.OneOf(
-					string(iam.WORKSPACEOWNER),
-					string(iam.WORKSPACEMEMBER),
-					string(iam.WORKSPACEACCESSOR),
-					string(iam.WORKSPACEOPERATOR),
-					string(iam.WORKSPACEAUTHOR),
-				),
-			},
+			MarkdownDescription: "The role assigned to the workspace",
+			Computed:            true,
 		},
 	}
 }
@@ -97,18 +85,12 @@ func ResourceDeploymentRoleSchemaAttributes() map[string]resourceSchema.Attribut
 func DataSourceDeploymentRoleSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"deployment_id": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The ID of the deployment to assign the role to",
-			Required:            true,
-			Validators: []validator.String{
-				validators.IsCuid(),
-			},
+			MarkdownDescription: "The ID of the deployment the role is assigned to",
+			Computed:            true,
 		},
 		"role": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The role to assign to the deployment",
-			Required:            true,
-			Validators: []validator.String{
-				stringvalidator.LengthAtLeast(1),
-			},
+			MarkdownDescription: "The role assigned to the deployment",
+			Computed:            true,
 		},
 	}
 }

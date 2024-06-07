@@ -55,10 +55,10 @@ Read-Only:
 <a id="nestedatt--deployment_roles"></a>
 ### Nested Schema for `deployment_roles`
 
-Required:
+Read-Only:
 
-- `deployment_id` (String) The ID of the deployment to assign the role to
-- `role` (String) The role to assign to the deployment
+- `deployment_id` (String) The ID of the deployment the role is assigned to
+- `role` (String) The role assigned to the deployment
 
 
 <a id="nestedatt--updated_by"></a>
@@ -77,7 +77,7 @@ Read-Only:
 <a id="nestedatt--workspace_roles"></a>
 ### Nested Schema for `workspace_roles`
 
-Required:
+Read-Only:
 
-- `role` (String) The role to assign to the workspace
-- `workspace_id` (String) The ID of the workspace to assign the role to
+- `role` (String) The role assigned to the workspace
+- `workspace_id` (String) The ID of the workspace the role is assigned to
