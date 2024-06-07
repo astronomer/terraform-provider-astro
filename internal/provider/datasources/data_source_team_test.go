@@ -29,7 +29,7 @@ func TestAcc_DataSourceTeam(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "name"),
-					testCheckResourceAttrExists(resourcevar, "description", true),
+					testCheckResourceAttrExists(resourceVar, "description", true),
 					resource.TestCheckResourceAttrSet(resourceVar, "is_idp_managed"),
 					resource.TestCheckResourceAttrSet(resourceVar, "organization_role"),
 					resource.TestCheckResourceAttrSet(resourceVar, "workspace_roles"),
