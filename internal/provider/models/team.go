@@ -30,7 +30,7 @@ func (data *Team) ReadFromResponse(ctx context.Context, team *iam.Team) diag.Dia
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(team.Id)
 	data.Name = types.StringValue(team.Name)
-	if team.Description != nil || *team.Description != "" {
+	if team.Description != nil {
 		data.Description = types.StringValue(*team.Description)
 	} else {
 		data.Description = types.StringValue("")
