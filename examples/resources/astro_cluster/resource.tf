@@ -37,7 +37,7 @@ resource "astro_cluster" "gcp_example" {
 }
 
 // Import an existing cluster
-import = {
+import {
   id = "clozc036j01to01jrlgvuf98d" // ID of the existing cluster
   to = astro_cluster.imported_cluster
 }
