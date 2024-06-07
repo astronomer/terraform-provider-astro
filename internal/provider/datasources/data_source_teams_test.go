@@ -75,13 +75,13 @@ func checkTeams(tfVarName string) resource.TestCheckFunc {
 		if instanceState.Attributes[updatedAt] == "" {
 			return fmt.Errorf("expected 'updated_at' to be set")
 		}
-		createdBy := fmt.Sprintf("teams.%d.created_by", teamsIdx)
+		createdBy := fmt.Sprintf("teams.%d.created_by.id", teamsIdx)
 		if instanceState.Attributes[createdBy] == "" {
-			return fmt.Errorf("expected 'created_by' to be set")
+			return fmt.Errorf("expected 'created_by.id' to be set")
 		}
-		updatedBy := fmt.Sprintf("teams.%d.updated_by", teamsIdx)
+		updatedBy := fmt.Sprintf("teams.%d.updated_by.id", teamsIdx)
 		if instanceState.Attributes[updatedBy] == "" {
-			return fmt.Errorf("expected 'updated_by' to be set")
+			return fmt.Errorf("expected 'updated_by.id' to be set")
 		}
 
 		return nil
