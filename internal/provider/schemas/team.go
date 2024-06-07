@@ -35,7 +35,7 @@ func TeamDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 				Attributes: ResourceWorkspaceRoleSchemaAttributes(),
 			},
 			Computed:            true,
-			MarkdownDescription: "The roles to assign to the workspaces",
+			MarkdownDescription: "The roles assigned to the workspaces",
 		},
 		"deployment_roles": resourceSchema.SetNestedAttribute{
 			NestedObject: resourceSchema.NestedAttributeObject{
