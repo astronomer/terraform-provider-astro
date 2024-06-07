@@ -135,6 +135,7 @@ jobs:
           ASTRO_API_HOST: https://api.astronomer-stage.io
           HOSTED_TEAM_ID: clwv0r0x7091n01l0t1fm4vxy
           HYBRID_WORKSPACE_IDS: clwv06sva08vg01hovu1j7znw
+          TF_HOSTED_TEAM_ID: clx486hno068301il306nuhsm
           TESTARGS: "-failfast"
         run: make testacc
 
