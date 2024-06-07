@@ -107,14 +107,14 @@ func GetDataSourcesLength(state *terraform.State, tfVarName, dataSourceName stri
 	return instanceState, numAttribute, nil
 }
 
-func TestCheckResourceAttrExists(name, key string, canBeEmpty bool) resource.TestCheckFunc {
+func TestCheckResourceAttrExists(name, key string, isOptional bool) resource.TestCheckFunc {
 	return checkIfIndexesIntoTypeSet(key, func(s *terraform.State) error {
 		is, err := primaryInstanceState(s, name)
 		if err != nil {
 			return err
 		}
 
-		return testCheckResourceAttrSet(is, name, key, canBeEmpty)
+		return testCheckResourceAttrSet(is, name, key, isOptional)
 	})
 }
 
@@ -163,13 +163,11 @@ func modulePrimaryInstanceState(ms *terraform.ModuleState, name string) (*terraf
 	return is, nil
 }
 
-func testCheckResourceAttrSet(is *terraform.InstanceState, name string, key string, canBeEmpty bool) error {
+func testCheckResourceAttrSet(is *terraform.InstanceState, name string, key string, isOptional bool) error {
 	val, ok := is.Attributes[key]
 
-	if canBeEmpty {
-		if ok {
-			return nil
-		}
+	if ok && isOptional {
+		return nil
 	}
 
 	if ok && val != "" {
