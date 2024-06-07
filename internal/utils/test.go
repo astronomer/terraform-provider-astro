@@ -12,7 +12,6 @@ import (
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 var hostedPlatformClient, hybridPlatformClient *platform.ClientWithResponses
@@ -105,94 +104,4 @@ func GetDataSourcesLength(state *terraform.State, tfVarName, dataSourceName stri
 	}
 
 	return instanceState, numAttribute, nil
-}
-
-func TestCheckResourceAttrExists(name, key string, isOptional bool) resource.TestCheckFunc {
-	return checkIfIndexesIntoTypeSet(key, func(s *terraform.State) error {
-		is, err := primaryInstanceState(s, name)
-		if err != nil {
-			return err
-		}
-
-		return testCheckResourceAttrSet(is, name, key, isOptional)
-	})
-}
-
-func checkIfIndexesIntoTypeSet(key string, f resource.TestCheckFunc) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		err := f(s)
-		if err != nil && indexesIntoTypeSet(key) {
-			return fmt.Errorf("Error in test check: %s\nTest check address %q likely indexes into TypeSet\nThis is currently not possible in the SDK", err, key)
-		}
-		return err
-	}
-}
-
-// indexesIntoTypeSet is a heuristic to try and identify if a flatmap style
-// string address uses a precalculated TypeSet hash, which are integers and
-// typically are large and obviously not a list index
-func indexesIntoTypeSet(key string) bool {
-	for _, part := range strings.Split(key, ".") {
-		if i, err := strconv.Atoi(part); err == nil && i > 100 {
-			return true
-		}
-	}
-	return false
-}
-
-// primaryInstanceState returns the primary instance state for the given
-// resource name in the root module.
-func primaryInstanceState(s *terraform.State, name string) (*terraform.InstanceState, error) {
-	ms := s.RootModule() //nolint:staticcheck // legacy usage
-	return modulePrimaryInstanceState(ms, name)
-}
-
-// modulePrimaryInstanceState returns the instance state for the given resource
-// name in a ModuleState
-func modulePrimaryInstanceState(ms *terraform.ModuleState, name string) (*terraform.InstanceState, error) {
-	rs, ok := ms.Resources[name]
-	if !ok {
-		return nil, fmt.Errorf("Not found: %s in %s", name, ms.Path)
-	}
-
-	is := rs.Primary
-	if is == nil {
-		return nil, fmt.Errorf("No primary instance: %s in %s", name, ms.Path)
-	}
-
-	return is, nil
-}
-
-func testCheckResourceAttrSet(is *terraform.InstanceState, name string, key string, isOptional bool) error {
-	val, ok := is.Attributes[key]
-
-	if ok && isOptional {
-		return nil
-	}
-
-	if ok && val != "" {
-		return nil
-	}
-
-	if _, ok := is.Attributes[key+".#"]; ok {
-		return fmt.Errorf(
-			"%s: list or set attribute '%s' must be checked by element count key (%s) or element value keys (e.g. %s). Set element value checks should use TestCheckTypeSet functions instead.",
-			name,
-			key,
-			key+".#",
-			key+".0",
-		)
-	}
-
-	if _, ok := is.Attributes[key+".%"]; ok {
-		return fmt.Errorf(
-			"%s: map attribute '%s' must be checked by element count key (%s) or element value keys (e.g. %s).",
-			name,
-			key,
-			key+".%",
-			key+".examplekey",
-		)
-	}
-
-	return fmt.Errorf("%s: Attribute '%s' expected to be set", name, key)
 }

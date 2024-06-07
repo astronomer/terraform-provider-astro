@@ -5,15 +5,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/astronomer/terraform-provider-astro/internal/utils"
-
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAcc_DataSourceTeam(t *testing.T) {
 	teamId := os.Getenv("HOSTED_TEAM_ID")
-	teamName := "terraform_acceptance_tests_dnd"
+	teamName := "terraform_acceptance_tests"
 	resourceVar := fmt.Sprintf("data.astro_team.%v", teamName)
 
 	resource.Test(t, resource.TestCase{
@@ -27,7 +25,6 @@ func TestAcc_DataSourceTeam(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "name"),
-					utils.TestCheckResourceAttrExists(resourceVar, "description", true),
 					resource.TestCheckResourceAttrSet(resourceVar, "is_idp_managed"),
 					resource.TestCheckResourceAttrSet(resourceVar, "organization_role"),
 					resource.TestCheckResourceAttrSet(resourceVar, "workspace_roles"),
@@ -42,9 +39,9 @@ func TestAcc_DataSourceTeam(t *testing.T) {
 	})
 }
 
-func team(teamId string, teamName string) string {
+func team(teamId string, tfVarName string) string {
 	return fmt.Sprintf(`
 data astro_team "%v" {
 	id = "%v"
-}`, teamName, teamId)
+}`, tfVarName, teamId)
 }

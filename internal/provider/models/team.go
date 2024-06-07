@@ -37,22 +37,13 @@ func (data *Team) ReadFromResponse(ctx context.Context, team *iam.Team) diag.Dia
 	}
 	data.IsIdpManaged = types.BoolValue(team.IsIdpManaged)
 	data.OrganizationRole = types.StringValue(string(team.OrganizationRole))
-	if team.DeploymentRoles != nil {
-		data.DeploymentRoles, diags = utils.ObjectSet(ctx, team.DeploymentRoles, schemas.DeploymentRoleAttributeTypes(), DeploymentRoleTypesObject)
-		if diags.HasError() {
-			return diags
-		}
-	} else {
-		data.DeploymentRoles = types.SetNull(types.ObjectType{AttrTypes: schemas.DeploymentRoleAttributeTypes()})
+	data.DeploymentRoles, diags = utils.ObjectSet(ctx, team.DeploymentRoles, schemas.DeploymentRoleAttributeTypes(), DeploymentRoleTypesObject)
+	if diags.HasError() {
+		return diags
 	}
-	if team.WorkspaceRoles != nil {
-		data.WorkspaceRoles, diags = utils.ObjectSet(ctx, team.WorkspaceRoles, schemas.WorkspaceRoleAttributeTypes(), WorkspaceRoleTypesObject)
-		if diags.HasError() {
-			return diags
-		}
-	} else {
-		data.WorkspaceRoles = types.SetNull(types.ObjectType{AttrTypes: schemas.WorkspaceRoleAttributeTypes()})
-
+	data.WorkspaceRoles, diags = utils.ObjectSet(ctx, team.WorkspaceRoles, schemas.WorkspaceRoleAttributeTypes(), WorkspaceRoleTypesObject)
+	if diags.HasError() {
+		return diags
 	}
 	if team.RolesCount != nil {
 		data.RolesCount = types.Int64Value(int64(*team.RolesCount))

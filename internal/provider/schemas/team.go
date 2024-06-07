@@ -3,7 +3,6 @@ package schemas
 import (
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
@@ -30,39 +29,39 @@ func TeamDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 			MarkdownDescription: "The role assigned to the organization",
 			Computed:            true,
 		},
-		"workspace_roles": resourceSchema.SetNestedAttribute{
-			NestedObject: resourceSchema.NestedAttributeObject{
-				Attributes: ResourceWorkspaceRoleSchemaAttributes(),
+		"workspace_roles": datasourceSchema.SetNestedAttribute{
+			NestedObject: datasourceSchema.NestedAttributeObject{
+				Attributes: DataSourceWorkspaceRoleSchemaAttributes(),
 			},
 			Computed:            true,
 			MarkdownDescription: "The roles assigned to the workspaces",
 		},
-		"deployment_roles": resourceSchema.SetNestedAttribute{
-			NestedObject: resourceSchema.NestedAttributeObject{
-				Attributes: ResourceDeploymentRoleSchemaAttributes(),
+		"deployment_roles": datasourceSchema.SetNestedAttribute{
+			NestedObject: datasourceSchema.NestedAttributeObject{
+				Attributes: DataSourceDeploymentRoleSchemaAttributes(),
 			},
 			Computed:            true,
-			MarkdownDescription: "The roles to assign to the deployments",
+			MarkdownDescription: "The roles assigned to the deployments",
 		},
-		"roles_count": resourceSchema.Int64Attribute{
+		"roles_count": datasourceSchema.Int64Attribute{
 			MarkdownDescription: "Number of roles assigned to the team",
 			Computed:            true,
 		},
 		"created_at": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Workspace creation timestamp",
+			MarkdownDescription: "Team creation timestamp",
 			Computed:            true,
 		},
 		"updated_at": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Workspace last updated timestamp",
+			MarkdownDescription: "Team last updated timestamp",
 			Computed:            true,
 		},
 		"created_by": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Workspace creator",
+			MarkdownDescription: "Team creator",
 			Computed:            true,
 			Attributes:          DataSourceSubjectProfileSchemaAttributes(),
 		},
 		"updated_by": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Workspace updater",
+			MarkdownDescription: "Team updater",
 			Computed:            true,
 			Attributes:          DataSourceSubjectProfileSchemaAttributes(),
 		},
