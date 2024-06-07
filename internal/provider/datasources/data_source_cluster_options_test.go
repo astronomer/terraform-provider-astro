@@ -42,15 +42,15 @@ func TestAcc_DataSourceClusterOptions(t *testing.T) {
 func clusterOptions(clusterType, provider string) string {
 	return fmt.Sprintf(`
 data astro_cluster_options "test_data_cluster_options" {
- type = "%v"
- cloud_provider = "%v"
+  type = "%v"
+  cloud_provider = "%v"
 }`, clusterType, provider)
 }
 
 func clusterOptionsWithoutProviderFilter(clusterType string) string {
 	return fmt.Sprintf(`
 data astro_cluster_options "test_data_cluster_options" {
- type = "%v"
+  type = "%v"
 }`, clusterType)
 }
 
