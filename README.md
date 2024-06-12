@@ -120,7 +120,6 @@ resource "astro_cluster" "tf_cluster" {
     name = "my first cluster"
     region = "us-east-1"
     cloud_provider = "AWS"
-    db_instance_type = "db.m6g.large"
     vpc_subnet_range = "172.20.0.0/20"
     workspace_ids = [astro_workspace.tf_workspace.id, data.astro_workspace.example.id]
     timeouts = {

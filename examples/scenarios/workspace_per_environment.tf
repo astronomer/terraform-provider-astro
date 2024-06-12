@@ -279,7 +279,6 @@ resource "astro_cluster" "prod_aws_cluster" {
   name             = "Prod AWS Cluster"
   region           = "us-east-1"
   cloud_provider   = "AWS"
-  db_instance_type = "db.m6g.large"
   vpc_subnet_range = "172.20.0.0/20"
   workspace_ids    = []
   timeouts = {

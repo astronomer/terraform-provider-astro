@@ -18,13 +18,12 @@ resource "astro_cluster" "aws_example" {
   name             = "my first aws cluster"
   region           = "us-east-1"
   cloud_provider   = "AWS"
-  db_instance_type = "db.m6g.large"
   vpc_subnet_range = "172.20.0.0/20"
   workspace_ids    = []
-  timeouts = {
-    create = "3h"
-    update = "2h"
-    delete = "1h"
+  timeouts = {    # Optional timeouts for create, update, and delete
+    create = "3h" # Timeout after 3 hours if the cluster is not created
+    update = "2h" # Timeout after 2 hours if the cluster is not updated
+    delete = "1h" # Timeout after 1 hour if the cluster is not deleted
   }
 }
 
@@ -33,7 +32,6 @@ resource "astro_cluster" "azure_example" {
   name             = "my first azure cluster"
   region           = "westus2"
   cloud_provider   = "AZURE"
-  db_instance_type = "Standard_D2ds_v4"
   vpc_subnet_range = "172.20.0.0/19"
   workspace_ids    = ["clv4wcf6f003u01m3zp7gsvzg"]
 }
@@ -43,7 +41,6 @@ resource "astro_cluster" "gcp_example" {
   name                  = "my first gcp cluster"
   region                = "us-central1"
   cloud_provider        = "GCP"
-  db_instance_type      = "Small General Purpose"
   pod_subnet_range      = "172.21.0.0/19"
   service_peering_range = "172.23.0.0/20"
   service_subnet_range  = "172.22.0.0/22"
@@ -61,7 +58,6 @@ resource "astro_cluster" "imported_cluster" {
   name                  = "an existing cluster to import"
   region                = "us-central1"
   cloud_provider        = "GCP"
-  db_instance_type      = "Small General Purpose"
   pod_subnet_range      = "172.21.0.0/19"
   service_peering_range = "172.23.0.0/20"
   service_subnet_range  = "172.22.0.0/22"
@@ -76,7 +72,6 @@ resource "astro_cluster" "imported_cluster" {
 ### Required
 
 - `cloud_provider` (String) Cluster cloud provider - if changed, the cluster will be recreated.
-- `db_instance_type` (String) Cluster database instance type
 - `name` (String) Cluster name
 - `region` (String) Cluster region - if changed, the cluster will be recreated.
 - `type` (String) Cluster type
@@ -93,6 +88,7 @@ resource "astro_cluster" "imported_cluster" {
 ### Read-Only
 
 - `created_at` (String) Cluster creation timestamp
+- `db_instance_type` (String) Cluster database instance type
 - `id` (String) Cluster identifier
 - `is_limited` (Boolean) Whether the cluster is limited
 - `metadata` (Attributes) Cluster metadata (see [below for nested schema](#nestedatt--metadata))
