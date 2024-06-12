@@ -48,7 +48,7 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 		},
 		"db_instance_type": resourceSchema.StringAttribute{
 			MarkdownDescription: "Cluster database instance type",
-			Required:            true,
+			Computed:            true,
 		},
 		"region": resourceSchema.StringAttribute{
 			MarkdownDescription: "Cluster region - if changed, the cluster will be recreated.",

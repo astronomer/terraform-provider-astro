@@ -95,7 +95,6 @@ func (r *ClusterResource) Create(
 	case platform.ClusterCloudProviderAWS:
 		createAwsDedicatedClusterRequest := platform.CreateAwsClusterRequest{
 			CloudProvider:   platform.CreateAwsClusterRequestCloudProvider(data.CloudProvider.ValueString()),
-			DbInstanceType:  data.DbInstanceType.ValueStringPointer(),
 			Name:            data.Name.ValueString(),
 			NodePools:       nil,
 			ProviderAccount: data.ProviderAccount.ValueStringPointer(),
@@ -124,7 +123,6 @@ func (r *ClusterResource) Create(
 	case platform.ClusterCloudProviderAZURE:
 		createAzureDedicatedClusterRequest := platform.CreateAzureClusterRequest{
 			CloudProvider:   platform.CreateAzureClusterRequestCloudProvider(data.CloudProvider.ValueString()),
-			DbInstanceType:  data.DbInstanceType.ValueStringPointer(),
 			Name:            data.Name.ValueString(),
 			NodePools:       nil,
 			ProviderAccount: data.ProviderAccount.ValueStringPointer(),
@@ -154,7 +152,6 @@ func (r *ClusterResource) Create(
 	case platform.ClusterCloudProviderGCP:
 		createGcpDedicatedClusterRequest := platform.CreateGcpClusterRequest{
 			CloudProvider:       platform.CreateGcpClusterRequestCloudProvider(data.CloudProvider.ValueString()),
-			DbInstanceType:      data.DbInstanceType.ValueStringPointer(),
 			Name:                data.Name.ValueString(),
 			NodePools:           nil,
 			PodSubnetRange:      data.PodSubnetRange.ValueString(),
@@ -311,12 +308,11 @@ func (r *ClusterResource) Update(
 	var updateClusterRequest platform.UpdateClusterRequest
 
 	updateDedicatedClusterRequest := platform.UpdateDedicatedClusterRequest{
-		ClusterType:    (*platform.UpdateDedicatedClusterRequestClusterType)(data.Type.ValueStringPointer()),
-		DbInstanceType: data.DbInstanceType.ValueStringPointer(),
-		K8sTags:        []platform.ClusterK8sTag{},
-		Name:           data.Name.ValueString(),
-		NodePools:      nil,
-		WorkspaceIds:   nil,
+		ClusterType:  (*platform.UpdateDedicatedClusterRequestClusterType)(data.Type.ValueStringPointer()),
+		K8sTags:      []platform.ClusterK8sTag{},
+		Name:         data.Name.ValueString(),
+		NodePools:    nil,
+		WorkspaceIds: nil,
 	}
 
 	// workspaceIds
