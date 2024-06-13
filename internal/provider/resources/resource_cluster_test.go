@@ -58,7 +58,6 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 						Name:                               awsClusterName,
 						Region:                             "us-east-1",
 						CloudProvider:                      "AWS",
-						DbInstanceType:                     "db.m6g.large",
 						RestrictedWorkspaceResourceVarName: workspaceResourceVar,
 					}) +
 					dedicatedDeployment(dedicatedDeploymentInput{
@@ -73,7 +72,6 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(awsResourceVar, "name", awsClusterName),
 					resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-1"),
 					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
-					resource.TestCheckResourceAttr(awsResourceVar, "db_instance_type", "db.m6g.large"),
 					resource.TestCheckResourceAttrSet(awsResourceVar, "vpc_subnet_range"),
 					resource.TestCheckResourceAttr(awsResourceVar, "workspace_ids.#", "1"),
 
@@ -95,10 +93,9 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, true) +
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
 					cluster(clusterInput{
-						Name:           awsClusterName,
-						Region:         "us-east-1",
-						CloudProvider:  "AWS",
-						DbInstanceType: "db.r5.xlarge",
+						Name:          awsClusterName,
+						Region:        "us-east-1",
+						CloudProvider: "AWS",
 					}) +
 					dedicatedDeployment(dedicatedDeploymentInput{
 						ClusterResourceVar:   awsResourceVar,
@@ -112,7 +109,6 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(awsResourceVar, "name", awsClusterName),
 					resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-1"),
 					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
-					resource.TestCheckResourceAttr(awsResourceVar, "db_instance_type", "db.r5.xlarge"),
 					resource.TestCheckResourceAttrSet(awsResourceVar, "vpc_subnet_range"),
 					resource.TestCheckResourceAttr(awsResourceVar, "workspace_ids.#", "0"),
 
@@ -138,7 +134,6 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 						Name:                               awsClusterName,
 						Region:                             "us-east-1",
 						CloudProvider:                      "AWS",
-						DbInstanceType:                     "db.m6g.large",
 						RestrictedWorkspaceResourceVarName: workspaceResourceVar,
 					}) +
 					dedicatedDeployment(dedicatedDeploymentInput{
@@ -153,7 +148,6 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(awsResourceVar, "name", awsClusterName),
 					resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-1"),
 					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
-					resource.TestCheckResourceAttr(awsResourceVar, "db_instance_type", "db.m6g.large"),
 					resource.TestCheckResourceAttrSet(awsResourceVar, "vpc_subnet_range"),
 					resource.TestCheckResourceAttr(awsResourceVar, "workspace_ids.#", "1"),
 
@@ -178,7 +172,6 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 						Name:                               awsClusterName,
 						Region:                             "us-east-1",
 						CloudProvider:                      "AWS",
-						DbInstanceType:                     "db.m6g.large",
 						RestrictedWorkspaceResourceVarName: workspaceResourceVar,
 					}),
 				Check: resource.ComposeTestCheckFunc(
@@ -186,7 +179,6 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(awsResourceVar, "name", awsClusterName),
 					resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-1"),
 					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
-					resource.TestCheckResourceAttr(awsResourceVar, "db_instance_type", "db.m6g.large"),
 					resource.TestCheckResourceAttrSet(awsResourceVar, "vpc_subnet_range"),
 					resource.TestCheckResourceAttr(awsResourceVar, "workspace_ids.#", "1"),
 
@@ -238,7 +230,6 @@ func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
 						Name:                               azureClusterName,
 						Region:                             "westus2",
 						CloudProvider:                      "AZURE",
-						DbInstanceType:                     "Standard_D2ds_v4",
 						RestrictedWorkspaceResourceVarName: workspaceResourceVar,
 					}) +
 					dedicatedDeployment(dedicatedDeploymentInput{
@@ -253,7 +244,6 @@ func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(azureResourceVar, "name", azureClusterName),
 					resource.TestCheckResourceAttr(azureResourceVar, "region", "westus2"),
 					resource.TestCheckResourceAttr(azureResourceVar, "cloud_provider", "AZURE"),
-					resource.TestCheckResourceAttr(azureResourceVar, "db_instance_type", "Standard_D2ds_v4"),
 					resource.TestCheckResourceAttrSet(azureResourceVar, "vpc_subnet_range"),
 					resource.TestCheckResourceAttr(azureResourceVar, "workspace_ids.#", "1"),
 
@@ -311,7 +301,6 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 						Name:                               gcpClusterName,
 						Region:                             "us-central1",
 						CloudProvider:                      "GCP",
-						DbInstanceType:                     "Small General Purpose",
 						RestrictedWorkspaceResourceVarName: workspaceResourceVar,
 					}) +
 					dedicatedDeployment(dedicatedDeploymentInput{
@@ -326,7 +315,6 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(gcpResourceVar, "name", gcpClusterName),
 					resource.TestCheckResourceAttr(gcpResourceVar, "region", "us-central1"),
 					resource.TestCheckResourceAttr(gcpResourceVar, "cloud_provider", "GCP"),
-					resource.TestCheckResourceAttr(gcpResourceVar, "db_instance_type", "Small General Purpose"),
 					resource.TestCheckResourceAttrSet(gcpResourceVar, "vpc_subnet_range"),
 					resource.TestCheckResourceAttrSet(gcpResourceVar, "pod_subnet_range"),
 					resource.TestCheckResourceAttrSet(gcpResourceVar, "service_peering_range"),
@@ -363,10 +351,9 @@ func TestAcc_ResourceClusterRemovedOutsideOfTerraform(t *testing.T) {
 	clusterName := utils.GenerateTestResourceName(10)
 	clusterResource := fmt.Sprintf("astro_cluster.%v", clusterName)
 	depInput := clusterInput{
-		Name:           clusterName,
-		Region:         "us-central1",
-		CloudProvider:  "GCP",
-		DbInstanceType: "Small General Purpose",
+		Name:          clusterName,
+		Region:        "us-central1",
+		CloudProvider: "GCP",
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
@@ -442,7 +429,6 @@ type clusterInput struct {
 	Name                               string
 	Region                             string
 	CloudProvider                      string
-	DbInstanceType                     string
 	RestrictedWorkspaceResourceVarName string
 }
 
@@ -463,12 +449,11 @@ func cluster(input clusterInput) string {
 	type = "DEDICATED"
 	region = "%v"
 	cloud_provider = "%v"
-	db_instance_type = "%v"
 	vpc_subnet_range = "172.20.0.0/20"
 	%v
 	workspace_ids = [%v]
 }
-`, input.Name, input.Name, input.Region, input.CloudProvider, input.DbInstanceType, gcpNetworkFields, workspaceId)
+`, input.Name, input.Name, input.Region, input.CloudProvider, gcpNetworkFields, workspaceId)
 }
 
 func clusterWithVariableName(input clusterInput) string {
