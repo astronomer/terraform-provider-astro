@@ -82,7 +82,7 @@ provider_installation {
 terraform {
   required_providers {
     astro = {
-      source = "registry.terraform.io/astronomer/astro"
+      source = "astronomer/astro"
       version >= "0.0.0"
     }
   }
