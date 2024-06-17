@@ -22,7 +22,7 @@ Team 3 workspace prod
 terraform {
   required_providers {
     astro = {
-      source = "registry.terraform.io/astronomer/astro"
+      source = "astronomer/astro"
     }
   }
 }
@@ -124,7 +124,6 @@ resource "astro_cluster" "team_1_cluster" {
   name             = "Team 1 AWS Cluster"
   region           = "us-east-1"
   cloud_provider   = "AWS"
-  db_instance_type = "db.m6g.large"
   vpc_subnet_range = "172.20.0.0/20"
   workspace_ids    = []
   timeouts = {
@@ -251,7 +250,6 @@ resource "astro_cluster" "team_2_cluster" {
   name             = "Team 2 AWS Cluster"
   region           = "us-east-1"
   cloud_provider   = "AWS"
-  db_instance_type = "db.m6g.large"
   vpc_subnet_range = "172.20.0.0/20"
   workspace_ids    = []
   timeouts = {
@@ -378,7 +376,6 @@ resource "astro_cluster" "team_3_cluster" {
   name             = "Team 3 AWS Cluster"
   region           = "us-east-1"
   cloud_provider   = "AWS"
-  db_instance_type = "db.m6g.large"
   vpc_subnet_range = "172.20.0.0/20"
   workspace_ids    = []
   timeouts = {

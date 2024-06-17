@@ -90,7 +90,7 @@ resource "astro_deployment" "hybrid" {
 }
 
 // Import an existing deployment
-import = {
+import {
   id = "clv17vgft000801kkydsws63x" // ID of the existing deployment
   to = astro_deployment.imported_deployment
 }

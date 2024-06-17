@@ -23,32 +23,21 @@ func TestAccPreCheck(t *testing.T) {
 	// about the appropriate environment variables being set are common to see in a pre-check
 	// function.
 	var missingEnvVars []string
-	if hostedToken := os.Getenv("HOSTED_ORGANIZATION_API_TOKEN"); len(hostedToken) == 0 {
-		missingEnvVars = append(missingEnvVars, "HOSTED_ORGANIZATION_API_TOKEN")
+	envVars := []string{
+		"HOSTED_ORGANIZATION_API_TOKEN",
+		"HOSTED_ORGANIZATION_ID",
+		"HYBRID_ORGANIZATION_API_TOKEN",
+		"HYBRID_ORGANIZATION_ID",
+		"HYBRID_DRY_RUN_CLUSTER_ID",
+		"ASTRO_API_HOST",
+		"HYBRID_CLUSTER_ID",
+		"HYBRID_NODE_POOL_ID",
+		"HOSTED_TEAM_ID",
 	}
-	if hostedOrgId := os.Getenv("HOSTED_ORGANIZATION_ID"); len(hostedOrgId) == 0 {
-		missingEnvVars = append(missingEnvVars, "HOSTED_ORGANIZATION_ID")
-	}
-	if hybridToken := os.Getenv("HYBRID_ORGANIZATION_API_TOKEN"); len(hybridToken) == 0 {
-		missingEnvVars = append(missingEnvVars, "HYBRID_ORGANIZATION_API_TOKEN")
-	}
-	if hybridOrgId := os.Getenv("HYBRID_ORGANIZATION_ID"); len(hybridOrgId) == 0 {
-		missingEnvVars = append(missingEnvVars, "HYBRID_ORGANIZATION_ID")
-	}
-	if hybridWorkspaceIds := os.Getenv("HYBRID_WORKSPACE_IDS"); len(hybridWorkspaceIds) == 0 {
-		missingEnvVars = append(missingEnvVars, "HYBRID_WORKSPACE_IDS")
-	}
-	if host := os.Getenv("ASTRO_API_HOST"); len(host) == 0 {
-		missingEnvVars = append(missingEnvVars, "ASTRO_API_HOST")
-	}
-	if hybridClusterId := os.Getenv("HYBRID_CLUSTER_ID"); len(hybridClusterId) == 0 {
-		missingEnvVars = append(missingEnvVars, "HYBRID_CLUSTER_ID")
-	}
-	if hybridNodePoolId := os.Getenv("HYBRID_NODE_POOL_ID"); len(hybridNodePoolId) == 0 {
-		missingEnvVars = append(missingEnvVars, "HYBRID_NODE_POOL_ID")
-	}
-	if hostedTeamId := os.Getenv("HOSTED_TEAM_ID"); len(hostedTeamId) == 0 {
-		missingEnvVars = append(missingEnvVars, "HOSTED_TEAM_ID")
+	for _, envVar := range envVars {
+		if val := os.Getenv(envVar); len(val) == 0 {
+			missingEnvVars = append(missingEnvVars, envVar)
+		}
 	}
 	if len(missingEnvVars) > 0 {
 		t.Fatalf("Pre-check failed: %+v must be set for acceptance tests", strings.Join(missingEnvVars, ", "))
