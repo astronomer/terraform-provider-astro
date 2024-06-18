@@ -84,9 +84,9 @@ jobs:
           HYBRID_ORGANIZATION_ID: clx44v7op01nf01m5iohqjkk6
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clczfgzc3001o01kjlphpi6hv
-          HYBRID_CLUSTER_ID: clxknz8yl007n01mhowblir8w
+          HYBRID_CLUSTER_ID: clxkqfzvm001d01ncr9rs80si
           HYBRID_DRY_RUN_CLUSTER_ID: clxko4djp008601njcuoxt4z5
-          HYBRID_NODE_POOL_ID: clxknz8yl007m01mhtnh621ok
+          HYBRID_NODE_POOL_ID: clxkqfzvm001c01nc1eosyxzg
           ASTRO_API_HOST: https://api.astronomer-dev.io
           SKIP_CLUSTER_RESOURCE_TESTS: ${{ env.SKIP_CLUSTER_RESOURCE_TESTS }}
           HOSTED_TEAM_ID: clwbclrc100bl01ozjj5s4jmq
@@ -169,9 +169,9 @@ jobs:
           HYBRID_ORGANIZATION_ID: clx44v7op01nf01m5iohqjkk6
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clczfgzc3001o01kjlphpi6hv
-          HYBRID_CLUSTER_ID: clxknz8yl007n01mhowblir8w
+          HYBRID_CLUSTER_ID: clxkqfzvm001d01ncr9rs80si
           HYBRID_DRY_RUN_CLUSTER_ID: clxko4djp008601njcuoxt4z5
-          HYBRID_NODE_POOL_ID: clxknz8yl007m01mhtnh621ok
+          HYBRID_NODE_POOL_ID: clxkqfzvm001c01nc1eosyxzg
           ASTRO_API_HOST: https://api.astronomer-dev.io
           HOSTED_TEAM_ID: clwbclrc100bl01ozjj5s4jmq
           TESTARGS: "-failfast"
