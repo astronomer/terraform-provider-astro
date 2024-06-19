@@ -26,7 +26,6 @@ const SKIP_CLUSTER_RESOURCE_TESTS = "SKIP_CLUSTER_RESOURCE_TESTS"
 const SKIP_CLUSTER_RESOURCE_TESTS_REASON = "Skipping dedicated cluster (and dedicated deployment) resource tests. To run these tests, unset the SKIP_CLUSTER_RESOURCE_TESTS environment variable."
 
 func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
-	t.Skip("AWS cluster creation is currently not working on dev")
 	if os.Getenv(SKIP_CLUSTER_RESOURCE_TESTS) == "True" {
 		t.Skip(SKIP_CLUSTER_RESOURCE_TESTS_REASON)
 	}
