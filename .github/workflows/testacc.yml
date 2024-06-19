@@ -97,7 +97,7 @@ jobs:
     # This job runs every Monday.
     name: Terraform Provider Acceptance Tests - Stage
     needs: build
-    # if: github.event_name == 'schedule' && github.event.schedule == 'cron(30 21 * * 1)'
+    if: github.event_name == 'schedule' && github.event.schedule == 'cron(30 21 * * 1)'
     timeout-minutes: 180 # 3 hours since cluster creation and cluster updates can take a while
     strategy:
       fail-fast: true
