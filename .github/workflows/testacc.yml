@@ -83,13 +83,13 @@ jobs:
           HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HYBRID_ORGANIZATION_API_TOKEN }}
           HYBRID_ORGANIZATION_ID: clx44v7op01nf01m5iohqjkk6
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
-          HOSTED_ORGANIZATION_ID: clczfgzc3001o01kjlphpi6hv
+          HOSTED_ORGANIZATION_ID: clx42kkcm01fo01o06agtmshg
           HYBRID_CLUSTER_ID: clxkqfzvm001d01ncr9rs80si
           HYBRID_DRY_RUN_CLUSTER_ID: clxko4djp008601njcuoxt4z5
           HYBRID_NODE_POOL_ID: clxkqfzvm001c01nc1eosyxzg
           ASTRO_API_HOST: https://api.astronomer-dev.io
           SKIP_CLUSTER_RESOURCE_TESTS: ${{ env.SKIP_CLUSTER_RESOURCE_TESTS }}
-          HOSTED_TEAM_ID: clwbclrc100bl01ozjj5s4jmq
+          HOSTED_TEAM_ID: clx44rvzr01nc01o06pze6qb7
           TESTARGS: "-failfast"
         run: make testacc
 
@@ -124,14 +124,14 @@ jobs:
       - env:
           TF_ACC: "1"
           HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HYBRID_ORGANIZATION_API_TOKEN }}
-          HYBRID_ORGANIZATION_ID: ckon5obsu03322822nvm6yumk
+          HYBRID_ORGANIZATION_ID: clx46ca4y061z01jleyku7sr6
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HOSTED_ORGANIZATION_API_TOKEN }}
-          HOSTED_ORGANIZATION_ID: clczfo8a111cz0t140nck8ubn
-          HYBRID_CLUSTER_ID: clqqongl40fmv01m96dvxh2nu
-          HYBRID_DRY_RUN_CLUSTER_ID: clx2b2iag0b6301nbg6ox1wd8
-          HYBRID_NODE_POOL_ID: clqqongl40fmu01m94pwp4kct
+          HOSTED_ORGANIZATION_ID: clx46acvv060e01ilddqlbsmc
+          HYBRID_CLUSTER_ID: clxm3xg9e05bl01ixsrhxje4e
+          HYBRID_DRY_RUN_CLUSTER_ID: clxm3y54805bs01ix5owqhfff
+          HYBRID_NODE_POOL_ID: clxm3xg9e05bk01ixrqk52cob
           ASTRO_API_HOST: https://api.astronomer-stage.io
-          HOSTED_TEAM_ID: clwv0r0x7091n01l0t1fm4vxy
+          HOSTED_TEAM_ID: clx486hno068301il306nuhsm
           TESTARGS: "-failfast"
         run: make testacc
 
@@ -168,11 +168,11 @@ jobs:
           HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HYBRID_ORGANIZATION_API_TOKEN }}
           HYBRID_ORGANIZATION_ID: clx44v7op01nf01m5iohqjkk6
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
-          HOSTED_ORGANIZATION_ID: clczfgzc3001o01kjlphpi6hv
+          HOSTED_ORGANIZATION_ID: clx42kkcm01fo01o06agtmshg
           HYBRID_CLUSTER_ID: clxkqfzvm001d01ncr9rs80si
           HYBRID_DRY_RUN_CLUSTER_ID: clxko4djp008601njcuoxt4z5
           HYBRID_NODE_POOL_ID: clxkqfzvm001c01nc1eosyxzg
           ASTRO_API_HOST: https://api.astronomer-dev.io
-          HOSTED_TEAM_ID: clwbclrc100bl01ozjj5s4jmq
+          HOSTED_TEAM_ID: clx44rvzr01nc01o06pze6qb7
           TESTARGS: "-failfast"
         run: make testacc
