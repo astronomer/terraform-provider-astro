@@ -438,6 +438,14 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 					resource.TestCheckNoResourceAttr(scalingSpecResourceVar, "scaling_spec.hibernation_spec.schedules"),
 				),
 			},
+			// Make scaling spec null to test that it is removed from the deployment with no errors
+			{
+				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+					``),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckNoResourceAttr(scalingSpecResourceVar, "scaling_spec"),
+				),
+			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
 					`scaling_spec = {
