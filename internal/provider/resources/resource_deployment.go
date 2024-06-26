@@ -960,8 +960,8 @@ func validateClusterIdConfig(ctx context.Context, data *models.DeploymentResourc
 // RequestScalingSpec converts a Terraform object to a platform.DeploymentScalingSpecRequest to be used in create and update requests
 func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*platform.DeploymentScalingSpecRequest, diag.Diagnostics) {
 	if scalingSpecObj.IsNull() {
-		// If the scaling spec is not set, return nil for the request
-		return nil, nil
+		// If the scaling spec is not set, return an empty scaling spec for the request
+		return &platform.DeploymentScalingSpecRequest{}, nil
 	}
 	var scalingSpec models.DeploymentScalingSpec
 	diags := scalingSpecObj.As(ctx, &scalingSpec, basetypes.ObjectAsOptions{
