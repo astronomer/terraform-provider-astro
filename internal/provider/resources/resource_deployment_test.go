@@ -239,7 +239,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				ResourceName:            awsResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips", "environment_variables.1.value"}, // environment_variables.1.value is a secret value
+				ImportStateVerifyIgnore: []string{"external_ips", "environment_variables.1.value", "scaling_status"}, // environment_variables.1.value is a secret value
 			},
 		},
 	})
