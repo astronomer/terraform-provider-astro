@@ -89,6 +89,7 @@ jobs:
           ASTRO_API_HOST: https://api.astronomer-dev.io
           SKIP_CLUSTER_RESOURCE_TESTS: ${{ env.SKIP_CLUSTER_RESOURCE_TESTS }}
           HOSTED_TEAM_ID: clx44rvzr01nc01o06pze6qb7
+          HOSTED_USER_ID: clhpichn8002m01mqa4ocs7g6
           TESTARGS: "-failfast"
         run: make testacc
 
@@ -133,6 +134,7 @@ jobs:
           HYBRID_NODE_POOL_ID: clxm3xg9e05bk01ixrqk52cob
           ASTRO_API_HOST: https://api.astronomer-stage.io
           HOSTED_TEAM_ID: clx486hno068301il306nuhsm
+          HOSTED_USER_ID: cljftnljr00i001nl6bnngxdb
           TESTARGS: "-failfast"
         run: make testacc
 
@@ -177,5 +179,6 @@ jobs:
           HYBRID_NODE_POOL_ID: clxkqfzvm001c01nc1eosyxzg
           ASTRO_API_HOST: https://api.astronomer-dev.io
           HOSTED_TEAM_ID: clx44rvzr01nc01o06pze6qb7
+          HOSTED_USER_ID: clhpichn8002m01mqa4ocs7g6
           TESTARGS: "-failfast"
         run: make testacc
