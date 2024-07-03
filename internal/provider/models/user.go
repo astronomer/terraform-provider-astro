@@ -6,7 +6,6 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -37,19 +36,11 @@ func (data *User) ReadFromResponse(ctx context.Context, user *iam.User) diag.Dia
 	} else {
 		data.OrganizationRole = types.StringValue("")
 	}
-	if user.DeploymentRoles != nil {
-		data.DeploymentRoles, diags = utils.ObjectSet(ctx, user.DeploymentRoles, schemas.DeploymentRoleAttributeTypes(), DeploymentRoleTypesObject)
-	} else {
-		data.DeploymentRoles, diags = types.SetValue(types.SetType{}, []attr.Value{})
-	}
+	data.DeploymentRoles, diags = utils.ObjectSet(ctx, user.DeploymentRoles, schemas.DeploymentRoleAttributeTypes(), DeploymentRoleTypesObject)
 	if diags.HasError() {
 		return diags
 	}
-	if user.WorkspaceRoles != nil {
-		data.WorkspaceRoles, diags = utils.ObjectSet(ctx, user.WorkspaceRoles, schemas.WorkspaceRoleAttributeTypes(), WorkspaceRoleTypesObject)
-	} else {
-		data.WorkspaceRoles, diags = types.SetValue(types.SetType{}, []attr.Value{})
-	}
+	data.WorkspaceRoles, diags = utils.ObjectSet(ctx, user.WorkspaceRoles, schemas.WorkspaceRoleAttributeTypes(), WorkspaceRoleTypesObject)
 	if diags.HasError() {
 		return diags
 	}

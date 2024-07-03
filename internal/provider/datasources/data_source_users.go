@@ -87,11 +87,11 @@ func (d *usersDataSource) Read(
 		Limit: lo.ToPtr(1000),
 	}
 	var diags diag.Diagnostics
-	workspaceId := data.WorkspaceId.String()
+	workspaceId := data.WorkspaceId.ValueString()
 	if workspaceId != "" {
 		params.WorkspaceId = &workspaceId
 	}
-	deploymentId := data.DeploymentId.String()
+	deploymentId := data.DeploymentId.ValueString()
 	if deploymentId != "" {
 		params.DeploymentId = &deploymentId
 	}
