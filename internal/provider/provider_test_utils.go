@@ -34,6 +34,8 @@ func TestAccPreCheck(t *testing.T) {
 		"HYBRID_NODE_POOL_ID",
 		"HOSTED_TEAM_ID",
 		"HOSTED_USER_ID",
+		"HOSTED_WORKSPACE_ID",
+		"HOSTED_DEPLOYMENT_ID",
 	}
 	for _, envVar := range envVars {
 		if val := os.Getenv(envVar); len(val) == 0 {

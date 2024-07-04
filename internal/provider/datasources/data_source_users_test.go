@@ -2,6 +2,7 @@ package datasources_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
@@ -12,6 +13,8 @@ import (
 
 func TestAcc_DataSourceUsers(t *testing.T) {
 	tfVarName := "test_data_users"
+	tfWorkspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
+	tfDeploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -25,6 +28,18 @@ func TestAcc_DataSourceUsers(t *testing.T) {
 					checkUsers(tfVarName),
 				),
 			},
+			{
+				Config: astronomerprovider.ProviderConfig(t, true) + usersFilter(tfVarName, "workspace_id", tfWorkspaceId),
+				Check: resource.ComposeTestCheckFunc(
+					checkUsers(tfVarName),
+				),
+			},
+			{
+				Config: astronomerprovider.ProviderConfig(t, true) + usersFilter(tfVarName, "deployment_id", tfDeploymentId),
+				Check: resource.ComposeTestCheckFunc(
+					checkUsers(tfVarName),
+				),
+			},
 		},
 	})
 }
@@ -32,6 +47,13 @@ func TestAcc_DataSourceUsers(t *testing.T) {
 func users(tfVarName string) string {
 	return fmt.Sprintf(`
 data astro_users "%v" {}`, tfVarName)
+}
+
+func usersFilter(tfVarName string, filter string, filterId string) string {
+	return fmt.Sprintf(`
+data astro_users "%v" {
+%v = "%v"
+}`, tfVarName, filter, filterId)
 }
 
 func checkUsers(tfVarName string) resource.TestCheckFunc {
