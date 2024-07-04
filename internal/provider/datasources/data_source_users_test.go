@@ -67,6 +67,10 @@ func checkUsers(tfVarName string) resource.TestCheckFunc {
 		if instanceState.Attributes[avatarUrl] == "" {
 			return fmt.Errorf("expected 'avatar_url' to be set")
 		}
+		organizationRole := fmt.Sprintf("teams.%d.organization_role", usersIdx)
+		if instanceState.Attributes[organizationRole] == "" {
+			return fmt.Errorf("expected 'organization_role' to be set")
+		}
 		createdAt := fmt.Sprintf("users.%d.created_at", usersIdx)
 		if instanceState.Attributes[createdAt] == "" {
 			return fmt.Errorf("expected 'created_at' to be set")
