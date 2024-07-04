@@ -67,7 +67,7 @@ func checkUsers(tfVarName string) resource.TestCheckFunc {
 		if instanceState.Attributes[avatarUrl] == "" {
 			return fmt.Errorf("expected 'avatar_url' to be set")
 		}
-		organizationRole := fmt.Sprintf("teams.%d.organization_role", usersIdx)
+		organizationRole := fmt.Sprintf("users.%d.organization_role", usersIdx)
 		if instanceState.Attributes[organizationRole] == "" {
 			return fmt.Errorf("expected 'organization_role' to be set")
 		}
