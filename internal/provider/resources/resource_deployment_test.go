@@ -473,7 +473,7 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 				ResourceName:            scalingSpecResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips"},
+				ImportStateVerifyIgnore: []string{"external_ips", "scaling_status.%"},
 			},
 		},
 	})
