@@ -104,7 +104,7 @@ func TestAcc_ResourceDeploymentHybrid(t *testing.T) {
 				ResourceName:            resourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url", "image_version", "scaling_status"},
+				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url", "image_version", "scaling_status.%"},
 			},
 		},
 	})
@@ -239,7 +239,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				ResourceName:            awsResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips", "environment_variables.1.value", "scaling_status"}, // environment_variables.1.value is a secret value
+				ImportStateVerifyIgnore: []string{"external_ips", "environment_variables.1.value", "scaling_status.%"}, // environment_variables.1.value is a secret value
 			},
 		},
 	})
