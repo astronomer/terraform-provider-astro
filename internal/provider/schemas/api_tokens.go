@@ -27,8 +27,10 @@ func ApiTokensElementAttributeTypes() map[string]attr.Type {
 		},
 		"expiry_period_in_days": types.Int64Type,
 		"last_used_at":          types.StringType,
-		"roles": types.ObjectType{
-			AttrTypes: ApiTokenRoleAttributeTypes(),
+		"roles": types.SetType{
+			ElemType: types.ObjectType{
+				AttrTypes: ApiTokenRoleAttributeTypes(),
+			},
 		},
 		"token": types.StringType,
 	}
