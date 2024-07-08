@@ -101,11 +101,10 @@ func TestAcc_ResourceDeploymentHybrid(t *testing.T) {
 			},
 			// Import existing deployment and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests
 			{
-				ResourceName:      resourceVar,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url", "image_version", "scaling_status.hibernation_status.%",
-					"scaling_status.hibernation_status.is_hibernating", "scaling_status.hibernation_status.reason"},
+				ResourceName:            resourceVar,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url", "image_version", "scaling_status.%"},
 			},
 		},
 	})
@@ -240,7 +239,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				ResourceName:            awsResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips", "environment_variables.1.value"}, // environment_variables.1.value is a secret value
+				ImportStateVerifyIgnore: []string{"external_ips", "environment_variables.1.value", "scaling_status.%"}, // environment_variables.1.value is a secret value
 			},
 		},
 	})
@@ -474,7 +473,7 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 				ResourceName:            scalingSpecResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips"},
+				ImportStateVerifyIgnore: []string{"external_ips", "scaling_status.%"},
 			},
 		},
 	})

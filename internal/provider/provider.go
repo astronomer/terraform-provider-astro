@@ -141,6 +141,8 @@ func (p *AstroProvider) DataSources(ctx context.Context) []func() datasource.Dat
 		datasources.NewDeploymentOptionsDataSource,
 		datasources.NewTeamDataSource,
 		datasources.NewTeamsDataSource,
+		datasources.NewUserDataSources,
+		datasources.NewUsersDataSource,
 	}
 }
 
