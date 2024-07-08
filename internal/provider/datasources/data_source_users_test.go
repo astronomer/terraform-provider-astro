@@ -115,14 +115,8 @@ func checkUsers(tfVarName string, filterWorkspaceId bool, filterDeploymentId boo
 		}
 		if filterDeploymentId {
 			deploymentRoles := fmt.Sprintf("users.%d.deployment_roles.0.role", usersIdx)
-			fmt.Printf("****all attributes: %s", instanceState.Attributes)
-			fmt.Printf("****deployment roles: %s", instanceState.Attributes[deploymentRoles])
 			if instanceState.Attributes[deploymentRoles] == "" {
 				return fmt.Errorf("expected 'deployment_roles' to be set")
-			}
-			if len(instanceState.Attributes[deploymentRoles]) == 0 {
-				fmt.Printf("****deploymentRoles: %s", instanceState.Attributes[deploymentRoles])
-				return fmt.Errorf("expected 'deployment_roles' to be set: %s", instanceState.Attributes[deploymentRoles])
 			}
 		}
 		createdAt := fmt.Sprintf("users.%d.created_at", usersIdx)
