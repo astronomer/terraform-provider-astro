@@ -29,13 +29,13 @@ func TestAcc_DataSourceUsers(t *testing.T) {
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + usersFilter(tfVarName, "workspace_id", tfWorkspaceId),
+				Config: astronomerprovider.ProviderConfig(t, true) + usersFilterWorkspaceId(tfVarName, tfWorkspaceId),
 				Check: resource.ComposeTestCheckFunc(
 					checkUsers(tfVarName, true, false),
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + usersFilter(tfVarName, "deployment_id", tfDeploymentId),
+				Config: astronomerprovider.ProviderConfig(t, true) + usersFilterDeploymentId(tfVarName, tfDeploymentId),
 				Check: resource.ComposeTestCheckFunc(
 					checkUsers(tfVarName, false, true),
 				),
@@ -47,6 +47,20 @@ func TestAcc_DataSourceUsers(t *testing.T) {
 func users(tfVarName string) string {
 	return fmt.Sprintf(`
 data astro_users "%v" {}`, tfVarName)
+}
+
+func usersFilterWorkspaceId(tfVarName string, workspaceId string) string {
+	return fmt.Sprintf(`
+data astro_users "%v" {
+workspace_id = "%v"
+}`, tfVarName, workspaceId)
+}
+
+func usersFilterDeploymentId(tfVarName string, deploymentId string) string {
+	return fmt.Sprintf(`
+data astro_users "%v" {
+deployment_id = "%v"
+}`, tfVarName, deploymentId)
 }
 
 func usersFilter(tfVarName string, filter string, filterId string) string {
