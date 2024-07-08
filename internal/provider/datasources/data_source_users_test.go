@@ -111,12 +111,20 @@ func checkUsers(tfVarName string, filterWorkspaceId bool, filterDeploymentId boo
 			workspaceRoles := fmt.Sprintf("users.%d.workspace_roles.0.role", usersIdx)
 			fmt.Printf("****all attributes: %s", instanceState.Attributes)
 			fmt.Printf("****workspace roles: %s", instanceState.Attributes[workspaceRoles])
+			if instanceState.Attributes[workspaceRoles] == "" {
+				return fmt.Errorf("expected 'workspace_roles' to be set")
+			}
 			if len(instanceState.Attributes[workspaceRoles]) == 0 {
 				return fmt.Errorf("expected 'workspace_roles' to be set: %s", instanceState.Attributes[workspaceRoles])
 			}
 		}
 		if filterDeploymentId {
-			deploymentRoles := fmt.Sprintf("users.%d.deployment_roles", usersIdx)
+			deploymentRoles := fmt.Sprintf("users.%d.deployment_roles.0.role", usersIdx)
+			fmt.Printf("****all attributes: %s", instanceState.Attributes)
+			fmt.Printf("****deployment roles: %s", instanceState.Attributes[deploymentRoles])
+			if instanceState.Attributes[deploymentRoles] == "" {
+				return fmt.Errorf("expected 'deployment_roles' to be set")
+			}
 			if len(instanceState.Attributes[deploymentRoles]) == 0 {
 				fmt.Printf("****deploymentRoles: %s", instanceState.Attributes[deploymentRoles])
 				return fmt.Errorf("expected 'deployment_roles' to be set: %s", instanceState.Attributes[deploymentRoles])
