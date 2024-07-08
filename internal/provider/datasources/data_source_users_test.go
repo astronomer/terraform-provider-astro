@@ -25,19 +25,19 @@ func TestAcc_DataSourceUsers(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + users(tfVarName),
 				Check: resource.ComposeTestCheckFunc(
-					checkUsers(tfVarName),
+					checkUsers(tfVarName, false, false),
 				),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + usersFilter(tfVarName, "workspace_id", tfWorkspaceId),
 				Check: resource.ComposeTestCheckFunc(
-					checkUsers(tfVarName),
+					checkUsers(tfVarName, true, false),
 				),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + usersFilter(tfVarName, "deployment_id", tfDeploymentId),
 				Check: resource.ComposeTestCheckFunc(
-					checkUsers(tfVarName),
+					checkUsers(tfVarName, false, true),
 				),
 			},
 		},
@@ -56,7 +56,7 @@ data astro_users "%v" {
 }`, tfVarName, filter, filterId)
 }
 
-func checkUsers(tfVarName string) resource.TestCheckFunc {
+func checkUsers(tfVarName string, filterWorkspaceId bool, filterDeploymentId bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		instanceState, numUsers, err := utils.GetDataSourcesLength(s, tfVarName, "users")
 		if err != nil {
@@ -92,6 +92,18 @@ func checkUsers(tfVarName string) resource.TestCheckFunc {
 		organizationRole := fmt.Sprintf("users.%d.organization_role", usersIdx)
 		if instanceState.Attributes[organizationRole] == "" {
 			return fmt.Errorf("expected 'organization_role' to be set")
+		}
+		if filterWorkspaceId {
+			workspaceRoles := fmt.Sprintf("users.%d.workspace_roles", usersIdx)
+			if instanceState.Attributes[workspaceRoles] == "" {
+				return fmt.Errorf("expected 'workspace_roles' to be set")
+			}
+		}
+		if filterDeploymentId {
+			deployentRoles := fmt.Sprintf("users.%d.deployment_roles", usersIdx)
+			if instanceState.Attributes[deployentRoles] == "" {
+				return fmt.Errorf("expected 'deployment_roles' to be set")
+			}
 		}
 		createdAt := fmt.Sprintf("users.%d.created_at", usersIdx)
 		if instanceState.Attributes[createdAt] == "" {
