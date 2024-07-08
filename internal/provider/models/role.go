@@ -40,3 +40,21 @@ func DeploymentRoleTypesObject(
 	}
 	return types.ObjectValueFrom(ctx, schemas.DeploymentRoleAttributeTypes(), obj)
 }
+
+type ApiTokenRole struct {
+	EntityId   types.String `tfsdk:"entity_id"`
+	EntityType types.String `tfsdk:"entity_type"`
+	Role       types.String `tfsdk:"role"`
+}
+
+func ApiTokenRoleTypesObject(
+	ctx context.Context,
+	role iam.ApiTokenRole,
+) (types.Object, diag.Diagnostics) {
+	obj := ApiTokenRole{
+		EntityId:   types.StringValue(role.EntityId),
+		EntityType: types.StringValue(string(role.EntityType)),
+		Role:       types.StringValue(role.Role),
+	}
+	return types.ObjectValueFrom(ctx, schemas.ApiTokenRoleAttributeTypes(), obj)
+}
