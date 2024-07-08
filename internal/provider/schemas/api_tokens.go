@@ -38,7 +38,7 @@ func ApiTokensDataSourceSchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"api_tokens": schema.SetNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
-				Attributes: ApiTokensDataSourceSchemaAttributes(),
+				Attributes: ApiTokenDataSourceSchemaAttributes(),
 			},
 			Computed: true,
 		},
