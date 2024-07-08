@@ -10,7 +10,7 @@ import (
 )
 
 func TestAcc_DataSource_ApiToken(t *testing.T) {
-	apiTokenId := os.Getenv("HOSTED_ORGANIZATION_API_TOKEN")
+	apiTokenId := os.Getenv("HOSTED_API_TOKEN_ID")
 	tfVarName := "test_data_api_token"
 	resourceVar := fmt.Sprintf("data.astro_api_token.%v", apiTokenId)
 
