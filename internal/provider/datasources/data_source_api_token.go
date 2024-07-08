@@ -43,7 +43,7 @@ func (d *apiTokenDataSource) Schema(
 ) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Api Token data source",
+		MarkdownDescription: "API Token data source",
 		Attributes:          schemas.ApiTokenDataSourceSchemaAttributes(),
 	}
 }

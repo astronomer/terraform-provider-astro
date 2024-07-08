@@ -46,12 +46,12 @@ func ApiTokenDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute 
 			Computed:            true,
 		},
 		"created_by": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Team creator",
+			MarkdownDescription: "API Token creator",
 			Computed:            true,
 			Attributes:          DataSourceSubjectProfileSchemaAttributes(),
 		},
 		"updated_by": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Team updater",
+			MarkdownDescription: "API Token updater",
 			Computed:            true,
 			Attributes:          DataSourceSubjectProfileSchemaAttributes(),
 		},
