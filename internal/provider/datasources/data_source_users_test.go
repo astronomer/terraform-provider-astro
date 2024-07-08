@@ -63,13 +63,6 @@ deployment_id = "%v"
 }`, tfVarName, deploymentId)
 }
 
-func usersFilter(tfVarName string, filter string, filterId string) string {
-	return fmt.Sprintf(`
-data astro_users "%v" {
-%v = "%v"
-}`, tfVarName, filter, filterId)
-}
-
 func checkUsers(tfVarName string, filterWorkspaceId bool, filterDeploymentId bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		instanceState, numUsers, err := utils.GetDataSourcesLength(s, tfVarName, "users")
@@ -108,15 +101,25 @@ func checkUsers(tfVarName string, filterWorkspaceId bool, filterDeploymentId boo
 			return fmt.Errorf("expected 'organization_role' to be set")
 		}
 		if filterWorkspaceId {
-			workspaceRoles := fmt.Sprintf("users.%d.workspace_roles.0.role", usersIdx)
-			if instanceState.Attributes[workspaceRoles] == "" {
+			workspaceRole := fmt.Sprintf("users.%d.workspace_roles.0.role", usersIdx)
+			workspaceId := fmt.Sprintf("users.%d.workspace_roles.0.workspace_id", usersIdx)
+
+			if instanceState.Attributes[workspaceRole] == "" {
 				return fmt.Errorf("expected 'workspace_roles' to be set")
+			}
+			if instanceState.Attributes[workspaceId] == "" {
+				return fmt.Errorf("expected 'workspace_id' to be set")
 			}
 		}
 		if filterDeploymentId {
-			deploymentRoles := fmt.Sprintf("users.%d.deployment_roles.0.role", usersIdx)
-			if instanceState.Attributes[deploymentRoles] == "" {
+			deploymentRole := fmt.Sprintf("users.%d.deployment_roles.0.role", usersIdx)
+			deploymentId := fmt.Sprintf("users.%d.deployment_roles.0.deployment_id", usersIdx)
+
+			if instanceState.Attributes[deploymentRole] == "" {
 				return fmt.Errorf("expected 'deployment_roles' to be set")
+			}
+			if instanceState.Attributes[deploymentId] == "" {
+				return fmt.Errorf("expected 'deployment_id' to be set")
 			}
 		}
 		createdAt := fmt.Sprintf("users.%d.created_at", usersIdx)
