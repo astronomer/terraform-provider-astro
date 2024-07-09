@@ -135,13 +135,16 @@ func checkApiTokens(tfVarName string, filterWorkspaceId bool, workspaceId string
 		}
 		entityId := fmt.Sprintf("api_tokens.%d.roles.0.entity_id", apiTokensIdx)
 		entityType := fmt.Sprintf("api_tokens.%d.roles.0.entity_type", apiTokensIdx)
-		//role := fmt.Sprintf("api_tokens.%d.roles.0.role", apiTokensIdx)
+		role := fmt.Sprintf("api_tokens.%d.roles.0.role", apiTokensIdx)
 		if filterWorkspaceId {
 			if entityType != string(iam.ApiTokenRoleEntityTypeWORKSPACE) {
 				return fmt.Errorf("expected 'entity_type' to be set to 'workspace'")
 			}
 			if entityId != workspaceId {
 				return fmt.Errorf("expected 'entity_id' to be set to workspace_id")
+			}
+			if utils.CheckRole(role, utils.WorkspaceRoles) {
+				return fmt.Errorf("expected 'role' to be set as a workspace role")
 			}
 		}
 
@@ -152,6 +155,9 @@ func checkApiTokens(tfVarName string, filterWorkspaceId bool, workspaceId string
 			if entityId != deploymentId {
 				return fmt.Errorf("expected 'entity_id' to be set to deployment_id")
 			}
+			if utils.CheckRole(role, utils.DeploymentRoles) {
+				return fmt.Errorf("expected 'role' to be set as a deployment role")
+			}
 		}
 
 		if filterOrgOnly {
@@ -160,6 +166,9 @@ func checkApiTokens(tfVarName string, filterWorkspaceId bool, workspaceId string
 			}
 			if entityId != organizationId {
 				return fmt.Errorf("expected 'entity_id' to be set to organization_id")
+			}
+			if utils.CheckRole(role, utils.OrganizationRoles) {
+				return fmt.Errorf("expected 'role' to be set as an organization role")
 			}
 		}
 
