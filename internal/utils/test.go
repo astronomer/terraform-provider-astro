@@ -122,6 +122,5 @@ func CheckRole(role string, scopeType string) bool {
 		return true
 	}
 
-	lo.Contains(roles, role)
-	return false
+	return lo.Contains(roles, role)
 }
