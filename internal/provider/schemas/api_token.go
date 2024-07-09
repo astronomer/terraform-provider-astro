@@ -30,11 +30,11 @@ func ApiTokenDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute 
 			Computed:            true,
 		},
 		"start_at": datasourceSchema.StringAttribute{
-			MarkdownDescription: "API Token start timestamp",
+			MarkdownDescription: "time when the API token will become valid in UTC",
 			Computed:            true,
 		},
 		"end_at": datasourceSchema.StringAttribute{
-			MarkdownDescription: "API Token end timestamp",
+			MarkdownDescription: "time when the API token will expire in UTC",
 			Computed:            true,
 		},
 		"created_at": datasourceSchema.StringAttribute{
