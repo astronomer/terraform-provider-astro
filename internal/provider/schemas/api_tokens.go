@@ -32,7 +32,6 @@ func ApiTokensElementAttributeTypes() map[string]attr.Type {
 				AttrTypes: ApiTokenRoleAttributeTypes(),
 			},
 		},
-		"token": types.StringType,
 	}
 }
 

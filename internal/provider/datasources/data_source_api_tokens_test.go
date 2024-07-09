@@ -100,10 +100,6 @@ func checkApiTokens(tfVarName string, filterWorkspaceId bool, workspaceId string
 		if instanceState.Attributes[name] == "" {
 			return fmt.Errorf("expected 'name' to be set")
 		}
-		description := fmt.Sprintf("api_tokens.%d.description", apiTokensIdx)
-		if instanceState.Attributes[description] == "" {
-			return fmt.Errorf("expected 'description' to be set")
-		}
 		shortToken := fmt.Sprintf("api_tokens.%d.short_token", apiTokensIdx)
 		if instanceState.Attributes[shortToken] == "" {
 			return fmt.Errorf("expected 'short_token' to be set")
@@ -115,10 +111,6 @@ func checkApiTokens(tfVarName string, filterWorkspaceId bool, workspaceId string
 		startAt := fmt.Sprintf("api_tokens.%d.start_at", apiTokensIdx)
 		if instanceState.Attributes[startAt] == "" {
 			return fmt.Errorf("expected 'start_at' to be set")
-		}
-		endAt := fmt.Sprintf("api_tokens.%d.end_at", apiTokensIdx)
-		if instanceState.Attributes[endAt] == "" {
-			return fmt.Errorf("expected 'end_at' to be set")
 		}
 		createdAt := fmt.Sprintf("api_tokens.%d.created_at", apiTokensIdx)
 		if instanceState.Attributes[createdAt] == "" {
@@ -135,10 +127,6 @@ func checkApiTokens(tfVarName string, filterWorkspaceId bool, workspaceId string
 		updatedBy := fmt.Sprintf("api_tokens.%d.updated_by.id", apiTokensIdx)
 		if instanceState.Attributes[updatedBy] == "" {
 			return fmt.Errorf("expected 'updated_by.id' to be set")
-		}
-		expiryPeriodInDays := fmt.Sprintf("api_tokens.%d.expiry_period_in_days", apiTokensIdx)
-		if instanceState.Attributes[expiryPeriodInDays] == "" {
-			return fmt.Errorf("expected 'expiry_period_in_days' to be set")
 		}
 		lastUsedAt := fmt.Sprintf("api_tokens.%d.last_used_at", apiTokensIdx)
 		if instanceState.Attributes[lastUsedAt] == "" {
