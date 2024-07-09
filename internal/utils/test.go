@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/samber/lo"
+
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -111,16 +113,15 @@ func CheckRole(role string, scopeType string) bool {
 	var WorkspaceRoles = []string{string(iam.WORKSPACEACCESSOR), string(iam.WORKSPACEAUTHOR), string(iam.WORKSPACEMEMBER), string(iam.WORKSPACEOWNER), string(iam.WORKSPACEOPERATOR)}
 	var roles []string
 
+	scopeType = strings.ToLower(scopeType)
 	if scopeType == "organization" {
 		roles = OrganizationRoles
 	} else if scopeType == "workspace" {
 		roles = WorkspaceRoles
+	} else if scopeType == "deployment" {
+		return true
 	}
 
-	for _, r := range roles {
-		if r == role {
-			return true
-		}
-	}
+	lo.Contains(roles, role)
 	return false
 }

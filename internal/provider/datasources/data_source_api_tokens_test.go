@@ -14,12 +14,9 @@ import (
 )
 
 type checkApiTokensInput struct {
-	filterWorkspaceId  bool
-	filterDeploymentId bool
-	filterOrgOnly      bool
-	workspaceId        string
-	deploymentId       string
-	organizationId     string
+	workspaceId    string
+	deploymentId   string
+	organizationId string
 }
 
 func TestAcc_DataSourceApiTokens(t *testing.T) {
@@ -38,12 +35,9 @@ func TestAcc_DataSourceApiTokens(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, true) + apiTokens(tfVarName),
 				Check: resource.ComposeTestCheckFunc(
 					checkApiTokens(tfVarName, checkApiTokensInput{
-						filterWorkspaceId:  false,
-						filterDeploymentId: false,
-						filterOrgOnly:      false,
-						workspaceId:        "",
-						deploymentId:       "",
-						organizationId:     tfOrganizationId,
+						workspaceId:    "",
+						deploymentId:   "",
+						organizationId: "",
 					}),
 				),
 			},
@@ -51,12 +45,9 @@ func TestAcc_DataSourceApiTokens(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, true) + apiTokensFilterWorkspaceId(tfVarName, tfWorkspaceId),
 				Check: resource.ComposeTestCheckFunc(
 					checkApiTokens(tfVarName, checkApiTokensInput{
-						filterWorkspaceId:  true,
-						filterDeploymentId: false,
-						filterOrgOnly:      false,
-						workspaceId:        tfWorkspaceId,
-						deploymentId:       "",
-						organizationId:     tfOrganizationId,
+						workspaceId:    tfWorkspaceId,
+						deploymentId:   "",
+						organizationId: "",
 					}),
 				),
 			},
@@ -64,12 +55,9 @@ func TestAcc_DataSourceApiTokens(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, true) + apiTokensFilterDeploymentId(tfVarName, tfDeploymentId),
 				Check: resource.ComposeTestCheckFunc(
 					checkApiTokens(tfVarName, checkApiTokensInput{
-						filterWorkspaceId:  false,
-						filterDeploymentId: true,
-						filterOrgOnly:      false,
-						workspaceId:        "",
-						deploymentId:       tfDeploymentId,
-						organizationId:     tfOrganizationId,
+						workspaceId:    "",
+						deploymentId:   tfDeploymentId,
+						organizationId: "",
 					}),
 				),
 			},
@@ -77,12 +65,9 @@ func TestAcc_DataSourceApiTokens(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, true) + apiTokensFilterOrgOnly(tfVarName),
 				Check: resource.ComposeTestCheckFunc(
 					checkApiTokens(tfVarName, checkApiTokensInput{
-						filterWorkspaceId:  false,
-						filterDeploymentId: false,
-						filterOrgOnly:      true,
-						workspaceId:        "",
-						deploymentId:       "",
-						organizationId:     tfOrganizationId,
+						workspaceId:    "",
+						deploymentId:   "",
+						organizationId: tfOrganizationId,
 					}),
 				),
 			},
@@ -170,7 +155,7 @@ func checkApiTokens(tfVarName string, input checkApiTokensInput) resource.TestCh
 		entityTypeKey := fmt.Sprintf("api_tokens.%d.roles.0.entity_type", apiTokensIdx)
 		entityType := instanceState.Attributes[entityTypeKey]
 		role := fmt.Sprintf("api_tokens.%d.roles.0.role", apiTokensIdx)
-		if input.filterWorkspaceId {
+		if len(input.workspaceId) > 0 {
 			if entityType != string(iam.ApiTokenRoleEntityTypeWORKSPACE) {
 				return fmt.Errorf("expected 'entity_type' to be set to 'workspace'")
 			}
@@ -182,7 +167,7 @@ func checkApiTokens(tfVarName string, input checkApiTokensInput) resource.TestCh
 			}
 		}
 
-		if input.filterDeploymentId {
+		if len(input.deploymentId) > 0 {
 			if entityType != string(iam.ApiTokenRoleEntityTypeDEPLOYMENT) {
 				return fmt.Errorf("expected 'entity_type' to be set to 'deployment'")
 			}
@@ -191,7 +176,7 @@ func checkApiTokens(tfVarName string, input checkApiTokensInput) resource.TestCh
 			}
 		}
 
-		if input.filterOrgOnly {
+		if len(input.organizationId) > 0 {
 			if entityType != string(iam.ApiTokenRoleEntityTypeORGANIZATION) {
 				return fmt.Errorf("expected 'entity_type' to be set to 'organization'")
 			}
