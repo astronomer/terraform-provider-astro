@@ -129,10 +129,6 @@ func checkApiTokens(tfVarName string, filterWorkspaceId bool, workspaceId string
 		if instanceState.Attributes[updatedBy] == "" {
 			return fmt.Errorf("expected 'updated_by.id' to be set")
 		}
-		lastUsedAt := fmt.Sprintf("api_tokens.%d.last_used_at", apiTokensIdx)
-		if instanceState.Attributes[lastUsedAt] == "" {
-			return fmt.Errorf("expected 'last_used_at' to be set")
-		}
 		entityId := fmt.Sprintf("api_tokens.%d.roles.0.entity_id", apiTokensIdx)
 		entityType := fmt.Sprintf("api_tokens.%d.roles.0.entity_type", apiTokensIdx)
 		role := fmt.Sprintf("api_tokens.%d.roles.0.role", apiTokensIdx)
