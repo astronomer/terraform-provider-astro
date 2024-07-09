@@ -109,15 +109,15 @@ func GetDataSourcesLength(state *terraform.State, tfVarName, dataSourceName stri
 }
 
 func CheckRole(role string, scopeType string) bool {
-	var OrganizationRoles = []string{string(iam.ORGANIZATIONBILLINGADMIN), string(iam.ORGANIZATIONMEMBER), string(iam.ORGANIZATIONOWNER)}
-	var WorkspaceRoles = []string{string(iam.WORKSPACEACCESSOR), string(iam.WORKSPACEAUTHOR), string(iam.WORKSPACEMEMBER), string(iam.WORKSPACEOWNER), string(iam.WORKSPACEOPERATOR)}
+	organizationRoles := []string{string(iam.ORGANIZATIONBILLINGADMIN), string(iam.ORGANIZATIONMEMBER), string(iam.ORGANIZATIONOWNER)}
+	workspaceRoles := []string{string(iam.WORKSPACEACCESSOR), string(iam.WORKSPACEAUTHOR), string(iam.WORKSPACEMEMBER), string(iam.WORKSPACEOWNER), string(iam.WORKSPACEOPERATOR)}
 	var roles []string
 
 	scopeType = strings.ToLower(scopeType)
 	if scopeType == "organization" {
-		roles = OrganizationRoles
+		roles = organizationRoles
 	} else if scopeType == "workspace" {
-		roles = WorkspaceRoles
+		roles = workspaceRoles
 	} else if scopeType == "deployment" {
 		return true
 	}
