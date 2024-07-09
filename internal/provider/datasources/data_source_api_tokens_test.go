@@ -73,10 +73,10 @@ data astro_api_tokens "%v" {
 }`, tfVarName, deploymentId)
 }
 
-func apiTokensFilterOrgOnly(tfVarName string, orgOnly bool) string {
+func apiTokensFilterOrgOnly(tfVarName string) string {
 	return fmt.Sprintf(`
 data astro_api_tokens "%v" {
-	include_only_organization_tokens = %v
+	include_only_organization_tokens = true
 }`, tfVarName, orgOnly)
 }
 
