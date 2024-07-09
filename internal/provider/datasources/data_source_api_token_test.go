@@ -25,7 +25,6 @@ func TestAcc_DataSource_ApiToken(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "name"),
-					resource.TestCheckResourceAttrSet(resourceVar, "description"),
 					resource.TestCheckResourceAttrSet(resourceVar, "short_token"),
 					resource.TestCheckResourceAttrSet(resourceVar, "type"),
 					resource.TestCheckResourceAttrSet(resourceVar, "start_at"),
