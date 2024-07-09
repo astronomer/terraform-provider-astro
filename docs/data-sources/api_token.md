@@ -30,13 +30,13 @@ data "astro_api_token" "example" {
 - `created_at` (String) API Token creation timestamp
 - `created_by` (Attributes) API Token creator (see [below for nested schema](#nestedatt--created_by))
 - `description` (String) API Token description
-- `end_at` (String) API Token end timestamp
+- `end_at` (String) time when the API token will expire in UTC
 - `expiry_period_in_days` (Number) API Token expiry period in days
 - `last_used_at` (String) API Token last used timestamp
 - `name` (String) API Token name
 - `roles` (Attributes Set) The roles assigned to the API Token (see [below for nested schema](#nestedatt--roles))
 - `short_token` (String) API Token short token
-- `start_at` (String) API Token start timestamp
+- `start_at` (String) time when the API token will become valid in UTC
 - `type` (String) API Token type
 - `updated_at` (String) API Token last updated timestamp
 - `updated_by` (Attributes) API Token updater (see [below for nested schema](#nestedatt--updated_by))

@@ -27,7 +27,6 @@ func TestAcc_DataSourceApiTokens(t *testing.T) {
 	tfOrganizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
 	tfWorkspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
 	tfDeploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
-	tfOrgOnly := true
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -114,7 +113,7 @@ func apiTokensFilterOrgOnly(tfVarName string) string {
 	return fmt.Sprintf(`
 data astro_api_tokens "%v" {
 	include_only_organization_tokens = true
-}`, tfVarName, orgOnly)
+}`, tfVarName)
 }
 
 func checkApiTokens(tfVarName string, input checkApiTokensInput) resource.TestCheckFunc {
