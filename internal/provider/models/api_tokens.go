@@ -21,7 +21,7 @@ type ApiTokens struct {
 func (data *ApiTokens) ReadFromResponse(ctx context.Context, apiTokens []iam.ApiToken) diag.Diagnostics {
 	values := make([]attr.Value, len(apiTokens))
 	for i, apiToken := range apiTokens {
-		var singleApiTokenData ApiToken
+		var singleApiTokenData ApiTokenDataSource
 		diags := singleApiTokenData.ReadFromResponse(ctx, &apiToken)
 		if diags.HasError() {
 			return diags

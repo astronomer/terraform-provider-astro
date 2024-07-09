@@ -15,7 +15,7 @@ API Tokens data source
 ```terraform
 data "astro_api_tokens" "example" {}
 
-data "astro_api_tokens" "org_only_example" {
+data "astro_api_tokens" "organization_only_example" {
   include_only_organization_tokens = true
 }
 
@@ -60,7 +60,6 @@ Read-Only:
 - `roles` (Attributes Set) The roles assigned to the API Token (see [below for nested schema](#nestedatt--api_tokens--roles))
 - `short_token` (String) API Token short token
 - `start_at` (String) API Token start timestamp
-- `token` (String) API Token
 - `type` (String) API Token type
 - `updated_at` (String) API Token last updated timestamp
 - `updated_by` (Attributes) API Token updater (see [below for nested schema](#nestedatt--api_tokens--updated_by))
@@ -81,7 +80,7 @@ Read-Only:
 <a id="nestedatt--api_tokens--roles"></a>
 ### Nested Schema for `api_tokens.roles`
 
-Required:
+Read-Only:
 
 - `entity_id` (String) The ID of the entity to assign the role to
 - `entity_type` (String) The type of entity to assign the role to

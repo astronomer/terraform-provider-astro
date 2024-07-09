@@ -70,9 +70,5 @@ func ApiTokenDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute 
 			Computed:            true,
 			MarkdownDescription: "The roles assigned to the API Token",
 		},
-		"token": datasourceSchema.StringAttribute{
-			MarkdownDescription: "API Token",
-			Computed:            true,
-		},
 	}
 }

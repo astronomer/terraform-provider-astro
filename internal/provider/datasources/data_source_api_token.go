@@ -69,7 +69,7 @@ func (d *apiTokenDataSource) Configure(
 }
 
 func (d *apiTokenDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data models.ApiToken
+	var data models.ApiTokenDataSource
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
