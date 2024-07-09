@@ -134,7 +134,7 @@ func checkApiTokens(tfVarName string, filterWorkspaceId bool, workspaceId string
 		role := fmt.Sprintf("api_tokens.%d.roles.0.role", apiTokensIdx)
 		if filterWorkspaceId {
 			if entityType != string(iam.ApiTokenRoleEntityTypeWORKSPACE) {
-				return fmt.Errorf("expected 'entity_type' to be set to 'workspace'")
+				return fmt.Errorf("expected 'entity_type' to be set to 'workspace' - entityType: %v, apitype: %v", entityType, string(iam.ApiTokenRoleEntityTypeWORKSPACE))
 			}
 			if entityId != workspaceId {
 				return fmt.Errorf("expected 'entity_id' to be set to workspace_id")
