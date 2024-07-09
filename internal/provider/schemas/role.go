@@ -107,7 +107,7 @@ func DataSourceApiTokenRoleSchemaAttributes() map[string]datasourceSchema.Attrib
 	return map[string]datasourceSchema.Attribute{
 		"entity_id": datasourceSchema.StringAttribute{
 			MarkdownDescription: "The ID of the entity to assign the role to",
-			Required:            true,
+			Computed:            true,
 			Validators: []validator.String{
 				validators.IsCuid(),
 			},
