@@ -92,6 +92,7 @@ jobs:
           HOSTED_USER_ID: clhpichn8002m01mqa4ocs7g6
           HOSTED_DEPLOYMENT_ID: clyd4zf7g01uu01oxpve7tfvx
           HOSTED_WORKSPACE_ID: clx42sxw501gl01o0gjenthnh
+          HOSTED_API_TOKEN_ID: clxm4836f00ql01me3nigmcr6
           TESTARGS: "-failfast"
         run: make testacc
 
@@ -139,6 +140,7 @@ jobs:
           HOSTED_USER_ID: cljftnljr00i001nl6bnngxdb
           HOSTED_DEPLOYMENT_ID: cly6exz4a00zd01k18t5bo1vf
           HOSTED_WORKSPACE_ID: clx480rvx068u01j9mp7t7fqh
+          HOSTED_API_TOKEN_ID: clxm46ged05b301neuucdqwox
           TESTARGS: "-failfast"
         run: make testacc
 
@@ -186,5 +188,6 @@ jobs:
           HOSTED_USER_ID: clhpichn8002m01mqa4ocs7g6
           HOSTED_DEPLOYMENT_ID: clyd4zf7g01uu01oxpve7tfvx
           HOSTED_WORKSPACE_ID: clx42sxw501gl01o0gjenthnh
+          HOSTED_API_TOKEN_ID: clxm4836f00ql01me3nigmcr6
           TESTARGS: "-failfast"
         run: make testacc
