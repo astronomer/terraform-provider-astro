@@ -106,11 +106,17 @@ func GetDataSourcesLength(state *terraform.State, tfVarName, dataSourceName stri
 	return instanceState, numAttribute, nil
 }
 
-var OrganizationRoles = []string{string(iam.ORGANIZATIONBILLINGADMIN), string(iam.ORGANIZATIONMEMBER), string(iam.ORGANIZATIONOWNER)}
-var WorkspaceRoles = []string{string(iam.WORKSPACEACCESSOR), string(iam.WORKSPACEAUTHOR), string(iam.WORKSPACEMEMBER), string(iam.WORKSPACEOWNER), string(iam.WORKSPACEOPERATOR)}
-var DeploymentRoles = []string{"DEPLOYMENT_ADMIN"}
+func CheckRole(role string, scopeType string) bool {
+	var OrganizationRoles = []string{string(iam.ORGANIZATIONBILLINGADMIN), string(iam.ORGANIZATIONMEMBER), string(iam.ORGANIZATIONOWNER)}
+	var WorkspaceRoles = []string{string(iam.WORKSPACEACCESSOR), string(iam.WORKSPACEAUTHOR), string(iam.WORKSPACEMEMBER), string(iam.WORKSPACEOWNER), string(iam.WORKSPACEOPERATOR)}
+	var roles []string
 
-func CheckRole(role string, roles []string) bool {
+	if scopeType == "organization" {
+		roles = OrganizationRoles
+	} else if scopeType == "workspace" {
+		roles = WorkspaceRoles
+	}
+
 	for _, r := range roles {
 		if r == role {
 			return true

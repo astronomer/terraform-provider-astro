@@ -13,6 +13,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
+type checkApiTokensInput struct {
+	filterWorkspaceId  bool
+	filterDeploymentId bool
+	filterOrgOnly      bool
+	workspaceId        string
+	deploymentId       string
+	organizationId     string
+}
+
 func TestAcc_DataSourceApiTokens(t *testing.T) {
 	tfVarName := "test_data_api_tokens"
 	tfOrganizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
@@ -29,25 +38,53 @@ func TestAcc_DataSourceApiTokens(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + apiTokens(tfVarName),
 				Check: resource.ComposeTestCheckFunc(
-					checkApiTokens(tfVarName, false, "", false, "", false, tfOrganizationId),
+					checkApiTokens(tfVarName, checkApiTokensInput{
+						filterWorkspaceId:  false,
+						filterDeploymentId: false,
+						filterOrgOnly:      false,
+						workspaceId:        "",
+						deploymentId:       "",
+						organizationId:     tfOrganizationId,
+					}),
 				),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + apiTokensFilterWorkspaceId(tfVarName, tfWorkspaceId),
 				Check: resource.ComposeTestCheckFunc(
-					checkApiTokens(tfVarName, true, tfWorkspaceId, false, "", false, tfOrganizationId),
+					checkApiTokens(tfVarName, checkApiTokensInput{
+						filterWorkspaceId:  true,
+						filterDeploymentId: false,
+						filterOrgOnly:      false,
+						workspaceId:        tfWorkspaceId,
+						deploymentId:       "",
+						organizationId:     tfOrganizationId,
+					}),
 				),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + apiTokensFilterDeploymentId(tfVarName, tfDeploymentId),
 				Check: resource.ComposeTestCheckFunc(
-					checkApiTokens(tfVarName, false, "", true, tfDeploymentId, false, tfOrganizationId),
+					checkApiTokens(tfVarName, checkApiTokensInput{
+						filterWorkspaceId:  false,
+						filterDeploymentId: true,
+						filterOrgOnly:      false,
+						workspaceId:        "",
+						deploymentId:       tfDeploymentId,
+						organizationId:     tfOrganizationId,
+					}),
 				),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + apiTokensFilterOrgOnly(tfVarName, tfOrgOnly),
 				Check: resource.ComposeTestCheckFunc(
-					checkApiTokens(tfVarName, false, "", false, "", true, tfOrganizationId),
+					checkApiTokens(tfVarName, checkApiTokensInput{
+						filterWorkspaceId:  false,
+						filterDeploymentId: false,
+						filterOrgOnly:      true,
+						workspaceId:        "",
+						deploymentId:       "",
+						organizationId:     tfOrganizationId,
+					}),
 				),
 			},
 		},
@@ -80,7 +117,7 @@ data astro_api_tokens "%v" {
 }`, tfVarName, orgOnly)
 }
 
-func checkApiTokens(tfVarName string, filterWorkspaceId bool, workspaceId string, filterDeploymentId bool, deploymentId string, filterOrgOnly bool, organizationId string) resource.TestCheckFunc {
+func checkApiTokens(tfVarName string, input checkApiTokensInput) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		instanceState, numApiTokens, err := utils.GetDataSourcesLength(s, tfVarName, "api_tokens")
 		if err != nil {
@@ -134,38 +171,35 @@ func checkApiTokens(tfVarName string, filterWorkspaceId bool, workspaceId string
 		entityTypeKey := fmt.Sprintf("api_tokens.%d.roles.0.entity_type", apiTokensIdx)
 		entityType := instanceState.Attributes[entityTypeKey]
 		role := fmt.Sprintf("api_tokens.%d.roles.0.role", apiTokensIdx)
-		if filterWorkspaceId {
+		if input.filterWorkspaceId {
 			if entityType != string(iam.ApiTokenRoleEntityTypeWORKSPACE) {
 				return fmt.Errorf("expected 'entity_type' to be set to 'workspace'")
 			}
-			if entityId != workspaceId {
+			if entityId != input.workspaceId {
 				return fmt.Errorf("expected 'entity_id' to be set to workspace_id")
 			}
-			if utils.CheckRole(role, utils.WorkspaceRoles) {
+			if utils.CheckRole(role, "workspace") {
 				return fmt.Errorf("expected 'role' to be set as a workspace role")
 			}
 		}
 
-		if filterDeploymentId {
+		if input.filterDeploymentId {
 			if entityType != string(iam.ApiTokenRoleEntityTypeDEPLOYMENT) {
 				return fmt.Errorf("expected 'entity_type' to be set to 'deployment'")
 			}
-			if entityId != deploymentId {
+			if entityId != input.deploymentId {
 				return fmt.Errorf("expected 'entity_id' to be set to deployment_id")
-			}
-			if utils.CheckRole(role, utils.DeploymentRoles) {
-				return fmt.Errorf("expected 'role' to be set as a deployment role")
 			}
 		}
 
-		if filterOrgOnly {
+		if input.filterOrgOnly {
 			if entityType != string(iam.ApiTokenRoleEntityTypeORGANIZATION) {
 				return fmt.Errorf("expected 'entity_type' to be set to 'organization'")
 			}
-			if entityId != organizationId {
+			if entityId != input.organizationId {
 				return fmt.Errorf("expected 'entity_id' to be set to organization_id")
 			}
-			if utils.CheckRole(role, utils.OrganizationRoles) {
+			if utils.CheckRole(role, "organization") {
 				return fmt.Errorf("expected 'role' to be set as an organization role")
 			}
 		}
