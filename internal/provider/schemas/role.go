@@ -112,13 +112,6 @@ func DataSourceApiTokenRoleSchemaAttributes() map[string]datasourceSchema.Attrib
 		"entity_type": datasourceSchema.StringAttribute{
 			MarkdownDescription: "The type of entity to assign the role to",
 			Computed:            true,
-			Validators: []validator.String{
-				stringvalidator.OneOf(
-					string(iam.ApiTokenRoleEntityTypeORGANIZATION),
-					string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
-					string(iam.ApiTokenRoleEntityTypeWORKSPACE),
-				),
-			},
 		},
 		"role": datasourceSchema.StringAttribute{
 			MarkdownDescription: "The role to assign to the deployment",
