@@ -125,7 +125,7 @@ func DataSourceApiTokenRoleSchemaAttributes() map[string]datasourceSchema.Attrib
 		},
 		"role": datasourceSchema.StringAttribute{
 			MarkdownDescription: "The role to assign to the deployment",
-			Required:            true,
+			Computed:            true,
 			Validators: []validator.String{
 				stringvalidator.LengthAtLeast(1),
 			},
