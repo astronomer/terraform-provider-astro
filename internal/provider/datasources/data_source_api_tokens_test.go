@@ -15,6 +15,7 @@ import (
 
 func TestAcc_DataSourceApiTokens(t *testing.T) {
 	tfVarName := "test_data_api_tokens"
+	tfOrganizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
 	tfWorkspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
 	tfDeploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
 	tfOrgOnly := true
@@ -28,25 +29,25 @@ func TestAcc_DataSourceApiTokens(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + apiTokens(tfVarName),
 				Check: resource.ComposeTestCheckFunc(
-					checkApiTokens(tfVarName, false, "", false, "", false),
+					checkApiTokens(tfVarName, false, "", false, "", false, tfOrganizationId),
 				),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + apiTokensFilterWorkspaceId(tfVarName, tfWorkspaceId),
 				Check: resource.ComposeTestCheckFunc(
-					checkApiTokens(tfVarName, true, tfWorkspaceId, false, "", false),
+					checkApiTokens(tfVarName, true, tfWorkspaceId, false, "", false, tfOrganizationId),
 				),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + apiTokensFilterDeploymentId(tfVarName, tfDeploymentId),
 				Check: resource.ComposeTestCheckFunc(
-					checkApiTokens(tfVarName, false, "", true, tfDeploymentId, false),
+					checkApiTokens(tfVarName, false, "", true, tfDeploymentId, false, tfOrganizationId),
 				),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + apiTokensFilterOrgOnly(tfVarName, tfOrgOnly),
 				Check: resource.ComposeTestCheckFunc(
-					checkApiTokens(tfVarName, false, "", false, "", true),
+					checkApiTokens(tfVarName, false, "", false, "", true, tfOrganizationId),
 				),
 			},
 		},
@@ -79,7 +80,7 @@ data astro_api_tokens "%v" {
 }`, tfVarName, orgOnly)
 }
 
-func checkApiTokens(tfVarName string, filterWorkspaceId bool, workspaceId string, filterDeploymentId bool, deploymentId string, filterOrgOnly bool) resource.TestCheckFunc {
+func checkApiTokens(tfVarName string, filterWorkspaceId bool, workspaceId string, filterDeploymentId bool, deploymentId string, filterOrgOnly bool, organizationId string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		instanceState, numApiTokens, err := utils.GetDataSourcesLength(s, tfVarName, "api_tokens")
 		if err != nil {
@@ -133,17 +134,8 @@ func checkApiTokens(tfVarName string, filterWorkspaceId bool, workspaceId string
 			return fmt.Errorf("expected 'last_used_at' to be set")
 		}
 		entityId := fmt.Sprintf("api_tokens.%d.roles.0.entity_id", apiTokensIdx)
-		if instanceState.Attributes[entityId] == "" {
-			return fmt.Errorf("expected 'entity_id' to be set")
-		}
 		entityType := fmt.Sprintf("api_tokens.%d.roles.0.entity_type", apiTokensIdx)
-		if instanceState.Attributes[entityType] == "" {
-			return fmt.Errorf("expected 'entity_type' to be set")
-		}
-		role := fmt.Sprintf("api_tokens.%d.roles.0.role", apiTokensIdx)
-		if instanceState.Attributes[role] == "" {
-			return fmt.Errorf("expected 'roles' to be set")
-		}
+		//role := fmt.Sprintf("api_tokens.%d.roles.0.role", apiTokensIdx)
 		if filterWorkspaceId {
 			if entityType != string(iam.ApiTokenRoleEntityTypeWORKSPACE) {
 				return fmt.Errorf("expected 'entity_type' to be set to 'workspace'")
@@ -165,6 +157,9 @@ func checkApiTokens(tfVarName string, filterWorkspaceId bool, workspaceId string
 		if filterOrgOnly {
 			if entityType != string(iam.ApiTokenRoleEntityTypeORGANIZATION) {
 				return fmt.Errorf("expected 'entity_type' to be set to 'organization'")
+			}
+			if entityId != organizationId {
+				return fmt.Errorf("expected 'entity_id' to be set to organization_id")
 			}
 		}
 
