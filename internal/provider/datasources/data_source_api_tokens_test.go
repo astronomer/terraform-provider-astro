@@ -129,12 +129,14 @@ func checkApiTokens(tfVarName string, filterWorkspaceId bool, workspaceId string
 		if instanceState.Attributes[updatedBy] == "" {
 			return fmt.Errorf("expected 'updated_by.id' to be set")
 		}
-		entityId := fmt.Sprintf("api_tokens.%d.roles.0.entity_id", apiTokensIdx)
-		entityType := fmt.Sprintf("api_tokens.%d.roles.0.entity_type", apiTokensIdx)
+		entityIdKey := fmt.Sprintf("api_tokens.%d.roles.0.entity_id", apiTokensIdx)
+		entityId := instanceState.Attributes[entityIdKey]
+		entityTypeKey := fmt.Sprintf("api_tokens.%d.roles.0.entity_type", apiTokensIdx)
+		entityType := instanceState.Attributes[entityTypeKey]
 		role := fmt.Sprintf("api_tokens.%d.roles.0.role", apiTokensIdx)
 		if filterWorkspaceId {
 			if entityType != string(iam.ApiTokenRoleEntityTypeWORKSPACE) {
-				return fmt.Errorf("expected 'entity_type' to be set to 'workspace' - entityType: %v, apitype: %v", entityType, string(iam.ApiTokenRoleEntityTypeWORKSPACE))
+				return fmt.Errorf("expected 'entity_type' to be set to 'workspace'")
 			}
 			if entityId != workspaceId {
 				return fmt.Errorf("expected 'entity_id' to be set to workspace_id")
