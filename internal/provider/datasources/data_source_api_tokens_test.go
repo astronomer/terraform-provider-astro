@@ -45,7 +45,7 @@ func TestAcc_DataSourceApiTokens(t *testing.T) {
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiTokensFilterOrgOnly(tfVarName, tfOrgOnly),
+				Config: astronomerprovider.ProviderConfig(t, true) + apiTokensFilterOrgOnly(tfVarName),
 				Check: resource.ComposeTestCheckFunc(
 					checkApiTokens(tfVarName, false, "", false, "", true, tfOrganizationId),
 				),
