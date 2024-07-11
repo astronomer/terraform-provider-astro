@@ -4,6 +4,8 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
@@ -78,16 +80,18 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
 		"id": resourceSchema.StringAttribute{
 			MarkdownDescription: "API Token identifier",
-			Required:            true,
-			Validators:          []validator.String{validators.IsCuid()},
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"name": resourceSchema.StringAttribute{
 			MarkdownDescription: "API Token name",
-			Computed:            true,
+			Required:            true,
 		},
 		"description": resourceSchema.StringAttribute{
 			MarkdownDescription: "API Token description",
-			Computed:            true,
+			Optional:            true,
 		},
 		"short_token": resourceSchema.StringAttribute{
 			MarkdownDescription: "API Token short token",
@@ -95,7 +99,7 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 		},
 		"type": resourceSchema.StringAttribute{
 			MarkdownDescription: "API Token type",
-			Computed:            true,
+			Required:            true,
 		},
 		"start_at": resourceSchema.StringAttribute{
 			MarkdownDescription: "time when the API token will become valid in UTC",
@@ -125,7 +129,7 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 		},
 		"expiry_period_in_days": resourceSchema.Int64Attribute{
 			MarkdownDescription: "API Token expiry period in days",
-			Computed:            true,
+			Optional:            true,
 		},
 		"last_used_at": resourceSchema.StringAttribute{
 			MarkdownDescription: "API Token last used timestamp",
@@ -135,7 +139,7 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: ResourceApiTokenRoleSchemaAttributes(),
 			},
-			Computed:            true,
+			Required:            true,
 			MarkdownDescription: "The roles assigned to the API Token",
 		},
 	}

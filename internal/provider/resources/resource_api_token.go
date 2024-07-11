@@ -24,7 +24,7 @@ var _ resource.Resource = &ApiTokenResource{}
 var _ resource.ResourceWithImportState = &ApiTokenResource{}
 var _ resource.ResourceWithConfigure = &ApiTokenResource{}
 
-func NewApiTokenResource() *ApiTokenResource {
+func NewApiTokenResource() resource.Resource {
 	return &ApiTokenResource{}
 }
 
