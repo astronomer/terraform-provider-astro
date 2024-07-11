@@ -89,7 +89,11 @@ func (r *ApiTokenResource) Create(
 
 	var diags diag.Diagnostics
 
-	roles, _ := RequestApiTokenRoles(ctx, data.Roles)
+	roles, diags := RequestApiTokenRoles(ctx, data.Roles)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
 
 	// Create the API token request
 	createApiTokenRequest := iam.CreateApiTokenRequest{
@@ -104,18 +108,9 @@ func (r *ApiTokenResource) Create(
 		createApiTokenRequest.EntityId = lo.ToPtr(roles[0].EntityId)
 	}
 
-	if data.Type.ValueString() == string(iam.ORGANIZATION) {
-		createApiTokenRequest.Type = iam.ORGANIZATION
-	} else if data.Type.ValueString() == string(iam.WORKSPACE) {
-		createApiTokenRequest.Type = iam.WORKSPACE
-	} else if data.Type.ValueString() == string(iam.DEPLOYMENT) {
-		createApiTokenRequest.Type = iam.DEPLOYMENT
-	} else {
-		tflog.Error(ctx, "failed to create api_token", map[string]interface{}{"error": "Invalid entity type"})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Failed to create api_token, got error: Invalid entity type"),
-		)
+	createApiTokenRequest.Type, diags = RequestApiTokenType(ctx, data.Type)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
 		return
 	}
 
@@ -330,4 +325,29 @@ func RequestApiTokenRoles(ctx context.Context, apiTokenRolesObjSet types.Set) ([
 	})
 
 	return apiTokenRoles, nil
+}
+
+// RequestApiTokenType converts a Terraform string to an iam.CreateApiTokenRequestType
+func RequestApiTokenType(ctx context.Context, apiTokenTypeObj types.String) (iam.CreateApiTokenRequestType, diag.Diagnostics) {
+	if apiTokenTypeObj.IsNull() {
+		return "", diag.Diagnostics{
+			diag.NewErrorDiagnostic("An API Token type is required", "Missing API Token type in request."),
+		}
+	}
+
+	var apiTokenType iam.CreateApiTokenRequestType
+
+	if apiTokenTypeObj.ValueString() == string(iam.ORGANIZATION) {
+		apiTokenType = iam.ORGANIZATION
+	} else if apiTokenTypeObj.ValueString() == string(iam.WORKSPACE) {
+		apiTokenType = iam.WORKSPACE
+	} else if apiTokenTypeObj.ValueString() == string(iam.DEPLOYMENT) {
+		apiTokenType = iam.DEPLOYMENT
+	} else {
+		return "", diag.Diagnostics{
+			diag.NewErrorDiagnostic("Invalid API Token type", "API Token type must be one of 'organization', 'workspace', or 'deployment'."),
+		}
+	}
+
+	return apiTokenType, nil
 }
