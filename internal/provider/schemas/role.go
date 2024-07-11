@@ -103,6 +103,36 @@ func ApiTokenRoleAttributeTypes() map[string]attr.Type {
 	}
 }
 
+func ResourceApiTokenRoleSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"entity_id": resourceSchema.StringAttribute{
+			MarkdownDescription: "The ID of the entity to assign the role to",
+			Required:            true,
+			Validators: []validator.String{
+				validators.IsCuid(),
+			},
+		},
+		"entity_type": resourceSchema.StringAttribute{
+			MarkdownDescription: "The type of entity to assign the role to",
+			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(iam.ApiTokenRoleEntityTypeORGANIZATION),
+					string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+					string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+				),
+			},
+		},
+		"role": resourceSchema.StringAttribute{
+			MarkdownDescription: "The role to assign to the entity",
+			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
+		},
+	}
+}
+
 func DataSourceApiTokenRoleSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"entity_id": datasourceSchema.StringAttribute{
@@ -114,7 +144,7 @@ func DataSourceApiTokenRoleSchemaAttributes() map[string]datasourceSchema.Attrib
 			Computed:            true,
 		},
 		"role": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The role to assign to the deployment",
+			MarkdownDescription: "The role to assign to the entity",
 			Computed:            true,
 		},
 	}
