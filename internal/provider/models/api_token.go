@@ -91,7 +91,9 @@ func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *ia
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(apiToken.Id)
 	data.Name = types.StringValue(apiToken.Name)
-	data.Description = types.StringValue(apiToken.Description)
+	if apiToken.Description != "" {
+		data.Description = types.StringValue(apiToken.Description)
+	}
 	data.ShortToken = types.StringValue(apiToken.ShortToken)
 	data.Type = types.StringValue(string(apiToken.Type))
 	data.StartAt = types.StringValue(apiToken.StartAt.String())
@@ -112,8 +114,6 @@ func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *ia
 	}
 	if apiToken.ExpiryPeriodInDays != nil {
 		data.ExpiryPeriodInDays = types.Int64Value(int64(*apiToken.ExpiryPeriodInDays))
-	} else {
-		data.ExpiryPeriodInDays = types.Int64Value(0)
 	}
 	if apiToken.LastUsedAt != nil {
 		data.LastUsedAt = types.StringValue(apiToken.LastUsedAt.String())

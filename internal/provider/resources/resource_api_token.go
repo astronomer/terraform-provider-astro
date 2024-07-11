@@ -100,13 +100,7 @@ func (r *ApiTokenResource) Create(
 	createApiTokenRequest := iam.CreateApiTokenRequest{
 		Name: data.Name.ValueString(),
 		Role: roles[0].Role,
-	}
-
-	// Convert Terraform string to API token type
-	createApiTokenRequest.Type, diags = RequestApiTokenType(ctx, data.Type)
-	if diags.HasError() {
-		resp.Diagnostics.Append(diags...)
-		return
+		Type: iam.CreateApiTokenRequestType(data.Type.ValueString()),
 	}
 
 	// If the entity type is WORKSPACE or DEPLOYMENT, set the entity id
@@ -120,7 +114,7 @@ func (r *ApiTokenResource) Create(
 		createApiTokenRequest.Description = lo.ToPtr("")
 	}
 
-	if data.ExpiryPeriodInDays.ValueInt64() > 0 {
+	if !data.ExpiryPeriodInDays.IsNull() {
 		createApiTokenRequest.TokenExpiryPeriodInDays = lo.ToPtr(int(data.ExpiryPeriodInDays.ValueInt64()))
 	}
 
@@ -342,29 +336,4 @@ func RequestApiTokenRoles(ctx context.Context, apiTokenRolesObjSet types.Set) ([
 	})
 
 	return apiTokenRoles, nil
-}
-
-// RequestApiTokenType converts a Terraform string to an iam.CreateApiTokenRequestType
-func RequestApiTokenType(ctx context.Context, apiTokenTypeObj types.String) (iam.CreateApiTokenRequestType, diag.Diagnostics) {
-	if apiTokenTypeObj.IsNull() {
-		return "", diag.Diagnostics{
-			diag.NewErrorDiagnostic("An API Token type is required", "Missing API Token type in request."),
-		}
-	}
-
-	var apiTokenType iam.CreateApiTokenRequestType
-
-	if apiTokenTypeObj.ValueString() == string(iam.ORGANIZATION) {
-		apiTokenType = iam.ORGANIZATION
-	} else if apiTokenTypeObj.ValueString() == string(iam.WORKSPACE) {
-		apiTokenType = iam.WORKSPACE
-	} else if apiTokenTypeObj.ValueString() == string(iam.DEPLOYMENT) {
-		apiTokenType = iam.DEPLOYMENT
-	} else {
-		return "", diag.Diagnostics{
-			diag.NewErrorDiagnostic("Invalid API Token type", "API Token type must be one of 'organization', 'workspace', or 'deployment'."),
-		}
-	}
-
-	return apiTokenType, nil
 }
