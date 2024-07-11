@@ -142,5 +142,9 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			Required:            true,
 			MarkdownDescription: "The roles assigned to the API Token",
 		},
+		"token": resourceSchema.StringAttribute{
+			MarkdownDescription: "API Token value",
+			Computed:            true,
+		},
 	}
 }

@@ -89,6 +89,7 @@ func (r *ApiTokenResource) Create(
 
 	var diags diag.Diagnostics
 
+	// Convert Terraform set of roles to API token roles
 	roles, diags := RequestApiTokenRoles(ctx, data.Roles)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
@@ -97,21 +98,30 @@ func (r *ApiTokenResource) Create(
 
 	// Create the API token request
 	createApiTokenRequest := iam.CreateApiTokenRequest{
-		Name:                    data.Name.ValueString(),
-		Description:             data.Description.ValueStringPointer(),
-		Role:                    roles[0].Role,
-		TokenExpiryPeriodInDays: lo.ToPtr(int(data.ExpiryPeriodInDays.ValueInt64())),
+		Name: data.Name.ValueString(),
+		Role: roles[0].Role,
 	}
 
-	// If the entity type is WORKSPACE or DEPLOYMENT, set the entity id
-	if data.Type.ValueString() == string(iam.WORKSPACE) || data.Type.ValueString() == string(iam.DEPLOYMENT) {
-		createApiTokenRequest.EntityId = lo.ToPtr(roles[0].EntityId)
-	}
-
+	// Convert Terraform string to API token type
 	createApiTokenRequest.Type, diags = RequestApiTokenType(ctx, data.Type)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
+	}
+
+	// If the entity type is WORKSPACE or DEPLOYMENT, set the entity id
+	if createApiTokenRequest.Type == iam.WORKSPACE || createApiTokenRequest.Type == iam.DEPLOYMENT {
+		createApiTokenRequest.EntityId = lo.ToPtr(roles[0].EntityId)
+	}
+
+	if !data.Description.IsNull() {
+		createApiTokenRequest.Description = data.Description.ValueStringPointer()
+	} else {
+		createApiTokenRequest.Description = lo.ToPtr("")
+	}
+
+	if data.ExpiryPeriodInDays.ValueInt64() > 0 {
+		createApiTokenRequest.TokenExpiryPeriodInDays = lo.ToPtr(int(data.ExpiryPeriodInDays.ValueInt64()))
 	}
 
 	apiToken, err := r.IamClient.CreateApiTokenWithResponse(
@@ -214,9 +224,16 @@ func (r *ApiTokenResource) Update(
 
 	// update request
 	updateApiTokenRequest := iam.UpdateApiTokenJSONRequestBody{
-		Name:        data.Name.ValueString(),
-		Description: data.Description.ValueStringPointer(),
+		Name: data.Name.ValueString(),
 	}
+
+	// description
+	if !data.Description.IsNull() {
+		updateApiTokenRequest.Description = data.Description.ValueStringPointer()
+	} else {
+		updateApiTokenRequest.Description = lo.ToPtr("")
+	}
+
 	apiToken, err := r.IamClient.UpdateApiTokenWithResponse(
 		ctx,
 		r.OrganizationId,
