@@ -108,10 +108,10 @@ func (r *ApiTokenResource) Create(
 		createApiTokenRequest.EntityId = lo.ToPtr(roles[0].EntityId)
 	}
 
-	if !data.Description.IsNull() {
-		createApiTokenRequest.Description = data.Description.ValueStringPointer()
-	} else {
+	if data.Description.IsNull() {
 		createApiTokenRequest.Description = lo.ToPtr("")
+	} else {
+		createApiTokenRequest.Description = data.Description.ValueStringPointer()
 	}
 
 	if !data.ExpiryPeriodInDays.IsNull() {

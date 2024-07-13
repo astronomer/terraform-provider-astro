@@ -91,7 +91,9 @@ func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *ia
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(apiToken.Id)
 	data.Name = types.StringValue(apiToken.Name)
-	if apiToken.Description != "" {
+	if apiToken.Description == "" {
+		data.Description = types.StringNull()
+	} else {
 		data.Description = types.StringValue(apiToken.Description)
 	}
 	data.ShortToken = types.StringValue(apiToken.ShortToken)
@@ -126,8 +128,6 @@ func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *ia
 	}
 	if apiToken.Token != nil {
 		data.Token = types.StringValue(*apiToken.Token)
-	} else {
-		data.Token = types.StringValue("")
 	}
 	return diags
 }

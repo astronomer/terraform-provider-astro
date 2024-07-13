@@ -1,7 +1,10 @@
 package schemas
 
 import (
+	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -100,6 +103,11 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 		"type": resourceSchema.StringAttribute{
 			MarkdownDescription: "API Token type",
 			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(string(iam.ApiTokenTypeORGANIZATION)),
+				stringvalidator.OneOf(string(iam.ApiTokenTypeWORKSPACE)),
+				stringvalidator.OneOf(string(iam.ApiTokenRoleEntityTypeDEPLOYMENT)),
+			},
 		},
 		"start_at": resourceSchema.StringAttribute{
 			MarkdownDescription: "time when the API token will become valid in UTC",
@@ -141,10 +149,14 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			},
 			Required:            true,
 			MarkdownDescription: "The roles assigned to the API Token",
+			Validators: []validator.Set{
+				setvalidator.SizeAtLeast(1),
+			},
 		},
 		"token": resourceSchema.StringAttribute{
 			MarkdownDescription: "API Token value",
 			Computed:            true,
+			Sensitive:           true,
 		},
 	}
 }

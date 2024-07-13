@@ -49,7 +49,7 @@ resource "astro_api_token" "example" {
 - `last_used_at` (String) API Token last used timestamp
 - `short_token` (String) API Token short token
 - `start_at` (String) time when the API token will become valid in UTC
-- `token` (String) API Token value
+- `token` (String, Sensitive) API Token value
 - `updated_at` (String) API Token last updated timestamp
 - `updated_by` (Attributes) API Token updater (see [below for nested schema](#nestedatt--updated_by))
 
