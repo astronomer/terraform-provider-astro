@@ -98,7 +98,7 @@ func (r *ApiTokenResource) Create(
 
 	role := data.Role.ValueString()
 	if len(role) == 0 {
-		role, diags = RequestApiTokenRole(ctx, roles, data.Type.ValueString())
+		role, _, diags = RequestApiTokenRole(ctx, roles, data.Type.ValueString())
 		if diags != nil {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -114,7 +114,14 @@ func (r *ApiTokenResource) Create(
 
 	// If the entity type is WORKSPACE or DEPLOYMENT, set the entity id
 	if createApiTokenRequest.Type == iam.WORKSPACE || createApiTokenRequest.Type == iam.DEPLOYMENT {
-		createApiTokenRequest.EntityId = lo.ToPtr(roles[0].EntityId)
+		var entityId string
+		_, entityId, diags = RequestApiTokenRole(ctx, roles, data.Type.ValueString())
+		if diags != nil {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+
+		createApiTokenRequest.EntityId = lo.ToPtr(entityId)
 	}
 
 	if data.Description.IsNull() {
@@ -146,6 +153,33 @@ func (r *ApiTokenResource) Create(
 		return
 	}
 
+	// Update api token with additional roles
+	if len(roles) > 1 {
+		// create request
+		updateApiTokenRolesRequest := iam.UpdateApiTokenRolesRequest{
+			Roles: roles,
+		}
+		updatedApiToken, err := r.IamClient.UpdateApiTokenRolesWithResponse(
+			ctx,
+			r.OrganizationId,
+			data.Id.ValueString(),
+			updateApiTokenRolesRequest,
+		)
+		if err != nil {
+			tflog.Error(ctx, "failed to create API token", map[string]interface{}{"error": err})
+			resp.Diagnostics.AddError(
+				"Client Error",
+				fmt.Sprintf("Unable to create API token and add additional roles, got error: %s", err),
+			)
+			return
+		}
+		_, diagnostic = clients.NormalizeAPIError(ctx, updatedApiToken.HTTPResponse, updatedApiToken.Body)
+		if diagnostic != nil {
+			resp.Diagnostics.Append(diagnostic)
+			return
+		}
+	}
+
 	// Get api token
 	apiTokenResp, err := r.IamClient.GetApiTokenWithResponse(
 		ctx,
@@ -153,10 +187,10 @@ func (r *ApiTokenResource) Create(
 		data.Id.ValueString(),
 	)
 	if err != nil {
-		tflog.Error(ctx, "failed to get API token", map[string]interface{}{"error": err})
+		tflog.Error(ctx, "failed to create API token", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to get API token, got error: %s", err),
+			fmt.Sprintf("Unable to create API token and get API token, got error: %s", err),
 		)
 		return
 	}
@@ -279,10 +313,10 @@ func (r *ApiTokenResource) Update(
 		data.Id.ValueString(),
 	)
 	if err != nil {
-		tflog.Error(ctx, "failed to get API token", map[string]interface{}{"error": err})
+		tflog.Error(ctx, "failed to update API token", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to get API token, got error: %s", err),
+			fmt.Sprintf("Unable to update API token and get API token, got error: %s", err),
 		)
 		return
 	}
@@ -377,13 +411,13 @@ func RequestApiTokenRoles(ctx context.Context, apiTokenRolesObjSet types.Set) ([
 	return apiTokenRoles, nil
 }
 
-func RequestApiTokenRole(ctx context.Context, roles []iam.ApiTokenRole, entityType string) (string, diag.Diagnostics) {
+func RequestApiTokenRole(ctx context.Context, roles []iam.ApiTokenRole, entityType string) (string, string, diag.Diagnostics) {
 	for _, role := range roles {
 		if role.EntityType == iam.ApiTokenRoleEntityType(entityType) {
-			return role.Role, nil
+			return role.Role, role.EntityId, nil
 		}
 	}
-	return "", diag.Diagnostics{
+	return "", "", diag.Diagnostics{
 		diag.NewErrorDiagnostic(
 			"Client Error",
 			"Unable to find the role for the entity type",

@@ -104,9 +104,10 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			MarkdownDescription: "API Token type",
 			Required:            true,
 			Validators: []validator.String{
-				stringvalidator.OneOf(string(iam.ApiTokenTypeORGANIZATION)),
-				stringvalidator.OneOf(string(iam.ApiTokenTypeWORKSPACE)),
-				stringvalidator.OneOf(string(iam.ApiTokenRoleEntityTypeDEPLOYMENT)),
+				stringvalidator.OneOf(string(iam.ApiTokenTypeORGANIZATION),
+					string(iam.ApiTokenTypeWORKSPACE),
+					string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+				),
 			},
 		},
 		"start_at": resourceSchema.StringAttribute{

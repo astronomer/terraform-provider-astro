@@ -43,7 +43,7 @@ type ApiTokenResource struct {
 	UpdatedBy          types.Object `tfsdk:"updated_by"`
 	ExpiryPeriodInDays types.Int64  `tfsdk:"expiry_period_in_days"`
 	LastUsedAt         types.String `tfsdk:"last_used_at"`
-	Role               types.String `tfsdk:"roles"`
+	Role               types.String `tfsdk:"role"`
 	Roles              types.Set    `tfsdk:"roles"`
 	Token              types.String `tfsdk:"token"`
 }
@@ -128,7 +128,9 @@ func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *ia
 	if diags.HasError() {
 		return diags
 	}
-	if apiToken.Token != nil {
+	if apiToken.Token == nil {
+		data.Token = types.StringNull()
+	} else {
 		data.Token = types.StringValue(*apiToken.Token)
 	}
 	return diags
