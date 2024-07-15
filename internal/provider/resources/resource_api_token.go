@@ -155,7 +155,6 @@ func (r *ApiTokenResource) Create(
 
 	// Update api token with additional roles
 	if len(roles) > 1 {
-		// create request
 		updateApiTokenRolesRequest := iam.UpdateApiTokenRolesRequest{
 			Roles: roles,
 		}
@@ -274,6 +273,37 @@ func (r *ApiTokenResource) Update(
 		return
 	}
 
+	// Convert Terraform set of roles to API token roles
+	roles, diags := RequestApiTokenRoles(ctx, data.Roles)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	// Update API token roles
+	updateApiTokenRolesRequest := iam.UpdateApiTokenRolesRequest{
+		Roles: roles,
+	}
+	updatedApiToken, err := r.IamClient.UpdateApiTokenRolesWithResponse(
+		ctx,
+		r.OrganizationId,
+		data.Id.ValueString(),
+		updateApiTokenRolesRequest,
+	)
+	if err != nil {
+		tflog.Error(ctx, "failed to update API token", map[string]interface{}{"error": err})
+		resp.Diagnostics.AddError(
+			"Client Error",
+			fmt.Sprintf("Unable to update API token, got error: %s", err),
+		)
+		return
+	}
+	_, diagnostic := clients.NormalizeAPIError(ctx, updatedApiToken.HTTPResponse, updatedApiToken.Body)
+	if diagnostic != nil {
+		resp.Diagnostics.Append(diagnostic)
+		return
+	}
+
 	// update request
 	updateApiTokenRequest := iam.UpdateApiTokenJSONRequestBody{
 		Name: data.Name.ValueString(),
@@ -300,7 +330,7 @@ func (r *ApiTokenResource) Update(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, apiToken.HTTPResponse, apiToken.Body)
+	_, diagnostic = clients.NormalizeAPIError(ctx, apiToken.HTTPResponse, apiToken.Body)
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return
@@ -321,7 +351,7 @@ func (r *ApiTokenResource) Update(
 		return
 	}
 
-	diags := data.ReadFromResponse(ctx, apiTokenResp.JSON200, data.Role.ValueStringPointer())
+	diags = data.ReadFromResponse(ctx, apiTokenResp.JSON200, data.Role.ValueStringPointer())
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
