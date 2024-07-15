@@ -96,10 +96,19 @@ func (r *ApiTokenResource) Create(
 		return
 	}
 
+	role := data.Role.ValueString()
+	if len(role) == 0 {
+		role, diags = RequestApiTokenRole(ctx, roles, data.Type.ValueString())
+		if diags != nil {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+	}
+
 	// Create the API token request
 	createApiTokenRequest := iam.CreateApiTokenRequest{
 		Name: data.Name.ValueString(),
-		Role: roles[0].Role,
+		Role: role,
 		Type: iam.CreateApiTokenRequestType(data.Type.ValueString()),
 	}
 
@@ -137,7 +146,22 @@ func (r *ApiTokenResource) Create(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, apiToken.JSON200)
+	// Get api token
+	apiTokenResp, err := r.IamClient.GetApiTokenWithResponse(
+		ctx,
+		r.OrganizationId,
+		data.Id.ValueString(),
+	)
+	if err != nil {
+		tflog.Error(ctx, "failed to get API token", map[string]interface{}{"error": err})
+		resp.Diagnostics.AddError(
+			"Client Error",
+			fmt.Sprintf("Unable to get API token, got error: %s", err),
+		)
+		return
+	}
+
+	diags = data.ReadFromResponse(ctx, apiTokenResp.JSON200, data.Role.ValueStringPointer())
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -190,7 +214,7 @@ func (r *ApiTokenResource) Read(
 		return
 	}
 
-	diags := data.ReadFromResponse(ctx, apiToken.JSON200)
+	diags := data.ReadFromResponse(ctx, apiToken.JSON200, data.Role.ValueStringPointer())
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -248,7 +272,22 @@ func (r *ApiTokenResource) Update(
 		return
 	}
 
-	diags := data.ReadFromResponse(ctx, apiToken.JSON200)
+	// Get api token
+	apiTokenResp, err := r.IamClient.GetApiTokenWithResponse(
+		ctx,
+		r.OrganizationId,
+		data.Id.ValueString(),
+	)
+	if err != nil {
+		tflog.Error(ctx, "failed to get API token", map[string]interface{}{"error": err})
+		resp.Diagnostics.AddError(
+			"Client Error",
+			fmt.Sprintf("Unable to get API token, got error: %s", err),
+		)
+		return
+	}
+
+	diags := data.ReadFromResponse(ctx, apiTokenResp.JSON200, data.Role.ValueStringPointer())
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -336,4 +375,18 @@ func RequestApiTokenRoles(ctx context.Context, apiTokenRolesObjSet types.Set) ([
 	})
 
 	return apiTokenRoles, nil
+}
+
+func RequestApiTokenRole(ctx context.Context, roles []iam.ApiTokenRole, entityType string) (string, diag.Diagnostics) {
+	for _, role := range roles {
+		if role.EntityType == iam.ApiTokenRoleEntityType(entityType) {
+			return role.Role, nil
+		}
+	}
+	return "", diag.Diagnostics{
+		diag.NewErrorDiagnostic(
+			"Client Error",
+			"Unable to find the role for the entity type",
+		),
+	}
 }

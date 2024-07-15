@@ -143,6 +143,22 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			MarkdownDescription: "API Token last used timestamp",
 			Computed:            true,
 		},
+		"role": resourceSchema.StringAttribute{
+			MarkdownDescription: "The role assigned to the API Token",
+			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(string(iam.ORGANIZATIONBILLINGADMIN),
+					string(iam.ORGANIZATIONMEMBER),
+					string(iam.ORGANIZATIONOWNER),
+					string(iam.WORKSPACEACCESSOR),
+					string(iam.WORKSPACEAUTHOR),
+					string(iam.WORKSPACEMEMBER),
+					string(iam.WORKSPACEOWNER),
+					string(iam.WORKSPACEOPERATOR),
+					"DEPLOYMENT_ADMIN",
+				),
+			},
+		},
 		"roles": resourceSchema.SetNestedAttribute{
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: ResourceApiTokenRoleSchemaAttributes(),

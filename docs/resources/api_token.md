@@ -32,6 +32,7 @@ resource "astro_api_token" "example" {
 ### Required
 
 - `name` (String) API Token name
+- `role` (String) The role assigned to the API Token
 - `roles` (Attributes Set) The roles assigned to the API Token (see [below for nested schema](#nestedatt--roles))
 - `type` (String) API Token type
 
