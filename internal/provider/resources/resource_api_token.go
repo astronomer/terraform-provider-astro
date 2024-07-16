@@ -152,6 +152,7 @@ func (r *ApiTokenResource) Create(
 		resp.Diagnostics.Append(diagnostic)
 		return
 	}
+	tokenId := apiToken.JSON200.Id
 
 	// Update api token with additional roles
 	if len(roles) > 1 {
@@ -161,7 +162,7 @@ func (r *ApiTokenResource) Create(
 		updatedApiToken, err := r.IamClient.UpdateApiTokenRolesWithResponse(
 			ctx,
 			r.OrganizationId,
-			data.Id.ValueString(),
+			tokenId,
 			updateApiTokenRolesRequest,
 		)
 		if err != nil {
@@ -183,7 +184,7 @@ func (r *ApiTokenResource) Create(
 	apiTokenResp, err := r.IamClient.GetApiTokenWithResponse(
 		ctx,
 		r.OrganizationId,
-		data.Id.ValueString(),
+		tokenId,
 	)
 	if err != nil {
 		tflog.Error(ctx, "failed to create API token", map[string]interface{}{"error": err})
