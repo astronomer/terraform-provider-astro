@@ -23,6 +23,7 @@ import (
 var _ resource.Resource = &ApiTokenResource{}
 var _ resource.ResourceWithImportState = &ApiTokenResource{}
 var _ resource.ResourceWithConfigure = &ApiTokenResource{}
+var _ resource.ResourceWithValidateConfig = &ApiTokenResource{}
 
 func NewApiTokenResource() resource.Resource {
 	return &ApiTokenResource{}
@@ -407,6 +408,116 @@ func (r *ApiTokenResource) ImportState(
 	resp *resource.ImportStateResponse,
 ) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+func (r *ApiTokenResource) ValidateConfig(
+	ctx context.Context,
+	req resource.ValidateConfigRequest,
+	resp *resource.ValidateConfigResponse,
+) {
+	var data models.ApiTokenResource
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Convert Terraform set of roles to API token roles
+	roles, diags := RequestApiTokenRoles(ctx, data.Roles)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	tokenRole := data.Role.ValueString()
+	if len(tokenRole) == 0 {
+		tokenRole, _, diags = RequestApiTokenRole(ctx, roles, data.Type.ValueString())
+		if diags != nil {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+	}
+
+	entityType := data.Type.ValueString()
+
+	// Check if the role is valid for the entity type
+	if !utils.CheckRole(tokenRole, entityType) {
+		resp.Diagnostics.AddError(
+			"Client Error",
+			fmt.Sprintf("Role %s is not valid for entity type %s", tokenRole, entityType),
+		)
+		return
+	}
+
+	// Validate the roles based on the entity type
+	switch entityType {
+	case string(iam.ApiTokenRoleEntityTypeORGANIZATION):
+		resp.Diagnostics.Append(validateOrganizationApiToken(roles)...)
+	case string(iam.ApiTokenRoleEntityTypeWORKSPACE):
+		resp.Diagnostics.Append(validateWorkspaceApiToken(roles)...)
+	case string(iam.ApiTokenRoleEntityTypeDEPLOYMENT):
+		resp.Diagnostics.Append(validateDeploymentApiToken(roles)...)
+	}
+}
+
+func validateOrganizationApiToken(roles []iam.ApiTokenRole) diag.Diagnostics {
+	for _, role := range roles {
+		if utils.CheckRole(role.Role, string(role.EntityType)) {
+			return nil
+		}
+	}
+	return diag.Diagnostics{
+		diag.NewErrorDiagnostic(
+			"Client Error",
+			"Unable to find the role for the entity type",
+		),
+	}
+}
+
+func validateWorkspaceApiToken(roles []iam.ApiTokenRole) diag.Diagnostics {
+	for _, role := range roles {
+		if role.EntityType == iam.ApiTokenRoleEntityTypeORGANIZATION {
+			return diag.Diagnostics{
+				diag.NewErrorDiagnostic(
+					"Client Error",
+					"API Token of type WORKSPACE cannot have an ORGANIZATION role",
+				),
+			}
+		}
+
+		if utils.CheckRole(role.Role, string(role.EntityType)) {
+			return nil
+		}
+	}
+	return diag.Diagnostics{
+		diag.NewErrorDiagnostic(
+			"Client Error",
+			"Unable to find the role for the entity type",
+		),
+	}
+}
+
+func validateDeploymentApiToken(roles []iam.ApiTokenRole) diag.Diagnostics {
+	for _, role := range roles {
+		if role.EntityType != iam.ApiTokenRoleEntityTypeDEPLOYMENT {
+			return diag.Diagnostics{
+				diag.NewErrorDiagnostic(
+					"Client Error",
+					"API Token of type DEPLOYMENT cannot have an ORGANIZATION or WORKSPACE role",
+				),
+			}
+		}
+
+		if utils.CheckRole(role.Role, string(role.EntityType)) {
+			return nil
+		}
+	}
+	return diag.Diagnostics{
+		diag.NewErrorDiagnostic(
+			"Client Error",
+			"Unable to find the role for the entity type",
+		),
+	}
 }
 
 // RequestApiTokenRoles converts a Terraform set to a list of iam.ApiTokenRole to be used in create and update requests
