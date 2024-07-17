@@ -97,6 +97,7 @@ func (r *ApiTokenResource) Create(
 		return
 	}
 
+	// Get the role for the entity type
 	role, _, diags := RequestApiTokenRole(roles, data.Type.ValueString())
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)
@@ -192,6 +193,9 @@ func (r *ApiTokenResource) Create(
 		)
 		return
 	}
+
+	// Set the token in the response
+	apiTokenResp.JSON200.Token = apiToken.JSON200.Token
 
 	diags = data.ReadFromResponse(ctx, apiTokenResp.JSON200)
 	if diags.HasError() {
