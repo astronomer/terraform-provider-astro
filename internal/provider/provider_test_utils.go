@@ -37,8 +37,6 @@ func TestAccPreCheck(t *testing.T) {
 		"HOSTED_WORKSPACE_ID",
 		"HOSTED_DEPLOYMENT_ID",
 		"HOSTED_API_TOKEN_ID",
-		"HOSTED_WORKSPACE_API_TOKEN_ID",
-		"HOSTED_DEPLOYMENT_API_TOKEN_ID",
 	}
 	for _, envVar := range envVars {
 		if val := os.Getenv(envVar); len(val) == 0 {
