@@ -101,13 +101,16 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			Computed:            true,
 		},
 		"type": resourceSchema.StringAttribute{
-			MarkdownDescription: "API Token type",
+			MarkdownDescription: "API Token type - if changing this value, the API Token will be recreated with the new type",
 			Required:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(string(iam.ApiTokenTypeORGANIZATION),
 					string(iam.ApiTokenTypeWORKSPACE),
 					string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
 				),
+			},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplaceIfConfigured(),
 			},
 		},
 		"start_at": resourceSchema.StringAttribute{
@@ -143,22 +146,6 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 		"last_used_at": resourceSchema.StringAttribute{
 			MarkdownDescription: "API Token last used timestamp",
 			Computed:            true,
-		},
-		"role": resourceSchema.StringAttribute{
-			MarkdownDescription: "The role assigned to the API Token",
-			Required:            true,
-			Validators: []validator.String{
-				stringvalidator.OneOf(string(iam.ORGANIZATIONBILLINGADMIN),
-					string(iam.ORGANIZATIONMEMBER),
-					string(iam.ORGANIZATIONOWNER),
-					string(iam.WORKSPACEACCESSOR),
-					string(iam.WORKSPACEAUTHOR),
-					string(iam.WORKSPACEMEMBER),
-					string(iam.WORKSPACEOWNER),
-					string(iam.WORKSPACEOPERATOR),
-					"DEPLOYMENT_ADMIN",
-				),
-			},
 		},
 		"roles": resourceSchema.SetNestedAttribute{
 			NestedObject: resourceSchema.NestedAttributeObject{

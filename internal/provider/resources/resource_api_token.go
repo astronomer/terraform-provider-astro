@@ -97,13 +97,10 @@ func (r *ApiTokenResource) Create(
 		return
 	}
 
-	role := data.Role.ValueString()
-	if len(role) == 0 {
-		role, _, diags = RequestApiTokenRole(ctx, roles, data.Type.ValueString())
-		if diags != nil {
-			resp.Diagnostics.Append(diags...)
-			return
-		}
+	role, _, diags := RequestApiTokenRole(roles, data.Type.ValueString())
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
+		return
 	}
 
 	// Create the API token request
@@ -116,7 +113,7 @@ func (r *ApiTokenResource) Create(
 	// If the entity type is WORKSPACE or DEPLOYMENT, set the entity id
 	if createApiTokenRequest.Type == iam.WORKSPACE || createApiTokenRequest.Type == iam.DEPLOYMENT {
 		var entityId string
-		_, entityId, diags = RequestApiTokenRole(ctx, roles, data.Type.ValueString())
+		_, entityId, diags = RequestApiTokenRole(roles, data.Type.ValueString())
 		if diags != nil {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -196,7 +193,7 @@ func (r *ApiTokenResource) Create(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, apiTokenResp.JSON200, data.Role.ValueStringPointer())
+	diags = data.ReadFromResponse(ctx, apiTokenResp.JSON200)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -249,7 +246,7 @@ func (r *ApiTokenResource) Read(
 		return
 	}
 
-	diags := data.ReadFromResponse(ctx, apiToken.JSON200, data.Role.ValueStringPointer())
+	diags := data.ReadFromResponse(ctx, apiToken.JSON200)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -353,7 +350,7 @@ func (r *ApiTokenResource) Update(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, apiTokenResp.JSON200, data.Role.ValueStringPointer())
+	diags = data.ReadFromResponse(ctx, apiTokenResp.JSON200)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -430,13 +427,10 @@ func (r *ApiTokenResource) ValidateConfig(
 		return
 	}
 
-	tokenRole := data.Role.ValueString()
-	if len(tokenRole) == 0 {
-		tokenRole, _, diags = RequestApiTokenRole(ctx, roles, data.Type.ValueString())
-		if diags != nil {
-			resp.Diagnostics.Append(diags...)
-			return
-		}
+	tokenRole, _, diags := RequestApiTokenRole(roles, data.Type.ValueString())
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
+		return
 	}
 
 	entityType := data.Type.ValueString()
@@ -553,7 +547,7 @@ func RequestApiTokenRoles(ctx context.Context, apiTokenRolesObjSet types.Set) ([
 	return apiTokenRoles, nil
 }
 
-func RequestApiTokenRole(ctx context.Context, roles []iam.ApiTokenRole, entityType string) (string, string, diag.Diagnostics) {
+func RequestApiTokenRole(roles []iam.ApiTokenRole, entityType string) (string, string, diag.Diagnostics) {
 	for _, role := range roles {
 		if role.EntityType == iam.ApiTokenRoleEntityType(entityType) {
 			return role.Role, role.EntityId, nil

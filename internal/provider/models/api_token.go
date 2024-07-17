@@ -43,7 +43,6 @@ type ApiTokenResource struct {
 	UpdatedBy          types.Object `tfsdk:"updated_by"`
 	ExpiryPeriodInDays types.Int64  `tfsdk:"expiry_period_in_days"`
 	LastUsedAt         types.String `tfsdk:"last_used_at"`
-	Role               types.String `tfsdk:"role"`
 	Roles              types.Set    `tfsdk:"roles"`
 	Token              types.String `tfsdk:"token"`
 }
@@ -88,7 +87,7 @@ func (data *ApiTokenDataSource) ReadFromResponse(ctx context.Context, apiToken *
 	return diags
 }
 
-func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *iam.ApiToken, role *string) diag.Diagnostics {
+func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *iam.ApiToken) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(apiToken.Id)
 	data.Name = types.StringValue(apiToken.Name)
@@ -123,7 +122,6 @@ func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *ia
 	} else {
 		data.LastUsedAt = types.StringValue("")
 	}
-	data.Role = types.StringPointerValue(role)
 	data.Roles, diags = utils.ObjectSet(ctx, apiToken.Roles, schemas.ApiTokenRoleAttributeTypes(), ApiTokenRoleTypesObject)
 	if diags.HasError() {
 		return diags
