@@ -57,3 +57,30 @@ resource "astro_api_token" "example_workspace_token_with_deployment_role" {
       "entity_type" : "DEPLOYMENT"
   }]
 }
+
+resource "astro_api_token" "example_deployment_token" {
+  name        = "deployment api token"
+  description = "deployment api token description"
+  type        = "DEPLOYMENT"
+  roles = [{
+    "role" : "DEPLOYMENT_ADMIN",
+    "entity_id" : "clyn6kxud003x01mtxmccegnh",
+    "entity_type" : "DEPLOYMENT"
+  }]
+}
+
+resource "astro_api_token" "example_deployment_token_with_custom_role" {
+  name        = "deployment api token with custom role"
+  description = "deployment api token description"
+  type        = "DEPLOYMENT"
+  roles = [{
+    "role" : "DEPLOYMENT_ADMIN",
+    "entity_id" : "clyn6kxud003x01mtxmccegnh",
+    "entity_type" : "DEPLOYMENT"
+    },
+    {
+      "role" : "CUSTOM_ROLE",
+      "entity_id" : "clyn6kxud003x01mtxmccegnh",
+      "entity_type" : "DEPLOYMENT"
+  }]
+}

@@ -98,7 +98,7 @@ func (r *ApiTokenResource) Create(
 	}
 
 	// Get the role for the entity type
-	role, _, diags := RequestApiTokenRole(roles, data.Type.ValueString())
+	role, diags := RequestApiTokenRole(roles, data.Type.ValueString())
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -107,20 +107,19 @@ func (r *ApiTokenResource) Create(
 	// Create the API token request
 	createApiTokenRequest := iam.CreateApiTokenRequest{
 		Name: data.Name.ValueString(),
-		Role: role,
+		Role: role.Role,
 		Type: iam.CreateApiTokenRequestType(data.Type.ValueString()),
 	}
 
 	// If the entity type is WORKSPACE or DEPLOYMENT, set the entity id
 	if createApiTokenRequest.Type == iam.WORKSPACE || createApiTokenRequest.Type == iam.DEPLOYMENT {
-		var entityId string
-		_, entityId, diags = RequestApiTokenRole(roles, data.Type.ValueString())
+		role, diags = RequestApiTokenRole(roles, data.Type.ValueString())
 		if diags != nil {
 			resp.Diagnostics.Append(diags...)
 			return
 		}
 
-		createApiTokenRequest.EntityId = lo.ToPtr(entityId)
+		createApiTokenRequest.EntityId = lo.ToPtr(role.EntityId)
 	}
 
 	if data.Description.IsNull() {
@@ -179,7 +178,7 @@ func (r *ApiTokenResource) Create(
 		}
 	}
 
-	// Get api token
+	// Get api token and use this as data since it will have the correct roles
 	apiTokenResp, err := r.IamClient.GetApiTokenWithResponse(
 		ctx,
 		r.OrganizationId,
@@ -194,10 +193,10 @@ func (r *ApiTokenResource) Create(
 		return
 	}
 
-	// Set the token in the response
+	// Set the token in the response since it won't be returned in the GET call
 	apiTokenResp.JSON200.Token = apiToken.JSON200.Token
 
-	diags = data.ReadFromResponse(ctx, apiTokenResp.JSON200)
+	diags = data.ReadFromResponse(ctx, apiTokenResp.JSON200, *apiToken.JSON200.Token)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -250,7 +249,7 @@ func (r *ApiTokenResource) Read(
 		return
 	}
 
-	diags := data.ReadFromResponse(ctx, apiToken.JSON200)
+	diags := data.ReadFromResponse(ctx, apiToken.JSON200, data.Token.ValueString())
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -339,7 +338,7 @@ func (r *ApiTokenResource) Update(
 		return
 	}
 
-	// Get api token
+	// Get api token and use this as data since it will have the correct roles
 	apiTokenResp, err := r.IamClient.GetApiTokenWithResponse(
 		ctx,
 		r.OrganizationId,
@@ -354,7 +353,7 @@ func (r *ApiTokenResource) Update(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, apiTokenResp.JSON200)
+	diags = data.ReadFromResponse(ctx, apiTokenResp.JSON200, data.Token.ValueString())
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -431,7 +430,7 @@ func (r *ApiTokenResource) ValidateConfig(
 		return
 	}
 
-	tokenRole, _, diags := RequestApiTokenRole(roles, data.Type.ValueString())
+	tokenRole, diags := RequestApiTokenRole(roles, data.Type.ValueString())
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -440,81 +439,68 @@ func (r *ApiTokenResource) ValidateConfig(
 	entityType := data.Type.ValueString()
 
 	// Check if the role is valid for the entity type
-	if !utils.CheckRole(tokenRole, entityType) {
+	if !utils.ValidateRoleMatchesEntityType(tokenRole.Role, entityType) {
 		resp.Diagnostics.AddError(
 			"Client Error",
 			fmt.Sprintf("Role %s is not valid for entity type %s", tokenRole, entityType),
 		)
 		return
 	}
-
-	// Validate the roles based on the entity type
-	switch entityType {
-	case string(iam.ApiTokenRoleEntityTypeORGANIZATION):
-		resp.Diagnostics.Append(validateOrganizationApiToken(roles)...)
-	case string(iam.ApiTokenRoleEntityTypeWORKSPACE):
-		resp.Diagnostics.Append(validateWorkspaceApiToken(roles)...)
-	case string(iam.ApiTokenRoleEntityTypeDEPLOYMENT):
-		resp.Diagnostics.Append(validateDeploymentApiToken(roles)...)
-	}
+	resp.Diagnostics.Append(validateApiTokenRoles(entityType, roles)...)
 }
 
-func validateOrganizationApiToken(roles []iam.ApiTokenRole) diag.Diagnostics {
-	for _, role := range roles {
-		if utils.CheckRole(role.Role, string(role.EntityType)) {
-			return nil
-		}
-	}
-	return diag.Diagnostics{
-		diag.NewErrorDiagnostic(
-			"Client Error",
-			"Unable to find the role for the entity type",
-		),
-	}
-}
+func validateApiTokenRoles(entityType string, roles []iam.ApiTokenRole) diag.Diagnostics {
+	var numRoles int
+	var invalidRoleError string
 
-func validateWorkspaceApiToken(roles []iam.ApiTokenRole) diag.Diagnostics {
 	for _, role := range roles {
-		if role.EntityType == iam.ApiTokenRoleEntityTypeORGANIZATION {
+		if entityType == string(iam.ApiTokenRoleEntityTypeWORKSPACE) && role.EntityType == iam.ApiTokenRoleEntityTypeORGANIZATION {
 			return diag.Diagnostics{
 				diag.NewErrorDiagnostic(
-					"Client Error",
+					"Bad Request Error",
 					"API Token of type WORKSPACE cannot have an ORGANIZATION role",
 				),
 			}
 		}
 
-		if utils.CheckRole(role.Role, string(role.EntityType)) {
-			return nil
-		}
-	}
-	return diag.Diagnostics{
-		diag.NewErrorDiagnostic(
-			"Client Error",
-			"Unable to find the role for the entity type",
-		),
-	}
-}
-
-func validateDeploymentApiToken(roles []iam.ApiTokenRole) diag.Diagnostics {
-	for _, role := range roles {
-		if role.EntityType != iam.ApiTokenRoleEntityTypeDEPLOYMENT {
+		if entityType == string(iam.ApiTokenRoleEntityTypeDEPLOYMENT) && (role.EntityType != iam.ApiTokenRoleEntityTypeDEPLOYMENT || role.Role != "DEPLOYMENT_ADMIN") {
 			return diag.Diagnostics{
 				diag.NewErrorDiagnostic(
-					"Client Error",
-					"API Token of type DEPLOYMENT cannot have an ORGANIZATION or WORKSPACE role",
+					"Bad Request Error",
+					"API Token of type DEPLOYMENT cannot have an ORGANIZATION or WORKSPACE role and the role must be 'DEPLOYMENT_ADMIN'",
 				),
 			}
 		}
 
-		if utils.CheckRole(role.Role, string(role.EntityType)) {
-			return nil
+		if utils.ValidateRoleMatchesEntityType(role.Role, string(role.EntityType)) {
+			numRoles++
 		}
 	}
+
+	switch entityType {
+	case string(iam.ApiTokenRoleEntityTypeORGANIZATION):
+		invalidRoleError = "There is no ORGANIZATION role in 'roles'"
+	case string(iam.ApiTokenRoleEntityTypeWORKSPACE):
+		invalidRoleError = "There is no WORKSPACE role in 'roles'"
+	case string(iam.ApiTokenRoleEntityTypeDEPLOYMENT):
+		invalidRoleError = "There is no DEPLOYMENT role in 'roles'"
+	}
+
+	if numRoles == 1 {
+		return nil
+	} else if numRoles > 1 {
+		return diag.Diagnostics{
+			diag.NewErrorDiagnostic(
+				"Bad Request Error",
+				fmt.Sprintf("API Token of type %s cannot have more than one role", entityType),
+			),
+		}
+	}
+
 	return diag.Diagnostics{
 		diag.NewErrorDiagnostic(
-			"Client Error",
-			"Unable to find the role for the entity type",
+			"Bad Request Error",
+			invalidRoleError,
 		),
 	}
 }
@@ -531,33 +517,23 @@ func RequestApiTokenRoles(ctx context.Context, apiTokenRolesObjSet types.Set) ([
 		return nil, diags
 	}
 	apiTokenRoles := lo.Map(roles, func(v models.ApiTokenRole, _ int) iam.ApiTokenRole {
-		var entityType iam.ApiTokenRoleEntityType
-
-		if v.EntityType.ValueString() == string(iam.ApiTokenRoleEntityTypeORGANIZATION) {
-			entityType = iam.ApiTokenRoleEntityTypeORGANIZATION
-		} else if v.EntityType.ValueString() == string(iam.ApiTokenRoleEntityTypeWORKSPACE) {
-			entityType = iam.ApiTokenRoleEntityTypeWORKSPACE
-		} else if v.EntityType.ValueString() == string(iam.ApiTokenRoleEntityTypeDEPLOYMENT) {
-			entityType = iam.ApiTokenRoleEntityTypeDEPLOYMENT
-		}
-
 		return iam.ApiTokenRole{
 			Role:       v.Role.ValueString(),
 			EntityId:   v.EntityId.ValueString(),
-			EntityType: entityType,
+			EntityType: iam.ApiTokenRoleEntityType(v.EntityType.ValueString()),
 		}
 	})
 
 	return apiTokenRoles, nil
 }
 
-func RequestApiTokenRole(roles []iam.ApiTokenRole, entityType string) (string, string, diag.Diagnostics) {
+func RequestApiTokenRole(roles []iam.ApiTokenRole, entityType string) (iam.ApiTokenRole, diag.Diagnostics) {
 	for _, role := range roles {
 		if role.EntityType == iam.ApiTokenRoleEntityType(entityType) {
-			return role.Role, role.EntityId, nil
+			return role, nil
 		}
 	}
-	return "", "", diag.Diagnostics{
+	return iam.ApiTokenRole{}, diag.Diagnostics{
 		diag.NewErrorDiagnostic(
 			"Client Error",
 			"Unable to find the role for the entity type",

@@ -87,7 +87,7 @@ func (data *ApiTokenDataSource) ReadFromResponse(ctx context.Context, apiToken *
 	return diags
 }
 
-func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *iam.ApiToken) diag.Diagnostics {
+func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *iam.ApiToken, token string) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(apiToken.Id)
 	data.Name = types.StringValue(apiToken.Name)
@@ -99,10 +99,10 @@ func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *ia
 	data.ShortToken = types.StringValue(apiToken.ShortToken)
 	data.Type = types.StringValue(string(apiToken.Type))
 	data.StartAt = types.StringValue(apiToken.StartAt.String())
-	if apiToken.EndAt != nil {
-		data.EndAt = types.StringValue(apiToken.EndAt.String())
-	} else {
+	if apiToken.EndAt == nil {
 		data.EndAt = types.StringValue("")
+	} else {
+		data.EndAt = types.StringValue(apiToken.EndAt.String())
 	}
 	data.CreatedAt = types.StringValue(apiToken.CreatedAt.String())
 	data.UpdatedAt = types.StringValue(apiToken.UpdatedAt.String())
@@ -117,19 +117,21 @@ func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *ia
 	if apiToken.ExpiryPeriodInDays != nil {
 		data.ExpiryPeriodInDays = types.Int64Value(int64(*apiToken.ExpiryPeriodInDays))
 	}
-	if apiToken.LastUsedAt != nil {
-		data.LastUsedAt = types.StringValue(apiToken.LastUsedAt.String())
-	} else {
+	if apiToken.LastUsedAt == nil {
 		data.LastUsedAt = types.StringValue("")
+	} else {
+		data.LastUsedAt = types.StringValue(apiToken.LastUsedAt.String())
 	}
 	data.Roles, diags = utils.ObjectSet(ctx, apiToken.Roles, schemas.ApiTokenRoleAttributeTypes(), ApiTokenRoleTypesObject)
 	if diags.HasError() {
 		return diags
 	}
-	if apiToken.Token == nil {
-		data.Token = types.StringNull()
-	} else {
+	if apiToken.Token != nil {
 		data.Token = types.StringValue(*apiToken.Token)
+	} else if token != "" {
+		data.Token = types.StringValue(token)
+	} else {
+		data.Token = types.StringNull()
 	}
 	return diags
 }
