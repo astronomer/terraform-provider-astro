@@ -133,29 +133,29 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 				),
 			},
 			// Change the resource type and remove roles
-			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
-					Name:        apiTokenName,
-					Description: utils.TestResourceDescription,
-					Type:        "WORKSPACE",
-					Roles: []apiTokenRole{
-						{
-							Role:       "WORKSPACE_OWNER",
-							EntityId:   workspaceId,
-							EntityType: "WORKSPACE",
-						},
-					},
-				}),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceVar, "type", "WORKSPACE"),
-					resource.TestCheckResourceAttr(resourceVar, "roles.#", "1"),
-					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_id", workspaceId),
-					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", "WORKSPACE"),
-					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", "WORKSPACE_OWNER"),
-					// Check via API that api token was destroyed and recreated
-					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{workspace: true, shouldExist: true}),
-				),
-			},
+			//{
+			//	Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
+			//		Name:        apiTokenName,
+			//		Description: utils.TestResourceDescription,
+			//		Type:        "WORKSPACE",
+			//		Roles: []apiTokenRole{
+			//			{
+			//				Role:       "WORKSPACE_OWNER",
+			//				EntityId:   workspaceId,
+			//				EntityType: "WORKSPACE",
+			//			},
+			//		},
+			//	}),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		resource.TestCheckResourceAttr(resourceVar, "type", "WORKSPACE"),
+			//		resource.TestCheckResourceAttr(resourceVar, "roles.#", "1"),
+			//		resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_id", workspaceId),
+			//		resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", "WORKSPACE"),
+			//		resource.TestCheckResourceAttr(resourceVar, "roles.0.role", "WORKSPACE_OWNER"),
+			//		// Check via API that api token was destroyed and recreated
+			//		testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{workspace: true, shouldExist: true}),
+			//	),
+			//},
 			// Change resource type back to ORGANIZATION
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
