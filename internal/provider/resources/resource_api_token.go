@@ -193,9 +193,6 @@ func (r *ApiTokenResource) Create(
 		return
 	}
 
-	// Set the token in the response since it won't be returned in the GET call
-	apiTokenResp.JSON200.Token = apiToken.JSON200.Token
-
 	diags = data.ReadFromResponse(ctx, apiTokenResp.JSON200, *apiToken.JSON200.Token)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)

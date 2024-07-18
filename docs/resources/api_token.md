@@ -89,14 +89,9 @@ resource "astro_api_token" "example_deployment_token_with_custom_role" {
   description = "deployment api token description"
   type        = "DEPLOYMENT"
   roles = [{
-    "role" : "DEPLOYMENT_ADMIN",
+    "role" : "CUSTOM_ROLE",
     "entity_id" : "clyn6kxud003x01mtxmccegnh",
     "entity_type" : "DEPLOYMENT"
-    },
-    {
-      "role" : "CUSTOM_ROLE",
-      "entity_id" : "clyn6kxud003x01mtxmccegnh",
-      "entity_type" : "DEPLOYMENT"
   }]
 }
 ```
