@@ -447,7 +447,7 @@ func (r *ApiTokenResource) ValidateConfig(
 }
 
 func validateApiTokenRoles(entityType string, roles []iam.ApiTokenRole) diag.Diagnostics {
-	var numRoles int
+	var numRolesMatchingEntityType int
 	var invalidRoleError string
 
 	for _, role := range roles {
@@ -469,8 +469,17 @@ func validateApiTokenRoles(entityType string, roles []iam.ApiTokenRole) diag.Dia
 			}
 		}
 
-		if utils.ValidateRoleMatchesEntityType(role.Role, string(role.EntityType)) {
-			numRoles++
+		if !utils.ValidateRoleMatchesEntityType(role.Role, string(role.EntityType)) {
+			return diag.Diagnostics{
+				diag.NewErrorDiagnostic(
+					"Bad Request Error",
+					fmt.Sprintf("Role %s is not valid for entity type %s", role.Role, role.EntityType),
+				),
+			}
+		}
+
+		if utils.ValidateRoleMatchesEntityType(role.Role, entityType) {
+			numRolesMatchingEntityType++
 		}
 	}
 
@@ -483,9 +492,9 @@ func validateApiTokenRoles(entityType string, roles []iam.ApiTokenRole) diag.Dia
 		invalidRoleError = "There is no DEPLOYMENT role in 'roles'"
 	}
 
-	if numRoles == 1 {
+	if numRolesMatchingEntityType == 1 {
 		return nil
-	} else if numRoles > 1 {
+	} else if numRolesMatchingEntityType > 1 {
 		return diag.Diagnostics{
 			diag.NewErrorDiagnostic(
 				"Bad Request Error",
