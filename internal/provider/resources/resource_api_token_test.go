@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
@@ -498,14 +499,28 @@ type apiTokenInput struct {
 }
 
 func apiToken(input apiTokenInput) string {
+	roles := lo.Map(input.Roles, func(role apiTokenRole, _ int) string {
+		return fmt.Sprintf(`
+		{
+			role = "%v"
+			entity_id = "%v"
+			entity_type = "%v"
+		}`, role.Role, role.EntityId, role.EntityType)
+	})
+
+	var rolesString string
+	if len(input.Roles) > 0 {
+		rolesString = fmt.Sprintf("roles = [%v]", strings.Join(roles, ", "))
+	}
+
 	return fmt.Sprintf(`
 resource astro_api_token "%v" {
 	name = "%v"
 	description = "%s"
 	type = "%s"
-	roles = %v
+	%v
 	expiry_period_in_days = %v
-}`, input.Name, input.Name, input.Description, input.Type, input.Roles, input.ExpiryPeriodInDays)
+}`, input.Name, input.Name, input.Description, input.Type, rolesString, input.ExpiryPeriodInDays)
 }
 
 type checkApiTokensExistenceInput struct {
