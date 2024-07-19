@@ -144,6 +144,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 							EntityType: "WORKSPACE",
 						},
 					},
+					ExpiryPeriodInDays: 30,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "type", "WORKSPACE"),
@@ -297,6 +298,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 							EntityType: "ORGANIZATION",
 						},
 					},
+					ExpiryPeriodInDays: 30,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "type", "ORGANIZATION"),
@@ -431,6 +433,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 							EntityType: "ORGANIZATION",
 						},
 					},
+					ExpiryPeriodInDays: 30,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "type", "ORGANIZATION"),
