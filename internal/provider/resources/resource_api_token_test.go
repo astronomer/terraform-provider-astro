@@ -17,20 +17,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// test organization api token
-// test workpsace api token
-// test deployment api token
-
-// within each test:
-// - create the resource
-// - check that the resource was created
-// - update the resource
-// - check that the resource was updated
-// - change the resource type
-// - check that the resource was destroyed and recreated
-// - import existing resource
-// - check that the resource was imported
-// - check that for each role, the role matches the entity type
+// Acceptance tests for Organization, Workspace, and Deployment API tokens
+// Within each test we create, update, change resource type and import the resource
 
 func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 	namePrefix := utils.GenerateTestResourceName(10)
@@ -546,7 +534,6 @@ func testAccCheckApiTokenExistence(t *testing.T, input checkApiTokensExistenceIn
 			deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
 			apiTokensParams.DeploymentId = lo.ToPtr(deploymentId)
 		}
-		// TODO: fix the way we check for api token existence - there are multiple api tokens in this org
 
 		resp, err := client.ListApiTokensWithResponse(ctx, organizationId, apiTokensParams)
 		if err != nil {
@@ -560,6 +547,7 @@ func testAccCheckApiTokenExistence(t *testing.T, input checkApiTokensExistenceIn
 			return fmt.Errorf("response JSON200 is nil status: %v, err: %v", status, diag.Detail())
 		}
 
+		// Check that the api token exists, multiple api tokens exist in the entity
 		for _, token := range resp.JSON200.Tokens {
 			if token.Name == input.name {
 				if input.shouldExist {
