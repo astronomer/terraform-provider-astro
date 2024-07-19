@@ -47,7 +47,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			// Check that the organization api token has been removed
-			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{organization: true, shouldExist: false}),
+			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: false}),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -97,7 +97,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "roles.2.entity_type", "DEPLOYMENT"),
 					resource.TestCheckResourceAttr(resourceVar, "roles.2.role", "DEPLOYMENT_ADMIN"),
 					// Check via API that organization api token exists
-					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{organization: true, shouldExist: true}),
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
 			},
 			// Change properties and check they have been updated in terraform state
@@ -129,7 +129,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "description", "new description"),
 					resource.TestCheckResourceAttr(resourceVar, "expiry_period_in_days", "60"),
 					// Check via API that organization api token exists
-					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{organization: true, shouldExist: true}),
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
 			},
 			// Change the resource type and remove roles
@@ -153,7 +153,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", "WORKSPACE"),
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", "WORKSPACE_OWNER"),
 					// Check via API that api token was destroyed and recreated
-					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{workspace: true, shouldExist: true}),
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: true}),
 				),
 			},
 			// Change resource type back to ORGANIZATION
@@ -186,7 +186,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
 					resource.TestCheckResourceAttr(resourceVar, "expiry_period_in_days", "30"),
 					// Check via API that organization api token exists
-					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{organization: true, shouldExist: true}),
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
 			},
 			// Import existing api token and check it is correctly imported
@@ -215,7 +215,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			// Check that the organization api token has been removed
-			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{workspace: true, shouldExist: false}),
+			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: false}),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -257,7 +257,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "roles.1.entity_type", "DEPLOYMENT"),
 					resource.TestCheckResourceAttr(resourceVar, "roles.1.role", "DEPLOYMENT_ADMIN"),
 					// Check via API that organization api token exists
-					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{workspace: true, shouldExist: true}),
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: true}),
 				),
 			},
 			// Change properties and check they have been updated in terraform state
@@ -284,7 +284,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "description", "new description"),
 					resource.TestCheckResourceAttr(resourceVar, "expiry_period_in_days", "60"),
 					// Check via API that organization api token exists
-					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{workspace: true, shouldExist: true}),
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: true}),
 				),
 			},
 			// Change the resource type and remove roles
@@ -308,7 +308,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", "ORGANIZATION"),
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", "ORGANIZATION_OWNER"),
 					// Check via API that api token was destroyed and recreated
-					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{organization: true, shouldExist: true}),
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
 			},
 			// Change resource type back to WORKSPACE
@@ -336,7 +336,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
 					resource.TestCheckResourceAttr(resourceVar, "expiry_period_in_days", "30"),
 					// Check via API that organization api token exists
-					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{workspace: true, shouldExist: true}),
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: true}),
 				),
 			},
 			// Import existing api token and check it is correctly imported
@@ -364,7 +364,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			// Check that the organization api token has been removed
-			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{deployment: true, shouldExist: false}),
+			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: false}),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -398,7 +398,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", "DEPLOYMENT"),
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", "DEPLOYMENT_ADMIN"),
 					// Check via API that organization api token exists
-					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{deployment: true, shouldExist: true}),
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
 				),
 			},
 			// Change properties and check they have been updated in terraform state
@@ -420,7 +420,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "description", "new description"),
 					resource.TestCheckResourceAttr(resourceVar, "expiry_period_in_days", "60"),
 					// Check via API that organization api token exists
-					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{deployment: true, shouldExist: true}),
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
 				),
 			},
 			// Change the resource type
@@ -444,7 +444,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", "ORGANIZATION"),
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", "ORGANIZATION_OWNER"),
 					// Check via API that api token was destroyed and recreated
-					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{organization: true, shouldExist: true}),
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
 			},
 			// Change resource type back to DEPLOYMENT
@@ -467,7 +467,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
 					resource.TestCheckResourceAttr(resourceVar, "expiry_period_in_days", "30"),
 					// Check via API that organization api token exists
-					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{deployment: true, shouldExist: true}),
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
 				),
 			},
 			// Import existing api token and check it is correctly imported
