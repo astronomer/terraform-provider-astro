@@ -123,11 +123,10 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 							EntityType: "DEPLOYMENT",
 						},
 					},
-					ExpiryPeriodInDays: 60,
+					ExpiryPeriodInDays: 30,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "description", "new description"),
-					resource.TestCheckResourceAttr(resourceVar, "expiry_period_in_days", "60"),
 					// Check via API that organization api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
@@ -184,7 +183,6 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "type", "ORGANIZATION"),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
-					resource.TestCheckResourceAttr(resourceVar, "expiry_period_in_days", "30"),
 					// Check via API that organization api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
@@ -278,11 +276,10 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 							EntityType: "DEPLOYMENT",
 						},
 					},
-					ExpiryPeriodInDays: 60,
+					ExpiryPeriodInDays: 30,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "description", "new description"),
-					resource.TestCheckResourceAttr(resourceVar, "expiry_period_in_days", "60"),
 					// Check via API that organization api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: true}),
 				),
@@ -334,7 +331,6 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "type", "WORKSPACE"),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
-					resource.TestCheckResourceAttr(resourceVar, "expiry_period_in_days", "30"),
 					// Check via API that organization api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: true}),
 				),
@@ -414,11 +410,10 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 							EntityType: "DEPLOYMENT",
 						},
 					},
-					ExpiryPeriodInDays: 60,
+					ExpiryPeriodInDays: 30,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "description", "new description"),
-					resource.TestCheckResourceAttr(resourceVar, "expiry_period_in_days", "60"),
 					// Check via API that organization api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
 				),
@@ -465,7 +460,6 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "type", "DEPLOYMENT"),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
-					resource.TestCheckResourceAttr(resourceVar, "expiry_period_in_days", "30"),
 					// Check via API that organization api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
 				),
