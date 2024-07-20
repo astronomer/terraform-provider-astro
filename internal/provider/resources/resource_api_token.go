@@ -437,7 +437,12 @@ func (r *ApiTokenResource) ValidateConfig(
 		)
 		return
 	}
-	resp.Diagnostics.Append(validateApiTokenRoles(entityType, roles)...)
+
+	diags = validateApiTokenRoles(entityType, roles)
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
 }
 
 func validateApiTokenRoles(entityType string, roles []iam.ApiTokenRole) diag.Diagnostics {

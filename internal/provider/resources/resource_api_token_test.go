@@ -318,7 +318,6 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 							EntityType: string(iam.WORKSPACE),
 						},
 					},
-					ExpiryPeriodInDays: 30,
 				}),
 				ExpectError: regexp.MustCompile("Bad Request Error"),
 			},
