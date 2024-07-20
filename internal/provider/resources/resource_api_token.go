@@ -492,7 +492,7 @@ func validateApiTokenRoles(entityType string, roles []iam.ApiTokenRole) diag.Dia
 		return diag.Diagnostics{
 			diag.NewErrorDiagnostic(
 				"Bad Request Error",
-				fmt.Sprintf("API Token of type %s cannot have more than one role", entityType),
+				fmt.Sprintf("API Token of type %s cannot have more than one role of the same type", entityType),
 			),
 		}
 	}
