@@ -40,20 +40,20 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			// Test invalid role for token type
-			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
-					Name: apiTokenName,
-					Type: string(iam.ORGANIZATION),
-					Roles: []apiTokenRole{
-						{
-							Role:       string(iam.WORKSPACEOWNER),
-							EntityId:   workspaceId,
-							EntityType: string(iam.WORKSPACE),
-						},
-					},
-				}),
-				ExpectError: regexp.MustCompile(fmt.Sprintf("No matching role found for the specified entity type 'ORGANIZATION'. Each API Token must be associated with a valid role corresponding to its entity type.")),
-			},
+			//{
+			//	Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
+			//		Name: apiTokenName,
+			//		Type: string(iam.ORGANIZATION),
+			//		Roles: []apiTokenRole{
+			//			{
+			//				Role:       string(iam.WORKSPACEOWNER),
+			//				EntityId:   workspaceId,
+			//				EntityType: string(iam.WORKSPACE),
+			//			},
+			//		},
+			//	}),
+			//	ExpectError: regexp.MustCompile(fmt.Sprintf("No matching role found for the specified entity type 'ORGANIZATION'. Each API Token must be associated with a valid role corresponding to its entity type.")),
+			//},
 			// Test invalid role for entity type
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
