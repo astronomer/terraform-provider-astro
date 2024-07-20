@@ -403,6 +403,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 							EntityType: string(iam.ORGANIZATION),
 						},
 					},
+					ExpiryPeriodInDays: 30,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "type", string(iam.ORGANIZATION)),
