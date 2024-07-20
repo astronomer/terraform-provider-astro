@@ -245,7 +245,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
 	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
 
-	apiTokenName := fmt.Sprintf("%v_org", namePrefix)
+	apiTokenName := fmt.Sprintf("%v_workspace", namePrefix)
 	resourceVar := fmt.Sprintf("astro_api_token.%v", apiTokenName)
 
 	resource.Test(t, resource.TestCase{
@@ -460,7 +460,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
 	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
 
-	apiTokenName := fmt.Sprintf("%v_org", namePrefix)
+	apiTokenName := fmt.Sprintf("%v_deployment", namePrefix)
 	resourceVar := fmt.Sprintf("astro_api_token.%v", apiTokenName)
 
 	resource.Test(t, resource.TestCase{
