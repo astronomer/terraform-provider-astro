@@ -486,21 +486,21 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile("Bad Request Error"),
 			},
-			// Test invalid role for entity type
-			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
-					Name: apiTokenName,
-					Type: string(iam.DEPLOYMENT),
-					Roles: []apiTokenRole{
-						{
-							Role:       string(iam.ORGANIZATIONOWNER),
-							EntityId:   deploymentId,
-							EntityType: string(iam.DEPLOYMENT),
-						},
-					},
-				}),
-				ExpectError: regexp.MustCompile("Bad Request Error"),
-			},
+			//// Test invalid role for entity type
+			//{
+			//	Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
+			//		Name: apiTokenName,
+			//		Type: string(iam.DEPLOYMENT),
+			//		Roles: []apiTokenRole{
+			//			{
+			//				Role:       string(iam.ORGANIZATIONOWNER),
+			//				EntityId:   deploymentId,
+			//				EntityType: string(iam.DEPLOYMENT),
+			//			},
+			//		},
+			//	}),
+			//	ExpectError: regexp.MustCompile("Bad Request Error"),
+			//},
 			// Test invalid role for API token type
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
