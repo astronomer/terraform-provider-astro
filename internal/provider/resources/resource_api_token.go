@@ -134,7 +134,7 @@ func (r *ApiTokenResource) Create(
 	if err != nil {
 		tflog.Error(ctx, "failed to create API token", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
-			"Bad Request",
+			"Bad Request Error",
 			fmt.Sprintf("Unable to create API token, got error: %s", err),
 		)
 		return
@@ -160,7 +160,7 @@ func (r *ApiTokenResource) Create(
 		if err != nil {
 			tflog.Error(ctx, "failed to create API token", map[string]interface{}{"error": err})
 			resp.Diagnostics.AddError(
-				"Bad Request",
+				"Bad Request Error",
 				fmt.Sprintf("Unable to create API token and add additional roles, got error: %s", err),
 			)
 			return
@@ -181,7 +181,7 @@ func (r *ApiTokenResource) Create(
 	if err != nil {
 		tflog.Error(ctx, "failed to create API token", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
-			"Bad Request",
+			"Bad Request Error",
 			fmt.Sprintf("Unable to create API token and get API token, got error: %s", err),
 		)
 		return
@@ -223,7 +223,7 @@ func (r *ApiTokenResource) Read(
 	if err != nil {
 		tflog.Error(ctx, "failed to get API token", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
-			"Bad Request",
+			"Bad Request Error",
 			fmt.Sprintf("Unable to get API token, got error: %s", err),
 		)
 		return
@@ -286,7 +286,7 @@ func (r *ApiTokenResource) Update(
 	if err != nil {
 		tflog.Error(ctx, "failed to update API token", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
-			"Bad Request",
+			"Bad Request Error",
 			fmt.Sprintf("Unable to update API token, got error: %s", err),
 		)
 		return
@@ -318,7 +318,7 @@ func (r *ApiTokenResource) Update(
 	if err != nil {
 		tflog.Error(ctx, "failed to update API token", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
-			"Bad Request",
+			"Bad Request Error",
 			fmt.Sprintf("Unable to update API token, got error: %s", err),
 		)
 		return
@@ -338,7 +338,7 @@ func (r *ApiTokenResource) Update(
 	if err != nil {
 		tflog.Error(ctx, "failed to update API token", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
-			"Bad Request",
+			"Bad Request Error",
 			fmt.Sprintf("Unable to update API token and get API token, got error: %s", err),
 		)
 		return
@@ -379,7 +379,7 @@ func (r *ApiTokenResource) Delete(
 	if err != nil {
 		tflog.Error(ctx, "failed to delete API token", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
-			"Bad Request",
+			"Bad Request Error",
 			fmt.Sprintf("Unable to delete API token, got error: %s", err),
 		)
 		return
@@ -432,7 +432,7 @@ func (r *ApiTokenResource) ValidateConfig(
 	// Check if the role is valid for the entity type
 	if !utils.ValidateRoleMatchesEntityType(tokenRole.Role, entityType) {
 		resp.Diagnostics.AddError(
-			"Bad Request",
+			"Bad Request Error",
 			fmt.Sprintf("Role %s is not valid for entity type %s", tokenRole, entityType),
 		)
 		return
@@ -535,7 +535,7 @@ func RequestApiTokenPrimaryRole(roles []iam.ApiTokenRole, entityType string) (ia
 	}
 	return iam.ApiTokenRole{}, diag.Diagnostics{
 		diag.NewErrorDiagnostic(
-			"Bad Request",
+			"Bad Request Error",
 			fmt.Sprintf("No matching role found for the specified entity type '%s'. Each API Token must be associated with a valid role corresponding to its entity type.", entityType),
 		),
 	}
