@@ -92,7 +92,7 @@ func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *ia
 	data.Id = types.StringValue(apiToken.Id)
 	data.Name = types.StringValue(apiToken.Name)
 	if apiToken.Description == "" {
-		data.Description = types.StringNull()
+		data.Description = types.StringValue("")
 	} else {
 		data.Description = types.StringValue(apiToken.Description)
 	}

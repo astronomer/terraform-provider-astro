@@ -117,7 +117,7 @@ func (r *ApiTokenResource) Create(
 	}
 
 	if data.Description.IsNull() {
-		createApiTokenRequest.Description = nil
+		createApiTokenRequest.Description = lo.ToPtr("")
 	} else {
 		createApiTokenRequest.Description = data.Description.ValueStringPointer()
 	}
