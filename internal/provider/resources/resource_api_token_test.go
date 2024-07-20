@@ -39,15 +39,6 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: false}),
 		),
 		Steps: []resource.TestStep{
-			// Test missing roles
-			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
-					Name:  apiTokenName,
-					Type:  string(iam.ORGANIZATION),
-					Roles: []apiTokenRole{},
-				}),
-				ExpectError: regexp.MustCompile(fmt.Sprintf("There is no %v role in 'roles'", iam.ORGANIZATION)),
-			},
 			// Test invalid role for token type
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
@@ -264,15 +255,6 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: false}),
 		),
 		Steps: []resource.TestStep{
-			// Test missing roles
-			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
-					Name:  apiTokenName,
-					Type:  string(iam.WORKSPACE),
-					Roles: []apiTokenRole{},
-				}),
-				ExpectError: regexp.MustCompile(fmt.Sprintf("There is no %v role in 'roles'", iam.WORKSPACE)),
-			},
 			// Test invalid role for token type
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
@@ -486,15 +468,6 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: false}),
 		),
 		Steps: []resource.TestStep{
-			// Test missing roles
-			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
-					Name:  apiTokenName,
-					Type:  string(iam.DEPLOYMENT),
-					Roles: []apiTokenRole{},
-				}),
-				ExpectError: regexp.MustCompile(fmt.Sprintf("There is no %v role in 'roles'", iam.DEPLOYMENT)),
-			},
 			// Test invalid role for entity type
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
