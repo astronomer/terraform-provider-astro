@@ -158,7 +158,7 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			},
 		},
 		"token": resourceSchema.StringAttribute{
-			MarkdownDescription: "API Token value",
+			MarkdownDescription: "API Token value. Warning: This value will be saved in plaintext in the terraform state file.",
 			Computed:            true,
 			Sensitive:           true,
 		},

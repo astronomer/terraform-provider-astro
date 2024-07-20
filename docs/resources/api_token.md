@@ -13,9 +13,9 @@ API Token resource
 ## Example Usage
 
 ```terraform
-resource "astro_api_token" "example" {
-  name        = "api token"
-  description = "api token description"
+resource "astro_api_token" "example_organization_token" {
+  name        = "organization api token"
+  description = "organization api token description"
   type        = "ORGANIZATION"
   roles = [{
     "role" : "ORGANIZATION_OWNER",
@@ -25,9 +25,9 @@ resource "astro_api_token" "example" {
   expiry_period_in_days = 30
 }
 
-resource "astro_api_token" "example" {
-  name        = "api token"
-  description = "api token description"
+resource "astro_api_token" "example_organization_token_with_multiple_roles" {
+  name        = "organization api token with multiple roles"
+  description = "organization api token description"
   type        = "ORGANIZATION"
   roles = [{
     "role" : "ORGANIZATION_OWNER",
@@ -119,7 +119,7 @@ resource "astro_api_token" "example_deployment_token_with_custom_role" {
 - `last_used_at` (String) API Token last used timestamp
 - `short_token` (String) API Token short token
 - `start_at` (String) time when the API token will become valid in UTC
-- `token` (String, Sensitive) API Token value
+- `token` (String, Sensitive) API Token value. Warning: This value will be saved in plaintext in the terraform state file.
 - `updated_at` (String) API Token last updated timestamp
 - `updated_by` (Attributes) API Token updater (see [below for nested schema](#nestedatt--updated_by))
 
