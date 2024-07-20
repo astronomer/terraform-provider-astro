@@ -52,7 +52,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile(fmt.Sprintf("There is no %v role in 'roles'", iam.ORGANIZATION)),
+				ExpectError: regexp.MustCompile(fmt.Sprintf("No matching role found for the specified entity type 'ORGANIZATION'. Each API Token must be associated with a valid role corresponding to its entity type.")),
 			},
 			// Test invalid role for entity type
 			{
@@ -268,7 +268,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile(fmt.Sprintf("There is no %v role in 'roles'", iam.WORKSPACE)),
+				ExpectError: regexp.MustCompile(fmt.Sprintf("No matching role found for the specified entity type 'WORKSPACE'. Each API Token must be associated with a valid role corresponding to its entity type.")),
 			},
 			// Test invalid role for entity type
 			{
@@ -468,6 +468,21 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: false}),
 		),
 		Steps: []resource.TestStep{
+			// Test invalid role for token type
+			{
+				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
+					Name: apiTokenName,
+					Type: string(iam.DEPLOYMENT),
+					Roles: []apiTokenRole{
+						{
+							Role:       string(iam.WORKSPACEOWNER),
+							EntityId:   workspaceId,
+							EntityType: string(iam.WORKSPACE),
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile(fmt.Sprintf("No matching role found for the specified entity type 'DEPLOYMENT'. Each API Token must be associated with a valid role corresponding to its entity type.")),
+			},
 			// Test invalid role for entity type
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
