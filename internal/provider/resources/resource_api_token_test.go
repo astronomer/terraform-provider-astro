@@ -494,7 +494,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 					Roles: []apiTokenRole{
 						{
 							Role:       string(iam.ORGANIZATIONOWNER),
-							EntityId:   workspaceId,
+							EntityId:   deploymentId,
 							EntityType: string(iam.DEPLOYMENT),
 						},
 					},
@@ -509,7 +509,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 					Roles: []apiTokenRole{
 						{
 							Role:       string(iam.ORGANIZATIONOWNER),
-							EntityId:   workspaceId,
+							EntityId:   organizationId,
 							EntityType: string(iam.ORGANIZATION),
 						},
 					},
