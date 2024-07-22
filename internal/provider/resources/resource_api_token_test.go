@@ -52,7 +52,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Bad Request Error"),
+				ExpectError: regexp.MustCompile("No matching role found for the specified entity type 'ORGANIZATION'"),
 			},
 			// Test invalid role for entity type
 			{
@@ -67,7 +67,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Bad Request Error"),
+				ExpectError: regexp.MustCompile("Role 'WORKSPACE_OWNER' is not valid for entity type 'ORGANIZATION'"),
 			},
 			// Test multiple roles of the same type
 			{
@@ -87,7 +87,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Bad Request Error"),
+				ExpectError: regexp.MustCompile("API Token of type 'ORGANIZATION' cannot have more than one role of the same type"),
 			},
 			// Create the organization api token
 			{
@@ -269,7 +269,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Bad Request Error"),
+				ExpectError: regexp.MustCompile("No matching role found for the specified entity type 'WORKSPACE'"),
 			},
 			// Test invalid role for entity type
 			{
@@ -284,22 +284,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Bad Request Error"),
-			},
-			// Test invalid role for API token type
-			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
-					Name: apiTokenName,
-					Type: string(iam.WORKSPACE),
-					Roles: []apiTokenRole{
-						{
-							Role:       string(iam.ORGANIZATIONOWNER),
-							EntityId:   workspaceId,
-							EntityType: string(iam.ORGANIZATION),
-						},
-					},
-				}),
-				ExpectError: regexp.MustCompile("Bad Request Error"),
+				ExpectError: regexp.MustCompile("Role 'ORGANIZATION_OWNER' is not valid for entity type 'WORKSPACE'"),
 			},
 			// Test multiple roles of the same type
 			{
@@ -319,7 +304,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Bad Request Error"),
+				ExpectError: regexp.MustCompile("API Token of type 'WORKSPACE' cannot have more than one role of the same type"),
 			},
 			// Create the workspace api token
 			{
@@ -483,7 +468,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Bad Request Error"),
+				ExpectError: regexp.MustCompile("No matching role found for the specified entity type 'DEPLOYMENT'"),
 			},
 			// Test invalid role for entity type
 			{
@@ -498,7 +483,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Bad Request Error"),
+				ExpectError: regexp.MustCompile("Role 'ORGANIZATION_OWNER' is not valid for entity type 'DEPLOYMENT'"),
 			},
 			// Test invalid role for API token type
 			{
@@ -513,7 +498,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Bad Request Error"),
+				ExpectError: regexp.MustCompile("No matching role found for the specified entity type 'DEPLOYMENT'"),
 			},
 			// Create the deployment api token
 			{

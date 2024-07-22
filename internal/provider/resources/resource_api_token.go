@@ -429,11 +429,11 @@ func (r *ApiTokenResource) ValidateConfig(
 
 	entityType := data.Type.ValueString()
 
-	// Check if the role is valid for the entity type
+	// Check if the role is valid for the token entity type
 	if !utils.ValidateRoleMatchesEntityType(tokenRole.Role, entityType) {
 		resp.Diagnostics.AddError(
-			"Bad Request Error",
-			fmt.Sprintf("Role %s is not valid for entity type %s", tokenRole, entityType),
+			fmt.Sprintf("Role '%s' is not valid for token type '%s'", tokenRole, entityType),
+			fmt.Sprintf("Please provide a valid role for the entity type '%s'", entityType),
 		)
 		return
 	}
@@ -453,8 +453,8 @@ func validateApiTokenRoles(entityType string, roles []iam.ApiTokenRole) diag.Dia
 		if entityType == string(iam.ApiTokenRoleEntityTypeWORKSPACE) && role.EntityType == iam.ApiTokenRoleEntityTypeORGANIZATION {
 			return diag.Diagnostics{
 				diag.NewErrorDiagnostic(
-					"Bad Request Error",
-					"API Token of type WORKSPACE cannot have an ORGANIZATION role",
+					"API Token of type 'WORKSPACE' cannot have an 'ORGANIZATION' role",
+					"Please remove the 'ORGANIZATION' role from the 'roles' list",
 				),
 			}
 		}
@@ -462,8 +462,8 @@ func validateApiTokenRoles(entityType string, roles []iam.ApiTokenRole) diag.Dia
 		if entityType == string(iam.ApiTokenRoleEntityTypeDEPLOYMENT) && role.EntityType != iam.ApiTokenRoleEntityTypeDEPLOYMENT {
 			return diag.Diagnostics{
 				diag.NewErrorDiagnostic(
-					"Bad Request Error",
-					"API Token of type DEPLOYMENT cannot have an ORGANIZATION or WORKSPACE role",
+					"API Token of type 'DEPLOYMENT' cannot have an 'ORGANIZATION' or 'WORKSPACE' role",
+					"Please remove the 'ORGANIZATION' or 'WORKSPACE' role from the 'roles' list",
 				),
 			}
 		}
@@ -471,8 +471,8 @@ func validateApiTokenRoles(entityType string, roles []iam.ApiTokenRole) diag.Dia
 		if !utils.ValidateRoleMatchesEntityType(role.Role, string(role.EntityType)) {
 			return diag.Diagnostics{
 				diag.NewErrorDiagnostic(
-					"Bad Request Error",
-					fmt.Sprintf("Role %s is not valid for entity type %s", role.Role, role.EntityType),
+					fmt.Sprintf("Role '%s' is not valid for entity type '%s'", role.Role, role.EntityType),
+					fmt.Sprintf("Please provide a valid role for the entity type '%s'", role.EntityType),
 				),
 			}
 		}
@@ -484,11 +484,11 @@ func validateApiTokenRoles(entityType string, roles []iam.ApiTokenRole) diag.Dia
 
 	switch entityType {
 	case string(iam.ApiTokenRoleEntityTypeORGANIZATION):
-		invalidRoleError = "There is no ORGANIZATION role in 'roles'"
+		invalidRoleError = "There is no 'ORGANIZATION' role in 'roles'"
 	case string(iam.ApiTokenRoleEntityTypeWORKSPACE):
-		invalidRoleError = "There is no WORKSPACE role in 'roles'"
+		invalidRoleError = "There is no 'WORKSPACE' role in 'roles'"
 	case string(iam.ApiTokenRoleEntityTypeDEPLOYMENT):
-		invalidRoleError = "There is no DEPLOYMENT role in 'roles'"
+		invalidRoleError = "There is no 'DEPLOYMENT' role in 'roles'"
 	}
 
 	if numRolesMatchingEntityType == 1 {
@@ -496,16 +496,16 @@ func validateApiTokenRoles(entityType string, roles []iam.ApiTokenRole) diag.Dia
 	} else if numRolesMatchingEntityType > 1 {
 		return diag.Diagnostics{
 			diag.NewErrorDiagnostic(
-				"Bad Request Error",
-				fmt.Sprintf("API Token of type %s cannot have more than one role of the same type", entityType),
+				fmt.Sprintf("API Token of type '%s' cannot have more than one role of the same type", entityType),
+				"Please provide only one role for the entity type",
 			),
 		}
 	}
 
 	return diag.Diagnostics{
 		diag.NewErrorDiagnostic(
-			"Bad Request Error",
 			invalidRoleError,
+			fmt.Sprintf("Please provide a valid role for the entity type '%s'", entityType),
 		),
 	}
 }
@@ -540,8 +540,8 @@ func RequestApiTokenPrimaryRole(roles []iam.ApiTokenRole, entityType string) (ia
 	}
 	return iam.ApiTokenRole{}, diag.Diagnostics{
 		diag.NewErrorDiagnostic(
-			"Bad Request Error",
-			fmt.Sprintf("No matching role found for the specified entity type '%s'. Each API Token must be associated with a valid role corresponding to its entity type.", entityType),
+			fmt.Sprintf("No matching role found for the specified entity type '%s'", entityType),
+			fmt.Sprintf("Please provide a valid role for the API token entity type '%s'", entityType),
 		),
 	}
 }
