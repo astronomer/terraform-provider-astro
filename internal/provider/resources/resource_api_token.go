@@ -432,7 +432,7 @@ func (r *ApiTokenResource) ValidateConfig(
 	// Check if the role is valid for the token entity type
 	if !utils.ValidateRoleMatchesEntityType(tokenRole.Role, entityType) {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Role '%s' is not valid for token type '%s'", tokenRole, entityType),
+			fmt.Sprintf("Role '%s' is not valid for token type '%s'", tokenRole.Role, entityType),
 			fmt.Sprintf("Please provide a valid role for the entity type '%s'", entityType),
 		)
 		return

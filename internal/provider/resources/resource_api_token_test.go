@@ -67,7 +67,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Role 'WORKSPACE_OWNER' is not valid for entity type 'ORGANIZATION'"),
+				ExpectError: regexp.MustCompile("Role 'WORKSPACE_OWNER' is not valid for token type 'ORGANIZATION'"),
 			},
 			// Test multiple roles of the same type
 			{
@@ -284,7 +284,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Role 'ORGANIZATION_OWNER' is not valid for entity type 'WORKSPACE'"),
+				ExpectError: regexp.MustCompile("Role 'ORGANIZATION_OWNER' is not valid for token type 'WORKSPACE'"),
 			},
 			// Test multiple roles of the same type
 			{
@@ -483,7 +483,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Role 'ORGANIZATION_OWNER' is not valid for entity type 'DEPLOYMENT'"),
+				ExpectError: regexp.MustCompile("Role 'ORGANIZATION_OWNER' is not valid for token type 'DEPLOYMENT'"),
 			},
 			// Test invalid role for API token type
 			{
