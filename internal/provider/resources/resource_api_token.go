@@ -438,22 +438,22 @@ func (r *ApiTokenResource) ValidateConfig(
 		return
 	}
 
-	diags = ValidateApiTokenRoles(entityType, r.OrganizationId, roles)
+	diags = r.ValidateApiTokenRoles(entityType, roles)
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)
 		return
 	}
 }
 
-func ValidateApiTokenRoles(entityType string, organizationId string, roles []iam.ApiTokenRole) diag.Diagnostics {
+func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []iam.ApiTokenRole) diag.Diagnostics {
 	var numRolesMatchingEntityType int
 	var invalidRoleError string
 
 	for _, role := range roles {
-		if entityType == string(iam.ApiTokenRoleEntityTypeORGANIZATION) && role.EntityType == iam.ApiTokenRoleEntityTypeORGANIZATION && role.EntityId != organizationId {
+		if entityType == string(iam.ApiTokenRoleEntityTypeORGANIZATION) && role.EntityType == iam.ApiTokenRoleEntityTypeORGANIZATION && role.EntityId != r.OrganizationId {
 			return diag.Diagnostics{
 				diag.NewErrorDiagnostic(
-					fmt.Sprintf("API Token role of type 'ORGANIZATION' must have the organization ID as the entity ID, orgId: %s, entityId: %s", organizationId, role.EntityId),
+					fmt.Sprintf("API Token role of type 'ORGANIZATION' must have the organization ID as the entity ID, orgId: %s, entityId: %s", r.OrganizationId, role.EntityId),
 					"Please provide the organization ID as the entity ID",
 				),
 			}
