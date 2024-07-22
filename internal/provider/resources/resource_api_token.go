@@ -134,7 +134,7 @@ func (r *ApiTokenResource) Create(
 	if err != nil {
 		tflog.Error(ctx, "failed to create API token", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
-			"Bad Request Error",
+			"Client Error",
 			fmt.Sprintf("Unable to create API token, got error: %s", err),
 		)
 		return
@@ -160,7 +160,7 @@ func (r *ApiTokenResource) Create(
 		if err != nil {
 			tflog.Error(ctx, "failed to create API token", map[string]interface{}{"error": err})
 			resp.Diagnostics.AddError(
-				"Bad Request Error",
+				"Client Error",
 				fmt.Sprintf("Unable to create API token and add additional roles, got error: %s", err),
 			)
 			return
@@ -438,18 +438,27 @@ func (r *ApiTokenResource) ValidateConfig(
 		return
 	}
 
-	diags = validateApiTokenRoles(entityType, roles)
+	diags = ValidateApiTokenRoles(entityType, r.OrganizationId, roles)
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)
 		return
 	}
 }
 
-func validateApiTokenRoles(entityType string, roles []iam.ApiTokenRole) diag.Diagnostics {
+func ValidateApiTokenRoles(entityType string, organizationId string, roles []iam.ApiTokenRole) diag.Diagnostics {
 	var numRolesMatchingEntityType int
 	var invalidRoleError string
 
 	for _, role := range roles {
+		if entityType == string(iam.ApiTokenRoleEntityTypeORGANIZATION) && role.EntityId != organizationId {
+			return diag.Diagnostics{
+				diag.NewErrorDiagnostic(
+					"API Token role of type 'ORGANIZATION' must have the organization ID as the entity ID",
+					"Please provide the organization ID as the entity ID",
+				),
+			}
+		}
+
 		if entityType == string(iam.ApiTokenRoleEntityTypeWORKSPACE) && role.EntityType == iam.ApiTokenRoleEntityTypeORGANIZATION {
 			return diag.Diagnostics{
 				diag.NewErrorDiagnostic(
@@ -491,23 +500,23 @@ func validateApiTokenRoles(entityType string, roles []iam.ApiTokenRole) diag.Dia
 		invalidRoleError = "There is no 'DEPLOYMENT' role in 'roles'"
 	}
 
-	if numRolesMatchingEntityType == 1 {
-		return nil
-	} else if numRolesMatchingEntityType > 1 {
+	if numRolesMatchingEntityType > 1 {
 		return diag.Diagnostics{
 			diag.NewErrorDiagnostic(
 				fmt.Sprintf("API Token of type '%s' cannot have more than one role of the same type", entityType),
 				"Please provide only one role for the entity type",
 			),
 		}
+	} else if numRolesMatchingEntityType < 1 {
+		return diag.Diagnostics{
+			diag.NewErrorDiagnostic(
+				invalidRoleError,
+				fmt.Sprintf("Please provide a valid role for the entity type '%s'", entityType),
+			),
+		}
 	}
 
-	return diag.Diagnostics{
-		diag.NewErrorDiagnostic(
-			invalidRoleError,
-			fmt.Sprintf("Please provide a valid role for the entity type '%s'", entityType),
-		),
-	}
+	return nil
 }
 
 // RequestApiTokenRoles converts a Terraform set to a list of iam.ApiTokenRole to be used in create and update requests

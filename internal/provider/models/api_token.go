@@ -126,7 +126,7 @@ func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *ia
 	if diags.HasError() {
 		return diags
 	}
-	if apiToken.Token != nil {
+	if apiToken.Token != nil && len(*apiToken.Token) > 0 {
 		data.Token = types.StringValue(*apiToken.Token)
 	} else if token != "" {
 		data.Token = types.StringValue(token)

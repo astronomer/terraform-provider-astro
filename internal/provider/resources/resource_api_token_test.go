@@ -62,7 +62,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 					Roles: []apiTokenRole{
 						{
 							Role:       string(iam.WORKSPACEOWNER),
-							EntityId:   workspaceId,
+							EntityId:   organizationId,
 							EntityType: string(iam.ORGANIZATION),
 						},
 					},
@@ -77,17 +77,32 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 					Roles: []apiTokenRole{
 						{
 							Role:       string(iam.ORGANIZATIONOWNER),
-							EntityId:   workspaceId,
+							EntityId:   organizationId,
 							EntityType: string(iam.ORGANIZATION),
 						},
 						{
 							Role:       string(iam.ORGANIZATIONBILLINGADMIN),
-							EntityId:   workspaceId,
+							EntityId:   organizationId,
 							EntityType: string(iam.ORGANIZATION),
 						},
 					},
 				}),
 				ExpectError: regexp.MustCompile("API Token of type 'ORGANIZATION' cannot have more than one role of the same type"),
+			},
+			// Test invalid entity id for org role
+			{
+				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
+					Name: apiTokenName,
+					Type: string(iam.ORGANIZATION),
+					Roles: []apiTokenRole{
+						{
+							Role:       string(iam.ORGANIZATIONOWNER),
+							EntityId:   workspaceId,
+							EntityType: string(iam.ORGANIZATION),
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("API Token role of type 'ORGANIZATION' must have the organization ID as the entity ID"),
 			},
 			// Create the organization api token
 			{
