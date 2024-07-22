@@ -453,7 +453,7 @@ func ValidateApiTokenRoles(entityType string, organizationId string, roles []iam
 		if entityType == string(iam.ApiTokenRoleEntityTypeORGANIZATION) && role.EntityType == iam.ApiTokenRoleEntityTypeORGANIZATION && role.EntityId != organizationId {
 			return diag.Diagnostics{
 				diag.NewErrorDiagnostic(
-					"API Token role of type 'ORGANIZATION' must have the organization ID as the entity ID",
+					fmt.Sprintf("API Token role of type 'ORGANIZATION' must have the organization ID as the entity ID, orgId: %s, entityId: %s", organizationId, role.EntityId),
 					"Please provide the organization ID as the entity ID",
 				),
 			}
