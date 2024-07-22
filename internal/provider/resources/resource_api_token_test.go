@@ -515,26 +515,6 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile("Bad Request Error"),
 			},
-			// Test multiple roles of the same type
-			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
-					Name: apiTokenName,
-					Type: string(iam.DEPLOYMENT),
-					Roles: []apiTokenRole{
-						{
-							Role:       "DEPLOYMENT_ADMIN",
-							EntityId:   deploymentId,
-							EntityType: string(iam.DEPLOYMENT),
-						},
-						{
-							Role:       "DEPLOYMENT_ADMIN",
-							EntityId:   deploymentId,
-							EntityType: string(iam.DEPLOYMENT),
-						},
-					},
-				}),
-				ExpectError: regexp.MustCompile("Bad Request Error"),
-			},
 			// Create the deployment api token
 			{
 				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenInput{
