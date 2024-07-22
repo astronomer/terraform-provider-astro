@@ -181,7 +181,7 @@ func (r *ApiTokenResource) Create(
 	if err != nil {
 		tflog.Error(ctx, "failed to create API token", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
-			"Bad Request Error",
+			"Client Error",
 			fmt.Sprintf("Unable to create API token and get API token, got error: %s", err),
 		)
 		return
@@ -223,7 +223,7 @@ func (r *ApiTokenResource) Read(
 	if err != nil {
 		tflog.Error(ctx, "failed to get API token", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
-			"Bad Request Error",
+			"Client Error",
 			fmt.Sprintf("Unable to get API token, got error: %s", err),
 		)
 		return
@@ -286,7 +286,7 @@ func (r *ApiTokenResource) Update(
 	if err != nil {
 		tflog.Error(ctx, "failed to update API token", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
-			"Bad Request Error",
+			"Client Error",
 			fmt.Sprintf("Unable to update API token, got error: %s", err),
 		)
 		return
@@ -318,7 +318,7 @@ func (r *ApiTokenResource) Update(
 	if err != nil {
 		tflog.Error(ctx, "failed to update API token", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
-			"Bad Request Error",
+			"Client Error",
 			fmt.Sprintf("Unable to update API token, got error: %s", err),
 		)
 		return
@@ -338,7 +338,7 @@ func (r *ApiTokenResource) Update(
 	if err != nil {
 		tflog.Error(ctx, "failed to update API token", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
-			"Bad Request Error",
+			"Client Error",
 			fmt.Sprintf("Unable to update API token and get API token, got error: %s", err),
 		)
 		return
@@ -379,7 +379,7 @@ func (r *ApiTokenResource) Delete(
 	if err != nil {
 		tflog.Error(ctx, "failed to delete API token", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
-			"Bad Request Error",
+			"Client Error",
 			fmt.Sprintf("Unable to delete API token, got error: %s", err),
 		)
 		return

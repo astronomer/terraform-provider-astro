@@ -18,7 +18,8 @@ func ValidateRoleMatchesEntityType(role string, scopeType string) bool {
 	} else if scopeType == "workspace" {
 		roles = workspaceRoles
 	} else if scopeType == "deployment" {
-		return true
+		nonDeploymentRoles := append(organizationRoles, workspaceRoles...)
+		return !lo.Contains(nonDeploymentRoles, role)
 	}
 
 	return lo.Contains(roles, role)
