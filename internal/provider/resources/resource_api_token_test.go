@@ -492,12 +492,11 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 					Type: string(iam.DEPLOYMENT),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.WORKSPACEOWNER),
+							Role:       string(iam.ORGANIZATIONOWNER),
 							EntityId:   deploymentId,
 							EntityType: string(iam.DEPLOYMENT),
 						},
 					},
-					//ExpiryPeriodInDays: 30,
 				}),
 				ExpectError: regexp.MustCompile("Bad Request Error"),
 			},

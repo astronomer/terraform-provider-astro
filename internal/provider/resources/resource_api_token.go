@@ -122,7 +122,7 @@ func (r *ApiTokenResource) Create(
 		createApiTokenRequest.Description = data.Description.ValueStringPointer()
 	}
 
-	if !data.ExpiryPeriodInDays.IsNull() {
+	if !data.ExpiryPeriodInDays.IsNull() && data.ExpiryPeriodInDays.ValueInt64() > 0 {
 		createApiTokenRequest.TokenExpiryPeriodInDays = lo.ToPtr(int(data.ExpiryPeriodInDays.ValueInt64()))
 	}
 
