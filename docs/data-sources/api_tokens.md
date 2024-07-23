@@ -84,7 +84,7 @@ Read-Only:
 
 - `entity_id` (String) The ID of the entity to assign the role to
 - `entity_type` (String) The type of entity to assign the role to
-- `role` (String) The role to assign to the deployment
+- `role` (String) The role to assign to the entity
 
 
 <a id="nestedatt--api_tokens--updated_by"></a>

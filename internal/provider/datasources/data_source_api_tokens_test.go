@@ -162,7 +162,7 @@ func checkApiTokens(tfVarName string, input checkApiTokensInput) resource.TestCh
 			if entityId != input.workspaceId {
 				return fmt.Errorf("expected 'entity_id' to be set to workspace_id")
 			}
-			if utils.CheckRole(role, "workspace") {
+			if utils.ValidateRoleMatchesEntityType(role, "workspace") {
 				return fmt.Errorf("expected 'role' to be set as a workspace role")
 			}
 		}
@@ -183,7 +183,7 @@ func checkApiTokens(tfVarName string, input checkApiTokensInput) resource.TestCh
 			if entityId != input.organizationId {
 				return fmt.Errorf("expected 'entity_id' to be set to organization_id")
 			}
-			if utils.CheckRole(role, "organization") {
+			if utils.ValidateRoleMatchesEntityType(role, "organization") {
 				return fmt.Errorf("expected 'role' to be set as an organization role")
 			}
 		}
