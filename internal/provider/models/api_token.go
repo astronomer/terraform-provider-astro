@@ -28,6 +28,25 @@ type ApiTokenDataSource struct {
 	Roles              types.Set    `tfsdk:"roles"`
 }
 
+// ApiTokenResource defines the resource implementation.
+type ApiTokenResource struct {
+	Id                 types.String `tfsdk:"id"`
+	Name               types.String `tfsdk:"name"`
+	Description        types.String `tfsdk:"description"`
+	ShortToken         types.String `tfsdk:"short_token"`
+	Type               types.String `tfsdk:"type"`
+	StartAt            types.String `tfsdk:"start_at"`
+	EndAt              types.String `tfsdk:"end_at"`
+	CreatedAt          types.String `tfsdk:"created_at"`
+	UpdatedAt          types.String `tfsdk:"updated_at"`
+	CreatedBy          types.Object `tfsdk:"created_by"`
+	UpdatedBy          types.Object `tfsdk:"updated_by"`
+	ExpiryPeriodInDays types.Int64  `tfsdk:"expiry_period_in_days"`
+	LastUsedAt         types.String `tfsdk:"last_used_at"`
+	Roles              types.Set    `tfsdk:"roles"`
+	Token              types.String `tfsdk:"token"`
+}
+
 func (data *ApiTokenDataSource) ReadFromResponse(ctx context.Context, apiToken *iam.ApiToken) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(apiToken.Id)
@@ -64,6 +83,55 @@ func (data *ApiTokenDataSource) ReadFromResponse(ctx context.Context, apiToken *
 	data.Roles, diags = utils.ObjectSet(ctx, apiToken.Roles, schemas.ApiTokenRoleAttributeTypes(), ApiTokenRoleTypesObject)
 	if diags.HasError() {
 		return diags
+	}
+	return diags
+}
+
+func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *iam.ApiToken, token string) diag.Diagnostics {
+	var diags diag.Diagnostics
+	data.Id = types.StringValue(apiToken.Id)
+	data.Name = types.StringValue(apiToken.Name)
+	if apiToken.Description == "" {
+		data.Description = types.StringValue("")
+	} else {
+		data.Description = types.StringValue(apiToken.Description)
+	}
+	data.ShortToken = types.StringValue(apiToken.ShortToken)
+	data.Type = types.StringValue(string(apiToken.Type))
+	data.StartAt = types.StringValue(apiToken.StartAt.String())
+	if apiToken.EndAt == nil {
+		data.EndAt = types.StringValue("")
+	} else {
+		data.EndAt = types.StringValue(apiToken.EndAt.String())
+	}
+	data.CreatedAt = types.StringValue(apiToken.CreatedAt.String())
+	data.UpdatedAt = types.StringValue(apiToken.UpdatedAt.String())
+	data.CreatedBy, diags = SubjectProfileTypesObject(ctx, apiToken.CreatedBy)
+	if diags.HasError() {
+		return diags
+	}
+	data.UpdatedBy, diags = SubjectProfileTypesObject(ctx, apiToken.UpdatedBy)
+	if diags.HasError() {
+		return diags
+	}
+	if apiToken.ExpiryPeriodInDays != nil {
+		data.ExpiryPeriodInDays = types.Int64Value(int64(*apiToken.ExpiryPeriodInDays))
+	}
+	if apiToken.LastUsedAt == nil {
+		data.LastUsedAt = types.StringValue("")
+	} else {
+		data.LastUsedAt = types.StringValue(apiToken.LastUsedAt.String())
+	}
+	data.Roles, diags = utils.ObjectSet(ctx, apiToken.Roles, schemas.ApiTokenRoleAttributeTypes(), ApiTokenRoleTypesObject)
+	if diags.HasError() {
+		return diags
+	}
+	if apiToken.Token != nil && len(*apiToken.Token) > 0 {
+		data.Token = types.StringValue(*apiToken.Token)
+	} else if token != "" {
+		data.Token = types.StringValue(token)
+	} else {
+		data.Token = types.StringNull()
 	}
 	return diags
 }

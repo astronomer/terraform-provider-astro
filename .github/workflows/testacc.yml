@@ -90,7 +90,7 @@ jobs:
           SKIP_CLUSTER_RESOURCE_TESTS: ${{ env.SKIP_CLUSTER_RESOURCE_TESTS }}
           HOSTED_TEAM_ID: clx44rvzr01nc01o06pze6qb7
           HOSTED_USER_ID: clhpichn8002m01mqa4ocs7g6
-          HOSTED_DEPLOYMENT_ID: clyd4zf7g01uu01oxpve7tfvx
+          HOSTED_DEPLOYMENT_ID: clyn6kxud003x01mtxmccegnh
           HOSTED_WORKSPACE_ID: clx42sxw501gl01o0gjenthnh
           HOSTED_API_TOKEN_ID: clxm4836f00ql01me3nigmcr6
           TESTARGS: "-failfast"
@@ -186,7 +186,7 @@ jobs:
           ASTRO_API_HOST: https://api.astronomer-dev.io
           HOSTED_TEAM_ID: clx44rvzr01nc01o06pze6qb7
           HOSTED_USER_ID: clhpichn8002m01mqa4ocs7g6
-          HOSTED_DEPLOYMENT_ID: clyd4zf7g01uu01oxpve7tfvx
+          HOSTED_DEPLOYMENT_ID: clyn6kxud003x01mtxmccegnh
           HOSTED_WORKSPACE_ID: clx42sxw501gl01o0gjenthnh
           HOSTED_API_TOKEN_ID: clxm4836f00ql01me3nigmcr6
           TESTARGS: "-failfast"

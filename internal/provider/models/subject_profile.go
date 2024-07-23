@@ -4,12 +4,11 @@ import (
 	"context"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
-	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 type SubjectProfile struct {
