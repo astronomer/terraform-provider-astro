@@ -1,10 +1,14 @@
 package schemas
 
 import (
+	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
@@ -74,14 +78,14 @@ func TeamResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
 		"id": resourceSchema.StringAttribute{
 			MarkdownDescription: "Team identifier",
-			Required:            true,
-			Validators: []validator.String{
-				validators.IsCuid(),
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"name": resourceSchema.StringAttribute{
 			MarkdownDescription: "Team name",
-			Optional:            true,
+			Required:            true,
 		},
 		"description": resourceSchema.StringAttribute{
 			MarkdownDescription: "Team description",
@@ -100,7 +104,13 @@ func TeamResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 		},
 		"organization_role": resourceSchema.StringAttribute{
 			MarkdownDescription: "The role assigned to the organization",
-			Computed:            true,
+			Optional:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(string(iam.ORGANIZATIONOWNER),
+					string(iam.ORGANIZATIONMEMBER),
+					string(iam.ORGANIZATIONBILLINGADMIN),
+				),
+			},
 		},
 		"workspace_roles": resourceSchema.SetNestedAttribute{
 			NestedObject: resourceSchema.NestedAttributeObject{

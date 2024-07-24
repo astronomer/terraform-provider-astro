@@ -31,6 +31,7 @@ type TeamResource struct {
 	Name             types.String `tfsdk:"name"`
 	Description      types.String `tfsdk:"description"`
 	IsIdpManaged     types.Bool   `tfsdk:"is_idp_managed"`
+	MemberIds        types.Set    `tfsdk:"member_ids"`
 	OrganizationRole types.String `tfsdk:"organization_role"`
 	DeploymentRoles  types.Set    `tfsdk:"deployment_roles"`
 	WorkspaceRoles   types.Set    `tfsdk:"workspace_roles"`
@@ -80,7 +81,7 @@ func (data *TeamDataSource) ReadFromResponse(ctx context.Context, team *iam.Team
 	return nil
 }
 
-func (data *TeamResource) ReadFromResponse(ctx context.Context, team *iam.Team) diag.Diagnostics {
+func (data *TeamResource) ReadFromResponse(ctx context.Context, team *iam.Team, memberIds *[]string) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(team.Id)
 	data.Name = types.StringValue(team.Name)
@@ -88,6 +89,10 @@ func (data *TeamResource) ReadFromResponse(ctx context.Context, team *iam.Team) 
 		data.Description = types.StringValue(*team.Description)
 	} else {
 		data.Description = types.StringNull()
+	}
+	data.MemberIds, diags = utils.StringSet(memberIds)
+	if diags.HasError() {
+		return diags
 	}
 	data.IsIdpManaged = types.BoolValue(team.IsIdpManaged)
 	data.OrganizationRole = types.StringValue(string(team.OrganizationRole))
