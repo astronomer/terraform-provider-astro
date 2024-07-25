@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/hashicorp/terraform-plugin-framework/types"
-
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 
 	"github.com/astronomer/terraform-provider-astro/internal/provider/common"
@@ -569,7 +567,7 @@ func (r *TeamResource) ValidateConfig(
 	}
 
 	// Validate workspace roles
-	workspaceRoles, diags := RequestWorkspaceRoles(ctx, data.WorkspaceRoles)
+	workspaceRoles, diags := common.RequestWorkspaceRoles(ctx, data.WorkspaceRoles)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -586,7 +584,7 @@ func (r *TeamResource) ValidateConfig(
 	}
 
 	// validate deployment roles
-	deploymentRoles, diags := RequestDeploymentRoles(ctx, data.DeploymentRoles)
+	deploymentRoles, diags := common.RequestDeploymentRoles(ctx, data.DeploymentRoles)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -601,46 +599,4 @@ func (r *TeamResource) ValidateConfig(
 			return
 		}
 	}
-}
-
-// RequestWorkspaceRoles converts a Terraform set to a list of iam.WorkspaceRole
-func RequestWorkspaceRoles(ctx context.Context, workspaceRolesObjSet types.Set) ([]iam.WorkspaceRole, diag.Diagnostics) {
-	if len(workspaceRolesObjSet.Elements()) == 0 {
-		return []iam.WorkspaceRole{}, nil
-	}
-
-	var roles []models.WorkspaceRole
-	diags := workspaceRolesObjSet.ElementsAs(ctx, &roles, false)
-	if diags.HasError() {
-		return nil, diags
-	}
-	workspaceRoles := lo.Map(roles, func(v models.WorkspaceRole, _ int) iam.WorkspaceRole {
-		return iam.WorkspaceRole{
-			Role:        iam.WorkspaceRoleRole(v.Role.ValueString()),
-			WorkspaceId: v.WorkspaceId.ValueString(),
-		}
-	})
-
-	return workspaceRoles, nil
-}
-
-// RequestDeploymentRoles converts a Terraform set to a list of iam.DeploymentRole
-func RequestDeploymentRoles(ctx context.Context, deploymentRolesObjSet types.Set) ([]iam.DeploymentRole, diag.Diagnostics) {
-	if len(deploymentRolesObjSet.Elements()) == 0 {
-		return []iam.DeploymentRole{}, nil
-	}
-
-	var roles []models.DeploymentRole
-	diags := deploymentRolesObjSet.ElementsAs(ctx, &roles, false)
-	if diags.HasError() {
-		return nil, diags
-	}
-	deploymentRoles := lo.Map(roles, func(v models.DeploymentRole, _ int) iam.DeploymentRole {
-		return iam.DeploymentRole{
-			Role:         v.Role.ValueString(),
-			DeploymentId: v.DeploymentId.ValueString(),
-		}
-	})
-
-	return deploymentRoles, nil
 }
