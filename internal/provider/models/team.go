@@ -99,9 +99,9 @@ func (data *TeamResource) ReadFromResponse(ctx context.Context, team *iam.Team, 
 		data.MemberIds = types.SetNull(types.StringType)
 	}
 	data.IsIdpManaged = types.BoolValue(team.IsIdpManaged)
-	orgRole := string(team.OrganizationRole)
-	if orgRole != "" && orgRole != string(iam.ORGANIZATIONMEMBER) {
-		data.OrganizationRole = types.StringValue(orgRole)
+	organizationRole := string(team.OrganizationRole)
+	if organizationRole != "" && organizationRole != string(iam.ORGANIZATIONMEMBER) {
+		data.OrganizationRole = types.StringValue(organizationRole)
 	} else {
 		data.OrganizationRole = types.StringNull()
 	}
