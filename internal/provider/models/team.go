@@ -88,7 +88,7 @@ func (data *TeamResource) ReadFromResponse(ctx context.Context, team *iam.Team, 
 	if team.Description != nil {
 		data.Description = types.StringValue(*team.Description)
 	} else {
-		data.Description = types.StringNull()
+		data.Description = types.StringValue("")
 	}
 	data.MemberIds, diags = utils.StringSet(memberIds)
 	if diags.HasError() {

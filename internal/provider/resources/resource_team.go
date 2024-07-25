@@ -247,50 +247,54 @@ func (r *TeamResource) Update(
 	deleteIds, addIds := lo.Difference(memberIds, newMemberIds)
 
 	// delete the members that are not in the new list
-	for _, id := range deleteIds {
-		removeTeamMemberResp, err := r.IamClient.RemoveTeamMemberWithResponse(
+	if len(deleteIds) > 0 {
+		for _, id := range deleteIds {
+			removeTeamMemberResp, err := r.IamClient.RemoveTeamMemberWithResponse(
+				ctx,
+				r.OrganizationId,
+				data.Id.ValueString(),
+				id,
+			)
+			if err != nil {
+				tflog.Error(ctx, "failed to update Team", map[string]interface{}{"error": err})
+				resp.Diagnostics.AddError(
+					"Client Error",
+					fmt.Sprintf("Unable to remove Team member, got error: %s", err),
+				)
+				return
+			}
+			_, diagnostic = clients.NormalizeAPIError(ctx, removeTeamMemberResp.HTTPResponse, removeTeamMemberResp.Body)
+			if diagnostic != nil {
+				resp.Diagnostics.Append(diagnostic)
+				return
+			}
+		}
+	}
+
+	// add the members that are in the new list
+	if len(addIds) > 0 {
+		addTeamMembersRequest := iam.AddTeamMembersRequest{
+			MemberIds: addIds,
+		}
+		addTeamMembersResp, err := r.IamClient.AddTeamMembersWithResponse(
 			ctx,
 			r.OrganizationId,
 			data.Id.ValueString(),
-			id,
+			addTeamMembersRequest,
 		)
 		if err != nil {
 			tflog.Error(ctx, "failed to update Team", map[string]interface{}{"error": err})
 			resp.Diagnostics.AddError(
 				"Client Error",
-				fmt.Sprintf("Unable to remove Team member, got error: %s", err),
+				fmt.Sprintf("Unable to add Team members, got error: %s", err),
 			)
 			return
 		}
-		_, diagnostic := clients.NormalizeAPIError(ctx, removeTeamMemberResp.HTTPResponse, removeTeamMemberResp.Body)
+		_, diagnostic = clients.NormalizeAPIError(ctx, addTeamMembersResp.HTTPResponse, addTeamMembersResp.Body)
 		if diagnostic != nil {
 			resp.Diagnostics.Append(diagnostic)
 			return
 		}
-	}
-
-	// add the members that are in the new list
-	addTeamMembersRequest := iam.AddTeamMembersRequest{
-		MemberIds: addIds,
-	}
-	addTeamMembersResp, err := r.IamClient.AddTeamMembersWithResponse(
-		ctx,
-		r.OrganizationId,
-		data.Id.ValueString(),
-		addTeamMembersRequest,
-	)
-	if err != nil {
-		tflog.Error(ctx, "failed to update Team", map[string]interface{}{"error": err})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to add Team members, got error: %s", err),
-		)
-		return
-	}
-	_, diagnostic = clients.NormalizeAPIError(ctx, addTeamMembersResp.HTTPResponse, addTeamMembersResp.Body)
-	if diagnostic != nil {
-		resp.Diagnostics.Append(diagnostic)
-		return
 	}
 
 	// Update team
@@ -318,7 +322,7 @@ func (r *TeamResource) Update(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, team.JSON200, nil)
+	diags = data.ReadFromResponse(ctx, team.JSON200, &newMemberIds)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

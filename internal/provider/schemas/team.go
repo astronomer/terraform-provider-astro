@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func TeamDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
@@ -92,6 +93,7 @@ func TeamResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			Optional:            true,
 		},
 		"member_ids": resourceSchema.SetAttribute{
+			ElementType:         types.StringType,
 			MarkdownDescription: "The IDs of the users to add to the Team",
 			Optional:            true,
 			Validators: []validator.Set{
