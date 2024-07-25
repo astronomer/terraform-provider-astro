@@ -23,7 +23,7 @@ data "astro_team" "example" {
 
 ### Required
 
-- `id` (String) Team identifier
+- `id` (String) Team ID
 
 ### Read-Only
 

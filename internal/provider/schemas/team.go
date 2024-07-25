@@ -16,7 +16,7 @@ import (
 func TeamDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"id": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Team identifier",
+			MarkdownDescription: "Team ID",
 			Required:            true,
 			Validators:          []validator.String{validators.IsCuid()},
 		},
@@ -78,7 +78,7 @@ func TeamDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 func TeamResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
 		"id": resourceSchema.StringAttribute{
-			MarkdownDescription: "Team identifier",
+			MarkdownDescription: "Team ID",
 			Computed:            true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
@@ -97,7 +97,7 @@ func TeamResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			MarkdownDescription: "The IDs of the users to add to the Team",
 			Optional:            true,
 			Validators: []validator.Set{
-				setvalidator.SizeAtLeast(1),
+				setvalidator.ValueStringsAre(validators.IsCuid()),
 			},
 		},
 		"is_idp_managed": resourceSchema.BoolAttribute{
@@ -105,7 +105,7 @@ func TeamResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			Computed:            true,
 		},
 		"organization_role": resourceSchema.StringAttribute{
-			MarkdownDescription: "The role assigned to the organization",
+			MarkdownDescription: "The role to assign to the organization",
 			Optional:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(string(iam.ORGANIZATIONOWNER),
@@ -118,15 +118,15 @@ func TeamResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: ResourceWorkspaceRoleSchemaAttributes(),
 			},
-			Computed:            true,
-			MarkdownDescription: "The roles assigned to the workspaces",
+			Optional:            true,
+			MarkdownDescription: "The roles to assign to the workspaces",
 		},
 		"deployment_roles": resourceSchema.SetNestedAttribute{
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: ResourceDeploymentRoleSchemaAttributes(),
 			},
-			Computed:            true,
-			MarkdownDescription: "The roles assigned to the deployments",
+			Optional:            true,
+			MarkdownDescription: "The roles to assign to the deployments",
 		},
 		"roles_count": resourceSchema.Int64Attribute{
 			MarkdownDescription: "Number of roles assigned to the team",

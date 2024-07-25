@@ -36,7 +36,7 @@ data "astro_teams" "example_teams_filter_by_names" {
 
 Required:
 
-- `id` (String) Team identifier
+- `id` (String) Team ID
 
 Read-Only:
 

@@ -72,6 +72,51 @@ func (r *TeamResource) Configure(
 	r.OrganizationId = apiClients.OrganizationId
 }
 
+func (r *TeamResource) MutateRoles(
+	ctx context.Context,
+	data *models.TeamResource,
+) diag.Diagnostics {
+	teamId := data.Id.ValueString()
+
+	// Then convert the models to the request types for the API
+	workspaceRoles, diags := RequestWorkspaceRoles(ctx, data.WorkspaceRoles)
+	if diags.HasError() {
+		return diags
+	}
+	deploymentRoles, diags := RequestDeploymentRoles(ctx, data.DeploymentRoles)
+	if diags.HasError() {
+		return diags
+	}
+
+	// create request
+	updateTeamRolesRequest := iam.UpdateTeamRolesJSONRequestBody{
+		DeploymentRoles:  &deploymentRoles,
+		OrganizationRole: iam.UpdateTeamRolesRequestOrganizationRole(data.OrganizationRole.ValueString()),
+		WorkspaceRoles:   &workspaceRoles,
+	}
+	teamRoles, err := r.IamClient.UpdateTeamRolesWithResponse(
+		ctx,
+		r.OrganizationId,
+		teamId,
+		updateTeamRolesRequest,
+	)
+	if err != nil {
+		tflog.Error(ctx, "failed to mutate Team roles", map[string]interface{}{"error": err})
+		diags.AddError(
+			"Client Error",
+			fmt.Sprintf("Unable to mutate Team roles, got error: %s", err),
+		)
+		return diags
+	}
+	_, diagnostic := clients.NormalizeAPIError(ctx, teamRoles.HTTPResponse, teamRoles.Body)
+	if diagnostic != nil {
+		diags.Append(diagnostic)
+		return diags
+	}
+
+	return nil
+}
+
 // Create a team - uses createTeam and updateTeamRoles
 func (r *TeamResource) Create(
 	ctx context.Context,
@@ -88,7 +133,6 @@ func (r *TeamResource) Create(
 
 	var diags diag.Diagnostics
 
-	// TODO: test if memberIds is properly populated
 	memberIds, diags := utils.TypesSetToStringSlice(ctx, data.MemberIds)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
@@ -126,7 +170,29 @@ func (r *TeamResource) Create(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, team.JSON200, &memberIds)
+	// Update team roles
+	diags = r.MutateRoles(ctx, &data)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	// Get Team and use this as data since it will have the correct roles
+	teamResp, err := r.IamClient.GetTeamWithResponse(
+		ctx,
+		r.OrganizationId,
+		data.Id.ValueString(),
+	)
+	if err != nil {
+		tflog.Error(ctx, "failed to create Team", map[string]interface{}{"error": err})
+		resp.Diagnostics.AddError(
+			"Client Error",
+			fmt.Sprintf("Unable to create and get Team, got error: %s", err),
+		)
+		return
+	}
+
+	diags = data.ReadFromResponse(ctx, teamResp.JSON200, &memberIds)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -331,7 +397,29 @@ func (r *TeamResource) Update(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, team.JSON200, &newMemberIds)
+	// Update team roles
+	diags = r.MutateRoles(ctx, &data)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	// Get Team and use this as data since it will have the correct roles
+	teamResp, err := r.IamClient.GetTeamWithResponse(
+		ctx,
+		r.OrganizationId,
+		data.Id.ValueString(),
+	)
+	if err != nil {
+		tflog.Error(ctx, "failed to update Team", map[string]interface{}{"error": err})
+		resp.Diagnostics.AddError(
+			"Client Error",
+			fmt.Sprintf("Unable to update and get Team, got error: %s", err),
+		)
+		return
+	}
+
+	diags = data.ReadFromResponse(ctx, teamResp.JSON200, &newMemberIds)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
