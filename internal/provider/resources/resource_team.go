@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 
 	"github.com/astronomer/terraform-provider-astro/internal/provider/common"
@@ -25,6 +27,7 @@ import (
 var _ resource.Resource = &TeamResource{}
 var _ resource.ResourceWithImportState = &TeamResource{}
 var _ resource.ResourceWithConfigure = &TeamResource{}
+var _ resource.ResourceWithValidateConfig = &TeamResource{}
 
 func NewTeamResource() resource.Resource {
 	return &TeamResource{}
@@ -136,7 +139,7 @@ func (r *TeamResource) MutateRoles(
 				"Not every deployment role has a corresponding workspace role. Missing workspace roles for deploymentWorkspaceIds: %v", missingWorkspaceIds),
 		})
 		diags.AddError(
-			"Client Error",
+			"Bad Request Error",
 			fmt.Sprintf("Unable to mutate Team roles, not every deployment role has a corresponding workspace role. Add workspace roles for the missing workspace ids: %v", missingWorkspaceIds),
 		)
 		return diags
@@ -533,4 +536,111 @@ func (r *TeamResource) ImportState(
 	resp *resource.ImportStateResponse,
 ) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+func (r *TeamResource) ValidateConfig(
+	ctx context.Context,
+	req resource.ValidateConfigRequest,
+	resp *resource.ValidateConfigResponse,
+) {
+	var data models.TeamResource
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Validate if org isScimEnabled
+	org, err := r.PlatformClient.GetOrganizationWithResponse(ctx, r.OrganizationId, nil)
+	if err != nil {
+		tflog.Error(ctx, "failed to validate Team", map[string]interface{}{"error": err})
+		resp.Diagnostics.AddError(
+			"Client Error",
+			fmt.Sprintf("Unable to validate Team, got error: %s", err),
+		)
+		return
+	}
+	if org.JSON200.IsScimEnabled {
+		resp.Diagnostics.AddError(
+			"Invalid Configuration",
+			"Cannot create, update or delete a Team resource when SCIM is enabled",
+		)
+		return
+	}
+
+	// Validate workspace roles
+	workspaceRoles, diags := RequestWorkspaceRoles(ctx, data.WorkspaceRoles)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	for _, role := range workspaceRoles {
+		if !common.ValidateRoleMatchesEntityType(string(role.Role), string(iam.WORKSPACE)) {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Role '%s' is not valid for token type '%s'", string(role.Role), string(iam.WORKSPACE)),
+				fmt.Sprintf("Please provide a valid role for the type '%s'", string(iam.WORKSPACE)),
+			)
+			return
+		}
+	}
+
+	// validate deployment roles
+	deploymentRoles, diags := RequestDeploymentRoles(ctx, data.DeploymentRoles)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	for _, role := range deploymentRoles {
+		if !common.ValidateRoleMatchesEntityType(role.Role, string(iam.DEPLOYMENT)) {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Role '%s' is not valid for token type '%s'", role.Role, string(iam.DEPLOYMENT)),
+				fmt.Sprintf("Please provide a valid role for the type '%s'", string(iam.DEPLOYMENT)),
+			)
+			return
+		}
+	}
+}
+
+// RequestWorkspaceRoles converts a Terraform set to a list of iam.WorkspaceRole
+func RequestWorkspaceRoles(ctx context.Context, workspaceRolesObjSet types.Set) ([]iam.WorkspaceRole, diag.Diagnostics) {
+	if len(workspaceRolesObjSet.Elements()) == 0 {
+		return []iam.WorkspaceRole{}, nil
+	}
+
+	var roles []models.WorkspaceRole
+	diags := workspaceRolesObjSet.ElementsAs(ctx, &roles, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+	workspaceRoles := lo.Map(roles, func(v models.WorkspaceRole, _ int) iam.WorkspaceRole {
+		return iam.WorkspaceRole{
+			Role:        iam.WorkspaceRoleRole(v.Role.ValueString()),
+			WorkspaceId: v.WorkspaceId.ValueString(),
+		}
+	})
+
+	return workspaceRoles, nil
+}
+
+// RequestDeploymentRoles converts a Terraform set to a list of iam.DeploymentRole
+func RequestDeploymentRoles(ctx context.Context, deploymentRolesObjSet types.Set) ([]iam.DeploymentRole, diag.Diagnostics) {
+	if len(deploymentRolesObjSet.Elements()) == 0 {
+		return []iam.DeploymentRole{}, nil
+	}
+
+	var roles []models.DeploymentRole
+	diags := deploymentRolesObjSet.ElementsAs(ctx, &roles, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+	deploymentRoles := lo.Map(roles, func(v models.DeploymentRole, _ int) iam.DeploymentRole {
+		return iam.DeploymentRole{
+			Role:         v.Role.ValueString(),
+			DeploymentId: v.DeploymentId.ValueString(),
+		}
+	})
+
+	return deploymentRoles, nil
 }
