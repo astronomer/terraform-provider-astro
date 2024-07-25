@@ -97,10 +97,13 @@ func (r *TeamResource) Create(
 
 	// Create the team request
 	createTeamRequest := iam.CreateTeamRequest{
-		Name:             data.Name.ValueString(),
-		Description:      data.Description.ValueStringPointer(),
-		MemberIds:        &memberIds,
-		OrganizationRole: lo.ToPtr(iam.CreateTeamRequestOrganizationRole(data.OrganizationRole.ValueString())),
+		Name:        data.Name.ValueString(),
+		Description: data.Description.ValueStringPointer(),
+		MemberIds:   &memberIds,
+	}
+
+	if !data.OrganizationRole.IsNull() {
+		createTeamRequest.OrganizationRole = lo.ToPtr(iam.CreateTeamRequestOrganizationRole(data.OrganizationRole.ValueString()))
 	}
 
 	// Create the team
@@ -299,9 +302,15 @@ func (r *TeamResource) Update(
 
 	// Update team
 	updateTeamRequest := iam.UpdateTeamRequest{
-		Name:        data.Name.ValueString(),
-		Description: data.Description.ValueStringPointer(),
+		Name: data.Name.ValueString(),
 	}
+
+	if !data.Description.IsNull() {
+		updateTeamRequest.Description = data.Description.ValueStringPointer()
+	} else {
+		updateTeamRequest.Description = lo.ToPtr("")
+	}
+
 	team, err := r.IamClient.UpdateTeamWithResponse(
 		ctx,
 		r.OrganizationId,

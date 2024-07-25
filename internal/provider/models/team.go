@@ -85,17 +85,26 @@ func (data *TeamResource) ReadFromResponse(ctx context.Context, team *iam.Team, 
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(team.Id)
 	data.Name = types.StringValue(team.Name)
-	if team.Description != nil {
+	if team.Description != nil && *team.Description != "" {
 		data.Description = types.StringValue(*team.Description)
 	} else {
-		data.Description = types.StringValue("")
+		data.Description = types.StringNull()
 	}
-	data.MemberIds, diags = utils.StringSet(memberIds)
-	if diags.HasError() {
-		return diags
+	if memberIds != nil && len(*memberIds) > 0 {
+		data.MemberIds, diags = utils.StringSet(memberIds)
+		if diags.HasError() {
+			return diags
+		}
+	} else {
+		data.MemberIds = types.SetNull(types.StringType)
 	}
 	data.IsIdpManaged = types.BoolValue(team.IsIdpManaged)
-	data.OrganizationRole = types.StringValue(string(team.OrganizationRole))
+	orgRole := string(team.OrganizationRole)
+	if orgRole != "" && orgRole != string(iam.ORGANIZATIONMEMBER) {
+		data.OrganizationRole = types.StringValue(orgRole)
+	} else {
+		data.OrganizationRole = types.StringNull()
+	}
 	data.DeploymentRoles, diags = utils.ObjectSet(ctx, team.DeploymentRoles, schemas.DeploymentRoleAttributeTypes(), DeploymentRoleTypesObject)
 	if diags.HasError() {
 		return diags
