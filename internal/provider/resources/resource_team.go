@@ -173,10 +173,12 @@ func (r *TeamResource) Create(
 	}
 
 	// Update team roles
-	diags = r.MutateRoles(ctx, &data)
-	if diags.HasError() {
-		resp.Diagnostics.Append(diags...)
-		return
+	if !data.WorkspaceRoles.IsNull() || !data.DeploymentRoles.IsNull() {
+		diags = r.MutateRoles(ctx, &data)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
 	}
 
 	// Get Team and use this as data since it will have the correct roles
@@ -400,10 +402,12 @@ func (r *TeamResource) Update(
 	}
 
 	// Update team roles
-	diags = r.MutateRoles(ctx, &data)
-	if diags.HasError() {
-		resp.Diagnostics.Append(diags...)
-		return
+	if !data.WorkspaceRoles.IsNull() || !data.DeploymentRoles.IsNull() {
+		diags = r.MutateRoles(ctx, &data)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
 	}
 
 	// Get Team and use this as data since it will have the correct roles
