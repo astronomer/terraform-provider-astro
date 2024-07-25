@@ -31,13 +31,13 @@ resource "astro_team" "example_with_no_optional_fields" {
 ### Required
 
 - `name` (String) Team name
+- `organization_role` (String) The role to assign to the organization
 
 ### Optional
 
 - `deployment_roles` (Attributes Set) The roles to assign to the deployments (see [below for nested schema](#nestedatt--deployment_roles))
 - `description` (String) Team description
 - `member_ids` (Set of String) The IDs of the users to add to the Team
-- `organization_role` (String) The role to assign to the organization
 - `workspace_roles` (Attributes Set) The roles to assign to the workspaces (see [below for nested schema](#nestedatt--workspace_roles))
 
 ### Read-Only

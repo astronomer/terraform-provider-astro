@@ -99,25 +99,14 @@ func (data *TeamResource) ReadFromResponse(ctx context.Context, team *iam.Team, 
 		data.MemberIds = types.SetNull(types.StringType)
 	}
 	data.IsIdpManaged = types.BoolValue(team.IsIdpManaged)
-	organizationRole := string(team.OrganizationRole)
-	if organizationRole != "" && organizationRole != string(iam.ORGANIZATIONMEMBER) {
-		data.OrganizationRole = types.StringValue(organizationRole)
-	} else {
-		data.OrganizationRole = types.StringNull()
-	}
+	data.OrganizationRole = types.StringValue(string(team.OrganizationRole))
 	data.DeploymentRoles, diags = utils.ObjectSet(ctx, team.DeploymentRoles, schemas.DeploymentRoleAttributeTypes(), DeploymentRoleTypesObject)
 	if diags.HasError() {
 		return diags
 	}
-	// If workspace_roles was null in the configuration but deployment_roles was not,
-	// we need to keep workspace_roles null even if the API returns some values
-	if data.WorkspaceRoles.IsNull() && !data.DeploymentRoles.IsNull() {
-		data.WorkspaceRoles = types.SetNull(types.ObjectType{AttrTypes: schemas.WorkspaceRoleAttributeTypes()})
-	} else {
-		data.WorkspaceRoles, diags = utils.ObjectSet(ctx, team.WorkspaceRoles, schemas.WorkspaceRoleAttributeTypes(), WorkspaceRoleTypesObject)
-		if diags.HasError() {
-			return diags
-		}
+	data.WorkspaceRoles, diags = utils.ObjectSet(ctx, team.WorkspaceRoles, schemas.WorkspaceRoleAttributeTypes(), WorkspaceRoleTypesObject)
+	if diags.HasError() {
+		return diags
 	}
 	if team.RolesCount != nil {
 		data.RolesCount = types.Int64Value(int64(*team.RolesCount))

@@ -106,7 +106,7 @@ func TeamResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 		},
 		"organization_role": resourceSchema.StringAttribute{
 			MarkdownDescription: "The role to assign to the organization",
-			Optional:            true,
+			Required:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(string(iam.ORGANIZATIONOWNER),
 					string(iam.ORGANIZATIONMEMBER),
