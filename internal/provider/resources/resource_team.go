@@ -129,12 +129,15 @@ func (r *TeamResource) MutateRoles(
 	})
 
 	// check if deploymentWorkspaceIds are in workspaceIds
-	workspaceIds = lo.Intersect(lo.Uniq(workspaceIds), lo.Uniq(deploymentWorkspaceIds))
-	if len(workspaceIds) != len(deploymentWorkspaceIds) {
-		tflog.Error(ctx, "failed to mutate Team roles", map[string]interface{}{"error": err})
+	missingWorkspaceIds, _ := lo.Difference(lo.Uniq(deploymentWorkspaceIds), lo.Uniq(workspaceIds))
+	if len(missingWorkspaceIds) > 0 {
+		tflog.Error(ctx, "failed to mutate Team roles", map[string]interface{}{
+			"error": fmt.Sprintf(
+				"Not every deployment role has a corresponding workspace role. Missing workspace roles for deploymentWorkspaceIds: %v", missingWorkspaceIds),
+		})
 		diags.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to mutate Team roles, not every deployment role has a corresponding workspace role"),
+			fmt.Sprintf("Unable to mutate Team roles, not every deployment role has a corresponding workspace role. Add workspace roles for the missing workspace ids: %v", missingWorkspaceIds),
 		)
 		return diags
 	}
