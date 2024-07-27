@@ -34,7 +34,7 @@ func TestAcc_ResourceWorkspace(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + workspace("test", workspace1Name, "bad description", false),
+				Config: astronomerprovider.ProviderConfig(t, true, false) + workspace("test", workspace1Name, "bad description", false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("astro_workspace.test", "name", workspace1Name),
 					resource.TestCheckResourceAttr("astro_workspace.test", "description", "bad description"),
@@ -45,7 +45,7 @@ func TestAcc_ResourceWorkspace(t *testing.T) {
 			},
 			// Change properties and check they have been updated in terraform state
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + workspace("test", workspace2Name, utils.TestResourceDescription, true),
+				Config: astronomerprovider.ProviderConfig(t, true, false) + workspace("test", workspace2Name, utils.TestResourceDescription, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("astro_workspace.test", "name", workspace2Name),
 					resource.TestCheckResourceAttr("astro_workspace.test", "description", utils.TestResourceDescription),
@@ -72,7 +72,7 @@ func TestAcc_WorkspaceRemovedOutsideOfTerraform(t *testing.T) {
 		CheckDestroy:             testAccCheckWorkspaceExistence(t, workspaceName, false),
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + workspaceWithVariableName(),
+				Config: astronomerprovider.ProviderConfig(t, true, false) + workspaceWithVariableName(),
 				ConfigVariables: map[string]config.Variable{
 					"name": config.StringVariable(workspaceName),
 				},
@@ -88,7 +88,7 @@ func TestAcc_WorkspaceRemovedOutsideOfTerraform(t *testing.T) {
 			},
 			{
 				PreConfig: func() { deleteWorkspaceOutsideOfTerraform(t, workspaceName) },
-				Config:    astronomerprovider.ProviderConfig(t, true) + workspaceWithVariableName(),
+				Config:    astronomerprovider.ProviderConfig(t, true, false) + workspaceWithVariableName(),
 				ConfigVariables: map[string]config.Variable{
 					"name": config.StringVariable(workspaceName),
 				},

@@ -560,8 +560,8 @@ func (r *TeamResource) ValidateConfig(
 	}
 	if org.JSON200.IsScimEnabled {
 		resp.Diagnostics.AddError(
-			"Invalid Configuration",
-			"Cannot create, update or delete a Team resource when SCIM is enabled",
+			"Invalid Configuration: Cannot create, update or delete a Team resource when SCIM is enabled",
+			"Please disable SCIM in the organization settings to manage Team resources",
 		)
 		return
 	}
@@ -576,14 +576,14 @@ func (r *TeamResource) ValidateConfig(
 	for _, role := range workspaceRoles {
 		if !common.ValidateRoleMatchesEntityType(string(role.Role), string(iam.WORKSPACE)) {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Role '%s' is not valid for token type '%s'", string(role.Role), string(iam.WORKSPACE)),
+				fmt.Sprintf("Role '%s' is not valid for role type '%s'", string(role.Role), string(iam.WORKSPACE)),
 				fmt.Sprintf("Please provide a valid role for the type '%s'", string(iam.WORKSPACE)),
 			)
 			return
 		}
 	}
 
-	// validate deployment roles
+	// Validate deployment roles
 	deploymentRoles, diags := common.RequestDeploymentRoles(ctx, data.DeploymentRoles)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
@@ -593,7 +593,7 @@ func (r *TeamResource) ValidateConfig(
 	for _, role := range deploymentRoles {
 		if !common.ValidateRoleMatchesEntityType(role.Role, string(iam.DEPLOYMENT)) {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Role '%s' is not valid for token type '%s'", role.Role, string(iam.DEPLOYMENT)),
+				fmt.Sprintf("Role '%s' is not valid for role type '%s'", role.Role, string(iam.DEPLOYMENT)),
 				fmt.Sprintf("Please provide a valid role for the type '%s'", string(iam.DEPLOYMENT)),
 			)
 			return

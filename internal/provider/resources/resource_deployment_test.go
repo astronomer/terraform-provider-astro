@@ -37,7 +37,7 @@ func TestAcc_ResourceDeploymentHybrid(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, false) + hybridDeployment(hybridDeploymentInput{
+				Config: astronomerprovider.ProviderConfig(t, false, false) + hybridDeployment(hybridDeploymentInput{
 					Name:                        deploymentName,
 					Description:                 utils.TestResourceDescription,
 					ClusterId:                   clusterId,
@@ -62,7 +62,7 @@ func TestAcc_ResourceDeploymentHybrid(t *testing.T) {
 			},
 			// Change properties and check they have been updated in terraform state including executor change
 			{
-				Config: astronomerprovider.ProviderConfig(t, false) + hybridDeployment(hybridDeploymentInput{
+				Config: astronomerprovider.ProviderConfig(t, false, false) + hybridDeployment(hybridDeploymentInput{
 					Name:                        deploymentName,
 					Description:                 utils.TestResourceDescription,
 					ClusterId:                   clusterId,
@@ -83,7 +83,7 @@ func TestAcc_ResourceDeploymentHybrid(t *testing.T) {
 			},
 			// Change executor back to KUBERNETES and check it is correctly updated in terraform state
 			{
-				Config: astronomerprovider.ProviderConfig(t, false) + hybridDeployment(hybridDeploymentInput{
+				Config: astronomerprovider.ProviderConfig(t, false, false) + hybridDeployment(hybridDeploymentInput{
 					Name:                        deploymentName,
 					Description:                 utils.TestResourceDescription,
 					ClusterId:                   clusterId,
@@ -132,7 +132,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
+				Config: astronomerprovider.ProviderConfig(t, true, false) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
 					Region:                      "us-east-1",
@@ -157,7 +157,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 			},
 			// Change properties and check they have been updated in terraform state including executor change
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
+				Config: astronomerprovider.ProviderConfig(t, true, false) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
 					Region:                      "us-east-1",
@@ -178,7 +178,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 			},
 			// Change executor back to KUBERNETES and check it is correctly updated in terraform state
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
+				Config: astronomerprovider.ProviderConfig(t, true, false) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
 					Region:                      "us-east-1",
@@ -196,7 +196,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 			},
 			// Change property that requires destroy and recreate (currently: is_development_mode)
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
+				Config: astronomerprovider.ProviderConfig(t, true, false) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
 					Region:                      "us-east-1",
@@ -215,7 +215,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 			},
 			// Change is_development_mode back to false (will not recreate)
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
+				Config: astronomerprovider.ProviderConfig(t, true, false) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
 					Region:                      "us-east-1",
@@ -254,7 +254,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
+				Config: astronomerprovider.ProviderConfig(t, true, false) + standardDeployment(standardDeploymentInput{
 					Name:                        azureCeleryDeploymentName,
 					Description:                 utils.TestResourceDescription,
 					Region:                      "westus2",
@@ -296,7 +296,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeployment(standardDeploymentInput{
+				Config: astronomerprovider.ProviderConfig(t, true, false) + standardDeployment(standardDeploymentInput{
 					Name:                        gcpKubernetesDeploymentName,
 					Description:                 utils.TestResourceDescription,
 					Region:                      "us-east4",
@@ -341,20 +341,20 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+				Config: astronomerprovider.ProviderConfig(t, true, false) + developmentDeployment(scalingSpecDeploymentName,
 					`scaling_spec = {}`,
 				),
 				ExpectError: regexp.MustCompile(`Inappropriate value for attribute "scaling_spec"`),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+				Config: astronomerprovider.ProviderConfig(t, true, false) + developmentDeployment(scalingSpecDeploymentName,
 					`scaling_spec = {
 									hibernation_spec = {}
 								}`),
 				ExpectError: regexp.MustCompile(`scaling_spec \(hibernation\) must have either override or schedules`),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+				Config: astronomerprovider.ProviderConfig(t, true, false) + developmentDeployment(scalingSpecDeploymentName,
 					`
 						scaling_spec = {
 							hibernation_spec = {
@@ -364,7 +364,7 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 				ExpectError: regexp.MustCompile(`Inappropriate value for attribute "scaling_spec"`),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+				Config: astronomerprovider.ProviderConfig(t, true, false) + developmentDeployment(scalingSpecDeploymentName,
 					`scaling_spec = {
 							hibernation_spec = {
 								override = {
@@ -375,7 +375,7 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 				ExpectError: regexp.MustCompile(`Inappropriate value for attribute "scaling_spec"`),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+				Config: astronomerprovider.ProviderConfig(t, true, false) + developmentDeployment(scalingSpecDeploymentName,
 					`scaling_spec = {
 							hibernation_spec = {
 								schedules = []
@@ -384,13 +384,13 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 				ExpectError: regexp.MustCompile(`Attribute scaling_spec.hibernation_spec.schedules set must contain at least 1`), // schedules must have at least one element
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName, ` `), // no scaling spec should be allowed,
+				Config: astronomerprovider.ProviderConfig(t, true, false) + developmentDeployment(scalingSpecDeploymentName, ` `), // no scaling spec should be allowed,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckNoResourceAttr(scalingSpecResourceVar, "scaling_spec"),
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+				Config: astronomerprovider.ProviderConfig(t, true, false) + developmentDeployment(scalingSpecDeploymentName,
 					`scaling_spec = {
 							hibernation_spec = {
 								schedules = [{
@@ -408,7 +408,7 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+				Config: astronomerprovider.ProviderConfig(t, true, false) + developmentDeployment(scalingSpecDeploymentName,
 					`scaling_spec = {
 							hibernation_spec = {
 								override = {
@@ -422,7 +422,7 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+				Config: astronomerprovider.ProviderConfig(t, true, false) + developmentDeployment(scalingSpecDeploymentName,
 					`scaling_spec = {
 							hibernation_spec = {
 								override = {
@@ -439,14 +439,14 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 			},
 			// Make scaling spec null to test that it is removed from the deployment with no errors
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+				Config: astronomerprovider.ProviderConfig(t, true, false) + developmentDeployment(scalingSpecDeploymentName,
 					` `),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.%", "0"),
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + developmentDeployment(scalingSpecDeploymentName,
+				Config: astronomerprovider.ProviderConfig(t, true, false) + developmentDeployment(scalingSpecDeploymentName,
 					`scaling_spec = {
 						hibernation_spec = {
 							schedules = [{
@@ -497,7 +497,7 @@ func TestAcc_ResourceDeploymentStandardRemovedOutsideOfTerraform(t *testing.T) {
 		CheckDestroy:             testAccCheckDeploymentExistence(t, standardDeploymentName, true, false),
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + standardDeploymentWithVariableName(depInput),
+				Config: astronomerprovider.ProviderConfig(t, true, false) + standardDeploymentWithVariableName(depInput),
 				ConfigVariables: map[string]config.Variable{
 					"name": config.StringVariable(standardDeploymentName),
 				},
@@ -513,7 +513,7 @@ func TestAcc_ResourceDeploymentStandardRemovedOutsideOfTerraform(t *testing.T) {
 			},
 			{
 				PreConfig: func() { deleteDeploymentOutsideOfTerraform(t, standardDeploymentName, true) },
-				Config:    astronomerprovider.ProviderConfig(t, true) + standardDeploymentWithVariableName(depInput),
+				Config:    astronomerprovider.ProviderConfig(t, true, false) + standardDeploymentWithVariableName(depInput),
 				ConfigVariables: map[string]config.Variable{
 					"name": config.StringVariable(standardDeploymentName),
 				},

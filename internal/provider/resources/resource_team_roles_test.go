@@ -30,22 +30,22 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) +
+				Config: astronomerprovider.ProviderConfig(t, true, false) +
 					teamRoles(string(iam.ORGANIZATIONBILLINGADMIN), "[]", ""),
 				ExpectError: regexp.MustCompile("Attribute workspace_roles set must contain at least 1 elements"),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) +
+				Config: astronomerprovider.ProviderConfig(t, true, false) +
 					teamRoles(string(iam.ORGANIZATIONBILLINGADMIN), "", "[]"),
 				ExpectError: regexp.MustCompile("Attribute deployment_roles set must contain at least 1 elements"),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) +
+				Config: astronomerprovider.ProviderConfig(t, true, false) +
 					teamRoles("", "", ""),
 				ExpectError: regexp.MustCompile("Attribute organization_role value must be one of"),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) +
+				Config: astronomerprovider.ProviderConfig(t, true, false) +
 					teamRoles(string(iam.ORGANIZATIONBILLINGADMIN), "", ""),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
@@ -57,7 +57,7 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) +
+				Config: astronomerprovider.ProviderConfig(t, true, false) +
 					standardDeployment(standardDeploymentInput{
 						Name:                        deploymentName,
 						Description:                 utils.TestResourceDescription,

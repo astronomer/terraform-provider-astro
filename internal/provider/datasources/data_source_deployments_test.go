@@ -23,7 +23,7 @@ func TestAcc_DataSourceDeployments(t *testing.T) {
 		Steps: []resource.TestStep{
 			//Check the data source for deployments for a hosted organization
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + hostedDeployments(deploymentName),
+				Config: astronomerprovider.ProviderConfig(t, true, false) + hostedDeployments(deploymentName),
 				Check: resource.ComposeTestCheckFunc(
 					// Doing all checks in one step because we do not want to unnecessarily create multiple deployments for the data sources test
 
@@ -93,7 +93,7 @@ func TestAcc_DataSourceDeployments(t *testing.T) {
 		Steps: []resource.TestStep{
 			//Check the data source for deployments for a hybrid organization
 			{
-				Config: astronomerprovider.ProviderConfig(t, false) + hybridDeployments(),
+				Config: astronomerprovider.ProviderConfig(t, false, false) + hybridDeployments(),
 				Check: resource.ComposeTestCheckFunc(
 					// Checks that the deployments data source is not empty and checks the first deployment in the list
 					// has some of the expected attributes

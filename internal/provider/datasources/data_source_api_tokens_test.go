@@ -34,7 +34,7 @@ func TestAcc_DataSourceApiTokens(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiTokens(tfVarName),
+				Config: astronomerprovider.ProviderConfig(t, true, false) + apiTokens(tfVarName),
 				Check: resource.ComposeTestCheckFunc(
 					checkApiTokens(tfVarName, checkApiTokensInput{
 						workspaceId:    "",
@@ -44,7 +44,7 @@ func TestAcc_DataSourceApiTokens(t *testing.T) {
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiTokensFilterWorkspaceId(tfVarName, tfWorkspaceId),
+				Config: astronomerprovider.ProviderConfig(t, true, false) + apiTokensFilterWorkspaceId(tfVarName, tfWorkspaceId),
 				Check: resource.ComposeTestCheckFunc(
 					checkApiTokens(tfVarName, checkApiTokensInput{
 						workspaceId:    tfWorkspaceId,
@@ -54,7 +54,7 @@ func TestAcc_DataSourceApiTokens(t *testing.T) {
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiTokensFilterDeploymentId(tfVarName, tfDeploymentId),
+				Config: astronomerprovider.ProviderConfig(t, true, false) + apiTokensFilterDeploymentId(tfVarName, tfDeploymentId),
 				Check: resource.ComposeTestCheckFunc(
 					checkApiTokens(tfVarName, checkApiTokensInput{
 						workspaceId:    "",
@@ -64,7 +64,7 @@ func TestAcc_DataSourceApiTokens(t *testing.T) {
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiTokensFilterOrgOnly(tfVarName),
+				Config: astronomerprovider.ProviderConfig(t, true, false) + apiTokensFilterOrgOnly(tfVarName),
 				Check: resource.ComposeTestCheckFunc(
 					checkApiTokens(tfVarName, checkApiTokensInput{
 						workspaceId:    "",
