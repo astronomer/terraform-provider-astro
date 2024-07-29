@@ -120,9 +120,12 @@ func (r *TeamResource) MutateRoles(
 	}
 
 	// get list of workspace ids from deployments
-	deploymentWorkspaceIds := lo.Map(listDeployments.JSON200.Deployments, func(deployment platform.Deployment, _ int) string {
-		return deployment.WorkspaceId
-	})
+	var deploymentWorkspaceIds []string
+	if listDeployments.JSON200 != nil {
+		deploymentWorkspaceIds = lo.Map(listDeployments.JSON200.Deployments, func(deployment platform.Deployment, _ int) string {
+			return deployment.WorkspaceId
+		})
+	}
 
 	// get list of workspaceIds
 	workspaceIds := lo.Map(workspaceRoles, func(role iam.WorkspaceRole, _ int) string {
@@ -143,7 +146,7 @@ func (r *TeamResource) MutateRoles(
 		return diags
 	}
 
-	// create request
+	// Update team roles
 	updateTeamRolesRequest := iam.UpdateTeamRolesJSONRequestBody{
 		DeploymentRoles:  &deploymentRoles,
 		OrganizationRole: iam.UpdateTeamRolesRequestOrganizationRole(data.OrganizationRole.ValueString()),
@@ -196,13 +199,10 @@ func (r *TeamResource) Create(
 
 	// Create the team request
 	createTeamRequest := iam.CreateTeamRequest{
-		Name:        data.Name.ValueString(),
-		Description: data.Description.ValueStringPointer(),
-		MemberIds:   &memberIds,
-	}
-
-	if !data.OrganizationRole.IsNull() {
-		createTeamRequest.OrganizationRole = lo.ToPtr(iam.CreateTeamRequestOrganizationRole(data.OrganizationRole.ValueString()))
+		Name:             data.Name.ValueString(),
+		Description:      data.Description.ValueStringPointer(),
+		MemberIds:        &memberIds,
+		OrganizationRole: lo.ToPtr(iam.CreateTeamRequestOrganizationRole(data.OrganizationRole.ValueString())),
 	}
 
 	// Create the team
@@ -548,7 +548,7 @@ func (r *TeamResource) ValidateConfig(
 		return
 	}
 
-	// Validate if org isScimEnabled
+	// Validate if org isScimEnabled and return error if it is
 	org, err := r.PlatformClient.GetOrganizationWithResponse(ctx, r.OrganizationId, nil)
 	if err != nil {
 		tflog.Error(ctx, "failed to validate Team", map[string]interface{}{"error": err})

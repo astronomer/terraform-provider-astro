@@ -89,7 +89,7 @@ jobs:
           HYBRID_DRY_RUN_CLUSTER_ID: clxko4djp008601njcuoxt4z5
           HYBRID_NODE_POOL_ID: clxkqfzvm001c01nc1eosyxzg
           ASTRO_API_HOST: https://api.astronomer-dev.io
-          SKIP_CLUSTER_RESOURCE_TESTS: ${{ env.SKIP_CLUSTER_RESOURCE_TESTS }}
+          SKIP_CLUSTER_RESOURCE_TESTS: true
           HOSTED_TEAM_ID: clx44rvzr01nc01o06pze6qb7
           HOSTED_USER_ID: clz3a4ymt004x01on8w5ydq8j
           HOSTED_DEPLOYMENT_ID: clyn6kxud003x01mtxmccegnh
