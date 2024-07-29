@@ -1,4 +1,4 @@
-package resources
+package resources_test
 
 import (
 	"context"
@@ -18,13 +18,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// test failures:
-// disable team resource if org is isScimEnabled
-// mismatch in role and entity type (eg. organization role for workspace)
-// create team with no roles, with only deployment, with only workspace
-// update team
-// delete team
-// import team
 func TestAcc_ResourceTeam(t *testing.T) {
 	namePrefix := utils.GenerateTestResourceName(10)
 
