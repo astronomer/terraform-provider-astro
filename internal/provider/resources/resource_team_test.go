@@ -202,6 +202,11 @@ type teamInput struct {
 }
 
 func team(input teamInput) string {
+	var memberIds string
+	if len(input.MemberIds) > 0 {
+		memberIds = fmt.Sprintf("member_ids = [%v]", strings.Join(input.MemberIds, ","))
+	}
+
 	deploymentRoles := lo.Map(input.DeploymentRoles, func(role role, _ int) string {
 		return fmt.Sprintf(`
 		{
@@ -232,11 +237,11 @@ func team(input teamInput) string {
 resource "astro_team" "%v" {
 	name = "%v"
 	description = "%v"
-	member_ids = %v
+	%v
 	organization_role = "%v"
 	%v
 	%v
-}`, input.Name, input.Name, input.Description, input.MemberIds, input.OrganizationRole, deploymentRolesStr, workspaceRolesStr)
+}`, input.Name, input.Name, input.Description, memberIds, input.OrganizationRole, deploymentRolesStr, workspaceRolesStr)
 }
 
 func testAccCheckTeamExistence(t *testing.T, name string, shouldExist bool) func(s *terraform.State) error {
