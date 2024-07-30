@@ -21,6 +21,7 @@ import (
 func TestAcc_ResourceTeam(t *testing.T) {
 	namePrefix := utils.GenerateTestResourceName(10)
 
+	organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
 	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
 	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
 	userId := os.Getenv("HOSTED_USER_ID")
@@ -134,7 +135,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "name", teamName),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
 					resource.TestCheckResourceAttr(resourceVar, "organization_role", string(iam.ORGANIZATIONOWNER)),
-					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
+					resource.TestCheckResourceAttr(resourceVar, "organization_id", organizationId),
 					resource.TestCheckResourceAttr(resourceVar, "member_ids.#", "1"),
 					resource.TestCheckResourceAttr(resourceVar, "member_ids.0", userId),
 					resource.TestCheckResourceAttr(resourceVar, "deployment_roles.#", "1"),

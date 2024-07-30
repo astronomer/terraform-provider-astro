@@ -151,7 +151,7 @@ func (r *TeamResource) Create(
 
 	var diags diag.Diagnostics
 
-	diags = r.CheckOrganizationIsScim(ctx, data)
+	diags = r.CheckOrganizationIsScim(ctx)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -301,7 +301,7 @@ func (r *TeamResource) Update(
 
 	var diags diag.Diagnostics
 
-	diags = r.CheckOrganizationIsScim(ctx, data)
+	diags = r.CheckOrganizationIsScim(ctx)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -573,9 +573,9 @@ func (r *TeamResource) ValidateConfig(
 	}
 }
 
-func (r *TeamResource) CheckOrganizationIsScim(ctx context.Context, data models.TeamResource) diag.Diagnostics {
+func (r *TeamResource) CheckOrganizationIsScim(ctx context.Context) diag.Diagnostics {
 	// Validate if org isScimEnabled and return error if it is
-	org, err := r.PlatformClient.GetOrganizationWithResponse(ctx, data.OrganizationId.String(), nil)
+	org, err := r.PlatformClient.GetOrganizationWithResponse(ctx, r.OrganizationId, nil)
 	if err != nil {
 		tflog.Error(ctx, "failed to validate Team", map[string]interface{}{"error": err})
 		return diag.Diagnostics{
