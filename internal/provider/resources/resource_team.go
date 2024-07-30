@@ -523,14 +523,19 @@ func (r *TeamResource) ValidateConfig(
 		resp.Diagnostics.Append(diagnostic)
 		return
 	}
-	if org.JSON200 != nil {
-		if org.JSON200.IsScimEnabled {
-			resp.Diagnostics.AddError(
-				"Invalid Configuration: Cannot create, update or delete a Team resource when SCIM is enabled",
-				"Please disable SCIM in the organization settings to manage Team resources",
-			)
-			return
-		}
+	if org.JSON200 == nil {
+		tflog.Error(ctx, "failed to get organization", map[string]interface{}{"error": "nil response"})
+		resp.Diagnostics.AddError(
+			"Client Error",
+			fmt.Sprintf("Unable to read organization %v, got nil response", r.OrganizationId))
+		return
+	}
+	if org.JSON200.IsScimEnabled {
+		resp.Diagnostics.AddError(
+			"Invalid Configuration: Cannot create, update or delete a Team resource when SCIM is enabled",
+			"Please disable SCIM in the organization settings to manage Team resources",
+		)
+		return
 	}
 
 	// Validate workspace roles
