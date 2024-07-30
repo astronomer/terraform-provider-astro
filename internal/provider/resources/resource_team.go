@@ -508,6 +508,13 @@ func (r *TeamResource) ValidateConfig(
 		return
 	}
 
+	if r.OrganizationId == "" {
+		resp.Diagnostics.AddError(
+			"Client Error",
+			"Organization ID is not set",
+		)
+		return
+	}
 	// Validate if org isScimEnabled and return error if it is
 	org, err := r.PlatformClient.GetOrganizationWithResponse(ctx, r.OrganizationId, nil)
 	if err != nil {

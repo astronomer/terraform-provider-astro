@@ -16,6 +16,7 @@ type TeamDataSource struct {
 	Name             types.String `tfsdk:"name"`
 	Description      types.String `tfsdk:"description"`
 	IsIdpManaged     types.Bool   `tfsdk:"is_idp_managed"`
+	OrganizationId   types.String `tfsdk:"organization_id"`
 	OrganizationRole types.String `tfsdk:"organization_role"`
 	DeploymentRoles  types.Set    `tfsdk:"deployment_roles"`
 	WorkspaceRoles   types.Set    `tfsdk:"workspace_roles"`
@@ -32,6 +33,7 @@ type TeamResource struct {
 	Description      types.String `tfsdk:"description"`
 	IsIdpManaged     types.Bool   `tfsdk:"is_idp_managed"`
 	MemberIds        types.Set    `tfsdk:"member_ids"`
+	OrganizationId   types.String `tfsdk:"organization_id"`
 	OrganizationRole types.String `tfsdk:"organization_role"`
 	DeploymentRoles  types.Set    `tfsdk:"deployment_roles"`
 	WorkspaceRoles   types.Set    `tfsdk:"workspace_roles"`
@@ -52,6 +54,7 @@ func (data *TeamDataSource) ReadFromResponse(ctx context.Context, team *iam.Team
 		data.Description = types.StringValue("")
 	}
 	data.IsIdpManaged = types.BoolValue(team.IsIdpManaged)
+	data.OrganizationId = types.StringValue(team.OrganizationId)
 	data.OrganizationRole = types.StringValue(string(team.OrganizationRole))
 	data.DeploymentRoles, diags = utils.ObjectSet(ctx, team.DeploymentRoles, schemas.DeploymentRoleAttributeTypes(), DeploymentRoleTypesObject)
 	if diags.HasError() {
@@ -99,6 +102,7 @@ func (data *TeamResource) ReadFromResponse(ctx context.Context, team *iam.Team, 
 		data.MemberIds = types.SetNull(types.StringType)
 	}
 	data.IsIdpManaged = types.BoolValue(team.IsIdpManaged)
+	data.OrganizationId = types.StringValue(team.OrganizationId)
 	data.OrganizationRole = types.StringValue(string(team.OrganizationRole))
 	data.DeploymentRoles, diags = utils.ObjectSet(ctx, team.DeploymentRoles, schemas.DeploymentRoleAttributeTypes(), DeploymentRoleTypesObject)
 	if diags.HasError() {
