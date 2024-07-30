@@ -508,15 +508,8 @@ func (r *TeamResource) ValidateConfig(
 		return
 	}
 
-	if r.OrganizationId == "" {
-		resp.Diagnostics.AddError(
-			"Client Error",
-			"Organization ID is not set",
-		)
-		return
-	}
 	// Validate if org isScimEnabled and return error if it is
-	org, err := r.PlatformClient.GetOrganizationWithResponse(ctx, r.OrganizationId, nil)
+	org, err := r.PlatformClient.GetOrganizationWithResponse(ctx, data.OrganizationId.String(), nil)
 	if err != nil {
 		tflog.Error(ctx, "failed to validate Team", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(

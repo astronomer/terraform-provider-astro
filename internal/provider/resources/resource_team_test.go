@@ -134,6 +134,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "name", teamName),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
 					resource.TestCheckResourceAttr(resourceVar, "organization_role", string(iam.ORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
 					resource.TestCheckResourceAttr(resourceVar, "member_ids.#", "1"),
 					resource.TestCheckResourceAttr(resourceVar, "member_ids.0", userId),
 					resource.TestCheckResourceAttr(resourceVar, "deployment_roles.#", "1"),

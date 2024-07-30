@@ -26,6 +26,7 @@ func TestAcc_DataSourceTeam(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "name"),
 					resource.TestCheckResourceAttrSet(resourceVar, "is_idp_managed"),
+					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "organization_role"),
 					resource.TestCheckResourceAttrSet(resourceVar, "roles_count"),
 					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
