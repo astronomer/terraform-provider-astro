@@ -190,9 +190,10 @@ func (r *TeamResource) Create(
 		return
 	}
 
+	teamId := team.JSON200.Id
 	// Update team roles
 	if !data.WorkspaceRoles.IsNull() || !data.DeploymentRoles.IsNull() {
-		diags = r.MutateRoles(ctx, &data, team.JSON200.Id)
+		diags = r.MutateRoles(ctx, &data, teamId)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -203,7 +204,7 @@ func (r *TeamResource) Create(
 	teamResp, err := r.IamClient.GetTeamWithResponse(
 		ctx,
 		r.OrganizationId,
-		data.Id.ValueString(),
+		teamId,
 	)
 	if err != nil {
 		tflog.Error(ctx, "failed to create Team", map[string]interface{}{"error": err})
