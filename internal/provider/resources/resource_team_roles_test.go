@@ -44,18 +44,18 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 					teamRoles("", "", ""),
 				ExpectError: regexp.MustCompile("Attribute organization_role value must be one of"),
 			},
-			//{
-			//	Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-			//		teamRoles(string(iam.ORGANIZATIONBILLINGADMIN), "", ""),
-			//	Check: resource.ComposeTestCheckFunc(
-			//		resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
-			//		resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.ORGANIZATIONBILLINGADMIN)),
-			//		resource.TestCheckNoResourceAttr(tfVarName, "workspace_roles"),
-			//		resource.TestCheckNoResourceAttr(tfVarName, "deployment_roles"),
-			//		// Check via API that team has correct roles
-			//		testAccCheckTeamRolesCorrect(t, string(iam.ORGANIZATIONBILLINGADMIN), 0, 0),
-			//	),
-			//},
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					teamRoles(string(iam.ORGANIZATIONBILLINGADMIN), "", ""),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.ORGANIZATIONBILLINGADMIN)),
+					resource.TestCheckNoResourceAttr(tfVarName, "workspace_roles"),
+					resource.TestCheckNoResourceAttr(tfVarName, "deployment_roles"),
+					// Check via API that team has correct roles
+					testAccCheckTeamRolesCorrect(t, string(iam.ORGANIZATIONBILLINGADMIN), 0, 0),
+				),
+			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					standardDeployment(standardDeploymentInput{
