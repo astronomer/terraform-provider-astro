@@ -37,7 +37,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test failure: disable team resource if org is isScimEnabled
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, true) + team(teamInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTEDSCIM) + team(teamInput{
 					Name:             teamName,
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
@@ -59,7 +59,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 			},
 			// Test failure: check for mismatch in role and entity type
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + team(teamInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
 					Name:             teamName,
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
@@ -75,7 +75,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 			},
 			// Test failure: check for missing corresponding workspace role if deployment role is present
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + team(teamInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
 					Name:             teamName,
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
@@ -91,7 +91,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 			},
 			// Test failure: check for multiple roles with same entity id
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + team(teamInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
 					Name:             teamName,
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
@@ -111,7 +111,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 			},
 			// Create team with all fields
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + team(teamInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
 					Name:             teamName,
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
@@ -154,7 +154,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 			},
 			// Update team
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + team(teamInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
 					Name:             teamName,
 					Description:      "new description",
 					MemberIds:        []string{},

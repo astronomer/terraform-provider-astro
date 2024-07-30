@@ -41,7 +41,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test invalid role for token type
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
 					Type: string(iam.ORGANIZATION),
 					Roles: []apiTokenRole{
@@ -56,7 +56,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 			},
 			// Test invalid role for entity type
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
 					Type: string(iam.ORGANIZATION),
 					Roles: []apiTokenRole{
@@ -71,7 +71,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 			},
 			// Test multiple roles of the same type
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
 					Type: string(iam.ORGANIZATION),
 					Roles: []apiTokenRole{
@@ -91,7 +91,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 			},
 			// Create the organization api token
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: utils.TestResourceDescription,
 					Type:        string(iam.ORGANIZATION),
@@ -142,7 +142,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 			},
 			// Change properties and check they have been updated in terraform state
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: "new description",
 					Type:        string(iam.ORGANIZATION),
@@ -173,7 +173,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 			},
 			// Change the resource type and remove roles and optional fields
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
 					Type: string(iam.WORKSPACE),
 					Roles: []apiTokenRole{
@@ -197,7 +197,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 			},
 			// Change resource type back to ORGANIZATION
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: utils.TestResourceDescription,
 					Type:        string(iam.ORGANIZATION),
@@ -258,7 +258,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test invalid role for token type
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
 					Type: string(iam.WORKSPACE),
 					Roles: []apiTokenRole{
@@ -273,7 +273,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 			},
 			// Test invalid role for entity type
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
 					Type: string(iam.WORKSPACE),
 					Roles: []apiTokenRole{
@@ -288,7 +288,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 			},
 			// Test multiple roles of the same type
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
 					Type: string(iam.WORKSPACE),
 					Roles: []apiTokenRole{
@@ -308,7 +308,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 			},
 			// Create the workspace api token
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: utils.TestResourceDescription,
 					Type:        string(iam.WORKSPACE),
@@ -351,7 +351,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 			},
 			// Change properties and check they have been updated in terraform state
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: "new description",
 					Type:        string(iam.WORKSPACE),
@@ -377,7 +377,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 			},
 			// Change the resource type and remove roles and optional fields
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
 					Type: string(iam.ORGANIZATION),
 					Roles: []apiTokenRole{
@@ -401,7 +401,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 			},
 			// Change resource type back to WORKSPACE
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: utils.TestResourceDescription,
 					Type:        string(iam.WORKSPACE),
@@ -457,7 +457,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test invalid role for token type
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
 					Type: string(iam.DEPLOYMENT),
 					Roles: []apiTokenRole{
@@ -472,7 +472,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 			},
 			// Test invalid role for entity type
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
 					Type: string(iam.DEPLOYMENT),
 					Roles: []apiTokenRole{
@@ -487,7 +487,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 			},
 			// Test invalid role for API token type
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
 					Type: string(iam.DEPLOYMENT),
 					Roles: []apiTokenRole{
@@ -502,7 +502,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 			},
 			// Create the deployment api token
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: utils.TestResourceDescription,
 					Type:        string(iam.DEPLOYMENT),
@@ -537,7 +537,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 			},
 			// Change properties and check they have been updated in terraform state
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: "new description",
 					Type:        string(iam.DEPLOYMENT),
@@ -558,7 +558,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 			},
 			// Change the resource type
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: utils.TestResourceDescription,
 					Type:        string(iam.ORGANIZATION),
@@ -583,7 +583,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 			},
 			// Change resource type back to DEPLOYMENT
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, false) + apiToken(apiTokenInput{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: utils.TestResourceDescription,
 					Type:        string(iam.DEPLOYMENT),

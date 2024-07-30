@@ -49,15 +49,24 @@ func TestAccPreCheck(t *testing.T) {
 	}
 }
 
-func ProviderConfig(t *testing.T, isHosted bool, isScim bool) string {
+type TestOrganizationType string
+
+// Define values for TestOrganizationType
+const (
+	HOSTED     TestOrganizationType = "HOSTED"
+	HYBRID     TestOrganizationType = "HYBRID"
+	HOSTEDSCIM TestOrganizationType = "HOSTED_SCIM"
+)
+
+func ProviderConfig(t *testing.T, testOrganizationType TestOrganizationType) string {
 	var orgId, token string
-	if isHosted {
+	if testOrganizationType == HOSTED {
 		orgId = os.Getenv("HOSTED_ORGANIZATION_ID")
 		token = os.Getenv("HOSTED_ORGANIZATION_API_TOKEN")
-	} else if isScim {
+	} else if testOrganizationType == HOSTEDSCIM {
 		orgId = os.Getenv("HOSTED_SCIM_ORGANIZATION_ID")
 		token = os.Getenv("HOSTED_ORGANIZATION_API_TOKEN")
-	} else {
+	} else if testOrganizationType == HYBRID {
 		orgId = os.Getenv("HYBRID_ORGANIZATION_ID")
 		token = os.Getenv("HYBRID_ORGANIZATION_API_TOKEN")
 	}
