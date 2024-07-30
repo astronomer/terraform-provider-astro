@@ -56,6 +56,7 @@ func RequestDeploymentRoles(ctx context.Context, deploymentRolesObjSet types.Set
 	return deploymentRoles, nil
 }
 
+// ValidateRoleMatchesEntityType checks if the role is valid for the entityType
 func ValidateRoleMatchesEntityType(role string, scopeType string) bool {
 	organizationRoles := []string{string(iam.ORGANIZATIONBILLINGADMIN), string(iam.ORGANIZATIONMEMBER), string(iam.ORGANIZATIONOWNER)}
 	workspaceRoles := []string{string(iam.WORKSPACEACCESSOR), string(iam.WORKSPACEAUTHOR), string(iam.WORKSPACEMEMBER), string(iam.WORKSPACEOWNER), string(iam.WORKSPACEOPERATOR)}
@@ -81,8 +82,9 @@ type ValidateWorkspaceDeploymentRolesInput struct {
 	WorkspaceRoles  []iam.WorkspaceRole
 }
 
+// ValidateWorkspaceDeploymentRoles checks if deployment roles have corresponding workspace roles
 func ValidateWorkspaceDeploymentRoles(ctx context.Context, diags diag.Diagnostics, input ValidateWorkspaceDeploymentRolesInput) diag.Diagnostics {
-	// Check if deployment roles have corresponding workspace roles
+	// return nil if there are no deployment roles
 	if len(input.DeploymentRoles) == 0 {
 		return nil
 	}
@@ -133,6 +135,7 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, diags diag.Diagnostic
 	return diags
 }
 
+// CheckDuplicateWorkspaceId checks if there are duplicate workspace ids in the workspace roles
 func CheckDuplicateWorkspaceId(workspaceRoles []iam.WorkspaceRole) []string {
 	workspaceIdCount := make(map[string]int)
 	for _, role := range workspaceRoles {
@@ -149,6 +152,7 @@ func CheckDuplicateWorkspaceId(workspaceRoles []iam.WorkspaceRole) []string {
 	return duplicates
 }
 
+// CheckDuplicateDeploymentId checks if there are duplicate deployment ids in the deployment roles
 func CheckDuplicateDeploymentId(deploymentRoles []iam.DeploymentRole) []string {
 	workspaceIdCount := make(map[string]int)
 	for _, role := range deploymentRoles {
