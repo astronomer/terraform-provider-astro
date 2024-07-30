@@ -204,7 +204,10 @@ type teamInput struct {
 func team(input teamInput) string {
 	var memberIds string
 	if len(input.MemberIds) > 0 {
-		memberIds = fmt.Sprintf("member_ids = [%v]", strings.Join(input.MemberIds, ","))
+		formattedIds := lo.Map(input.MemberIds, func(id string, _ int) string {
+			return fmt.Sprintf(`"%v"`, id)
+		})
+		memberIds = fmt.Sprintf(`member_ids = [%v]`, strings.Join(formattedIds, ", "))
 	}
 
 	deploymentRoles := lo.Map(input.DeploymentRoles, func(role role, _ int) string {
