@@ -60,15 +60,18 @@ const (
 
 func ProviderConfig(t *testing.T, testOrganizationType TestOrganizationType) string {
 	var orgId, token string
-	if testOrganizationType == HOSTED {
+	switch testOrganizationType {
+	case HOSTED:
 		orgId = os.Getenv("HOSTED_ORGANIZATION_ID")
 		token = os.Getenv("HOSTED_ORGANIZATION_API_TOKEN")
-	} else if testOrganizationType == HOSTEDSCIM {
+	case HOSTEDSCIM:
 		orgId = os.Getenv("HOSTED_SCIM_ORGANIZATION_ID")
 		token = os.Getenv("HOSTED_SCIM_ORGANIZATION_API_TOKEN")
-	} else if testOrganizationType == HYBRID {
+	case HYBRID:
 		orgId = os.Getenv("HYBRID_ORGANIZATION_ID")
 		token = os.Getenv("HYBRID_ORGANIZATION_API_TOKEN")
+	default:
+		t.Fatalf("Invalid test organization type: %v", testOrganizationType)
 	}
 
 	return fmt.Sprintf(`
