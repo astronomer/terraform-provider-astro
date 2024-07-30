@@ -2,7 +2,12 @@ package common
 
 import (
 	"context"
+	"fmt"
 	"strings"
+
+	"github.com/astronomer/terraform-provider-astro/internal/clients"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
@@ -67,4 +72,91 @@ func ValidateRoleMatchesEntityType(role string, scopeType string) bool {
 	}
 
 	return lo.Contains(roles, role)
+}
+
+type ValidateWorkspaceDeploymentRolesInput struct {
+	PlatformClient  *platform.ClientWithResponses
+	OrganizationId  string
+	DeploymentRoles []iam.DeploymentRole
+	WorkspaceRoles  []iam.WorkspaceRole
+}
+
+func ValidateWorkspaceDeploymentRoles(ctx context.Context, diags diag.Diagnostics, input ValidateWorkspaceDeploymentRolesInput) diag.Diagnostics {
+	// Check if deployment roles have corresponding workspace roles
+	// get list of deployment ids
+	deploymentIds := lo.Map(input.DeploymentRoles, func(role iam.DeploymentRole, _ int) string {
+		return role.DeploymentId
+	})
+
+	// get list of deployments
+	listDeployments, err := input.PlatformClient.ListDeploymentsWithResponse(ctx, input.OrganizationId, &platform.ListDeploymentsParams{
+		DeploymentIds: &deploymentIds,
+	})
+	if err != nil {
+		tflog.Error(ctx, "failed to mutate Team roles", map[string]interface{}{"error": err})
+		diags.AddError(
+			"Client Error",
+			fmt.Sprintf("Unable to mutate Team roles and list deployments, got error: %s", err),
+		)
+		return diags
+	}
+	_, diagnostic := clients.NormalizeAPIError(ctx, listDeployments.HTTPResponse, listDeployments.Body)
+	if diagnostic != nil {
+		diags.Append(diagnostic)
+		return diags
+	}
+
+	// get list of workspace ids from deployments
+	deploymentWorkspaceIds := lo.Map(listDeployments.JSON200.Deployments, func(deployment platform.Deployment, _ int) string {
+		return deployment.WorkspaceId
+	})
+
+	// get list of workspaceIds
+	workspaceIds := lo.Map(input.WorkspaceRoles, func(role iam.WorkspaceRole, _ int) string {
+		return role.WorkspaceId
+	})
+
+	// check if deploymentWorkspaceIds are in workspaceIds
+	workspaceIds = lo.Intersect(lo.Uniq(workspaceIds), lo.Uniq(deploymentWorkspaceIds))
+	if len(workspaceIds) != len(deploymentWorkspaceIds) {
+		tflog.Error(ctx, "failed to mutate Team roles", map[string]interface{}{"error": err})
+		diags.AddError(
+			"Unable to mutate Team roles, not every deployment role has a corresponding workspace role",
+			"Please ensure that every deployment role has a corresponding workspace role",
+		)
+		return diags
+	}
+	return diags
+}
+
+func CheckDuplicateWorkspaceId(workspaceRoles []iam.WorkspaceRole) []string {
+	workspaceIdCount := make(map[string]int)
+	for _, role := range workspaceRoles {
+		workspaceIdCount[role.WorkspaceId]++
+	}
+
+	var duplicates []string
+	for id, count := range workspaceIdCount {
+		if count > 1 {
+			duplicates = append(duplicates, id)
+		}
+	}
+
+	return duplicates
+}
+
+func CheckDuplicateDeploymentId(deploymentRoles []iam.DeploymentRole) []string {
+	workspaceIdCount := make(map[string]int)
+	for _, role := range deploymentRoles {
+		workspaceIdCount[role.DeploymentId]++
+	}
+
+	var duplicates []string
+	for id, count := range workspaceIdCount {
+		if count > 1 {
+			duplicates = append(duplicates, id)
+		}
+	}
+
+	return duplicates
 }

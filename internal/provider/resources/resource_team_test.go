@@ -59,7 +59,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 			},
 			// Test failure: check for mismatch in role and entity type
 			{
-				Config: astronomerprovider.ProviderConfig(t, true, true) + team(teamInput{
+				Config: astronomerprovider.ProviderConfig(t, true, false) + team(teamInput{
 					Name:             teamName,
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
@@ -72,6 +72,42 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					},
 				}),
 				ExpectError: regexp.MustCompile(fmt.Sprintf("Role '%s' is not valid for role type '%s'", string(iam.ORGANIZATIONOWNER), string(iam.WORKSPACE))),
+			},
+			// Test failure: check for missing corresponding workspace role if deployment role is present
+			{
+				Config: astronomerprovider.ProviderConfig(t, true, false) + team(teamInput{
+					Name:             teamName,
+					Description:      utils.TestResourceDescription,
+					MemberIds:        []string{userId},
+					OrganizationRole: string(iam.ORGANIZATIONOWNER),
+					DeploymentRoles: []role{
+						{
+							Role: "DEPLOYMENT_ADMIN",
+							Id:   deploymentId,
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("Unable to mutate Team roles, not every deployment role has a corresponding workspace role"),
+			},
+			// Test failure: check for multiple roles with same entity id
+			{
+				Config: astronomerprovider.ProviderConfig(t, true, false) + team(teamInput{
+					Name:             teamName,
+					Description:      utils.TestResourceDescription,
+					MemberIds:        []string{userId},
+					OrganizationRole: string(iam.ORGANIZATIONOWNER),
+					WorkspaceRoles: []role{
+						{
+							Role: string(iam.WORKSPACEOWNER),
+							Id:   workspaceId,
+						},
+						{
+							Role: string(iam.WORKSPACEACCESSOR),
+							Id:   workspaceId,
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile(fmt.Sprintf("Invalid Configuration: Cannot have multiple roles with the same workspace id: %v", workspaceId)),
 			},
 			// Create team with all fields
 			{

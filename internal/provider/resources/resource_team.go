@@ -95,54 +95,14 @@ func (r *TeamResource) MutateRoles(
 		return diags
 	}
 
-	// Check if deployment roles have corresponding workspace roles
-	// get list of deployment ids
-	deploymentIds := lo.Map(deploymentRoles, func(role iam.DeploymentRole, _ int) string {
-		return role.DeploymentId
+	// Validate the roles
+	diags = common.ValidateWorkspaceDeploymentRoles(ctx, diags, common.ValidateWorkspaceDeploymentRolesInput{
+		PlatformClient:  r.PlatformClient,
+		OrganizationId:  r.OrganizationId,
+		WorkspaceRoles:  workspaceRoles,
+		DeploymentRoles: deploymentRoles,
 	})
-
-	// get list of deployments
-	listDeployments, err := r.PlatformClient.ListDeploymentsWithResponse(ctx, r.OrganizationId, &platform.ListDeploymentsParams{
-		DeploymentIds: &deploymentIds,
-	})
-	if err != nil {
-		tflog.Error(ctx, "failed to mutate Team roles", map[string]interface{}{"error": err})
-		diags.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to mutate Team roles and list deployments, got error: %s", err),
-		)
-		return diags
-	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, listDeployments.HTTPResponse, listDeployments.Body)
-	if diagnostic != nil {
-		diags.Append(diagnostic)
-		return diags
-	}
-
-	// get list of workspace ids from deployments
-	var deploymentWorkspaceIds []string
-	if listDeployments.JSON200 != nil {
-		deploymentWorkspaceIds = lo.Map(listDeployments.JSON200.Deployments, func(deployment platform.Deployment, _ int) string {
-			return deployment.WorkspaceId
-		})
-	}
-
-	// get list of workspaceIds
-	workspaceIds := lo.Map(workspaceRoles, func(role iam.WorkspaceRole, _ int) string {
-		return role.WorkspaceId
-	})
-
-	// check if deploymentWorkspaceIds are in workspaceIds
-	missingWorkspaceIds, _ := lo.Difference(lo.Uniq(deploymentWorkspaceIds), lo.Uniq(workspaceIds))
-	if len(missingWorkspaceIds) > 0 {
-		tflog.Error(ctx, "failed to mutate Team roles", map[string]interface{}{
-			"error": fmt.Sprintf(
-				"Not every deployment role has a corresponding workspace role. Missing workspace roles for deploymentWorkspaceIds: %v", missingWorkspaceIds),
-		})
-		diags.AddError(
-			"Bad Request Error",
-			fmt.Sprintf("Unable to mutate Team roles, not every deployment role has a corresponding workspace role. Add workspace roles for the missing workspace ids: %v", missingWorkspaceIds),
-		)
+	if diags.HasError() {
 		return diags
 	}
 
@@ -166,7 +126,7 @@ func (r *TeamResource) MutateRoles(
 		)
 		return diags
 	}
-	_, diagnostic = clients.NormalizeAPIError(ctx, teamRoles.HTTPResponse, teamRoles.Body)
+	_, diagnostic := clients.NormalizeAPIError(ctx, teamRoles.HTTPResponse, teamRoles.Body)
 	if diagnostic != nil {
 		diags.Append(diagnostic)
 		return diags
@@ -583,6 +543,15 @@ func (r *TeamResource) ValidateConfig(
 		}
 	}
 
+	duplicateWorkspaceIds := common.CheckDuplicateWorkspaceId(workspaceRoles)
+	if len(duplicateWorkspaceIds) > 0 {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Invalid Configuration: Cannot have multiple roles with the same workspace id: %v", duplicateWorkspaceIds),
+			"Please provide unique workspace id for each role",
+		)
+		return
+	}
+
 	// Validate deployment roles
 	deploymentRoles, diags := common.RequestDeploymentRoles(ctx, data.DeploymentRoles)
 	if diags.HasError() {
@@ -598,5 +567,14 @@ func (r *TeamResource) ValidateConfig(
 			)
 			return
 		}
+	}
+
+	duplicateDeploymentIds := common.CheckDuplicateDeploymentId(deploymentRoles)
+	if len(duplicateDeploymentIds) > 0 {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Invalid Configuration: Cannot have multiple roles with the same deployment id: %v", duplicateDeploymentIds),
+			"Please provide unique deployment id for each role",
+		)
+		return
 	}
 }
