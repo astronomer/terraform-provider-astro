@@ -82,9 +82,8 @@ func (r *TeamResource) Configure(
 func (r *TeamResource) MutateRoles(
 	ctx context.Context,
 	data *models.TeamResource,
+	teamId string,
 ) diag.Diagnostics {
-	teamId := data.Id.ValueString()
-
 	// Then convert the models to the request types for the API
 	workspaceRoles, diags := common.RequestWorkspaceRoles(ctx, data.WorkspaceRoles)
 	if diags.HasError() {
@@ -193,7 +192,7 @@ func (r *TeamResource) Create(
 
 	// Update team roles
 	if !data.WorkspaceRoles.IsNull() || !data.DeploymentRoles.IsNull() {
-		diags = r.MutateRoles(ctx, &data)
+		diags = r.MutateRoles(ctx, &data, team.JSON200.Id)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -428,7 +427,7 @@ func (r *TeamResource) Update(
 
 	// Update team roles
 	if !data.WorkspaceRoles.IsNull() || !data.DeploymentRoles.IsNull() {
-		diags = r.MutateRoles(ctx, &data)
+		diags = r.MutateRoles(ctx, &data, data.Id.ValueString())
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
