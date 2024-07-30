@@ -83,6 +83,10 @@ type ValidateWorkspaceDeploymentRolesInput struct {
 
 func ValidateWorkspaceDeploymentRoles(ctx context.Context, diags diag.Diagnostics, input ValidateWorkspaceDeploymentRolesInput) diag.Diagnostics {
 	// Check if deployment roles have corresponding workspace roles
+	if len(input.DeploymentRoles) == 0 {
+		return nil
+	}
+
 	// get list of deployment ids
 	deploymentIds := lo.Map(input.DeploymentRoles, func(role iam.DeploymentRole, _ int) string {
 		return role.DeploymentId
