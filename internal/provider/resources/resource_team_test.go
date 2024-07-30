@@ -26,6 +26,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
 	userId := os.Getenv("HOSTED_USER_ID")
 
+	failTeamName := fmt.Sprintf("%v_fail_team", namePrefix)
 	teamName := fmt.Sprintf("%v_team", namePrefix)
 	resourceVar := fmt.Sprintf("astro_team.%v", teamName)
 
@@ -39,7 +40,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 			// Test failure: disable team resource if org is isScimEnabled
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTEDSCIM) + team(teamInput{
-					Name:             teamName,
+					Name:             failTeamName,
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
@@ -61,7 +62,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 			// Test failure: check for mismatch in role and entity type
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
-					Name:             teamName,
+					Name:             failTeamName,
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
@@ -77,7 +78,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 			// Test failure: check for missing corresponding workspace role if deployment role is present
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
-					Name:             teamName,
+					Name:             failTeamName,
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
@@ -93,7 +94,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 			// Test failure: check for multiple roles with same entity id
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
-					Name:             teamName,
+					Name:             failTeamName,
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
