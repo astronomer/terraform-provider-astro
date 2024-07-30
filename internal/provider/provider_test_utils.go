@@ -65,7 +65,7 @@ func ProviderConfig(t *testing.T, testOrganizationType TestOrganizationType) str
 		token = os.Getenv("HOSTED_ORGANIZATION_API_TOKEN")
 	} else if testOrganizationType == HOSTEDSCIM {
 		orgId = os.Getenv("HOSTED_SCIM_ORGANIZATION_ID")
-		token = os.Getenv("HOSTED_ORGANIZATION_API_TOKEN")
+		token = os.Getenv("HOSTED_SCIM_ORGANIZATION_API_TOKEN")
 	} else if testOrganizationType == HYBRID {
 		orgId = os.Getenv("HYBRID_ORGANIZATION_ID")
 		token = os.Getenv("HYBRID_ORGANIZATION_API_TOKEN")
