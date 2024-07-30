@@ -151,6 +151,12 @@ func (r *TeamResource) Create(
 
 	var diags diag.Diagnostics
 
+	diags = r.CheckOrganizationIsScim(ctx, data)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
 	memberIds, diags := utils.TypesSetToStringSlice(ctx, data.MemberIds)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
@@ -294,6 +300,12 @@ func (r *TeamResource) Update(
 	}
 
 	var diags diag.Diagnostics
+
+	diags = r.CheckOrganizationIsScim(ctx, data)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
 
 	// Update team members
 	// get existing team members
@@ -508,44 +520,6 @@ func (r *TeamResource) ValidateConfig(
 		return
 	}
 
-	if data.OrganizationId.IsNull() {
-		resp.Diagnostics.AddError(
-			"Missing organization_id",
-			"Please provide a valid organization_id",
-		)
-		return
-	}
-
-	// Validate if org isScimEnabled and return error if it is
-	org, err := r.PlatformClient.GetOrganizationWithResponse(ctx, data.OrganizationId.String(), nil)
-	if err != nil {
-		tflog.Error(ctx, "failed to validate Team", map[string]interface{}{"error": err})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to validate Team, got error: %s", err),
-		)
-		return
-	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, org.HTTPResponse, org.Body)
-	if diagnostic != nil {
-		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if org.JSON200 == nil {
-		tflog.Error(ctx, "failed to get organization", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to read organization %v, got nil response", r.OrganizationId))
-		return
-	}
-	if org.JSON200.IsScimEnabled {
-		resp.Diagnostics.AddError(
-			"Invalid Configuration: Cannot create, update or delete a Team resource when SCIM is enabled",
-			"Please disable SCIM in the organization settings to manage Team resources",
-		)
-		return
-	}
-
 	// Validate workspace roles
 	workspaceRoles, diags := common.RequestWorkspaceRoles(ctx, data.WorkspaceRoles)
 	if diags.HasError() {
@@ -597,4 +571,39 @@ func (r *TeamResource) ValidateConfig(
 		)
 		return
 	}
+}
+
+func (r *TeamResource) CheckOrganizationIsScim(ctx context.Context, data models.TeamResource) diag.Diagnostics {
+	// Validate if org isScimEnabled and return error if it is
+	org, err := r.PlatformClient.GetOrganizationWithResponse(ctx, data.OrganizationId.String(), nil)
+	if err != nil {
+		tflog.Error(ctx, "failed to validate Team", map[string]interface{}{"error": err})
+		return diag.Diagnostics{
+			diag.NewErrorDiagnostic(
+				"Client Error",
+				fmt.Sprintf("Unable to validate Team, got error: %s", err),
+			),
+		}
+	}
+	_, diagnostic := clients.NormalizeAPIError(ctx, org.HTTPResponse, org.Body)
+	if diagnostic != nil {
+		return diag.Diagnostics{diagnostic}
+	}
+	if org.JSON200 == nil {
+		tflog.Error(ctx, "failed to get organization", map[string]interface{}{"error": "nil response"})
+		return diag.Diagnostics{
+			diag.NewErrorDiagnostic(
+				"Client Error",
+				fmt.Sprintf("Unable to read organization %v, got nil response", r.OrganizationId)),
+		}
+	}
+	if org.JSON200.IsScimEnabled {
+		return diag.Diagnostics{
+			diag.NewErrorDiagnostic(
+				"Invalid Configuration: Cannot create, update or delete a Team resource when SCIM is enabled",
+				"Please disable SCIM in the organization settings to manage Team resources",
+			),
+		}
+	}
+	return nil
 }
