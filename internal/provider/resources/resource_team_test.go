@@ -108,7 +108,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile(fmt.Sprintf("Invalid Configuration: Cannot have multiple roles with the same workspace id: `\\[%v\\]`", workspaceId))},
+				ExpectError: regexp.MustCompile(fmt.Sprintf("Invalid Configuration: Cannot have multiple roles with the same workspace id: %v", []string{workspaceId}))},
 			// Create team with all fields
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
