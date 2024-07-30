@@ -540,8 +540,8 @@ func (r *TeamResource) ValidateConfig(
 	duplicateWorkspaceIds := common.CheckDuplicateWorkspaceId(workspaceRoles)
 	if len(duplicateWorkspaceIds) > 0 {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Invalid Configuration: Cannot have multiple roles with the same workspace id: %v", duplicateWorkspaceIds),
-			"Please provide unique workspace id for each role",
+			"Invalid Configuration: Cannot have multiple roles with the same workspace id",
+			fmt.Sprintf("Please provide a unique workspace id for each role. The following workspace ids are duplicated: %v", duplicateWorkspaceIds),
 		)
 		return
 	}
