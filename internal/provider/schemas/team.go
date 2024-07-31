@@ -32,10 +32,6 @@ func TeamDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 			MarkdownDescription: "Whether the Team is managed by an identity provider",
 			Computed:            true,
 		},
-		"organization_id": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The ID of the Organization to which the Team belongs",
-			Computed:            true,
-		},
 		"organization_role": datasourceSchema.StringAttribute{
 			MarkdownDescription: "The role assigned to the Organization",
 			Computed:            true,
@@ -106,10 +102,6 @@ func TeamResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 		},
 		"is_idp_managed": resourceSchema.BoolAttribute{
 			MarkdownDescription: "Whether the Team is managed by an identity provider",
-			Computed:            true,
-		},
-		"organization_id": resourceSchema.StringAttribute{
-			MarkdownDescription: "The ID of the Organization to which the Team belongs",
 			Computed:            true,
 		},
 		"organization_role": resourceSchema.StringAttribute{

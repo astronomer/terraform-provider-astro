@@ -84,7 +84,7 @@ func (r *TeamResource) MutateRoles(
 	data *models.TeamResource,
 	teamId string,
 ) diag.Diagnostics {
-	// Then convert the models to the request types for the API
+	// Convert the models to the request types for the API
 	workspaceRoles, diags := common.RequestWorkspaceRoles(ctx, data.WorkspaceRoles)
 	if diags.HasError() {
 		return diags
@@ -95,7 +95,7 @@ func (r *TeamResource) MutateRoles(
 	}
 
 	// Validate the roles
-	diags = common.ValidateWorkspaceDeploymentRoles(ctx, diags, common.ValidateWorkspaceDeploymentRolesInput{
+	diags = common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 		PlatformClient:  r.PlatformClient,
 		OrganizationId:  r.OrganizationId,
 		WorkspaceRoles:  workspaceRoles,
@@ -458,7 +458,7 @@ func (r *TeamResource) ValidateConfig(
 		}
 	}
 
-	duplicateWorkspaceIds := common.CheckDuplicateWorkspaceId(workspaceRoles)
+	duplicateWorkspaceIds := common.HasDuplicateWorkspaceId(workspaceRoles)
 	if len(duplicateWorkspaceIds) > 0 {
 		resp.Diagnostics.AddError(
 			"Invalid Configuration: Cannot have multiple roles with the same workspace id",
@@ -484,11 +484,11 @@ func (r *TeamResource) ValidateConfig(
 		}
 	}
 
-	duplicateDeploymentIds := common.CheckDuplicateDeploymentId(deploymentRoles)
+	duplicateDeploymentIds := common.HasDuplicateDeploymentId(deploymentRoles)
 	if len(duplicateDeploymentIds) > 0 {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Invalid Configuration: Cannot have multiple roles with the same deployment id: %v", duplicateDeploymentIds),
-			"Please provide unique deployment id for each role",
+			"Invalid Configuration: Cannot have multiple roles with the same deployment id",
+			fmt.Sprintf("Please provide unique deployment id for each role. The following deployment ids are duplicated: %v", duplicateDeploymentIds),
 		)
 		return
 	}

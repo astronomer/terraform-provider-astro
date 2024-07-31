@@ -97,7 +97,7 @@ func (r *teamRolesResource) MutateRoles(
 	}
 
 	// Validate the roles
-	diags = common.ValidateWorkspaceDeploymentRoles(ctx, diags, common.ValidateWorkspaceDeploymentRolesInput{
+	diags = common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 		PlatformClient:  r.platformClient,
 		OrganizationId:  r.organizationId,
 		WorkspaceRoles:  workspaceRoles,

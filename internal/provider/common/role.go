@@ -60,19 +60,20 @@ func RequestDeploymentRoles(ctx context.Context, deploymentRolesObjSet types.Set
 func ValidateRoleMatchesEntityType(role string, scopeType string) bool {
 	organizationRoles := []string{string(iam.ORGANIZATIONBILLINGADMIN), string(iam.ORGANIZATIONMEMBER), string(iam.ORGANIZATIONOWNER)}
 	workspaceRoles := []string{string(iam.WORKSPACEACCESSOR), string(iam.WORKSPACEAUTHOR), string(iam.WORKSPACEMEMBER), string(iam.WORKSPACEOWNER), string(iam.WORKSPACEOPERATOR)}
-	var roles []string
+	deploymentRoles := []string{"DEPLOYMENT_ADMIN"}
+	var nonEntityRoles []string
 
 	scopeType = strings.ToLower(scopeType)
-	if scopeType == "organization" {
-		roles = organizationRoles
-	} else if scopeType == "workspace" {
-		roles = workspaceRoles
-	} else if scopeType == "deployment" {
-		nonDeploymentRoles := append(organizationRoles, workspaceRoles...)
-		return !lo.Contains(nonDeploymentRoles, role)
+	switch scopeType {
+	case "organization":
+		nonEntityRoles = append(workspaceRoles, deploymentRoles...)
+	case "workspace":
+		nonEntityRoles = append(organizationRoles, deploymentRoles...)
+	case "deployment":
+		nonEntityRoles = append(organizationRoles, workspaceRoles...)
 	}
 
-	return lo.Contains(roles, role)
+	return !lo.Contains(nonEntityRoles, role)
 }
 
 type ValidateWorkspaceDeploymentRolesInput struct {
@@ -83,7 +84,7 @@ type ValidateWorkspaceDeploymentRolesInput struct {
 }
 
 // ValidateWorkspaceDeploymentRoles checks if deployment roles have corresponding workspace roles
-func ValidateWorkspaceDeploymentRoles(ctx context.Context, diags diag.Diagnostics, input ValidateWorkspaceDeploymentRolesInput) diag.Diagnostics {
+func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspaceDeploymentRolesInput) diag.Diagnostics {
 	// return nil if there are no deployment roles
 	if len(input.DeploymentRoles) == 0 {
 		return nil
@@ -100,16 +101,15 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, diags diag.Diagnostic
 	})
 	if err != nil {
 		tflog.Error(ctx, "failed to mutate Team roles", map[string]interface{}{"error": err})
-		diags.AddError(
+		return diag.Diagnostics{diag.NewErrorDiagnostic(
 			"Client Error",
 			fmt.Sprintf("Unable to mutate Team roles and list deployments, got error: %s", err),
-		)
-		return diags
+		),
+		}
 	}
 	_, diagnostic := clients.NormalizeAPIError(ctx, listDeployments.HTTPResponse, listDeployments.Body)
 	if diagnostic != nil {
-		diags.Append(diagnostic)
-		return diags
+		return diag.Diagnostics{diagnostic}
 	}
 
 	// get list of workspace ids from deployments
@@ -126,17 +126,17 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, diags diag.Diagnostic
 	workspaceIds = lo.Intersect(lo.Uniq(workspaceIds), lo.Uniq(deploymentWorkspaceIds))
 	if len(workspaceIds) != len(deploymentWorkspaceIds) {
 		tflog.Error(ctx, "failed to mutate Team roles", map[string]interface{}{"error": err})
-		diags.AddError(
+		return diag.Diagnostics{diag.NewErrorDiagnostic(
 			"Unable to mutate Team roles, not every deployment role has a corresponding workspace role",
 			"Please ensure that every deployment role has a corresponding workspace role",
-		)
-		return diags
+		),
+		}
 	}
-	return diags
+	return nil
 }
 
-// CheckDuplicateWorkspaceId checks if there are duplicate workspace ids in the workspace roles
-func CheckDuplicateWorkspaceId(workspaceRoles []iam.WorkspaceRole) []string {
+// HasDuplicateWorkspaceId checks if there are duplicate workspace ids in the workspace roles
+func HasDuplicateWorkspaceId(workspaceRoles []iam.WorkspaceRole) []string {
 	workspaceIdCount := make(map[string]int)
 	for _, role := range workspaceRoles {
 		workspaceIdCount[role.WorkspaceId]++
@@ -152,15 +152,15 @@ func CheckDuplicateWorkspaceId(workspaceRoles []iam.WorkspaceRole) []string {
 	return duplicates
 }
 
-// CheckDuplicateDeploymentId checks if there are duplicate deployment ids in the deployment roles
-func CheckDuplicateDeploymentId(deploymentRoles []iam.DeploymentRole) []string {
-	workspaceIdCount := make(map[string]int)
+// HasDuplicateDeploymentId checks if there are duplicate deployment ids in the deployment roles
+func HasDuplicateDeploymentId(deploymentRoles []iam.DeploymentRole) []string {
+	deploymentIdCount := make(map[string]int)
 	for _, role := range deploymentRoles {
-		workspaceIdCount[role.DeploymentId]++
+		deploymentIdCount[role.DeploymentId]++
 	}
 
 	var duplicates []string
-	for id, count := range workspaceIdCount {
+	for id, count := range deploymentIdCount {
 		if count > 1 {
 			duplicates = append(duplicates, id)
 		}

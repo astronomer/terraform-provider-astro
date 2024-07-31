@@ -55,7 +55,6 @@ resource "astro_team" "example_with_no_optional_fields" {
 - `created_by` (Attributes) Team creator (see [below for nested schema](#nestedatt--created_by))
 - `id` (String) Team ID
 - `is_idp_managed` (Boolean) Whether the Team is managed by an identity provider
-- `organization_id` (String) The ID of the Organization to which the Team belongs
 - `roles_count` (Number) Number of roles assigned to the Team
 - `updated_at` (String) Team last updated timestamp
 - `updated_by` (Attributes) Team updater (see [below for nested schema](#nestedatt--updated_by))

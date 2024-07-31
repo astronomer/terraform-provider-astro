@@ -46,7 +46,6 @@ Read-Only:
 - `description` (String) Team description
 - `is_idp_managed` (Boolean) Whether the Team is managed by an identity provider
 - `name` (String) Team name
-- `organization_id` (String) The ID of the Organization to which the Team belongs
 - `organization_role` (String) The role assigned to the Organization
 - `roles_count` (Number) Number of roles assigned to the Team
 - `updated_at` (String) Team last updated timestamp

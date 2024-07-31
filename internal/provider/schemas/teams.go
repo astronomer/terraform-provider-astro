@@ -15,7 +15,6 @@ func TeamsElementAttributeTypes() map[string]attr.Type {
 		"name":              types.StringType,
 		"description":       types.StringType,
 		"is_idp_managed":    types.BoolType,
-		"organization_id":   types.StringType,
 		"organization_role": types.StringType,
 		"deployment_roles": types.SetType{
 			ElemType: types.ObjectType{
