@@ -58,6 +58,10 @@ func RequestDeploymentRoles(ctx context.Context, deploymentRolesObjSet types.Set
 
 // ValidateRoleMatchesEntityType checks if the role is valid for the entityType
 func ValidateRoleMatchesEntityType(role string, scopeType string) bool {
+	if role == "" || scopeType == "" {
+		return false
+	}
+
 	organizationRoles := []string{string(iam.ORGANIZATIONBILLINGADMIN), string(iam.ORGANIZATIONMEMBER), string(iam.ORGANIZATIONOWNER)}
 	workspaceRoles := []string{string(iam.WORKSPACEACCESSOR), string(iam.WORKSPACEAUTHOR), string(iam.WORKSPACEMEMBER), string(iam.WORKSPACEOWNER), string(iam.WORKSPACEOPERATOR)}
 	deploymentRoles := []string{"DEPLOYMENT_ADMIN"}
