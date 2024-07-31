@@ -458,7 +458,7 @@ func (r *TeamResource) ValidateConfig(
 		}
 	}
 
-	duplicateWorkspaceIds := common.HasDuplicateWorkspaceId(workspaceRoles)
+	duplicateWorkspaceIds := common.GetDuplicateWorkspaceIds(workspaceRoles)
 	if len(duplicateWorkspaceIds) > 0 {
 		resp.Diagnostics.AddError(
 			"Invalid Configuration: Cannot have multiple roles with the same workspace id",
@@ -484,7 +484,7 @@ func (r *TeamResource) ValidateConfig(
 		}
 	}
 
-	duplicateDeploymentIds := common.HasDuplicateDeploymentId(deploymentRoles)
+	duplicateDeploymentIds := common.GetDuplicateDeploymentIds(deploymentRoles)
 	if len(duplicateDeploymentIds) > 0 {
 		resp.Diagnostics.AddError(
 			"Invalid Configuration: Cannot have multiple roles with the same deployment id",

@@ -135,8 +135,8 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 	return nil
 }
 
-// HasDuplicateWorkspaceId checks if there are duplicate workspace ids in the workspace roles
-func HasDuplicateWorkspaceId(workspaceRoles []iam.WorkspaceRole) []string {
+// GetDuplicateWorkspaceIds checks if there are duplicate workspace ids in the workspace roles
+func GetDuplicateWorkspaceIds(workspaceRoles []iam.WorkspaceRole) []string {
 	workspaceIdCount := make(map[string]int)
 	for _, role := range workspaceRoles {
 		workspaceIdCount[role.WorkspaceId]++
@@ -152,8 +152,8 @@ func HasDuplicateWorkspaceId(workspaceRoles []iam.WorkspaceRole) []string {
 	return duplicates
 }
 
-// HasDuplicateDeploymentId checks if there are duplicate deployment ids in the deployment roles
-func HasDuplicateDeploymentId(deploymentRoles []iam.DeploymentRole) []string {
+// GetDuplicateDeploymentIds checks if there are duplicate deployment ids in the deployment roles
+func GetDuplicateDeploymentIds(deploymentRoles []iam.DeploymentRole) []string {
 	deploymentIdCount := make(map[string]int)
 	for _, role := range deploymentRoles {
 		deploymentIdCount[role.DeploymentId]++
