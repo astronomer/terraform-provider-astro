@@ -22,7 +22,7 @@ import (
 func TestAcc_ResourceUserRoles(t *testing.T) {
 	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
 	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
-	userId := os.Getenv("HOSTED_USER_ID")
+	userId := os.Getenv("HOSTED_DUMMY_USER_ID")
 	tfVarName := fmt.Sprintf("astro_user_roles.%v", userId)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
