@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+
 	"github.com/astronomer/terraform-provider-astro/internal/provider/common"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
@@ -21,21 +23,22 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.Resource = &userRolesResource{}
-var _ resource.ResourceWithImportState = &userRolesResource{}
-var _ resource.ResourceWithConfigure = &userRolesResource{}
+var _ resource.Resource = &UserRolesResource{}
+var _ resource.ResourceWithImportState = &UserRolesResource{}
+var _ resource.ResourceWithConfigure = &UserRolesResource{}
 
 func NewUserRolesResource() resource.Resource {
-	return &userRolesResource{}
+	return &UserRolesResource{}
 }
 
-// userRolesResource defines the resource implementation.
-type userRolesResource struct {
+// UserRolesResource defines the resource implementation.
+type UserRolesResource struct {
 	iamClient      *iam.ClientWithResponses
+	platformClient *platform.ClientWithResponses
 	organizationId string
 }
 
-func (r *userRolesResource) Metadata(
+func (r *UserRolesResource) Metadata(
 	ctx context.Context,
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
@@ -43,7 +46,7 @@ func (r *userRolesResource) Metadata(
 	resp.TypeName = req.ProviderTypeName + "_user_roles"
 }
 
-func (r *userRolesResource) Schema(
+func (r *UserRolesResource) Schema(
 	ctx context.Context,
 	req resource.SchemaRequest,
 	resp *resource.SchemaResponse,
@@ -55,7 +58,7 @@ func (r *userRolesResource) Schema(
 	}
 }
 
-func (r *userRolesResource) Configure(
+func (r *UserRolesResource) Configure(
 	ctx context.Context,
 	req resource.ConfigureRequest,
 	resp *resource.ConfigureResponse,
@@ -72,10 +75,11 @@ func (r *userRolesResource) Configure(
 	}
 
 	r.iamClient = apiClients.IamClient
+	r.platformClient = apiClients.PlatformClient
 	r.organizationId = apiClients.OrganizationId
 }
 
-func (r *userRolesResource) MutateRoles(
+func (r *UserRolesResource) MutateRoles(
 	ctx context.Context,
 	data *models.UserRoles,
 ) diag.Diagnostics {
@@ -87,6 +91,17 @@ func (r *userRolesResource) MutateRoles(
 		return diags
 	}
 	deploymentRoles, diags := common.RequestDeploymentRoles(ctx, data.DeploymentRoles)
+	if diags.HasError() {
+		return diags
+	}
+
+	// Validate the roles
+	diags = common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
+		PlatformClient:  r.platformClient,
+		OrganizationId:  r.organizationId,
+		WorkspaceRoles:  workspaceRoles,
+		DeploymentRoles: deploymentRoles,
+	})
 	if diags.HasError() {
 		return diags
 	}
@@ -125,7 +140,7 @@ func (r *userRolesResource) MutateRoles(
 	return nil
 }
 
-func (r *userRolesResource) Create(
+func (r *UserRolesResource) Create(
 	ctx context.Context,
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
@@ -148,7 +163,7 @@ func (r *userRolesResource) Create(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *userRolesResource) Read(
+func (r *UserRolesResource) Read(
 	ctx context.Context,
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
@@ -207,7 +222,7 @@ func (r *userRolesResource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *userRolesResource) Update(
+func (r *UserRolesResource) Update(
 	ctx context.Context,
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
@@ -230,7 +245,7 @@ func (r *userRolesResource) Update(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *userRolesResource) Delete(
+func (r *UserRolesResource) Delete(
 	ctx context.Context,
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
@@ -281,10 +296,75 @@ func (r *userRolesResource) Delete(
 	tflog.Trace(ctx, fmt.Sprintf("deleted a user_roles resource for user '%v'", userId))
 }
 
-func (r *userRolesResource) ImportState(
+func (r *UserRolesResource) ImportState(
 	ctx context.Context,
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
 	resource.ImportStatePassthroughID(ctx, path.Root("user_id"), req, resp)
+}
+
+func (r *UserRolesResource) ValidateConfig(
+	ctx context.Context,
+	req resource.ValidateConfigRequest,
+	resp *resource.ValidateConfigResponse,
+) {
+	var data models.UserRoles
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Validate workspace roles
+	workspaceRoles, diags := common.RequestWorkspaceRoles(ctx, data.WorkspaceRoles)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	for _, role := range workspaceRoles {
+		if !common.ValidateRoleMatchesEntityType(string(role.Role), string(iam.WORKSPACE)) {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Role '%s' is not valid for role type '%s'", string(role.Role), string(iam.WORKSPACE)),
+				fmt.Sprintf("Please provide a valid role for the type '%s'", string(iam.WORKSPACE)),
+			)
+			return
+		}
+	}
+
+	duplicateWorkspaceIds := common.GetDuplicateWorkspaceIds(workspaceRoles)
+	if len(duplicateWorkspaceIds) > 0 {
+		resp.Diagnostics.AddError(
+			"Invalid Configuration: Cannot have multiple roles with the same workspace id",
+			fmt.Sprintf("Please provide a unique workspace id for each role. The following workspace ids are duplicated: %v", duplicateWorkspaceIds),
+		)
+		return
+	}
+
+	// Validate deployment roles
+	deploymentRoles, diags := common.RequestDeploymentRoles(ctx, data.DeploymentRoles)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	for _, role := range deploymentRoles {
+		if !common.ValidateRoleMatchesEntityType(role.Role, string(iam.DEPLOYMENT)) {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Role '%s' is not valid for role type '%s'", role.Role, string(iam.DEPLOYMENT)),
+				fmt.Sprintf("Please provide a valid role for the type '%s'", string(iam.DEPLOYMENT)),
+			)
+			return
+		}
+	}
+
+	duplicateDeploymentIds := common.GetDuplicateDeploymentIds(deploymentRoles)
+	if len(duplicateDeploymentIds) > 0 {
+		resp.Diagnostics.AddError(
+			"Invalid Configuration: Cannot have multiple roles with the same deployment id",
+			fmt.Sprintf("Please provide unique deployment id for each role. The following deployment ids are duplicated: %v", duplicateDeploymentIds),
+		)
+		return
+	}
 }

@@ -28,26 +28,51 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
+			// Test failure: check for mismatch in role and entity type
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{
 						OrganizationRole: string(iam.ORGANIZATIONOWNER),
-						WorkspaceRoles:   []common.Role{},
+						WorkspaceRoles: []common.Role{
+							{
+								Role: string(iam.ORGANIZATIONOWNER),
+								Id:   workspaceId,
+							},
+						},
 					}),
-				ExpectError: regexp.MustCompile("Attribute workspace_roles set must contain at least 1 elements"),
+				ExpectError: regexp.MustCompile(fmt.Sprintf("Role '%s' is not valid for role type '%s'", string(iam.ORGANIZATIONOWNER), string(iam.WORKSPACE))),
 			},
+			// Test failure: check for missing corresponding workspace role if deployment role is present
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{
 						OrganizationRole: string(iam.ORGANIZATIONOWNER),
-						DeploymentRoles:  []common.Role{},
+						DeploymentRoles: []common.Role{
+							{
+								Role: "DEPLOYMENT_ADMIN",
+								Id:   deploymentId,
+							},
+						},
 					}),
-				ExpectError: regexp.MustCompile("Attribute deployment_roles set must contain at least 1 elements"),
+				ExpectError: regexp.MustCompile("Unable to mutate Team roles, not every deployment role has a corresponding workspace role"),
 			},
+			// Test failure: check for multiple roles with same entity id
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					userRoles(userRolesInput{}),
-				ExpectError: regexp.MustCompile("Attribute organization_role value must be one of"),
+					userRoles(userRolesInput{
+						OrganizationRole: string(iam.ORGANIZATIONOWNER),
+						WorkspaceRoles: []common.Role{
+							{
+								Role: string(iam.WORKSPACEOWNER),
+								Id:   workspaceId,
+							},
+							{
+								Role: string(iam.WORKSPACEACCESSOR),
+								Id:   workspaceId,
+							},
+						},
+					}),
+				ExpectError: regexp.MustCompile("Invalid Configuration: Cannot have multiple roles with the same workspace id"),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
