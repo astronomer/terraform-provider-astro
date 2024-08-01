@@ -80,7 +80,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 						OrganizationRole: string(iam.ORGANIZATIONOWNER),
 					}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfVarName, "user_id", userId),
+					resource.TestCheckResourceAttr(tfVarName, "id", userId),
 					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.ORGANIZATIONOWNER)),
 					resource.TestCheckNoResourceAttr(tfVarName, "workspace_roles"),
 					resource.TestCheckNoResourceAttr(tfVarName, "deployment_roles"),
@@ -106,7 +106,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 						},
 					}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfVarName, "user_id", userId),
+					resource.TestCheckResourceAttr(tfVarName, "id", userId),
 					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.ORGANIZATIONOWNER)),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "1"),
@@ -137,7 +137,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateId:                        userId,
-				ImportStateVerifyIdentifierAttribute: "user_id",
+				ImportStateVerifyIdentifierAttribute: "id",
 			},
 		},
 	})
@@ -195,7 +195,7 @@ func testAccCheckUserRolesCorrect(t *testing.T, organizationRole string, workspa
 		ctx := context.Background()
 		resp, err := client.GetUserWithResponse(ctx, os.Getenv("HOSTED_ORGANIZATION_ID"), os.Getenv("HOSTED_DUMMY_USER_ID"))
 		if err != nil {
-			return fmt.Errorf("failed to list workspaces: %w", err)
+			return fmt.Errorf("failed to get user: %w", err)
 		}
 		if resp.JSON200 == nil {
 			status, diag := clients.NormalizeAPIError(ctx, resp.HTTPResponse, resp.Body)
