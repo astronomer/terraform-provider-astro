@@ -80,7 +80,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 						OrganizationRole: string(iam.ORGANIZATIONOWNER),
 					}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfVarName, "id", userId),
+					resource.TestCheckResourceAttr(tfVarName, "user_id", userId),
 					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.ORGANIZATIONOWNER)),
 					resource.TestCheckNoResourceAttr(tfVarName, "workspace_roles"),
 					resource.TestCheckNoResourceAttr(tfVarName, "deployment_roles"),
@@ -106,7 +106,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 						},
 					}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfVarName, "id", userId),
+					resource.TestCheckResourceAttr(tfVarName, "user_id", userId),
 					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.ORGANIZATIONOWNER)),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "1"),
@@ -137,7 +137,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateId:                        userId,
-				ImportStateVerifyIdentifierAttribute: "id",
+				ImportStateVerifyIdentifierAttribute: "user_id",
 			},
 		},
 	})
@@ -150,7 +150,7 @@ type userRolesInput struct {
 }
 
 func userRoles(input userRolesInput) string {
-	userId := os.Getenv("HOSTED_USER_ID")
+	userId := os.Getenv("HOSTED_DUMMY_USER_ID")
 	deploymentRoles := lo.Map(input.DeploymentRoles, func(role common.Role, _ int) string {
 		return fmt.Sprintf(`
 		{
