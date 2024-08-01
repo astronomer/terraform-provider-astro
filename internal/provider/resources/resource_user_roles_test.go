@@ -77,15 +77,15 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{
-						OrganizationRole: string(iam.ORGANIZATIONBILLINGADMIN),
+						OrganizationRole: string(iam.ORGANIZATIONOWNER),
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "user_id", userId),
-					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.ORGANIZATIONBILLINGADMIN)),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.ORGANIZATIONOWNER)),
 					resource.TestCheckNoResourceAttr(tfVarName, "workspace_roles"),
 					resource.TestCheckNoResourceAttr(tfVarName, "deployment_roles"),
 					// Check via API that user has correct roles
-					testAccCheckUserRolesCorrect(t, string(iam.ORGANIZATIONBILLINGADMIN), nil, nil),
+					testAccCheckUserRolesCorrect(t, string(iam.ORGANIZATIONOWNER), nil, nil),
 				),
 			},
 			{
@@ -193,7 +193,7 @@ func testAccCheckUserRolesCorrect(t *testing.T, organizationRole string, workspa
 		assert.NoError(t, err)
 
 		ctx := context.Background()
-		resp, err := client.GetUserWithResponse(ctx, os.Getenv("HOSTED_ORGANIZATION_ID"), os.Getenv("HOSTED_USER_ID"))
+		resp, err := client.GetUserWithResponse(ctx, os.Getenv("HOSTED_ORGANIZATION_ID"), os.Getenv("HOSTED_DUMMY_USER_ID"))
 		if err != nil {
 			return fmt.Errorf("failed to list workspaces: %w", err)
 		}
