@@ -23,7 +23,7 @@ func TestAcc_DataSourceClustersHybrid(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Check the data source for clusters for a hybrid organization
 			{
-				Config: astronomerprovider.ProviderConfig(t, false) + clusters(tfVarName),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HYBRID) + clusters(tfVarName),
 				Check: resource.ComposeTestCheckFunc(
 					checkClusters(tfVarName),
 				),

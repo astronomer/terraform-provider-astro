@@ -20,7 +20,7 @@ func TestAcc_DataSourceTeams(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + teams(tfVarName),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + teams(tfVarName),
 				Check: resource.ComposeTestCheckFunc(
 					checkTeams(tfVarName),
 				),

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/astronomer/terraform-provider-astro/internal/provider/common"
+
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
@@ -80,11 +82,11 @@ func (r *userRolesResource) MutateRoles(
 	userId := data.UserId.ValueString()
 
 	// Then convert the models to the request types for the API
-	workspaceRoles, diags := RequestWorkspaceRoles(ctx, data.WorkspaceRoles)
+	workspaceRoles, diags := common.RequestWorkspaceRoles(ctx, data.WorkspaceRoles)
 	if diags.HasError() {
 		return diags
 	}
-	deploymentRoles, diags := RequestDeploymentRoles(ctx, data.DeploymentRoles)
+	deploymentRoles, diags := common.RequestDeploymentRoles(ctx, data.DeploymentRoles)
 	if diags.HasError() {
 		return diags
 	}

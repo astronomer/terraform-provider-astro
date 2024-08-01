@@ -19,7 +19,7 @@ type Teams struct {
 func (data *Teams) ReadFromResponse(ctx context.Context, teams []iam.Team) diag.Diagnostics {
 	values := make([]attr.Value, len(teams))
 	for i, team := range teams {
-		var singleTeamData Team
+		var singleTeamData TeamDataSource
 		diags := singleTeamData.ReadFromResponse(ctx, &team)
 		if diags.HasError() {
 			return diags

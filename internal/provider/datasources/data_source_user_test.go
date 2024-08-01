@@ -21,7 +21,7 @@ func TestAcc_DataSourceUser(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + user(userId, userName),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + user(userId, userName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "username"),

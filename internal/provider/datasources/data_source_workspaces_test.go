@@ -22,7 +22,7 @@ func TestAcc_DataSourceWorkspaces(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + workspaces(workspaceName, ""),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + workspaces(workspaceName, ""),
 				Check: resource.ComposeTestCheckFunc(
 					// These checks are for the workspace data source (singular)
 					resource.TestCheckResourceAttrSet("data.astro_workspace.test_data_workspace", "id"),
@@ -41,23 +41,23 @@ func TestAcc_DataSourceWorkspaces(t *testing.T) {
 			},
 			// The following tests are for filtering the workspaces data source
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + workspaces(workspaceName, `workspace_ids = [astro_workspace.test_workspace1.id]`),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + workspaces(workspaceName, `workspace_ids = [astro_workspace.test_workspace1.id]`),
 				Check: resource.ComposeTestCheckFunc(
 					checkWorkspaces(workspaceName + "-1"),
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + workspaces(workspaceName, fmt.Sprintf(`names = ["%v-1"]`, workspaceName)),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + workspaces(workspaceName, fmt.Sprintf(`names = ["%v-1"]`, workspaceName)),
 				Check: resource.ComposeTestCheckFunc(
 					checkWorkspaces(workspaceName + "-1"),
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + workspaces(workspaceName, fmt.Sprintf(`names = ["%v"]`, cuid.New())),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + workspaces(workspaceName, fmt.Sprintf(`names = ["%v"]`, cuid.New())),
 				Check:  checkWorkspacesAreEmpty(),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + workspaces(workspaceName, fmt.Sprintf(`workspace_ids = ["%v"]`, cuid.New())),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + workspaces(workspaceName, fmt.Sprintf(`workspace_ids = ["%v"]`, cuid.New())),
 				Check:  checkWorkspacesAreEmpty(),
 			},
 		},

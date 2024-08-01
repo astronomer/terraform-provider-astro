@@ -20,17 +20,17 @@ func TestAcc_DataSourceClusterOptions(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      astronomerprovider.ProviderConfig(t, true) + clusterOptions("invalid", "AWS"),
+				Config:      astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + clusterOptions("invalid", "AWS"),
 				ExpectError: regexp.MustCompile(`type value must be one of`),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + clusterOptions("HYBRID", "AWS"),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + clusterOptions("HYBRID", "AWS"),
 				Check: resource.ComposeTestCheckFunc(
 					checkClusterOptions("AWS"),
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + clusterOptionsWithoutProviderFilter("HYBRID"),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + clusterOptionsWithoutProviderFilter("HYBRID"),
 				Check: resource.ComposeTestCheckFunc(
 					checkClusterOptionsWithoutProviderFilter(),
 				),

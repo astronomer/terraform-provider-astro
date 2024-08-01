@@ -23,19 +23,19 @@ func TestAcc_DataSourceUsers(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + users(tfVarName),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + users(tfVarName),
 				Check: resource.ComposeTestCheckFunc(
 					checkUsers(tfVarName, false, false),
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + usersFilterWorkspaceId(tfVarName, tfWorkspaceId),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + usersFilterWorkspaceId(tfVarName, tfWorkspaceId),
 				Check: resource.ComposeTestCheckFunc(
 					checkUsers(tfVarName, true, false),
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + usersFilterDeploymentId(tfVarName, tfDeploymentId),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + usersFilterDeploymentId(tfVarName, tfDeploymentId),
 				Check: resource.ComposeTestCheckFunc(
 					checkUsers(tfVarName, false, true),
 				),

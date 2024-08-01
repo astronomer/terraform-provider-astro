@@ -51,7 +51,7 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) +
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
 					cluster(clusterInput{
 						Name:                               awsClusterName,
@@ -89,7 +89,7 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 			},
 			// Just update cluster and remove workspace restrictions
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) +
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
 					cluster(clusterInput{
 						Name:          awsClusterName,
@@ -127,7 +127,7 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 			// Change properties of cluster and deployment and check they have been updated in terraform state
 			// Add back workspace restrictions
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) +
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
 					cluster(clusterInput{
 						Name:                               awsClusterName,
@@ -165,7 +165,7 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 			},
 			// Remove deployment
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) +
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
 					cluster(clusterInput{
 						Name:                               awsClusterName,
@@ -223,7 +223,7 @@ func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) +
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
 					cluster(clusterInput{
 						Name:                               azureClusterName,
@@ -294,7 +294,7 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) +
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
 					cluster(clusterInput{
 						Name:                               gcpClusterName,
@@ -360,7 +360,7 @@ func TestAcc_ResourceClusterRemovedOutsideOfTerraform(t *testing.T) {
 		CheckDestroy:             testAccCheckClusterExistence(t, clusterName, true, false),
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + clusterWithVariableName(depInput),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + clusterWithVariableName(depInput),
 				ConfigVariables: map[string]config.Variable{
 					"name": config.StringVariable(clusterName),
 				},
@@ -375,7 +375,7 @@ func TestAcc_ResourceClusterRemovedOutsideOfTerraform(t *testing.T) {
 			},
 			{
 				PreConfig: func() { deleteClusterOutsideOfTerraform(t, clusterName) },
-				Config:    astronomerprovider.ProviderConfig(t, true) + clusterWithVariableName(depInput),
+				Config:    astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + clusterWithVariableName(depInput),
 				ConfigVariables: map[string]config.Variable{
 					"name": config.StringVariable(clusterName),
 				},

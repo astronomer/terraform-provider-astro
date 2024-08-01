@@ -17,7 +17,7 @@ func TestAcc_DataSourceOrganization(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + organization(),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + organization(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.astro_organization.t", "id", os.Getenv("HOSTED_ORGANIZATION_ID")),
 					resource.TestCheckResourceAttrSet("data.astro_organization.t", "name"),
