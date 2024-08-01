@@ -11,7 +11,6 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
-	"github.com/astronomer/terraform-provider-astro/internal/provider/common"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -33,10 +32,10 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{
 						OrganizationRole: string(iam.ORGANIZATIONOWNER),
-						WorkspaceRoles: []common.Role{
+						WorkspaceRoles: []utils.Role{
 							{
-								Role: string(iam.ORGANIZATIONOWNER),
-								Id:   workspaceId,
+								Role:     string(iam.ORGANIZATIONOWNER),
+								EntityId: workspaceId,
 							},
 						},
 					}),
@@ -47,10 +46,10 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{
 						OrganizationRole: string(iam.ORGANIZATIONOWNER),
-						DeploymentRoles: []common.Role{
+						DeploymentRoles: []utils.Role{
 							{
-								Role: "DEPLOYMENT_ADMIN",
-								Id:   deploymentId,
+								Role:     "DEPLOYMENT_ADMIN",
+								EntityId: deploymentId,
 							},
 						},
 					}),
@@ -61,14 +60,14 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{
 						OrganizationRole: string(iam.ORGANIZATIONOWNER),
-						WorkspaceRoles: []common.Role{
+						WorkspaceRoles: []utils.Role{
 							{
-								Role: string(iam.WORKSPACEOWNER),
-								Id:   workspaceId,
+								Role:     string(iam.WORKSPACEOWNER),
+								EntityId: workspaceId,
 							},
 							{
-								Role: string(iam.WORKSPACEACCESSOR),
-								Id:   workspaceId,
+								Role:     string(iam.WORKSPACEACCESSOR),
+								EntityId: workspaceId,
 							},
 						},
 					}),
@@ -92,16 +91,16 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{
 						OrganizationRole: string(iam.ORGANIZATIONOWNER),
-						WorkspaceRoles: []common.Role{
+						WorkspaceRoles: []utils.Role{
 							{
-								Role: string(iam.WORKSPACEOWNER),
-								Id:   workspaceId,
+								Role:     string(iam.WORKSPACEOWNER),
+								EntityId: workspaceId,
 							},
 						},
-						DeploymentRoles: []common.Role{
+						DeploymentRoles: []utils.Role{
 							{
-								Role: "DEPLOYMENT_ADMIN",
-								Id:   deploymentId,
+								Role:     "DEPLOYMENT_ADMIN",
+								EntityId: deploymentId,
 							},
 						},
 					}),
@@ -116,16 +115,16 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 					// Check via API that user has correct roles
 					testAccCheckUserRolesCorrect(t,
 						string(iam.ORGANIZATIONOWNER),
-						[]common.Role{
+						[]utils.Role{
 							{
-								Role: string(iam.WORKSPACEOWNER),
-								Id:   workspaceId,
+								Role:     string(iam.WORKSPACEOWNER),
+								EntityId: workspaceId,
 							},
 						},
-						[]common.Role{
+						[]utils.Role{
 							{
-								Role: "DEPLOYMENT_ADMIN",
-								Id:   deploymentId,
+								Role:     "DEPLOYMENT_ADMIN",
+								EntityId: deploymentId,
 							},
 						},
 					),
@@ -145,26 +144,26 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 
 type userRolesInput struct {
 	OrganizationRole string
-	DeploymentRoles  []common.Role
-	WorkspaceRoles   []common.Role
+	DeploymentRoles  []utils.Role
+	WorkspaceRoles   []utils.Role
 }
 
 func userRoles(input userRolesInput) string {
 	userId := os.Getenv("HOSTED_DUMMY_USER_ID")
-	deploymentRoles := lo.Map(input.DeploymentRoles, func(role common.Role, _ int) string {
+	deploymentRoles := lo.Map(input.DeploymentRoles, func(role utils.Role, _ int) string {
 		return fmt.Sprintf(`
 		{
 			deployment_id = "%v"
 			role = "%v"
-		}`, role.Id, role.Role)
+		}`, role.EntityId, role.Role)
 	})
 
-	workspaceRoles := lo.Map(input.WorkspaceRoles, func(role common.Role, _ int) string {
+	workspaceRoles := lo.Map(input.WorkspaceRoles, func(role utils.Role, _ int) string {
 		return fmt.Sprintf(`
 		{
 			workspace_id = "%v"
 			role = "%v"
-		}`, role.Id, role.Role)
+		}`, role.EntityId, role.Role)
 	})
 
 	var deploymentRolesStr string
@@ -186,7 +185,7 @@ resource "astro_user_roles" "%v" {
 `, userId, userId, input.OrganizationRole, workspaceRolesStr, deploymentRolesStr)
 }
 
-func testAccCheckUserRolesCorrect(t *testing.T, organizationRole string, workspaceRoles, deploymentRoles []common.Role) func(state *terraform.State) error {
+func testAccCheckUserRolesCorrect(t *testing.T, organizationRole string, workspaceRoles, deploymentRoles []utils.Role) func(state *terraform.State) error {
 	t.Helper()
 	return func(state *terraform.State) error {
 		client, err := utils.GetTestHostedIamClient()
@@ -208,13 +207,13 @@ func testAccCheckUserRolesCorrect(t *testing.T, organizationRole string, workspa
 		// If it is nil then that is an error
 		// If the length does not match the expected value then that is an error
 		if len(workspaceRoles) != 0 && (resp.JSON200.WorkspaceRoles == nil) {
-			missingRoles := common.ContainsWorkspaceRoles(*resp.JSON200.WorkspaceRoles, workspaceRoles)
+			missingRoles := utils.ContainsWorkspaceRoles(*resp.JSON200.WorkspaceRoles, workspaceRoles)
 			if len(missingRoles) > 0 {
 				return fmt.Errorf("workspace roles does not contain expected role: expected: %v, missing: %v, roles: %+v", workspaceRoles, missingRoles, *resp.JSON200.WorkspaceRoles)
 			}
 		}
 		if len(deploymentRoles) != 0 && (resp.JSON200.DeploymentRoles == nil) {
-			missingRoles := common.ContainsDeploymentRoles(*resp.JSON200.DeploymentRoles, deploymentRoles)
+			missingRoles := utils.ContainsDeploymentRoles(*resp.JSON200.DeploymentRoles, deploymentRoles)
 			if len(missingRoles) > 0 {
 				return fmt.Errorf("deployment roles does not match expected value: expected: %v, missing: %v, roles: %+v", deploymentRoles, missingRoles, *resp.JSON200.DeploymentRoles)
 			}
