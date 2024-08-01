@@ -28,6 +28,8 @@ func TestAccPreCheck(t *testing.T) {
 		"HOSTED_ORGANIZATION_ID",
 		"HYBRID_ORGANIZATION_API_TOKEN",
 		"HYBRID_ORGANIZATION_ID",
+		"HOSTED_SCIM_ORGANIZATION_API_TOKEN",
+		"HOSTED_SCIM_ORGANIZATION_ID",
 		"HYBRID_DRY_RUN_CLUSTER_ID",
 		"ASTRO_API_HOST",
 		"HYBRID_CLUSTER_ID",
@@ -47,14 +49,29 @@ func TestAccPreCheck(t *testing.T) {
 	}
 }
 
-func ProviderConfig(t *testing.T, isHosted bool) string {
+type TestOrganizationType string
+
+// Define values for TestOrganizationType
+const (
+	HOSTED     TestOrganizationType = "HOSTED"
+	HYBRID     TestOrganizationType = "HYBRID"
+	HOSTEDSCIM TestOrganizationType = "HOSTED_SCIM"
+)
+
+func ProviderConfig(t *testing.T, testOrganizationType TestOrganizationType) string {
 	var orgId, token string
-	if isHosted {
+	switch testOrganizationType {
+	case HOSTED:
 		orgId = os.Getenv("HOSTED_ORGANIZATION_ID")
 		token = os.Getenv("HOSTED_ORGANIZATION_API_TOKEN")
-	} else {
+	case HOSTEDSCIM:
+		orgId = os.Getenv("HOSTED_SCIM_ORGANIZATION_ID")
+		token = os.Getenv("HOSTED_SCIM_ORGANIZATION_API_TOKEN")
+	case HYBRID:
 		orgId = os.Getenv("HYBRID_ORGANIZATION_ID")
 		token = os.Getenv("HYBRID_ORGANIZATION_API_TOKEN")
+	default:
+		t.Fatalf("Invalid test organization type: %v", testOrganizationType)
 	}
 
 	return fmt.Sprintf(`

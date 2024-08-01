@@ -23,21 +23,21 @@ data "astro_team" "example" {
 
 ### Required
 
-- `id` (String) Team identifier
+- `id` (String) Team ID
 
 ### Read-Only
 
 - `created_at` (String) Team creation timestamp
 - `created_by` (Attributes) Team creator (see [below for nested schema](#nestedatt--created_by))
-- `deployment_roles` (Attributes Set) The roles assigned to the deployments (see [below for nested schema](#nestedatt--deployment_roles))
+- `deployment_roles` (Attributes Set) The roles assigned to the Deployments (see [below for nested schema](#nestedatt--deployment_roles))
 - `description` (String) Team description
-- `is_idp_managed` (Boolean) Whether the team is managed by an identity provider
+- `is_idp_managed` (Boolean) Whether the Team is managed by an identity provider
 - `name` (String) Team name
-- `organization_role` (String) The role assigned to the organization
-- `roles_count` (Number) Number of roles assigned to the team
+- `organization_role` (String) The role assigned to the Organization
+- `roles_count` (Number) Number of roles assigned to the Team
 - `updated_at` (String) Team last updated timestamp
 - `updated_by` (Attributes) Team updater (see [below for nested schema](#nestedatt--updated_by))
-- `workspace_roles` (Attributes Set) The roles assigned to the workspaces (see [below for nested schema](#nestedatt--workspace_roles))
+- `workspace_roles` (Attributes Set) The roles assigned to the Workspaces (see [below for nested schema](#nestedatt--workspace_roles))
 
 <a id="nestedatt--created_by"></a>
 ### Nested Schema for `created_by`

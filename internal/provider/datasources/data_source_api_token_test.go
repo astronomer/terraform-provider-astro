@@ -21,7 +21,7 @@ func TestAcc_DataSource_ApiToken(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiToken(apiTokenId, tfVarName),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenId, tfVarName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "name"),

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/astronomer/terraform-provider-astro/internal/provider/common"
+
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
@@ -430,7 +432,7 @@ func (r *ApiTokenResource) ValidateConfig(
 	entityType := data.Type.ValueString()
 
 	// Check if the role is valid for the token entity type
-	if !utils.ValidateRoleMatchesEntityType(tokenRole.Role, entityType) {
+	if !common.ValidateRoleMatchesEntityType(tokenRole.Role, entityType) {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Role '%s' is not valid for token type '%s'", tokenRole.Role, entityType),
 			fmt.Sprintf("Please provide a valid role for the entity type '%s'", entityType),
@@ -468,7 +470,7 @@ func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []iam.
 			}
 		}
 
-		if !utils.ValidateRoleMatchesEntityType(role.Role, string(role.EntityType)) {
+		if !common.ValidateRoleMatchesEntityType(role.Role, string(role.EntityType)) {
 			return diag.Diagnostics{
 				diag.NewErrorDiagnostic(
 					fmt.Sprintf("Role '%s' is not valid for entity type '%s'", role.Role, role.EntityType),
@@ -477,7 +479,7 @@ func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []iam.
 			}
 		}
 
-		if utils.ValidateRoleMatchesEntityType(role.Role, entityType) {
+		if common.ValidateRoleMatchesEntityType(role.Role, entityType) {
 			numRolesMatchingEntityType++
 		}
 	}

@@ -5,6 +5,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/astronomer/terraform-provider-astro/internal/provider/common"
+
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
@@ -32,7 +34,7 @@ func TestAcc_DataSourceApiTokens(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiTokens(tfVarName),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiTokens(tfVarName),
 				Check: resource.ComposeTestCheckFunc(
 					checkApiTokens(tfVarName, checkApiTokensInput{
 						workspaceId:    "",
@@ -42,7 +44,7 @@ func TestAcc_DataSourceApiTokens(t *testing.T) {
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiTokensFilterWorkspaceId(tfVarName, tfWorkspaceId),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiTokensFilterWorkspaceId(tfVarName, tfWorkspaceId),
 				Check: resource.ComposeTestCheckFunc(
 					checkApiTokens(tfVarName, checkApiTokensInput{
 						workspaceId:    tfWorkspaceId,
@@ -52,7 +54,7 @@ func TestAcc_DataSourceApiTokens(t *testing.T) {
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiTokensFilterDeploymentId(tfVarName, tfDeploymentId),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiTokensFilterDeploymentId(tfVarName, tfDeploymentId),
 				Check: resource.ComposeTestCheckFunc(
 					checkApiTokens(tfVarName, checkApiTokensInput{
 						workspaceId:    "",
@@ -62,7 +64,7 @@ func TestAcc_DataSourceApiTokens(t *testing.T) {
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + apiTokensFilterOrgOnly(tfVarName),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiTokensFilterOrgOnly(tfVarName),
 				Check: resource.ComposeTestCheckFunc(
 					checkApiTokens(tfVarName, checkApiTokensInput{
 						workspaceId:    "",
@@ -162,7 +164,7 @@ func checkApiTokens(tfVarName string, input checkApiTokensInput) resource.TestCh
 			if entityId != input.workspaceId {
 				return fmt.Errorf("expected 'entity_id' to be set to workspace_id")
 			}
-			if utils.ValidateRoleMatchesEntityType(role, "workspace") {
+			if !common.ValidateRoleMatchesEntityType(role, "workspace") {
 				return fmt.Errorf("expected 'role' to be set as a workspace role")
 			}
 		}
@@ -183,7 +185,7 @@ func checkApiTokens(tfVarName string, input checkApiTokensInput) resource.TestCh
 			if entityId != input.organizationId {
 				return fmt.Errorf("expected 'entity_id' to be set to organization_id")
 			}
-			if utils.ValidateRoleMatchesEntityType(role, "organization") {
+			if !common.ValidateRoleMatchesEntityType(role, "organization") {
 				return fmt.Errorf("expected 'role' to be set as an organization role")
 			}
 		}

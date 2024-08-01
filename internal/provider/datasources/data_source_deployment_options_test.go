@@ -19,49 +19,49 @@ func TestAcc_DataSourceDeploymentOptionsHosted(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + deploymentOptions(resourceName, ""),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + deploymentOptions(resourceName, ""),
 				Check: resource.ComposeTestCheckFunc(
 					CheckDeploymentOptions(resourceVar)...,
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + deploymentOptions(resourceName, `deployment_type = "STANDARD"`),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + deploymentOptions(resourceName, `deployment_type = "STANDARD"`),
 				Check: resource.ComposeTestCheckFunc(
 					CheckDeploymentOptions(resourceVar)...,
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + deploymentOptions(resourceName, `deployment_type = "DEDICATED"`),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + deploymentOptions(resourceName, `deployment_type = "DEDICATED"`),
 				Check: resource.ComposeTestCheckFunc(
 					CheckDeploymentOptions(resourceVar)...,
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + deploymentOptions(resourceName, `executor = "CELERY"`),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + deploymentOptions(resourceName, `executor = "CELERY"`),
 				Check: resource.ComposeTestCheckFunc(
 					CheckDeploymentOptions(resourceVar)...,
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + deploymentOptions(resourceName, `executor = "KUBERNETES"`),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + deploymentOptions(resourceName, `executor = "KUBERNETES"`),
 				Check: resource.ComposeTestCheckFunc(
 					CheckDeploymentOptions(resourceVar)...,
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + deploymentOptions(resourceName, `cloud_provider = "AWS"`),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + deploymentOptions(resourceName, `cloud_provider = "AWS"`),
 				Check: resource.ComposeTestCheckFunc(
 					CheckDeploymentOptions(resourceVar)...,
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + deploymentOptions(resourceName, `cloud_provider = "GCP"`),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + deploymentOptions(resourceName, `cloud_provider = "GCP"`),
 				Check: resource.ComposeTestCheckFunc(
 					CheckDeploymentOptions(resourceVar)...,
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, true) + deploymentOptions(resourceName, `cloud_provider = "AZURE"`),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + deploymentOptions(resourceName, `cloud_provider = "AZURE"`),
 				Check: resource.ComposeTestCheckFunc(
 					CheckDeploymentOptions(resourceVar)...,
 				),
@@ -80,43 +80,43 @@ func TestAcc_DataSourceDeploymentOptionsHybrid(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: astronomerprovider.ProviderConfig(t, false) + deploymentOptions(resourceName, ""),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HYBRID) + deploymentOptions(resourceName, ""),
 				Check: resource.ComposeTestCheckFunc(
 					CheckDeploymentOptions(resourceVar)...,
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, false) + deploymentOptions(resourceName, `deployment_type = "HYBRID"`),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HYBRID) + deploymentOptions(resourceName, `deployment_type = "HYBRID"`),
 				Check: resource.ComposeTestCheckFunc(
 					CheckDeploymentOptions(resourceVar)...,
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, false) + deploymentOptions(resourceName, `executor = "CELERY"`),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HYBRID) + deploymentOptions(resourceName, `executor = "CELERY"`),
 				Check: resource.ComposeTestCheckFunc(
 					CheckDeploymentOptions(resourceVar)...,
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, false) + deploymentOptions(resourceName, `executor = "KUBERNETES"`),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HYBRID) + deploymentOptions(resourceName, `executor = "KUBERNETES"`),
 				Check: resource.ComposeTestCheckFunc(
 					CheckDeploymentOptions(resourceVar)...,
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, false) + deploymentOptions(resourceName, `cloud_provider = "AWS"`),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HYBRID) + deploymentOptions(resourceName, `cloud_provider = "AWS"`),
 				Check: resource.ComposeTestCheckFunc(
 					CheckDeploymentOptions(resourceVar)...,
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, false) + deploymentOptions(resourceName, `cloud_provider = "GCP"`),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HYBRID) + deploymentOptions(resourceName, `cloud_provider = "GCP"`),
 				Check: resource.ComposeTestCheckFunc(
 					CheckDeploymentOptions(resourceVar)...,
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, false) + deploymentOptions(resourceName, `cloud_provider = "AZURE"`),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HYBRID) + deploymentOptions(resourceName, `cloud_provider = "AZURE"`),
 				Check: resource.ComposeTestCheckFunc(
 					CheckDeploymentOptions(resourceVar)...,
 				),
