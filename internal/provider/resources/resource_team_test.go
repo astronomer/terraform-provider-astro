@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/astronomer/terraform-provider-astro/internal/provider/common"
+
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
@@ -43,13 +45,13 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
-					DeploymentRoles: []role{
+					DeploymentRoles: []common.Role{
 						{
 							Role: "DEPLOYMENT_ADMIN",
 							Id:   deploymentId,
 						},
 					},
-					WorkspaceRoles: []role{
+					WorkspaceRoles: []common.Role{
 						{
 							Role: string(iam.WORKSPACEOWNER),
 							Id:   workspaceId,
@@ -65,7 +67,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
-					WorkspaceRoles: []role{
+					WorkspaceRoles: []common.Role{
 						{
 							Role: string(iam.ORGANIZATIONOWNER),
 							Id:   workspaceId,
@@ -81,7 +83,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
-					DeploymentRoles: []role{
+					DeploymentRoles: []common.Role{
 						{
 							Role: "DEPLOYMENT_ADMIN",
 							Id:   deploymentId,
@@ -97,7 +99,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
-					WorkspaceRoles: []role{
+					WorkspaceRoles: []common.Role{
 						{
 							Role: string(iam.WORKSPACEOWNER),
 							Id:   workspaceId,
@@ -117,13 +119,13 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
-					DeploymentRoles: []role{
+					DeploymentRoles: []common.Role{
 						{
 							Role: "DEPLOYMENT_ADMIN",
 							Id:   deploymentId,
 						},
 					},
-					WorkspaceRoles: []role{
+					WorkspaceRoles: []common.Role{
 						{
 							Role: string(iam.WORKSPACEOWNER),
 							Id:   workspaceId,
@@ -160,7 +162,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      "new description",
 					MemberIds:        []string{},
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
-					WorkspaceRoles: []role{
+					WorkspaceRoles: []common.Role{
 						{
 							Role: string(iam.WORKSPACEACCESSOR),
 							Id:   workspaceId,
@@ -188,18 +190,13 @@ func TestAcc_ResourceTeam(t *testing.T) {
 	})
 }
 
-type role struct {
-	Role string
-	Id   string
-}
-
 type teamInput struct {
 	Name             string
 	Description      string
 	MemberIds        []string
 	OrganizationRole string
-	DeploymentRoles  []role
-	WorkspaceRoles   []role
+	DeploymentRoles  []common.Role
+	WorkspaceRoles   []common.Role
 }
 
 func team(input teamInput) string {
@@ -211,7 +208,7 @@ func team(input teamInput) string {
 		memberIds = fmt.Sprintf(`member_ids = [%v]`, strings.Join(formattedIds, ", "))
 	}
 
-	deploymentRoles := lo.Map(input.DeploymentRoles, func(role role, _ int) string {
+	deploymentRoles := lo.Map(input.DeploymentRoles, func(role common.Role, _ int) string {
 		return fmt.Sprintf(`
 		{
 			deployment_id = "%v"
@@ -219,7 +216,7 @@ func team(input teamInput) string {
 		}`, role.Id, role.Role)
 	})
 
-	workspaceRoles := lo.Map(input.WorkspaceRoles, func(role role, _ int) string {
+	workspaceRoles := lo.Map(input.WorkspaceRoles, func(role common.Role, _ int) string {
 		return fmt.Sprintf(`
 		{
 			workspace_id = "%v"

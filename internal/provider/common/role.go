@@ -16,6 +16,11 @@ import (
 	"github.com/samber/lo"
 )
 
+type Role struct {
+	Role string
+	Id   string
+}
+
 // RequestWorkspaceRoles converts a Terraform set to a list of iam.WorkspaceRole to be used in create and update requests
 func RequestWorkspaceRoles(ctx context.Context, workspaceRolesObjSet types.Set) ([]iam.WorkspaceRole, diag.Diagnostics) {
 	if len(workspaceRolesObjSet.Elements()) == 0 {
@@ -171,4 +176,46 @@ func GetDuplicateDeploymentIds(deploymentRoles []iam.DeploymentRole) []string {
 	}
 
 	return duplicates
+}
+
+// ContainsWorkspaceRole checks if a workspace role is in the list of workspace roles
+func ContainsWorkspaceRole(workspaceRoles []iam.WorkspaceRole, role Role) bool {
+	for _, r := range workspaceRoles {
+		if r.WorkspaceId == role.Id && string(r.Role) == role.Role {
+			return true
+		}
+	}
+	return false
+}
+
+// ContainsWorkspaceRoles checks if a list of workspace roles contains a list of roles
+func ContainsWorkspaceRoles(userRoles []iam.WorkspaceRole, roles []Role) []Role {
+	missingRoles := []Role{}
+	for _, role := range roles {
+		if !ContainsWorkspaceRole(userRoles, role) {
+			missingRoles = append(missingRoles, role)
+		}
+	}
+	return missingRoles
+}
+
+// ContainsDeploymentRole checks if a deployment role is in the list of deployment roles
+func ContainsDeploymentRole(roles []iam.DeploymentRole, role Role) bool {
+	for _, r := range roles {
+		if r.DeploymentId == role.Id && r.Role == role.Role {
+			return true
+		}
+	}
+	return false
+}
+
+// ContainsDeploymentRoles checks if a list of deployment roles contains a list of roles
+func ContainsDeploymentRoles(userRoles []iam.DeploymentRole, roles []Role) []Role {
+	missingRoles := []Role{}
+	for _, role := range roles {
+		if !ContainsDeploymentRole(userRoles, role) {
+			missingRoles = append(missingRoles, role)
+		}
+	}
+	return missingRoles
 }
