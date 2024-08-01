@@ -9,7 +9,7 @@ resource "astro_team_roles" "workspace_roles" {
   workspace_roles = [
     {
       workspace_id = "clwp86ly5000401ndaga21g85"
-      role         = "WORKSPACE_ADMIN"
+      role         = "WORKSPACE_ACCESSOR"
     },
     {
       workspace_id = "clwp86ly5000401ndaga21g82"

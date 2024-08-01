@@ -105,3 +105,50 @@ func GetDataSourcesLength(state *terraform.State, tfVarName, dataSourceName stri
 
 	return instanceState, numAttribute, nil
 }
+
+type Role struct {
+	Role     string
+	EntityId string
+}
+
+// ContainsWorkspaceRole checks if a workspace role is in the list of workspace roles
+func ContainsWorkspaceRole(workspaceRoles []iam.WorkspaceRole, role Role) bool {
+	for _, r := range workspaceRoles {
+		if r.WorkspaceId == role.EntityId && string(r.Role) == role.Role {
+			return true
+		}
+	}
+	return false
+}
+
+// ContainsWorkspaceRoles checks if a list of workspace roles contains a list of roles
+func ContainsWorkspaceRoles(userRoles []iam.WorkspaceRole, roles []Role) []Role {
+	var missingRoles []Role
+	for _, role := range roles {
+		if !ContainsWorkspaceRole(userRoles, role) {
+			missingRoles = append(missingRoles, role)
+		}
+	}
+	return missingRoles
+}
+
+// ContainsDeploymentRole checks if a deployment role is in the list of deployment roles
+func ContainsDeploymentRole(roles []iam.DeploymentRole, role Role) bool {
+	for _, r := range roles {
+		if r.DeploymentId == role.EntityId && r.Role == role.Role {
+			return true
+		}
+	}
+	return false
+}
+
+// ContainsDeploymentRoles checks if a list of deployment roles contains a list of roles
+func ContainsDeploymentRoles(userRoles []iam.DeploymentRole, roles []Role) []Role {
+	var missingRoles []Role
+	for _, role := range roles {
+		if !ContainsDeploymentRole(userRoles, role) {
+			missingRoles = append(missingRoles, role)
+		}
+	}
+	return missingRoles
+}

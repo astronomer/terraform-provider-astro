@@ -43,16 +43,16 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
-					DeploymentRoles: []role{
+					DeploymentRoles: []utils.Role{
 						{
-							Role: "DEPLOYMENT_ADMIN",
-							Id:   deploymentId,
+							Role:     "DEPLOYMENT_ADMIN",
+							EntityId: deploymentId,
 						},
 					},
-					WorkspaceRoles: []role{
+					WorkspaceRoles: []utils.Role{
 						{
-							Role: string(iam.WORKSPACEOWNER),
-							Id:   workspaceId,
+							Role:     string(iam.WORKSPACEOWNER),
+							EntityId: workspaceId,
 						},
 					},
 				}),
@@ -65,10 +65,10 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
-					WorkspaceRoles: []role{
+					WorkspaceRoles: []utils.Role{
 						{
-							Role: string(iam.ORGANIZATIONOWNER),
-							Id:   workspaceId,
+							Role:     string(iam.ORGANIZATIONOWNER),
+							EntityId: workspaceId,
 						},
 					},
 				}),
@@ -81,10 +81,10 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
-					DeploymentRoles: []role{
+					DeploymentRoles: []utils.Role{
 						{
-							Role: "DEPLOYMENT_ADMIN",
-							Id:   deploymentId,
+							Role:     "DEPLOYMENT_ADMIN",
+							EntityId: deploymentId,
 						},
 					},
 				}),
@@ -97,14 +97,14 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
-					WorkspaceRoles: []role{
+					WorkspaceRoles: []utils.Role{
 						{
-							Role: string(iam.WORKSPACEOWNER),
-							Id:   workspaceId,
+							Role:     string(iam.WORKSPACEOWNER),
+							EntityId: workspaceId,
 						},
 						{
-							Role: string(iam.WORKSPACEACCESSOR),
-							Id:   workspaceId,
+							Role:     string(iam.WORKSPACEACCESSOR),
+							EntityId: workspaceId,
 						},
 					},
 				}),
@@ -117,16 +117,16 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
-					DeploymentRoles: []role{
+					DeploymentRoles: []utils.Role{
 						{
-							Role: "DEPLOYMENT_ADMIN",
-							Id:   deploymentId,
+							Role:     "DEPLOYMENT_ADMIN",
+							EntityId: deploymentId,
 						},
 					},
-					WorkspaceRoles: []role{
+					WorkspaceRoles: []utils.Role{
 						{
-							Role: string(iam.WORKSPACEOWNER),
-							Id:   workspaceId,
+							Role:     string(iam.WORKSPACEOWNER),
+							EntityId: workspaceId,
 						},
 					},
 				}),
@@ -160,10 +160,10 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      "new description",
 					MemberIds:        []string{},
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
-					WorkspaceRoles: []role{
+					WorkspaceRoles: []utils.Role{
 						{
-							Role: string(iam.WORKSPACEACCESSOR),
-							Id:   workspaceId,
+							Role:     string(iam.WORKSPACEACCESSOR),
+							EntityId: workspaceId,
 						},
 					},
 				}),
@@ -188,18 +188,13 @@ func TestAcc_ResourceTeam(t *testing.T) {
 	})
 }
 
-type role struct {
-	Role string
-	Id   string
-}
-
 type teamInput struct {
 	Name             string
 	Description      string
 	MemberIds        []string
 	OrganizationRole string
-	DeploymentRoles  []role
-	WorkspaceRoles   []role
+	DeploymentRoles  []utils.Role
+	WorkspaceRoles   []utils.Role
 }
 
 func team(input teamInput) string {
@@ -211,20 +206,20 @@ func team(input teamInput) string {
 		memberIds = fmt.Sprintf(`member_ids = [%v]`, strings.Join(formattedIds, ", "))
 	}
 
-	deploymentRoles := lo.Map(input.DeploymentRoles, func(role role, _ int) string {
+	deploymentRoles := lo.Map(input.DeploymentRoles, func(role utils.Role, _ int) string {
 		return fmt.Sprintf(`
 		{
 			deployment_id = "%v"
 			role = "%v"
-		}`, role.Id, role.Role)
+		}`, role.EntityId, role.Role)
 	})
 
-	workspaceRoles := lo.Map(input.WorkspaceRoles, func(role role, _ int) string {
+	workspaceRoles := lo.Map(input.WorkspaceRoles, func(role utils.Role, _ int) string {
 		return fmt.Sprintf(`
 		{
 			workspace_id = "%v"
 			role = "%v"
-		}`, role.Id, role.Role)
+		}`, role.EntityId, role.Role)
 	})
 
 	var deploymentRolesStr string

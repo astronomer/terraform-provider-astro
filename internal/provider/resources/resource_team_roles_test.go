@@ -125,7 +125,7 @@ func testAccCheckTeamRolesCorrect(t *testing.T, organizationRole string, numWork
 		ctx := context.Background()
 		resp, err := client.GetTeamWithResponse(ctx, os.Getenv("HOSTED_ORGANIZATION_ID"), os.Getenv("HOSTED_TEAM_ID"))
 		if err != nil {
-			return fmt.Errorf("failed to list workspaces: %w", err)
+			return fmt.Errorf("failed to get team: %w", err)
 		}
 		if resp.JSON200 == nil {
 			status, diag := clients.NormalizeAPIError(ctx, resp.HTTPResponse, resp.Body)
