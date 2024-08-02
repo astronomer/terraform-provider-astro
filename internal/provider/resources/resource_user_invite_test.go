@@ -17,9 +17,11 @@ import (
 )
 
 func TestAcc_ResourceUserInvite(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
 	email := "astro-terraform-test@astronomer.test"
 
-	tfVarName := fmt.Sprintf("astro_user_invite.%v", email)
+	userInviteName := fmt.Sprintf("%v_user_invite", namePrefix)
+	tfVarName := fmt.Sprintf("astro_user_invite.%v", userInviteName)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
@@ -31,6 +33,7 @@ func TestAcc_ResourceUserInvite(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userInvite(userInviteInput{
+						Name:  userInviteName,
 						Email: "invalid-email",
 						Role:  string(iam.ORGANIZATIONOWNER),
 					}),
@@ -40,6 +43,7 @@ func TestAcc_ResourceUserInvite(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userInvite(userInviteInput{
+						Name:  userInviteName,
 						Email: email,
 						Role:  "invalid-role",
 					}),
@@ -49,6 +53,7 @@ func TestAcc_ResourceUserInvite(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userInvite(userInviteInput{
+						Name:  userInviteName,
 						Email: email,
 						Role:  string(iam.ORGANIZATIONOWNER),
 					}),
@@ -68,6 +73,7 @@ func TestAcc_ResourceUserInvite(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userInvite(userInviteInput{
+						Name:  userInviteName,
 						Email: email,
 						Role:  string(iam.ORGANIZATIONMEMBER),
 					}),
@@ -84,6 +90,7 @@ func TestAcc_ResourceUserInvite(t *testing.T) {
 }
 
 type userInviteInput struct {
+	Name  string
 	Email string
 	Role  string
 }
@@ -94,7 +101,7 @@ resource "astro_user_invite" "%v" {
 	email = "%v"
 	role = "%v"
 }
-`, input.Email, input.Email, input.Role)
+`, input.Name, input.Email, input.Role)
 }
 
 func testAccCheckUserInviteExistence(t *testing.T, email string, shouldExist bool) func(state *terraform.State) error {
