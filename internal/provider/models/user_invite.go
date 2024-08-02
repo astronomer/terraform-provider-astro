@@ -33,6 +33,6 @@ func (data *UserInvite) ReadFromResponse(ctx context.Context, userInvite *iam.In
 	if diags.HasError() {
 		return diags
 	}
-	data.UserId = types.StringValue(*userInvite.UserId)
+	data.UserId = types.StringPointerValue(userInvite.UserId)
 	return nil
 }

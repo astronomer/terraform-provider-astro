@@ -226,6 +226,7 @@ func (r *UserInviteResource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
+// Update updates the User Invite resource by deleting the existing user invite and creating a new user invite.
 func (r *UserInviteResource) Update(
 	ctx context.Context,
 	req resource.UpdateRequest,
@@ -245,7 +246,7 @@ func (r *UserInviteResource) Update(
 
 	existingInviteId := data.InviteId.ValueString()
 
-	// delete the old existing user invite
+	// Delete the existing user invite
 	deletedUserInvite, err := r.IamClient.DeleteUserInviteWithResponse(
 		ctx,
 		r.OrganizationId,
@@ -334,10 +335,10 @@ func (r *UserInviteResource) Delete(
 		existingInviteId,
 	)
 	if err != nil {
-		tflog.Error(ctx, "failed to update User Invite", map[string]interface{}{"error": err})
+		tflog.Error(ctx, "failed to delete User Invite", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to update and delete User Invite, got error: %s", err),
+			fmt.Sprintf("Unable to delete User Invite, got error: %s", err),
 		)
 		return
 	}
