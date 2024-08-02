@@ -88,7 +88,7 @@ func (r *UserInviteResource) Create(
 
 	// Create the user invite request
 	createUserInviteRequest := iam.CreateUserInviteRequest{
-		InviteeEmail: data.InviteeEmail.ValueString(),
+		InviteeEmail: data.Email.ValueString(),
 		Role:         iam.CreateUserInviteRequestRole(data.Role.ValueString()),
 	}
 
@@ -112,7 +112,7 @@ func (r *UserInviteResource) Create(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, userInvite.JSON200, data.InviteeEmail.ValueString(), data.Role.ValueString())
+	diags = data.ReadFromResponse(ctx, userInvite.JSON200, data.Email.ValueString(), data.Role.ValueString())
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -214,7 +214,7 @@ func (r *UserInviteResource) Read(
 		UserId:         lo.ToPtr(user.JSON200.Id),
 	}
 
-	diags := data.ReadFromResponse(ctx, &userInvite, data.InviteeEmail.ValueString(), data.Role.ValueString())
+	diags := data.ReadFromResponse(ctx, &userInvite, data.Email.ValueString(), data.Role.ValueString())
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -233,8 +233,10 @@ func (r *UserInviteResource) Update(
 ) {
 	var data models.UserInvite
 
-	// Read Terraform plan data into the model
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	// Delete existing user invite
+
+	// Read Terraform prior state data into the model
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -264,9 +266,17 @@ func (r *UserInviteResource) Update(
 		return
 	}
 
+	// Create a new user invite
+
+	// Read Terraform plan data into the model
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Create a new user invite request
 	createUserInviteRequest := iam.CreateUserInviteRequest{
-		InviteeEmail: data.InviteeEmail.ValueString(),
+		InviteeEmail: data.Email.ValueString(),
 		Role:         iam.CreateUserInviteRequestRole(data.Role.ValueString()),
 	}
 
@@ -290,7 +300,7 @@ func (r *UserInviteResource) Update(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, userInvite.JSON200, data.InviteeEmail.ValueString(), data.Role.ValueString())
+	diags = data.ReadFromResponse(ctx, userInvite.JSON200, data.Email.ValueString(), data.Role.ValueString())
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

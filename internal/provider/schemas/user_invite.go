@@ -12,7 +12,7 @@ import (
 
 func UserInviteResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
-		"invitee_email": resourceSchema.StringAttribute{
+		"email": resourceSchema.StringAttribute{
 			MarkdownDescription: "The email address of the user being invited",
 			Required:            true,
 			Validators: []validator.String{

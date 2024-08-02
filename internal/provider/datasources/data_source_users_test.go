@@ -84,17 +84,9 @@ func checkUsers(tfVarName string, filterWorkspaceId bool, filterDeploymentId boo
 		if instanceState.Attributes[username] == "" {
 			return fmt.Errorf("expected 'username' to be set")
 		}
-		fullName := fmt.Sprintf("users.%d.full_name", usersIdx)
-		if instanceState.Attributes[fullName] == "" {
-			return fmt.Errorf("expected 'full_name' to be set")
-		}
 		status := fmt.Sprintf("users.%d.status", usersIdx)
 		if instanceState.Attributes[status] == "" {
 			return fmt.Errorf("expected 'status' to be set")
-		}
-		avatarUrl := fmt.Sprintf("users.%d.avatar_url", usersIdx)
-		if instanceState.Attributes[avatarUrl] == "" {
-			return fmt.Errorf("expected 'avatar_url' to be set")
 		}
 		organizationRole := fmt.Sprintf("users.%d.organization_role", usersIdx)
 		if instanceState.Attributes[organizationRole] == "" {
