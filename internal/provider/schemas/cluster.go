@@ -272,6 +272,7 @@ func ClusterDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 func ClusterMetadataAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"external_ips":    types.SetType{ElemType: types.StringType},
+		"kube_dns_ip":     types.StringType,
 		"oidc_issuer_url": types.StringType,
 	}
 }
@@ -281,6 +282,10 @@ func ClusterMetadataDataSourceAttributes() map[string]datasourceSchema.Attribute
 		"external_ips": datasourceSchema.SetAttribute{
 			ElementType:         types.StringType,
 			MarkdownDescription: "Cluster external IPs",
+			Computed:            true,
+		},
+		"kube_dns_ip": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Cluster kube DNS IP",
 			Computed:            true,
 		},
 		"oidc_issuer_url": datasourceSchema.StringAttribute{

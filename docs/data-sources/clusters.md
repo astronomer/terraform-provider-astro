@@ -91,6 +91,7 @@ Read-Only:
 Read-Only:
 
 - `external_ips` (Set of String) Cluster external IPs
+- `kube_dns_ip` (String) Cluster kube DNS IP
 - `oidc_issuer_url` (String) Cluster OIDC issuer URL
 
 
