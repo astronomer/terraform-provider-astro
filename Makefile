@@ -48,8 +48,18 @@ build:
 	go generate ./...
 
 .PHONY: api_client_gen
-api_client_gen: $(ENVTEST_ASSETS_DIR)
-	# Install correct oapi-codegen version if not installed
-	@{ $(OAPI_CODEGEN) --version | grep $(DESIRED_OAPI_CODEGEN_VERSION) > /dev/null; } || go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@$(DESIRED_OAPI_CODEGEN_VERSION)
-	$(OAPI_CODEGEN) -include-tags=User,Invite,Team,ApiToken -generate=types,client -package=iam "${CORE_IAM_OPENAPI_SPEC}" > ./internal/clients/iam/api.gen.go
-	$(OAPI_CODEGEN) -include-tags=Organization,Workspace,Cluster,Options,Deployment,Role -generate=types,client -package=platform "${CORE_PLATFORM_OPENAPI_SPEC}" > ./internal/clients/platform/api.gen.go
+api_client_gen:
+	@echo "Checking oapi-codegen installation..."
+	@if ! command -v oapi-codegen >/dev/null 2>&1; then \
+		echo "oapi-codegen not found. Installing..."; \
+		go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@$(DESIRED_OAPI_CODEGEN_VERSION); \
+	elif ! oapi-codegen --version | grep -q $(DESIRED_OAPI_CODEGEN_VERSION); then \
+		echo "Updating oapi-codegen to desired version..."; \
+		go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@$(DESIRED_OAPI_CODEGEN_VERSION); \
+	else \
+		echo "Correct version of oapi-codegen is already installed."; \
+	fi
+	@echo "Generating IAM API client..."
+	oapi-codegen -include-tags=User,Invite,Team,ApiToken -generate=types,client -package=iam "$(CORE_IAM_OPENAPI_SPEC)" > ./internal/clients/iam/api.gen.go
+	@echo "Generating Platform API client..."
+	oapi-codegen -include-tags=Organization,Workspace,Cluster,Options,Deployment,Role -generate=types,client -package=platform "$(CORE_PLATFORM_OPENAPI_SPEC)" > ./internal/clients/platform/api.gen.go

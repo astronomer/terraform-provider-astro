@@ -48,6 +48,7 @@ Read-Only:
 - `cloud_provider` (String) Cluster cloud provider
 - `created_at` (String) Cluster creation timestamp
 - `db_instance_type` (String) Cluster database instance type
+- `health_status` (Attributes) Cluster health status (see [below for nested schema](#nestedatt--clusters--health_status))
 - `is_limited` (Boolean) Whether the cluster is limited
 - `metadata` (Attributes) Cluster metadata (see [below for nested schema](#nestedatt--clusters--metadata))
 - `name` (String) Cluster name
@@ -64,6 +65,25 @@ Read-Only:
 - `updated_at` (String) Cluster last updated timestamp
 - `vpc_subnet_range` (String) Cluster VPC subnet range
 - `workspace_ids` (Set of String) Cluster workspace IDs
+
+<a id="nestedatt--clusters--health_status"></a>
+### Nested Schema for `clusters.health_status`
+
+Read-Only:
+
+- `details` (Attributes Set) Cluster health status details (see [below for nested schema](#nestedatt--clusters--health_status--details))
+- `value` (String) Cluster health status value
+
+<a id="nestedatt--clusters--health_status--details"></a>
+### Nested Schema for `clusters.health_status.details`
+
+Read-Only:
+
+- `code` (String) Cluster health status detail code
+- `description` (String) Cluster health status detail description
+- `severity` (String) Cluster health status detail severity
+
+
 
 <a id="nestedatt--clusters--metadata"></a>
 ### Nested Schema for `clusters.metadata`

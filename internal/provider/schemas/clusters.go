@@ -12,10 +12,15 @@ import (
 
 func ClustersElementAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"id":                    types.StringType,
-		"name":                  types.StringType,
-		"cloud_provider":        types.StringType,
-		"db_instance_type":      types.StringType,
+		"id":               types.StringType,
+		"name":             types.StringType,
+		"cloud_provider":   types.StringType,
+		"db_instance_type": types.StringType,
+		"health_status": types.SetType{
+			ElemType: types.ObjectType{
+				AttrTypes: ClusterHealthStatusAttributeTypes(),
+			},
+		},
 		"region":                types.StringType,
 		"pod_subnet_range":      types.StringType,
 		"service_peering_range": types.StringType,

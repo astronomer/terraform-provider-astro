@@ -18,6 +18,7 @@ type ClusterResource struct {
 	Name                types.String   `tfsdk:"name"`
 	CloudProvider       types.String   `tfsdk:"cloud_provider"`
 	DbInstanceType      types.String   `tfsdk:"db_instance_type"`
+	HealthStatus        types.Object   `tfsdk:"health_status"`
 	Region              types.String   `tfsdk:"region"`
 	PodSubnetRange      types.String   `tfsdk:"pod_subnet_range"`
 	ServicePeeringRange types.String   `tfsdk:"service_peering_range"`
@@ -42,6 +43,7 @@ type ClusterDataSource struct {
 	Name                types.String `tfsdk:"name"`
 	CloudProvider       types.String `tfsdk:"cloud_provider"`
 	DbInstanceType      types.String `tfsdk:"db_instance_type"`
+	HealthStatus        types.Object `tfsdk:"health_status"`
 	Region              types.String `tfsdk:"region"`
 	PodSubnetRange      types.String `tfsdk:"pod_subnet_range"`
 	ServicePeeringRange types.String `tfsdk:"service_peering_range"`
@@ -78,20 +80,30 @@ type NodePool struct {
 	UpdatedAt              types.String `tfsdk:"updated_at"`
 }
 
+type ClusterHealthStatusDetail struct {
+	Code        types.String `tfsdk:"code"`
+	Description types.String `tfsdk:"description"`
+	Severity    types.String `tfsdk:"severity"`
+}
+
 func (data *ClusterResource) ReadFromResponse(
 	ctx context.Context,
 	cluster *platform.Cluster,
 ) diag.Diagnostics {
+	var diags diag.Diagnostics
 	data.Id = types.StringValue(cluster.Id)
 	data.Name = types.StringValue(cluster.Name)
 	data.CloudProvider = types.StringValue(string(cluster.CloudProvider))
 	data.DbInstanceType = types.StringValue(cluster.DbInstanceType)
+	data.HealthStatus, diags = ClusterHealthStatusTypesObject(ctx, cluster.HealthStatus)
+	if diags.HasError() {
+		return diags
+	}
 	data.Region = types.StringValue(cluster.Region)
 	data.PodSubnetRange = types.StringPointerValue(cluster.PodSubnetRange)
 	data.ServicePeeringRange = types.StringPointerValue(cluster.ServicePeeringRange)
 	data.ServiceSubnetRange = types.StringPointerValue(cluster.ServiceSubnetRange)
 	data.VpcSubnetRange = types.StringValue(cluster.VpcSubnetRange)
-	var diags diag.Diagnostics
 	data.Metadata, diags = ClusterMetadataTypesObject(ctx, cluster.Metadata)
 	if diags.HasError() {
 		return diags
@@ -119,16 +131,20 @@ func (data *ClusterDataSource) ReadFromResponse(
 	ctx context.Context,
 	cluster *platform.Cluster,
 ) diag.Diagnostics {
+	var diags diag.Diagnostics
 	data.Id = types.StringValue(cluster.Id)
 	data.Name = types.StringValue(cluster.Name)
 	data.CloudProvider = types.StringValue(string(cluster.CloudProvider))
 	data.DbInstanceType = types.StringValue(cluster.DbInstanceType)
+	data.HealthStatus, diags = ClusterHealthStatusTypesObject(ctx, cluster.HealthStatus)
+	if diags.HasError() {
+		return diags
+	}
 	data.Region = types.StringValue(cluster.Region)
 	data.PodSubnetRange = types.StringPointerValue(cluster.PodSubnetRange)
 	data.ServicePeeringRange = types.StringPointerValue(cluster.ServicePeeringRange)
 	data.ServiceSubnetRange = types.StringPointerValue(cluster.ServiceSubnetRange)
 	data.VpcSubnetRange = types.StringValue(cluster.VpcSubnetRange)
-	var diags diag.Diagnostics
 	data.Metadata, diags = ClusterMetadataTypesObject(ctx, cluster.Metadata)
 	if diags.HasError() {
 		return diags
@@ -192,8 +208,21 @@ func NodePoolTypesObject(
 	return types.ObjectValueFrom(ctx, schemas.NodePoolAttributeTypes(), obj)
 }
 
+func ClusterHealthStatusDetailTypesObject(
+	ctx context.Context,
+	healthStatusDetail platform.ClusterHealthStatusDetail,
+) (types.Object, diag.Diagnostics) {
+	obj := ClusterHealthStatusDetail{
+		Code:        types.StringValue(healthStatusDetail.Code),
+		Description: types.StringValue(healthStatusDetail.Description),
+		Severity:    types.StringValue(healthStatusDetail.Severity),
+	}
+	return types.ObjectValueFrom(ctx, schemas.ClusterHealthStatusDetailAttributeTypes(), obj)
+}
+
 type ClusterMetadata struct {
 	OidcIssuerUrl types.String `tfsdk:"oidc_issuer_url"`
+	KubeDnsIp     types.String `tfsdk:"kube_dns_ip"`
 	ExternalIps   types.Set    `tfsdk:"external_ips"`
 }
 
@@ -208,9 +237,33 @@ func ClusterMetadataTypesObject(
 		}
 		obj := ClusterMetadata{
 			OidcIssuerUrl: types.StringPointerValue(metadata.OidcIssuerUrl),
+			KubeDnsIp:     types.StringPointerValue(metadata.KubeDnsIp),
 			ExternalIps:   externalIps,
 		}
 		return types.ObjectValueFrom(ctx, schemas.ClusterMetadataAttributeTypes(), obj)
 	}
 	return types.ObjectNull(schemas.ClusterMetadataAttributeTypes()), nil
+}
+
+type ClusterHealthStatus struct {
+	Value   types.String `tfsdk:"value"`
+	Details types.Set    `tfsdk:"details"`
+}
+
+func ClusterHealthStatusTypesObject(
+	ctx context.Context,
+	healthStatus *platform.ClusterHealthStatus,
+) (types.Object, diag.Diagnostics) {
+	if healthStatus != nil {
+		details, diags := utils.ObjectSet(ctx, healthStatus.Details, schemas.ClusterHealthStatusDetailAttributeTypes(), ClusterHealthStatusDetailTypesObject)
+		if diags.HasError() {
+			return types.ObjectNull(schemas.ClusterHealthStatusAttributeTypes()), diags
+		}
+		obj := ClusterHealthStatus{
+			Value:   types.StringValue(string(healthStatus.Value)),
+			Details: details,
+		}
+		return types.ObjectValueFrom(ctx, schemas.ClusterHealthStatusAttributeTypes(), obj)
+	}
+	return types.ObjectNull(schemas.ClusterHealthStatusAttributeTypes()), nil
 }
