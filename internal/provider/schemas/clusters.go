@@ -16,10 +16,8 @@ func ClustersElementAttributeTypes() map[string]attr.Type {
 		"name":             types.StringType,
 		"cloud_provider":   types.StringType,
 		"db_instance_type": types.StringType,
-		"health_status": types.SetType{
-			ElemType: types.ObjectType{
-				AttrTypes: ClusterHealthStatusAttributeTypes(),
-			},
+		"health_status": types.ObjectType{
+			AttrTypes: ClusterHealthStatusAttributeTypes(),
 		},
 		"region":                types.StringType,
 		"pod_subnet_range":      types.StringType,

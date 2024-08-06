@@ -3,8 +3,6 @@ package models
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
-
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
@@ -261,12 +259,12 @@ func ClusterHealthStatusTypesObject(
 		if diags.HasError() {
 			return types.ObjectNull(schemas.ClusterHealthStatusAttributeTypes()), diags
 		}
-		healthStatusMap := map[string]attr.Value{
-			"value":   types.StringValue(string(healthStatus.Value)),
-			"details": details,
+		obj := ClusterHealthStatus{
+			Value:   types.StringValue(string(healthStatus.Value)),
+			Details: details,
 		}
 
-		return types.ObjectValue(schemas.ClusterHealthStatusAttributeTypes(), healthStatusMap)
+		return types.ObjectValueFrom(ctx, schemas.ClusterHealthStatusAttributeTypes(), obj)
 	}
 	return types.ObjectNull(schemas.ClusterHealthStatusAttributeTypes()), nil
 }
