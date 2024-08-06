@@ -138,7 +138,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Region:                      "us-east-1",
 					CloudProvider:               "AWS",
 					Executor:                    "KUBERNETES",
-					SchedulerSize:               "SMALL",
+					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
 					IncludeEnvironmentVariables: true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
@@ -148,7 +148,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
 					resource.TestCheckResourceAttr(awsResourceVar, "executor", "KUBERNETES"),
 					resource.TestCheckNoResourceAttr(awsResourceVar, "worker_queues"),
-					resource.TestCheckResourceAttr(awsResourceVar, "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr(awsResourceVar, "scheduler_size", string(platform.SchedulerMachineNameSMALL)),
 					resource.TestCheckResourceAttrSet(awsResourceVar, "environment_variables.0.key"),
 					resource.TestCheckResourceAttrSet(awsResourceVar, "environment_variables.1.key"),
 					// Check via API that deployment exists
@@ -163,12 +163,12 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Region:                      "us-east-1",
 					CloudProvider:               "AWS",
 					Executor:                    "CELERY",
-					SchedulerSize:               "MEDIUM",
+					SchedulerSize:               string(platform.SchedulerMachineNameEXTRALARGE),
 					IncludeEnvironmentVariables: false,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(awsResourceVar, "description", utils.TestResourceDescription),
-					resource.TestCheckResourceAttr(awsResourceVar, "scheduler_size", "MEDIUM"),
+					resource.TestCheckResourceAttr(awsResourceVar, "scheduler_size", string(platform.SchedulerMachineNameEXTRALARGE)),
 					resource.TestCheckResourceAttr(awsResourceVar, "worker_queues.0.name", "default"),
 					resource.TestCheckNoResourceAttr(awsResourceVar, "environment_variables.0.key"),
 					resource.TestCheckResourceAttr(awsResourceVar, "executor", "CELERY"),
@@ -184,7 +184,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Region:                      "us-east-1",
 					CloudProvider:               "AWS",
 					Executor:                    "KUBERNETES",
-					SchedulerSize:               "MEDIUM",
+					SchedulerSize:               string(platform.SchedulerMachineNameMEDIUM),
 					IncludeEnvironmentVariables: false,
 				}),
 				Check: resource.ComposeTestCheckFunc(
@@ -202,12 +202,12 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Region:                      "us-east-1",
 					CloudProvider:               "AWS",
 					Executor:                    "KUBERNETES",
-					SchedulerSize:               "SMALL",
+					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
 					IncludeEnvironmentVariables: false,
 					IsDevelopmentMode:           true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(awsResourceVar, "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr(awsResourceVar, "scheduler_size", string(platform.SchedulerMachineNameSMALL)),
 					resource.TestCheckResourceAttr(awsResourceVar, "is_development_mode", "true"),
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
@@ -221,12 +221,12 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Region:                      "us-east-1",
 					CloudProvider:               "AWS",
 					Executor:                    "KUBERNETES",
-					SchedulerSize:               "SMALL",
+					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
 					IncludeEnvironmentVariables: true,
 					IsDevelopmentMode:           false,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(awsResourceVar, "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr(awsResourceVar, "scheduler_size", string(platform.SchedulerMachineNameSMALL)),
 					resource.TestCheckResourceAttr(awsResourceVar, "is_development_mode", "false"),
 					resource.TestCheckResourceAttrSet(awsResourceVar, "environment_variables.0.key"),
 					resource.TestCheckResourceAttrSet(awsResourceVar, "environment_variables.1.key"),
@@ -260,7 +260,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Region:                      "westus2",
 					CloudProvider:               "AZURE",
 					Executor:                    "CELERY",
-					SchedulerSize:               "SMALL",
+					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
 					IncludeEnvironmentVariables: true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
@@ -270,7 +270,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					resource.TestCheckResourceAttr(azureCeleryResourceVar, "cloud_provider", "AZURE"),
 					resource.TestCheckResourceAttr(azureCeleryResourceVar, "executor", "CELERY"),
 					resource.TestCheckResourceAttr(azureCeleryResourceVar, "worker_queues.0.name", "default"),
-					resource.TestCheckResourceAttr(azureCeleryResourceVar, "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr(azureCeleryResourceVar, "scheduler_size", string(platform.SchedulerMachineNameSMALL)),
 					resource.TestCheckResourceAttrSet(azureCeleryResourceVar, "environment_variables.0.key"),
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, azureCeleryDeploymentName, true, true),
@@ -302,7 +302,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Region:                      "us-east4",
 					CloudProvider:               "GCP",
 					Executor:                    "KUBERNETES",
-					SchedulerSize:               "SMALL",
+					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
 					IncludeEnvironmentVariables: true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
@@ -312,7 +312,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					resource.TestCheckResourceAttr(gcpKubernetesResourceVar, "cloud_provider", "GCP"),
 					resource.TestCheckResourceAttr(gcpKubernetesResourceVar, "executor", "KUBERNETES"),
 					resource.TestCheckResourceAttr(gcpKubernetesResourceVar, "worker_queues.#", "0"),
-					resource.TestCheckResourceAttr(gcpKubernetesResourceVar, "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr(gcpKubernetesResourceVar, "scheduler_size", string(platform.SchedulerMachineNameSMALL)),
 					resource.TestCheckResourceAttrSet(gcpKubernetesResourceVar, "environment_variables.0.key"),
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, gcpKubernetesDeploymentName, true, true),
@@ -489,7 +489,7 @@ func TestAcc_ResourceDeploymentStandardRemovedOutsideOfTerraform(t *testing.T) {
 		CloudProvider:               "AWS",
 		Executor:                    "KUBERNETES",
 		IncludeEnvironmentVariables: true,
-		SchedulerSize:               "SMALL",
+		SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
@@ -618,7 +618,7 @@ func developmentDeployment(scalingSpecDeploymentName, scalingSpec string) string
 		Region:            "us-east4",
 		CloudProvider:     "GCP",
 		Executor:          "CELERY",
-		SchedulerSize:     "SMALL",
+		SchedulerSize:     string(platform.SchedulerMachineNameSMALL),
 		IsDevelopmentMode: true,
 		ScalingSpec:       scalingSpec,
 	})
