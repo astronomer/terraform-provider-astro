@@ -3,6 +3,8 @@ package models
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
@@ -78,6 +80,17 @@ type NodePool struct {
 	SupportedAstroMachines types.Set    `tfsdk:"supported_astro_machines"`
 	CreatedAt              types.String `tfsdk:"created_at"`
 	UpdatedAt              types.String `tfsdk:"updated_at"`
+}
+
+type ClusterMetadata struct {
+	OidcIssuerUrl types.String `tfsdk:"oidc_issuer_url"`
+	KubeDnsIp     types.String `tfsdk:"kube_dns_ip"`
+	ExternalIps   types.Set    `tfsdk:"external_ips"`
+}
+
+type ClusterHealthStatus struct {
+	Value   types.String `tfsdk:"value"`
+	Details types.Set    `tfsdk:"details"`
 }
 
 type ClusterHealthStatusDetail struct {
@@ -220,12 +233,6 @@ func ClusterHealthStatusDetailTypesObject(
 	return types.ObjectValueFrom(ctx, schemas.ClusterHealthStatusDetailAttributeTypes(), obj)
 }
 
-type ClusterMetadata struct {
-	OidcIssuerUrl types.String `tfsdk:"oidc_issuer_url"`
-	KubeDnsIp     types.String `tfsdk:"kube_dns_ip"`
-	ExternalIps   types.Set    `tfsdk:"external_ips"`
-}
-
 func ClusterMetadataTypesObject(
 	ctx context.Context,
 	metadata *platform.ClusterMetadata,
@@ -245,11 +252,6 @@ func ClusterMetadataTypesObject(
 	return types.ObjectNull(schemas.ClusterMetadataAttributeTypes()), nil
 }
 
-type ClusterHealthStatus struct {
-	Value   types.String `tfsdk:"value"`
-	Details types.Set    `tfsdk:"details"`
-}
-
 func ClusterHealthStatusTypesObject(
 	ctx context.Context,
 	healthStatus *platform.ClusterHealthStatus,
@@ -259,11 +261,12 @@ func ClusterHealthStatusTypesObject(
 		if diags.HasError() {
 			return types.ObjectNull(schemas.ClusterHealthStatusAttributeTypes()), diags
 		}
-		obj := ClusterHealthStatus{
-			Value:   types.StringValue(string(healthStatus.Value)),
-			Details: details,
+		healthStatusMap := map[string]attr.Value{
+			"value":   types.StringValue(string(healthStatus.Value)),
+			"details": details,
 		}
-		return types.ObjectValueFrom(ctx, schemas.ClusterHealthStatusAttributeTypes(), obj)
+
+		return types.ObjectValue(schemas.ClusterHealthStatusAttributeTypes(), healthStatusMap)
 	}
 	return types.ObjectNull(schemas.ClusterHealthStatusAttributeTypes()), nil
 }
