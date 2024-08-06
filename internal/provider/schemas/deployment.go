@@ -247,6 +247,7 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 					string(platform.SchedulerMachineNameSMALL),
 					string(platform.SchedulerMachineNameMEDIUM),
 					string(platform.SchedulerMachineNameLARGE),
+					string(platform.SchedulerMachineNameEXTRALARGE),
 				),
 			},
 		},

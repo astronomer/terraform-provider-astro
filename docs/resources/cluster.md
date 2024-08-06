@@ -89,6 +89,7 @@ resource "astro_cluster" "imported_cluster" {
 
 - `created_at` (String) Cluster creation timestamp
 - `db_instance_type` (String) Cluster database instance type
+- `health_status` (Attributes) Cluster health status (see [below for nested schema](#nestedatt--health_status))
 - `id` (String) Cluster identifier
 - `is_limited` (Boolean) Whether the cluster is limited
 - `metadata` (Attributes) Cluster metadata (see [below for nested schema](#nestedatt--metadata))
@@ -108,12 +109,32 @@ Optional:
 - `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
 
+<a id="nestedatt--health_status"></a>
+### Nested Schema for `health_status`
+
+Read-Only:
+
+- `details` (Attributes Set) Cluster health status details (see [below for nested schema](#nestedatt--health_status--details))
+- `value` (String) Cluster health status value
+
+<a id="nestedatt--health_status--details"></a>
+### Nested Schema for `health_status.details`
+
+Read-Only:
+
+- `code` (String) Cluster health status detail code
+- `description` (String) Cluster health status detail description
+- `severity` (String) Cluster health status detail severity
+
+
+
 <a id="nestedatt--metadata"></a>
 ### Nested Schema for `metadata`
 
 Read-Only:
 
 - `external_ips` (Set of String) Cluster external IPs
+- `kube_dns_ip` (String) Cluster kube DNS IP
 - `oidc_issuer_url` (String) Cluster OIDC issuer URL
 
 
