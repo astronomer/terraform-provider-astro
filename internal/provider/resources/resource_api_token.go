@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+
 	"github.com/astronomer/terraform-provider-astro/internal/provider/common"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
@@ -34,6 +36,7 @@ func NewApiTokenResource() resource.Resource {
 // ApiTokenResource defines the resource implementation.
 type ApiTokenResource struct {
 	IamClient      *iam.ClientWithResponses
+	PlatformClient *platform.ClientWithResponses
 	OrganizationId string
 }
 
@@ -73,6 +76,7 @@ func (r *ApiTokenResource) Configure(
 	}
 
 	r.IamClient = apiClients.IamClient
+	r.PlatformClient = apiClients.PlatformClient
 	r.OrganizationId = apiClients.OrganizationId
 }
 
@@ -103,6 +107,38 @@ func (r *ApiTokenResource) Create(
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)
 		return
+	}
+
+	// Validate workspaces
+	workspaceRoles := FilterApiTokenRolesByType(roles, string(iam.WORKSPACE))
+	diags = r.HasValidWorkspaces(ctx, workspaceRoles)
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	// Validate deployments
+	deploymentRoles := FilterApiTokenRolesByType(roles, string(iam.DEPLOYMENT))
+	diags = r.HasValidDeployments(ctx, deploymentRoles)
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	// Validate deployment roles have corresponding workspace roles if type is not DEPLOYMENT
+	if data.Type.ValueString() != string(iam.DEPLOYMENT) {
+		deploymentRoles := FilterApiTokenRolesByType(roles, string(iam.DEPLOYMENT))
+
+		diags = common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
+			PlatformClient:  r.PlatformClient,
+			OrganizationId:  r.OrganizationId,
+			WorkspaceRoles:  ApiTokenRolesToWorkspaceRoles(workspaceRoles),
+			DeploymentRoles: ApiTokenRolesToDeploymentRoles(deploymentRoles),
+		})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
 	}
 
 	// Create the API token request
@@ -272,6 +308,38 @@ func (r *ApiTokenResource) Update(
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
+	}
+
+	// Validate workspaces
+	workspaceRoles := FilterApiTokenRolesByType(roles, string(iam.WORKSPACE))
+	diags = r.HasValidWorkspaces(ctx, workspaceRoles)
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	// Validate deployments
+	deploymentRoles := FilterApiTokenRolesByType(roles, string(iam.DEPLOYMENT))
+	diags = r.HasValidDeployments(ctx, deploymentRoles)
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	// Validate deployments if the entity type is not DEPLOYMENT
+	if data.Type.ValueString() != string(iam.DEPLOYMENT) {
+		deploymentRoles := FilterApiTokenRolesByType(roles, string(iam.DEPLOYMENT))
+
+		diags = common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
+			PlatformClient:  r.PlatformClient,
+			OrganizationId:  r.OrganizationId,
+			WorkspaceRoles:  ApiTokenRolesToWorkspaceRoles(workspaceRoles),
+			DeploymentRoles: ApiTokenRolesToDeploymentRoles(deploymentRoles),
+		})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
 	}
 
 	// Update API token roles
@@ -545,4 +613,144 @@ func RequestApiTokenPrimaryRole(roles []iam.ApiTokenRole, entityType string) (ia
 			fmt.Sprintf("Please provide a valid role for the API token entity type '%s'", entityType),
 		),
 	}
+}
+
+func FilterApiTokenRolesByType(roles []iam.ApiTokenRole, entityType string) []iam.ApiTokenRole {
+	var filteredRoles []iam.ApiTokenRole
+	for _, role := range roles {
+		if role.EntityType == iam.ApiTokenRoleEntityType(entityType) {
+			filteredRoles = append(filteredRoles, role)
+		}
+	}
+	return filteredRoles
+}
+
+func (r *ApiTokenResource) HasValidWorkspaces(ctx context.Context, workspaceRoles []iam.ApiTokenRole) diag.Diagnostics {
+	if len(workspaceRoles) < 0 {
+		return nil
+	}
+	// Get workspace ids
+	var workspaceIds []string
+	for _, workspaceRole := range workspaceRoles {
+		workspaceIds = append(workspaceIds, workspaceRole.EntityId)
+	}
+	workspaceIds = lo.Uniq(workspaceIds)
+
+	listWorkspacesRequest := platform.ListWorkspacesParams{
+		WorkspaceIds: lo.ToPtr(workspaceIds),
+	}
+
+	// List organization workspaces
+	workspaces, err := r.PlatformClient.ListWorkspacesWithResponse(
+		ctx,
+		r.OrganizationId,
+		&listWorkspacesRequest,
+	)
+	if err != nil {
+		tflog.Error(ctx, "failed to list workspaces", map[string]interface{}{"error": err})
+		return diag.Diagnostics{
+			diag.NewErrorDiagnostic(
+				"Client Error",
+				fmt.Sprintf("Unable to list workspaces, got error: %s", err),
+			),
+		}
+	}
+	_, diagnostic := clients.NormalizeAPIError(ctx, workspaces.HTTPResponse, workspaces.Body)
+	if diagnostic != nil {
+		return diag.Diagnostics{diagnostic}
+	}
+	organizationWorkspaceIds := lo.Map(workspaces.JSON200.Workspaces, func(workspace platform.Workspace, _ int) string {
+		return workspace.Id
+	})
+
+	invalidWorkspaceIds, _ := lo.Difference(workspaceIds, organizationWorkspaceIds)
+	if len(invalidWorkspaceIds) > 0 {
+		tflog.Error(ctx, "invalid workspace ids")
+		return diag.Diagnostics{
+			diag.NewErrorDiagnostic(
+				"One or more workspaces is not in the organization, cannot set roles for workspaces that do not exist",
+				fmt.Sprintf("The following workspace ids are invalid: %v", invalidWorkspaceIds),
+			),
+		}
+	}
+
+	return nil
+}
+
+func (r *ApiTokenResource) HasValidDeployments(ctx context.Context, deploymentRoles []iam.ApiTokenRole) diag.Diagnostics {
+	if len(deploymentRoles) < 0 {
+		return nil
+	}
+	// Get deployment ids
+	var deploymentIds []string
+	for _, deploymentRole := range deploymentRoles {
+		deploymentIds = append(deploymentIds, deploymentRole.EntityId)
+	}
+	deploymentIds = lo.Uniq(deploymentIds)
+
+	listDeploymentsRequest := platform.ListDeploymentsParams{
+		DeploymentIds: lo.ToPtr(deploymentIds),
+	}
+
+	// List organization deployments
+	deployments, err := r.PlatformClient.ListDeploymentsWithResponse(
+		ctx,
+		r.OrganizationId,
+		&listDeploymentsRequest,
+	)
+	if err != nil {
+		tflog.Error(ctx, "failed to list deployments", map[string]interface{}{"error": err})
+		return diag.Diagnostics{
+			diag.NewErrorDiagnostic(
+				"Client Error",
+				fmt.Sprintf("Unable to list deployments, got error: %s", err),
+			),
+		}
+	}
+	_, diagnostic := clients.NormalizeAPIError(ctx, deployments.HTTPResponse, deployments.Body)
+	if diagnostic != nil {
+		return diag.Diagnostics{diagnostic}
+	}
+	organizationDeploymentIds := lo.Map(deployments.JSON200.Deployments, func(deployment platform.Deployment, _ int) string {
+		return deployment.Id
+	})
+
+	invalidDeploymentIds, _ := lo.Difference(deploymentIds, organizationDeploymentIds)
+	if len(invalidDeploymentIds) > 0 {
+		tflog.Error(ctx, "invalid deployment ids")
+		return diag.Diagnostics{
+			diag.NewErrorDiagnostic(
+				"One or more deployments is not in the organization, cannot set roles for deployments that do not exist",
+				fmt.Sprintf("The following deployment ids are invalid: %v", invalidDeploymentIds),
+			),
+		}
+	}
+
+	return nil
+}
+
+func ApiTokenRolesToWorkspaceRoles(roles []iam.ApiTokenRole) []iam.WorkspaceRole {
+	var workspaceRoles []iam.WorkspaceRole
+	for _, role := range roles {
+		if string(role.EntityType) == string(iam.WORKSPACE) {
+			workspaceRoles = append(workspaceRoles, iam.WorkspaceRole{
+				WorkspaceId: role.EntityId,
+				Role:        iam.WorkspaceRoleRole(role.Role),
+			})
+		}
+	}
+	return workspaceRoles
+}
+
+func ApiTokenRolesToDeploymentRoles(roles []iam.ApiTokenRole) []iam.DeploymentRole {
+	var deploymentRoles []iam.DeploymentRole
+	for _, role := range roles {
+		if string(role.EntityType) == string(iam.DEPLOYMENT) {
+			deploymentRoles = append(deploymentRoles, iam.DeploymentRole{
+				DeploymentId: role.EntityId,
+				Role:         role.Role,
+			})
+		}
+	}
+	return deploymentRoles
 }

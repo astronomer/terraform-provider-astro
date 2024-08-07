@@ -104,10 +104,10 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 		DeploymentIds: &deploymentIds,
 	})
 	if err != nil {
-		tflog.Error(ctx, "failed to mutate Team roles", map[string]interface{}{"error": err})
+		tflog.Error(ctx, "failed to mutate roles", map[string]interface{}{"error": err})
 		return diag.Diagnostics{diag.NewErrorDiagnostic(
 			"Client Error",
-			fmt.Sprintf("Unable to mutate Team roles and list deployments, got error: %s", err),
+			fmt.Sprintf("Unable to mutate roles and list deployments, got error: %s", err),
 		),
 		}
 	}
@@ -129,9 +129,9 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 	// check if deploymentWorkspaceIds are in workspaceIds
 	workspaceIds = lo.Intersect(lo.Uniq(workspaceIds), lo.Uniq(deploymentWorkspaceIds))
 	if len(workspaceIds) != len(deploymentWorkspaceIds) {
-		tflog.Error(ctx, "failed to mutate Team roles", map[string]interface{}{"error": err})
+		tflog.Error(ctx, "failed to mutate roles")
 		return diag.Diagnostics{diag.NewErrorDiagnostic(
-			"Unable to mutate Team roles, not every deployment role has a corresponding workspace role",
+			"Unable to mutate roles, not every deployment role has a corresponding workspace role",
 			"Please ensure that every deployment role has a corresponding workspace role",
 		),
 		}

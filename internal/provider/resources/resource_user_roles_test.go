@@ -53,7 +53,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 							},
 						},
 					}),
-				ExpectError: regexp.MustCompile("Unable to mutate Team roles, not every deployment role has a corresponding workspace role"),
+				ExpectError: regexp.MustCompile("Unable to mutate roles, not every deployment role has a corresponding workspace role"),
 			},
 			// Test failure: check for multiple roles with same entity id
 			{
