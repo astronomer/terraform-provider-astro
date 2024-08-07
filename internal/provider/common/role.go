@@ -94,6 +94,15 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 		return nil
 	}
 
+	if len(input.DeploymentRoles) > 0 && len(input.WorkspaceRoles) == 0 {
+		tflog.Error(ctx, "failed to mutate roles")
+		return diag.Diagnostics{diag.NewErrorDiagnostic(
+			"Unable to mutate roles, no workspace roles provided",
+			"Please provide workspace roles for deployment roles",
+		),
+		}
+	}
+
 	// get list of deployment ids
 	deploymentIds := lo.Map(input.DeploymentRoles, func(role iam.DeploymentRole, _ int) string {
 		return role.DeploymentId
