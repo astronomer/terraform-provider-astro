@@ -111,6 +111,20 @@ func (r *ApiTokenResource) Create(
 
 	// Validate workspaces
 	workspaceRoles := FilterApiTokenRolesByType(roles, string(iam.WORKSPACE))
+	if len(workspaceRoles) > 0 {
+		resp.Diagnostics.Append(
+			diag.NewErrorDiagnostic(
+				fmt.Sprintf("workspace roles: %v", workspaceRoles),
+				"test",
+			))
+		return
+	} else {
+		resp.Diagnostics.Append(
+			diag.NewErrorDiagnostic(
+				"no workspace roles",
+				"test",
+			))
+	}
 	diags = r.HasValidWorkspaces(ctx, workspaceRoles)
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)
