@@ -90,7 +90,7 @@ type ValidateWorkspaceDeploymentRolesInput struct {
 // ValidateWorkspaceDeploymentRoles checks if deployment roles have corresponding workspace roles
 func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspaceDeploymentRolesInput) diag.Diagnostics {
 	// return nil if there are no deployment roles
-	if len(input.DeploymentRoles) == 0 {
+	if len(input.DeploymentRoles) == 0 || (len(input.DeploymentRoles) == 0 && len(input.WorkspaceRoles) == 0) {
 		return nil
 	}
 

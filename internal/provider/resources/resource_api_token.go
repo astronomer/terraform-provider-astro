@@ -127,8 +127,6 @@ func (r *ApiTokenResource) Create(
 
 	// Validate deployment roles have corresponding workspace roles if type is not DEPLOYMENT
 	if data.Type.ValueString() != string(iam.DEPLOYMENT) {
-		deploymentRoles := FilterApiTokenRolesByType(roles, string(iam.DEPLOYMENT))
-
 		diags = common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 			PlatformClient:  r.PlatformClient,
 			OrganizationId:  r.OrganizationId,
