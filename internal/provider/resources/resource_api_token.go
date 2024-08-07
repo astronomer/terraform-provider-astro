@@ -56,7 +56,6 @@ func (r *ApiTokenResource) Schema(
 		Attributes:          schemas.ApiTokenResourceSchemaAttributes(),
 	}
 }
-
 func (r *ApiTokenResource) Configure(
 	ctx context.Context,
 	req resource.ConfigureRequest,

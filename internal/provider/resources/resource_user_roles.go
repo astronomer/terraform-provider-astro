@@ -192,6 +192,14 @@ func (r *UserRolesResource) Read(
 		)
 		return
 	}
+	if userRoles.JSON200.Status != iam.ACTIVE {
+		tflog.Error(ctx, "failed to get user_roles", map[string]interface{}{"error": err})
+		resp.Diagnostics.AddError(
+			"Client Error",
+			fmt.Sprintf("User '%s' is not 'ACTIVE'", userId),
+		)
+		return
+	}
 	statusCode, diagnostic := clients.NormalizeAPIError(ctx, userRoles.HTTPResponse, userRoles.Body)
 	// If the resource no longer exists, it is recommended to ignore the errors
 	// and call RemoveResource to remove the resource from the state. The next Terraform plan will recreate the resource.
@@ -206,7 +214,7 @@ func (r *UserRolesResource) Read(
 
 	// Generate subjectRoles from the get user API response
 	subjectRoles := iam.SubjectRoles{
-		OrganizationRole: lo.ToPtr(iam.SubjectRolesOrganizationRole(*(*string)(userRoles.JSON200.OrganizationRole))),
+		OrganizationRole: lo.ToPtr(iam.SubjectRolesOrganizationRole(*userRoles.JSON200.OrganizationRole)),
 		WorkspaceRoles:   userRoles.JSON200.WorkspaceRoles,
 		DeploymentRoles:  userRoles.JSON200.DeploymentRoles,
 	}

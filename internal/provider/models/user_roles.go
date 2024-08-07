@@ -25,7 +25,7 @@ func (data *UserRoles) ReadFromResponse(
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.UserId = types.StringValue(userId)
-	data.OrganizationRole = types.StringPointerValue((*string)(userRoles.OrganizationRole))
+	data.OrganizationRole = types.StringValue(string(*userRoles.OrganizationRole))
 	data.WorkspaceRoles, diags = utils.ObjectSet(ctx, userRoles.WorkspaceRoles, schemas.WorkspaceRoleAttributeTypes(), WorkspaceRoleTypesObject)
 	if diags.HasError() {
 		return diags
