@@ -553,7 +553,7 @@ func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []iam.
 			}
 		}
 
-		if common.ValidateRoleMatchesEntityType(role.Role, entityType) {
+		if common.ValidateRoleMatchesEntityType(role.Role, entityType) && string(role.EntityType) == entityType {
 			numRolesMatchingEntityType++
 		}
 	}
@@ -641,6 +641,7 @@ func (r *ApiTokenResource) HasValidWorkspaces(ctx context.Context, workspaceRole
 	for _, workspaceRole := range workspaceRoles {
 		workspaceIds = append(workspaceIds, workspaceRole.EntityId)
 	}
+	workspaceIds = lo.Uniq(workspaceIds)
 
 	listWorkspacesRequest := platform.ListWorkspacesParams{
 		WorkspaceIds: lo.ToPtr(workspaceIds),
@@ -692,6 +693,7 @@ func (r *ApiTokenResource) HasValidDeployments(ctx context.Context, deploymentRo
 	for _, deploymentRole := range deploymentRoles {
 		deploymentIds = append(deploymentIds, deploymentRole.EntityId)
 	}
+	deploymentIds = lo.Uniq(deploymentIds)
 
 	listDeploymentsRequest := platform.ListDeploymentsParams{
 		DeploymentIds: lo.ToPtr(deploymentIds),
@@ -732,30 +734,4 @@ func (r *ApiTokenResource) HasValidDeployments(ctx context.Context, deploymentRo
 	}
 
 	return nil
-}
-
-func ApiTokenRolesToWorkspaceRoles(roles []iam.ApiTokenRole) []iam.WorkspaceRole {
-	var workspaceRoles []iam.WorkspaceRole
-	for _, role := range roles {
-		if string(role.EntityType) == string(iam.WORKSPACE) {
-			workspaceRoles = append(workspaceRoles, iam.WorkspaceRole{
-				WorkspaceId: role.EntityId,
-				Role:        iam.WorkspaceRoleRole(role.Role),
-			})
-		}
-	}
-	return workspaceRoles
-}
-
-func ApiTokenRolesToDeploymentRoles(roles []iam.ApiTokenRole) []iam.DeploymentRole {
-	var deploymentRoles []iam.DeploymentRole
-	for _, role := range roles {
-		if string(role.EntityType) == string(iam.DEPLOYMENT) {
-			deploymentRoles = append(deploymentRoles, iam.DeploymentRole{
-				DeploymentId: role.EntityId,
-				Role:         role.Role,
-			})
-		}
-	}
-	return deploymentRoles
 }
