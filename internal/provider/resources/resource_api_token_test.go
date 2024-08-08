@@ -69,6 +69,21 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile("Role 'WORKSPACE_OWNER' is not valid for token type 'ORGANIZATION'"),
 			},
+			// Test invalid organization id
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
+					Name: apiTokenName,
+					Type: string(iam.ORGANIZATION),
+					Roles: []apiTokenRole{
+						{
+							Role:       string(iam.ORGANIZATIONOWNER),
+							EntityId:   "clz3blqb500lh01mtkwu9zk5z",
+							EntityType: string(iam.ORGANIZATION),
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("API Token of type 'ORGANIZATION' cannot have an 'ORGANIZATION' role with a different organization id"),
+			},
 			// Test multiple roles of the same type
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{

@@ -109,6 +109,17 @@ func (r *ApiTokenResource) Create(
 		return
 	}
 
+	// Validate organization id
+	if string(role.EntityType) == string(iam.ORGANIZATION) {
+		if role.EntityId != r.OrganizationId {
+			resp.Diagnostics.AddError(
+				"API Token of type 'ORGANIZATION' cannot have an 'ORGANIZATION' role with a different organization id",
+				"Please provide a valid role for the entity type 'ORGANIZATION' with the correct organization id",
+			)
+			return
+		}
+	}
+
 	// Validate workspaces
 	workspaceRoles := FilterApiTokenRolesByType(roles, string(iam.WORKSPACE))
 	diags = r.HasValidWorkspaces(ctx, workspaceRoles)
@@ -306,6 +317,24 @@ func (r *ApiTokenResource) Update(
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
+	}
+
+	// Get the role for the entity type
+	role, diags := RequestApiTokenPrimaryRole(roles, data.Type.ValueString())
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	// Validate organization id
+	if string(role.EntityType) == string(iam.ORGANIZATION) {
+		if role.EntityId != r.OrganizationId {
+			resp.Diagnostics.AddError(
+				"API Token of type 'ORGANIZATION' cannot have an 'ORGANIZATION' role with a different organization id",
+				"Please provide a valid role for the entity type 'ORGANIZATION' with the correct organization id",
+			)
+			return
+		}
 	}
 
 	// Validate workspaces
