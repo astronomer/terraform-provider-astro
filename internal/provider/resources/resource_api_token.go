@@ -339,22 +339,6 @@ func (r *ApiTokenResource) Update(
 		return
 	}
 
-	// Validate deployments if the entity type is not DEPLOYMENT
-	if data.Type.ValueString() != string(iam.DEPLOYMENT) {
-		deploymentRoles := FilterApiTokenRolesByType(roles, string(iam.DEPLOYMENT))
-
-		diags = common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
-			PlatformClient:  r.PlatformClient,
-			OrganizationId:  r.OrganizationId,
-			WorkspaceRoles:  ApiTokenRolesToWorkspaceRoles(workspaceRoles),
-			DeploymentRoles: ApiTokenRolesToDeploymentRoles(deploymentRoles),
-		})
-		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
-		}
-	}
-
 	// Update API token roles
 	updateApiTokenRolesRequest := iam.UpdateApiTokenRolesRequest{
 		Roles: roles,
@@ -647,7 +631,6 @@ func (r *ApiTokenResource) HasValidWorkspaces(ctx context.Context, workspaceRole
 	for _, workspaceRole := range workspaceRoles {
 		workspaceIds = append(workspaceIds, workspaceRole.EntityId)
 	}
-	workspaceIds = lo.Uniq(workspaceIds)
 
 	listWorkspacesRequest := platform.ListWorkspacesParams{
 		WorkspaceIds: lo.ToPtr(workspaceIds),
@@ -699,7 +682,6 @@ func (r *ApiTokenResource) HasValidDeployments(ctx context.Context, deploymentRo
 	for _, deploymentRole := range deploymentRoles {
 		deploymentIds = append(deploymentIds, deploymentRole.EntityId)
 	}
-	deploymentIds = lo.Uniq(deploymentIds)
 
 	listDeploymentsRequest := platform.ListDeploymentsParams{
 		DeploymentIds: lo.ToPtr(deploymentIds),
