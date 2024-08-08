@@ -623,7 +623,7 @@ func FilterApiTokenRolesByType(roles []iam.ApiTokenRole, entityType string) []ia
 }
 
 func (r *ApiTokenResource) HasValidWorkspaces(ctx context.Context, workspaceRoles []iam.ApiTokenRole) diag.Diagnostics {
-	if len(workspaceRoles) < 0 {
+	if len(workspaceRoles) == 0 {
 		return nil
 	}
 	// Get workspace ids
@@ -674,7 +674,7 @@ func (r *ApiTokenResource) HasValidWorkspaces(ctx context.Context, workspaceRole
 }
 
 func (r *ApiTokenResource) HasValidDeployments(ctx context.Context, deploymentRoles []iam.ApiTokenRole) diag.Diagnostics {
-	if len(deploymentRoles) < 0 {
+	if len(deploymentRoles) == 0 {
 		return nil
 	}
 	// Get deployment ids
