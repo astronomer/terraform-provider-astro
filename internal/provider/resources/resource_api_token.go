@@ -136,20 +136,6 @@ func (r *ApiTokenResource) Create(
 		return
 	}
 
-	// Validate deployment roles have corresponding workspace roles if type is not DEPLOYMENT
-	if data.Type.ValueString() != string(iam.DEPLOYMENT) {
-		diags = common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
-			PlatformClient:  r.PlatformClient,
-			OrganizationId:  r.OrganizationId,
-			WorkspaceRoles:  ApiTokenRolesToWorkspaceRoles(workspaceRoles),
-			DeploymentRoles: ApiTokenRolesToDeploymentRoles(deploymentRoles),
-		})
-		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
-		}
-	}
-
 	// Create the API token request
 	createApiTokenRequest := iam.CreateApiTokenRequest{
 		Name: data.Name.ValueString(),
