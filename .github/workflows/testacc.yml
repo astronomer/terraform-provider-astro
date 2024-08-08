@@ -75,8 +75,8 @@ jobs:
               break
             fi
           done
-          echo "SKIP_CLUSTER_RESOURCE_TESTS=True"
-          echo "SKIP_CLUSTER_RESOURCE_TESTS=True" >> $GITHUB_ENV
+          echo "SKIP_CLUSTER_RESOURCE_TESTS=$SKIP_TESTS"
+          echo "SKIP_CLUSTER_RESOURCE_TESTS=$SKIP_TESTS" >> $GITHUB_ENV
       - env:
           TF_ACC: "1"
           HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HYBRID_ORGANIZATION_API_TOKEN }}
