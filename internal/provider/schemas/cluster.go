@@ -50,6 +50,11 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 			MarkdownDescription: "Cluster database instance type",
 			Computed:            true,
 		},
+		"health_status": resourceSchema.SingleNestedAttribute{
+			Attributes:          ClusterHealthStatusResourceAttributes(),
+			MarkdownDescription: "Cluster health status",
+			Computed:            true,
+		},
 		"region": resourceSchema.StringAttribute{
 			MarkdownDescription: "Cluster region - if changed, the cluster will be recreated.",
 			Required:            true,
@@ -183,6 +188,11 @@ func ClusterDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 			MarkdownDescription: "Cluster database instance type",
 			Computed:            true,
 		},
+		"health_status": datasourceSchema.SingleNestedAttribute{
+			Attributes:          ClusterHealthStatusDataSourceAttributes(),
+			MarkdownDescription: "Cluster health status",
+			Computed:            true,
+		},
 		"region": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Cluster region",
 			Computed:            true,
@@ -262,6 +272,7 @@ func ClusterDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 func ClusterMetadataAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"external_ips":    types.SetType{ElemType: types.StringType},
+		"kube_dns_ip":     types.StringType,
 		"oidc_issuer_url": types.StringType,
 	}
 }
@@ -271,6 +282,10 @@ func ClusterMetadataDataSourceAttributes() map[string]datasourceSchema.Attribute
 		"external_ips": datasourceSchema.SetAttribute{
 			ElementType:         types.StringType,
 			MarkdownDescription: "Cluster external IPs",
+			Computed:            true,
+		},
+		"kube_dns_ip": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Cluster kube DNS IP",
 			Computed:            true,
 		},
 		"oidc_issuer_url": datasourceSchema.StringAttribute{
@@ -285,6 +300,10 @@ func ClusterMetadataResourceAttributes() map[string]resourceSchema.Attribute {
 		"external_ips": resourceSchema.SetAttribute{
 			ElementType:         types.StringType,
 			MarkdownDescription: "Cluster external IPs",
+			Computed:            true,
+		},
+		"kube_dns_ip": resourceSchema.StringAttribute{
+			MarkdownDescription: "Cluster kube DNS IP",
 			Computed:            true,
 		},
 		"oidc_issuer_url": resourceSchema.StringAttribute{
@@ -418,6 +437,91 @@ func NodePoolDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute 
 		},
 		"updated_at": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Node pool last updated timestamp",
+			Computed:            true,
+		},
+	}
+}
+
+func ClusterHealthStatusAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"value": types.StringType,
+		"details": types.SetType{
+			ElemType: types.ObjectType{
+				AttrTypes: ClusterHealthStatusDetailAttributeTypes(),
+			},
+		},
+	}
+}
+
+func ClusterHealthStatusResourceAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"value": resourceSchema.StringAttribute{
+			MarkdownDescription: "Cluster health status value",
+			Computed:            true,
+		},
+		"details": resourceSchema.SetNestedAttribute{
+			NestedObject: resourceSchema.NestedAttributeObject{
+				Attributes: ClusterHealthStatusDetailResourceAttributes(),
+			},
+			MarkdownDescription: "Cluster health status details",
+			Computed:            true,
+		},
+	}
+}
+
+func ClusterHealthStatusDataSourceAttributes() map[string]datasourceSchema.Attribute {
+	return map[string]datasourceSchema.Attribute{
+		"value": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Cluster health status value",
+			Computed:            true,
+		},
+		"details": datasourceSchema.SetNestedAttribute{
+			NestedObject: datasourceSchema.NestedAttributeObject{
+				Attributes: ClusterHealthStatusDetailDataSourceAttributes(),
+			},
+			MarkdownDescription: "Cluster health status details",
+			Computed:            true,
+		},
+	}
+}
+
+func ClusterHealthStatusDetailAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"code":        types.StringType,
+		"description": types.StringType,
+		"severity":    types.StringType,
+	}
+}
+
+func ClusterHealthStatusDetailResourceAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"code": resourceSchema.StringAttribute{
+			MarkdownDescription: "Cluster health status detail code",
+			Computed:            true,
+		},
+		"description": resourceSchema.StringAttribute{
+			MarkdownDescription: "Cluster health status detail description",
+			Computed:            true,
+		},
+		"severity": resourceSchema.StringAttribute{
+			MarkdownDescription: "Cluster health status detail severity",
+			Computed:            true,
+		},
+	}
+}
+
+func ClusterHealthStatusDetailDataSourceAttributes() map[string]datasourceSchema.Attribute {
+	return map[string]datasourceSchema.Attribute{
+		"code": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Cluster health status detail code",
+			Computed:            true,
+		},
+		"description": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Cluster health status detail description",
+			Computed:            true,
+		},
+		"severity": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Cluster health status detail severity",
 			Computed:            true,
 		},
 	}
