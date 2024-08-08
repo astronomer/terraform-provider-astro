@@ -289,10 +289,11 @@ func (r *ApiTokenResource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	var data models.ApiTokenResource
+	var data, currentState models.ApiTokenResource
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	req.State.Get(ctx, &currentState)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -336,6 +337,15 @@ func (r *ApiTokenResource) Update(
 	diags = r.HasValidDeployments(ctx, deploymentRoles)
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	// Validate token expiry
+	if data.ExpiryPeriodInDays.ValueInt64() != currentState.ExpiryPeriodInDays.ValueInt64() {
+		resp.Diagnostics.AddError(
+			"API Token expiry period cannot be updated",
+			"Please provide the same expiry period as the existing API token",
+		)
 		return
 	}
 

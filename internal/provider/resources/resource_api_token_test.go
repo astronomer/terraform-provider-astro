@@ -231,6 +231,33 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
 			},
+			// Test invalid expiry period update
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
+					Name:        apiTokenName,
+					Description: "new description",
+					Type:        string(iam.ORGANIZATION),
+					Roles: []apiTokenRole{
+						{
+							Role:       string(iam.ORGANIZATIONOWNER),
+							EntityId:   organizationId,
+							EntityType: string(iam.ORGANIZATION),
+						},
+						{
+							Role:       string(iam.WORKSPACEOWNER),
+							EntityId:   workspaceId,
+							EntityType: string(iam.WORKSPACE),
+						},
+						{
+							Role:       "DEPLOYMENT_ADMIN",
+							EntityId:   deploymentId,
+							EntityType: string(iam.DEPLOYMENT),
+						},
+					},
+					ExpiryPeriodInDays: 1,
+				}),
+				ExpectError: regexp.MustCompile("API Token expiry period cannot be updated"),
+			},
 			// Change the resource type and remove roles and optional fields
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
