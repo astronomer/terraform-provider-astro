@@ -41,6 +41,20 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 					}),
 				ExpectError: regexp.MustCompile(fmt.Sprintf("Role '%s' is not valid for role type '%s'", string(iam.ORGANIZATIONOWNER), string(iam.WORKSPACE))),
 			},
+			// Test failure: check for missing corresponding workspace role if deployment role is present
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					userRoles(userRolesInput{
+						OrganizationRole: string(iam.ORGANIZATIONOWNER),
+						DeploymentRoles: []utils.Role{
+							{
+								Role:     "DEPLOYMENT_ADMIN",
+								EntityId: deploymentId,
+							},
+						},
+					}),
+				ExpectError: regexp.MustCompile("Unable to mutate roles, not every deployment role has a corresponding workspace role"),
+			},
 			// Test failure: check for multiple roles with same entity id
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
@@ -59,7 +73,6 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 					}),
 				ExpectError: regexp.MustCompile("Invalid Configuration: Cannot have multiple roles with the same workspace id"),
 			},
-			// Create user roles with only organization role
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{
@@ -74,43 +87,6 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 					testAccCheckUserRolesCorrect(t, string(iam.ORGANIZATIONOWNER), nil, nil),
 				),
 			},
-			// Update user roles with only deployment roles
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					userRoles(userRolesInput{
-						OrganizationRole: string(iam.ORGANIZATIONOWNER),
-						DeploymentRoles: []utils.Role{
-							{
-								Role:     "DEPLOYMENT_ADMIN",
-								EntityId: deploymentId,
-							},
-						},
-					}),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(tfVarName, "user_id", userId),
-					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.ORGANIZATIONOWNER)),
-					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "1"),
-					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.0.role", "DEPLOYMENT_ADMIN"),
-
-					// Check via API that user has correct roles
-					testAccCheckUserRolesCorrect(t,
-						string(iam.ORGANIZATIONOWNER),
-						[]utils.Role{
-							{
-								Role:     string(iam.WORKSPACEACCESSOR),
-								EntityId: workspaceId,
-							},
-						},
-						[]utils.Role{
-							{
-								Role:     "DEPLOYMENT_ADMIN",
-								EntityId: deploymentId,
-							},
-						},
-					),
-				),
-			},
-			// Update user roles with workspace and deployment roles
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{

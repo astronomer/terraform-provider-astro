@@ -95,8 +95,8 @@ func (r *UserRolesResource) MutateRoles(
 		return diags
 	}
 
-	// Checks for missing workspace roles if deployment roles are provided and adds them to the workspace roles
-	missingWorkspaceIds, diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
+	// Validate the roles
+	diags = common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 		PlatformClient:  r.platformClient,
 		OrganizationId:  r.organizationId,
 		WorkspaceRoles:  workspaceRoles,
@@ -104,14 +104,6 @@ func (r *UserRolesResource) MutateRoles(
 	})
 	if diags.HasError() {
 		return diags
-	}
-	if missingWorkspaceIds != nil && len(*missingWorkspaceIds) > 0 {
-		for _, id := range *missingWorkspaceIds {
-			workspaceRoles = append(workspaceRoles, iam.WorkspaceRole{
-				Role:        iam.WORKSPACEACCESSOR,
-				WorkspaceId: id,
-			})
-		}
 	}
 
 	// create request

@@ -64,7 +64,7 @@ func (data *TeamDataSource) ReadFromResponse(ctx context.Context, team *iam.Team
 	if team.RolesCount != nil {
 		data.RolesCount = types.Int64Value(int64(*team.RolesCount))
 	} else {
-		data.RolesCount = types.Int64Value(0)
+		data.RolesCount = types.Int64Value(1)
 	}
 
 	data.CreatedAt = types.StringValue(team.CreatedAt.String())

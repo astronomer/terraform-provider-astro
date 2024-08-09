@@ -87,11 +87,11 @@ type ValidateWorkspaceDeploymentRolesInput struct {
 	WorkspaceRoles  []iam.WorkspaceRole
 }
 
-// ValidateWorkspaceDeploymentRoles checks if deployment roles have corresponding workspace roles and returns missing workspace ids
-func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspaceDeploymentRolesInput) (*[]string, diag.Diagnostics) {
+// ValidateWorkspaceDeploymentRoles checks if deployment roles have corresponding workspace roles
+func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspaceDeploymentRolesInput) diag.Diagnostics {
 	// return nil if there are no deployment roles
 	if len(input.DeploymentRoles) == 0 {
-		return nil, nil
+		return nil
 	}
 
 	// get list of deployment ids
@@ -105,7 +105,7 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 	})
 	if err != nil {
 		tflog.Error(ctx, "failed to mutate roles", map[string]interface{}{"error": err})
-		return nil, diag.Diagnostics{diag.NewErrorDiagnostic(
+		return diag.Diagnostics{diag.NewErrorDiagnostic(
 			"Client Error",
 			fmt.Sprintf("Unable to mutate roles and list deployments, got error: %s", err),
 		),
@@ -113,7 +113,7 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 	}
 	_, diagnostic := clients.NormalizeAPIError(ctx, listDeployments.HTTPResponse, listDeployments.Body)
 	if diagnostic != nil {
-		return nil, diag.Diagnostics{diagnostic}
+		return diag.Diagnostics{diagnostic}
 	}
 
 	// get list of workspace ids from deployments
@@ -126,12 +126,17 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 		return role.WorkspaceId
 	})
 
-	// check if deploymentWorkspaceIds are in workspaceIds, return missing workspaceIds
-	missingWorkspaceIds, _ := lo.Difference(deploymentWorkspaceIds, workspaceIds)
-	if len(missingWorkspaceIds) > 0 {
-		return &missingWorkspaceIds, nil
+	// check if deploymentWorkspaceIds are in workspaceIds
+	workspaceIds = lo.Intersect(lo.Uniq(workspaceIds), lo.Uniq(deploymentWorkspaceIds))
+	if len(workspaceIds) != len(deploymentWorkspaceIds) {
+		tflog.Error(ctx, "failed to mutate roles")
+		return diag.Diagnostics{diag.NewErrorDiagnostic(
+			"Unable to mutate roles, not every deployment role has a corresponding workspace role",
+			"Please ensure that every deployment role has a corresponding workspace role",
+		),
+		}
 	}
-	return nil, nil
+	return nil
 }
 
 // GetDuplicateWorkspaceIds checks if there are duplicate workspace ids in the workspace roles
