@@ -861,14 +861,6 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 		)
 	}
 
-	// Need to check that is_development_mode is only for small schedulers with high_availability set to false
-	if data.IsDevelopmentMode.ValueBool() && (data.SchedulerSize.ValueString() != string(platform.DeploymentSchedulerSizeSMALL) || data.IsHighAvailability.ValueBool()) {
-		diags.AddError(
-			"is_development_mode is only supported for small schedulers with high_availability set to false",
-			"Either change the scheduler size to 'SMALL' and high_availability to false or set is_development_mode to true",
-		)
-	}
-
 	// Need to check that scaling_spec is only for is_development_mode set to true
 	if !data.IsDevelopmentMode.ValueBool() && !data.ScalingSpec.IsNull() {
 		diags.AddError(
