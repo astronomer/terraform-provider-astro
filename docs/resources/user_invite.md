@@ -13,7 +13,7 @@ User Invite resource
 ## Example Usage
 
 ```terraform
-resource "astro_user_invite" "example" {
+resource "astro_user_invite" "user_invite" {
   email = "email@organization.com"
   role  = "ORGANIZATION_MEMBER"
 }
