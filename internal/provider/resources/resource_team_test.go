@@ -74,22 +74,6 @@ func TestAcc_ResourceTeam(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile(fmt.Sprintf("Role '%s' is not valid for role type '%s'", string(iam.ORGANIZATIONOWNER), string(iam.WORKSPACE))),
 			},
-			// Test failure: check for missing corresponding workspace role if deployment role is present
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
-					Name:             failTeamName,
-					Description:      utils.TestResourceDescription,
-					MemberIds:        []string{userId},
-					OrganizationRole: string(iam.ORGANIZATIONOWNER),
-					DeploymentRoles: []utils.Role{
-						{
-							Role:     "DEPLOYMENT_ADMIN",
-							EntityId: deploymentId,
-						},
-					},
-				}),
-				ExpectError: regexp.MustCompile("Unable to mutate roles, not every deployment role has a corresponding workspace role"),
-			},
 			// Test failure: check for multiple roles with same entity id
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
@@ -160,10 +144,10 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      "new description",
 					MemberIds:        []string{},
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
-					WorkspaceRoles: []utils.Role{
+					DeploymentRoles: []utils.Role{
 						{
-							Role:     string(iam.WORKSPACEACCESSOR),
-							EntityId: workspaceId,
+							Role:     "DEPLOYMENT_ADMIN",
+							EntityId: deploymentId,
 						},
 					},
 				}),
@@ -173,6 +157,10 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.#", "1"),
 					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.0.role", string(iam.WORKSPACEACCESSOR)),
 					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.0.workspace_id", workspaceId),
+					resource.TestCheckResourceAttr(resourceVar, "deployment_roles.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar, "deployment_roles.0.role", "DEPLOYMENT_ADMIN"),
+					resource.TestCheckResourceAttr(resourceVar, "deployment_roles.0.deployment_id", deploymentId),
+					resource.TestCheckResourceAttr(resourceVar, "roles_count", "2"),
 					// Check via API that team exists
 					testAccCheckTeamExistence(t, teamName, true),
 				),

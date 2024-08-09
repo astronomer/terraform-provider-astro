@@ -44,6 +44,7 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 					teamRoles("", "", ""),
 				ExpectError: regexp.MustCompile("Attribute organization_role value must be one of"),
 			},
+			// Create team roles with only organization role
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					teamRoles(string(iam.ORGANIZATIONBILLINGADMIN), "", ""),
@@ -54,6 +55,34 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 					resource.TestCheckNoResourceAttr(tfVarName, "deployment_roles"),
 					// Check via API that team has correct roles
 					testAccCheckTeamRolesCorrect(t, string(iam.ORGANIZATIONBILLINGADMIN), 0, 0),
+				),
+			},
+			// Update team roles with only deployment role
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					standardDeployment(standardDeploymentInput{
+						Name:                        deploymentName,
+						Description:                 utils.TestResourceDescription,
+						Region:                      "us-east4",
+						CloudProvider:               string(platform.DeploymentCloudProviderGCP),
+						Executor:                    string(platform.DeploymentExecutorCELERY),
+						IncludeEnvironmentVariables: false,
+						SchedulerSize:               string(platform.DeploymentSchedulerSizeSMALL),
+						IsDevelopmentMode:           false,
+					}) +
+					teamRoles(string(iam.ORGANIZATIONMEMBER), "",
+						fmt.Sprintf(`[{deployment_id = %s
+											role = "DEPLOYMENT_ADMIN"}]`, "astro_deployment."+deploymentName+".id")),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.ORGANIZATIONMEMBER)),
+					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
+					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "1"),
+					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.0.role", string(iam.WORKSPACEACCESSOR)),
+					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.0.role", "DEPLOYMENT_ADMIN"),
+
+					// Check via API that team has correct roles
+					testAccCheckTeamRolesCorrect(t, string(iam.ORGANIZATIONMEMBER), 1, 1),
 				),
 			},
 			{

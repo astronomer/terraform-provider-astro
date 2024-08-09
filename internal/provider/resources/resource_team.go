@@ -94,8 +94,8 @@ func (r *TeamResource) MutateRoles(
 		return diags
 	}
 
-	// Validate the roles
-	diags = common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
+	// Checks for missing workspace roles if deployment roles are provided and adds them to the workspace roles
+	missingWorkspaceIds, diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 		PlatformClient:  r.PlatformClient,
 		OrganizationId:  r.OrganizationId,
 		WorkspaceRoles:  workspaceRoles,
@@ -103,6 +103,14 @@ func (r *TeamResource) MutateRoles(
 	})
 	if diags.HasError() {
 		return diags
+	}
+	if missingWorkspaceIds != nil && len(*missingWorkspaceIds) > 0 {
+		for _, id := range *missingWorkspaceIds {
+			workspaceRoles = append(workspaceRoles, iam.WorkspaceRole{
+				Role:        iam.WORKSPACEACCESSOR,
+				WorkspaceId: id,
+			})
+		}
 	}
 
 	// Update team roles
