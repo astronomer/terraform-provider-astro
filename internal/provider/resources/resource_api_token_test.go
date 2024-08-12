@@ -766,6 +766,11 @@ type apiTokenInput struct {
 }
 
 func apiToken(input apiTokenInput) string {
+	var description string
+	if input.Description != "" {
+		description = fmt.Sprintf("description = \"%v\"", input.Description)
+	}
+
 	roles := lo.Map(input.Roles, func(role apiTokenRole, _ int) string {
 		return fmt.Sprintf(`
 		{
@@ -783,11 +788,11 @@ func apiToken(input apiTokenInput) string {
 	return fmt.Sprintf(`
 resource astro_api_token "%v" {
 	name = "%v"
-	description = "%s"
+	%v
 	type = "%s"
 	%v
 	expiry_period_in_days = %v
-}`, input.Name, input.Name, input.Description, input.Type, rolesString, input.ExpiryPeriodInDays)
+}`, input.Name, input.Name, description, input.Type, rolesString, input.ExpiryPeriodInDays)
 }
 
 type checkApiTokensExistenceInput struct {
