@@ -58,7 +58,7 @@ func (data *ApiTokenDataSource) ReadFromResponse(ctx context.Context, apiToken *
 	if apiToken.EndAt != nil {
 		data.EndAt = types.StringValue(apiToken.EndAt.String())
 	} else {
-		data.EndAt = types.StringValue("")
+		data.EndAt = types.StringNull()
 	}
 	data.CreatedAt = types.StringValue(apiToken.CreatedAt.String())
 	data.UpdatedAt = types.StringValue(apiToken.UpdatedAt.String())
@@ -78,7 +78,7 @@ func (data *ApiTokenDataSource) ReadFromResponse(ctx context.Context, apiToken *
 	if apiToken.LastUsedAt != nil {
 		data.LastUsedAt = types.StringValue(apiToken.LastUsedAt.String())
 	} else {
-		data.LastUsedAt = types.StringValue("")
+		data.LastUsedAt = types.StringNull()
 	}
 	data.Roles, diags = utils.ObjectSet(ctx, apiToken.Roles, schemas.ApiTokenRoleAttributeTypes(), ApiTokenRoleTypesObject)
 	if diags.HasError() {
@@ -92,7 +92,7 @@ func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *ia
 	data.Id = types.StringValue(apiToken.Id)
 	data.Name = types.StringValue(apiToken.Name)
 	if apiToken.Description == "" {
-		data.Description = types.StringValue("")
+		data.Description = types.StringNull()
 	} else {
 		data.Description = types.StringValue(apiToken.Description)
 	}
@@ -100,7 +100,7 @@ func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *ia
 	data.Type = types.StringValue(string(apiToken.Type))
 	data.StartAt = types.StringValue(apiToken.StartAt.String())
 	if apiToken.EndAt == nil {
-		data.EndAt = types.StringValue("")
+		data.EndAt = types.StringNull()
 	} else {
 		data.EndAt = types.StringValue(apiToken.EndAt.String())
 	}
@@ -118,7 +118,7 @@ func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *ia
 		data.ExpiryPeriodInDays = types.Int64Value(int64(*apiToken.ExpiryPeriodInDays))
 	}
 	if apiToken.LastUsedAt == nil {
-		data.LastUsedAt = types.StringValue("")
+		data.LastUsedAt = types.StringNull()
 	} else {
 		data.LastUsedAt = types.StringValue(apiToken.LastUsedAt.String())
 	}
