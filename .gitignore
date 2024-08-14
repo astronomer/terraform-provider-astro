@@ -25,6 +25,9 @@ website/node_modules
 *.test
 *.iml
 *.tfvars
+import.tf
+generated.tf
+import/import
 
 website/vendor
 test_results
