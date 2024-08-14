@@ -10,6 +10,8 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
@@ -69,11 +71,11 @@ func main() {
 		log.Fatalf("Failed to create platform client: %v", err)
 	}
 
-	//iamClient, err := iam.NewIamClient(host, token, "import")
-	//if err != nil {
-	//	log.Fatalf("Failed to create iam client: %v", err)
-	//	return
-	//}
+	iamClient, err := iam.NewIamClient(host, token, "import")
+	if err != nil {
+		log.Fatalf("Failed to create iam client: %v", err)
+		return
+	}
 
 	// set terraform provider configuration
 	var importString string
@@ -90,46 +92,30 @@ func main() {
 		organization_id = "%s"
 		host = "%s"
 		token = "%s"
-	}`, organizationId, host, token)
+	}
+
+	`, organizationId, host, token)
 
 	//	for each resource, we get the list of entities and generate the terraform import command
 
-	for _, resource := range resources {
-		switch resource {
-		case "workspace":
-			importString += handleWorkspaces(ctx, platformClient, organizationId)
-		case "deployment":
-			// list deployments
-			// parse the response to get the entity id
-			// generate a terraform import command for each deployment
-		case "cluster":
-			// list clusters
-			// parse the response to get the entity id
-			// generate a terraform import command for each cluster
-		case "hybrid_cluster_workspace_authorization":
-			// list hybrid cluster workspace authorizations
-			// parse the response to get the entity id
-			// generate a terraform import command for each hybrid cluster workspace authorization
-		case "api_token":
-			// list api tokens
-			// parse the response to get the entity id
-			// generate a terraform import command for each api token
-		case "team":
-			// list teams
-			// parse the response to get the entity id
-			// generate a terraform import command for each team
+	resourceHandlers := map[string]func(context.Context, *platform.ClientWithResponses, *iam.ClientWithResponses, string) string{
+		"workspace":                              handleWorkspaces,
+		"deployment":                             handleDeployments,
+		"cluster":                                handleClusters,
+		"hybrid_cluster_workspace_authorization": handleHybridClusterWorkspaceAuthorizations,
+		"api_token":                              handleApiTokens,
+		"team":                                   handleTeams,
+		"team_roles":                             handleTeamRoles,
+		"user_roles":                             handleUserRoles,
+	}
 
-		case "team_roles":
-			// list team roles
-			// parse the response to get the entity id
-			// generate a terraform import command for each team role
-		case "user_roles":
-			// list user roles
-			// parse the response to get the entity id
-			// generate a terraform import command for each user role
-		default:
+	for _, resource := range resources {
+		handler, exists := resourceHandlers[resource]
+		if !exists {
 			log.Println("Resource not supported: ", resource)
+			continue
 		}
+		importString += handler(ctx, platformClient, iamClient, organizationId)
 	}
 
 	// write the terraform configuration to a file
@@ -191,7 +177,7 @@ func runTerraformCommand() error {
 	return nil
 }
 
-func handleWorkspaces(ctx context.Context, platformClient *platform.ClientWithResponses, organizationId string) string {
+func handleWorkspaces(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) string {
 	log.Printf("Importing workspaces for organization %s", organizationId)
 
 	workspacesResp, err := platformClient.ListWorkspacesWithResponse(ctx, organizationId, nil)
@@ -247,4 +233,35 @@ import {
 	}
 
 	return importString
+}
+
+func handleDeployments(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) string {
+
+	return ""
+}
+
+func handleClusters(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) string {
+
+	return ""
+}
+
+func handleHybridClusterWorkspaceAuthorizations(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) string {
+
+	return ""
+}
+
+func handleApiTokens(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) string {
+	return ""
+}
+
+func handleTeams(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) string {
+	return ""
+}
+
+func handleTeamRoles(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) string {
+	return ""
+}
+
+func handleUserRoles(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) string {
+	return ""
 }
