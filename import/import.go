@@ -26,6 +26,7 @@ type HandlerResult struct {
 }
 
 func main() {
+	log.SetFlags(0)
 	log.Println("Terraform Import Script Starting")
 
 	// collect all arguments from the user, indicating all the resources that need to be imported
