@@ -34,11 +34,26 @@ func main() {
 	tokenPtr := flag.String("token", "", "API token to authenticate with the platform")
 	hostPtr := flag.String("host", "https://api.astronomer.io", "API host to connect to")
 	organizationIdPtr := flag.String("organizationId", "", "Organization ID to import resources into")
+	helpFlag := flag.Bool("help", false, "Display help information")
 
 	flag.Parse()
 
-	*resourcesPtr = strings.ToLower(*resourcesPtr)
-	resources := strings.Split(*resourcesPtr, ",")
+	// display help information
+	if *helpFlag {
+		printHelp()
+		return
+	}
+
+	// validate the resources argument
+	resources := strings.Split(strings.ToLower(*resourcesPtr), ",")
+	acceptedResources := []string{"workspace", "deployment", "cluster", "api_token", "team", "team_roles", "user_roles"}
+	for _, resource := range resources {
+		if !lo.Contains(acceptedResources, resource) {
+			log.Fatalf("Invalid resource: %s is not accepted. The only accepted resources are %s", resource, acceptedResources)
+			return
+		}
+	}
+
 	log.Println("Resources to import: ", resources)
 
 	// set the API token
@@ -68,9 +83,13 @@ func main() {
 		log.Fatalf("Organization ID not provided")
 	}
 
-	log.Printf("Using API host: %s", host)
-	log.Printf("Using API token: %s", token)
 	log.Printf("Using organization ID: %s", organizationId)
+
+	// Check if Terraform is installed
+	_, err := exec.LookPath("terraform")
+	if err != nil {
+		log.Fatalf("Error: Terraform is not installed or not in PATH. Please install Terraform and make sure it's in your system PATH")
+	}
 
 	// connect to v1beta1 client
 	ctx := context.Background()
@@ -159,6 +178,28 @@ provider "astro" {
 	}
 }
 
+func printHelp() {
+	log.Println("Terraform Import Script")
+	log.Println("\nUsage: go run script.go [options]")
+	log.Println("\nOptions:")
+	log.Println("  -resources string")
+	log.Println("        Comma separated list of resources to import. Accepted values:")
+	log.Println("        workspace, deployment, cluster, api_token, team, team_roles, user_roles")
+	log.Println("  -token string")
+	log.Println("        API token to authenticate with the platform")
+	log.Println("  -host string")
+	log.Println("        API host to connect to (default: https://api.astronomer.io)")
+	log.Println("        Use 'dev' for https://api.astronomer-dev.io")
+	log.Println("        Use 'stage' for https://api.astronomer-stage.io")
+	log.Println("  -organizationId string")
+	log.Println("        Organization ID to import resources into")
+	log.Println("  -help")
+	log.Println("        Display this help information")
+	log.Println("\nExample:")
+	log.Println("  go run script.go -resources=workspace,deployment -token=your_api_token -organizationId=your_org_id")
+	log.Println("\nNote: If the -token flag is not provided, the script will attempt to use the ASTRO_API_TOKEN environment variable.")
+}
+
 func runTerraformCommand() error {
 	// delete the generated.tf file if it exists
 	filenames := []string{"generated.tf", "terraform.tfstate"}
@@ -182,15 +223,6 @@ func runTerraformCommand() error {
 
 	// terraform plan to generate the configuration
 	cmd := exec.Command("terraform", "plan", "-generate-config-out=generated.tf")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-
-	// terraform apply to import the resources
-	cmd = exec.Command("terraform", "apply", "-auto-approve")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
