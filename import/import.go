@@ -20,6 +20,11 @@ import (
 	"github.com/samber/lo"
 )
 
+type HandlerResult struct {
+	Resource string
+	Error    error
+}
+
 func main() {
 	log.Println("Terraform Import Script Starting")
 
@@ -81,26 +86,24 @@ func main() {
 
 	// set terraform provider configuration
 	var importString string
-	importString += fmt.Sprintf(`
-	terraform {
-		required_providers {
-			astro = {
-				source = "registry.terraform.io/astronomer/astro"
-			}
+	importString += fmt.Sprintf(`terraform {
+	required_providers {
+		astro = {
+			source = "registry.terraform.io/astronomer/astro"
 		}
 	}
-	
-	provider "astro" {
-		organization_id = "%s"
-		host = "%s"
-		token = "%s"
-	}
+}
 
-	`, organizationId, host, token)
+provider "astro" {
+	organization_id = "%s"
+	host = "%s"
+	token = "%s"
+}
+`, organizationId, host, token)
 
 	//	for each resource, we get the list of entities and generate the terraform import command
 
-	resourceHandlers := map[string]func(context.Context, *platform.ClientWithResponses, *iam.ClientWithResponses, string) string{
+	resourceHandlers := map[string]func(context.Context, *platform.ClientWithResponses, *iam.ClientWithResponses, string) (string, error){
 		"workspace":  handleWorkspaces,
 		"deployment": handleDeployments,
 		"cluster":    handleClusters,
@@ -110,13 +113,22 @@ func main() {
 		"user_roles": handleUserRoles,
 	}
 
+	var results []HandlerResult
+
 	for _, resource := range resources {
 		handler, exists := resourceHandlers[resource]
 		if !exists {
-			log.Println("Resource not supported: ", resource)
+			log.Printf("Resource not supported: %s", resource)
+			results = append(results, HandlerResult{Resource: resource, Error: fmt.Errorf("resource not supported")})
 			continue
 		}
-		importString += handler(ctx, platformClient, iamClient, organizationId)
+		result, err := handler(ctx, platformClient, iamClient, organizationId)
+		if err != nil {
+			log.Printf("Error handling resource %s: %v", resource, err)
+			results = append(results, HandlerResult{Resource: resource, Error: err})
+		} else {
+			importString += result
+		}
 	}
 
 	// write the terraform configuration to a file
@@ -135,26 +147,36 @@ func main() {
 		return
 	}
 
-	log.Println("Terraform plan executed successfully")
+	// Print summary of results
+	log.Println("Import process completed. Summary:")
+	for _, result := range results {
+		if result.Error != nil {
+			log.Printf("Resource %s failed: %v", result.Resource, result.Error)
+		} else {
+			log.Printf("Resource %s processed successfully", result.Resource)
+		}
+	}
 }
 
 func runTerraformCommand() error {
 	// delete the generated.tf file if it exists
-	filename := "generated.tf"
-	// Check if the file exists
-	if _, err := os.Stat(filename); err == nil {
-		// File exists, so delete it
-		err = os.Remove(filename)
-		if err != nil {
+	filenames := []string{"generated.tf", "terraform.tfstate"}
+	for _, filename := range filenames {
+		// Check if the file exists
+		if _, err := os.Stat(filename); err == nil {
+			// File exists, so delete it
+			err = os.Remove(filename)
+			if err != nil {
+				return err
+			}
+			log.Printf("Successfully deleted %s", filename)
+		} else if os.IsNotExist(err) {
+			// File does not exist, nothing to do
+			log.Printf("%s does not exist, no need to delete", filename)
+		} else {
+			// Some other error occurred
 			return err
 		}
-		log.Printf("Successfully deleted %s", filename)
-	} else if os.IsNotExist(err) {
-		// File does not exist, nothing to do
-		log.Printf("%s does not exist, no need to delete", filename)
-	} else {
-		// Some other error occurred
-		return err
 	}
 
 	// terraform plan to generate the configuration
@@ -178,31 +200,20 @@ func runTerraformCommand() error {
 	return nil
 }
 
-func handleWorkspaces(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) string {
+func handleWorkspaces(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing workspaces for organization %s", organizationId)
 
 	workspacesResp, err := platformClient.ListWorkspacesWithResponse(ctx, organizationId, nil)
 	if err != nil {
-		log.Printf("Failed to list workspaces: %v", err)
-		return ""
+		return "", fmt.Errorf("failed to list workspaces: %v", err)
 	}
 
-	// Check HTTP status code
 	if workspacesResp.StatusCode() != http.StatusOK {
-		log.Printf("Unexpected status code: %d", workspacesResp.StatusCode())
-
-		// Try to read and log the response body
-		bodyString := string(workspacesResp.Body)
-		log.Printf("Response body: %s", bodyString)
-		return ""
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", workspacesResp.StatusCode(), string(workspacesResp.Body))
 	}
 
 	if workspacesResp.JSON200 == nil {
-		log.Printf("Failed to list workspaces, JSON200 resp is nil, organizationId: %v", organizationId)
-		// Try to read and log the response body
-		bodyString := string(workspacesResp.Body)
-		log.Printf("Response body: %s", bodyString)
-		return ""
+		return "", fmt.Errorf("failed to list workspaces, JSON200 resp is nil, organizationId: %v", organizationId)
 	}
 
 	_, diagnostic := clients.NormalizeAPIError(ctx, workspacesResp.HTTPResponse, workspacesResp.Body)
@@ -212,8 +223,7 @@ func handleWorkspaces(ctx context.Context, platformClient *platform.ClientWithRe
 
 	workspaces := workspacesResp.JSON200.Workspaces
 	if workspaces == nil {
-		log.Printf("Workspaces list is nil")
-		return ""
+		return "", fmt.Errorf("workspaces list is nil")
 	}
 
 	workspaceIds := lo.Map(workspaces, func(workspace platform.Workspace, _ int) string {
@@ -233,34 +243,23 @@ import {
 		importString += workspaceImportString + "\n"
 	}
 
-	return importString
+	return importString, nil
 }
 
-func handleDeployments(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) string {
+func handleDeployments(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing deployments for organization %s", organizationId)
 
 	deploymentsResp, err := platformClient.ListDeploymentsWithResponse(ctx, organizationId, nil)
 	if err != nil {
-		log.Printf("Failed to list deployments: %v", err)
-		return ""
+		return "", fmt.Errorf("failed to list deployments: %v", err)
 	}
 
-	// Check HTTP status code
 	if deploymentsResp.StatusCode() != http.StatusOK {
-		log.Printf("Unexpected status code: %d", deploymentsResp.StatusCode())
-
-		// Try to read and log the response body
-		bodyString := string(deploymentsResp.Body)
-		log.Printf("Response body: %s", bodyString)
-		return ""
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", deploymentsResp.StatusCode(), string(deploymentsResp.Body))
 	}
 
 	if deploymentsResp.JSON200 == nil {
-		log.Printf("Failed to list deployments, JSON200 resp is nil, organizationId: %v", organizationId)
-		// Try to read and log the response body
-		bodyString := string(deploymentsResp.Body)
-		log.Printf("Response body: %s", bodyString)
-		return ""
+		return "", fmt.Errorf("failed to list deployments, JSON200 resp is nil, organizationId: %v", organizationId)
 	}
 
 	_, diagnostic := clients.NormalizeAPIError(ctx, deploymentsResp.HTTPResponse, deploymentsResp.Body)
@@ -270,8 +269,7 @@ func handleDeployments(ctx context.Context, platformClient *platform.ClientWithR
 
 	deployments := deploymentsResp.JSON200.Deployments
 	if deployments == nil {
-		log.Printf("Deployments list is nil")
-		return ""
+		return "", fmt.Errorf("deployments list is nil")
 	}
 
 	deploymentIds := lo.Map(deployments, func(deployment platform.Deployment, _ int) string {
@@ -290,34 +288,23 @@ import {
 		importString += deploymentImportString + "\n"
 	}
 
-	return importString
+	return importString, nil
 }
 
-func handleClusters(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) string {
+func handleClusters(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing clusters for organization %s", organizationId)
 
 	clustersResp, err := platformClient.ListClustersWithResponse(ctx, organizationId, nil)
 	if err != nil {
-		log.Printf("Failed to list clusters: %v", err)
-		return ""
+		return "", fmt.Errorf("failed to list clusters: %v", err)
 	}
 
-	// Check HTTP status code
 	if clustersResp.StatusCode() != http.StatusOK {
-		log.Printf("Unexpected status code: %d", clustersResp.StatusCode())
-
-		// Try to read and log the response body
-		bodyString := string(clustersResp.Body)
-		log.Printf("Response body: %s", bodyString)
-		return ""
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", clustersResp.StatusCode(), string(clustersResp.Body))
 	}
 
 	if clustersResp.JSON200 == nil {
-		log.Printf("Failed to list clusters, JSON200 resp is nil, organizationId: %v", organizationId)
-		// Try to read and log the response body
-		bodyString := string(clustersResp.Body)
-		log.Printf("Response body: %s", bodyString)
-		return ""
+		return "", fmt.Errorf("failed to list clusters, JSON200 resp is nil, organizationId: %v", organizationId)
 	}
 
 	_, diagnostic := clients.NormalizeAPIError(ctx, clustersResp.HTTPResponse, clustersResp.Body)
@@ -327,13 +314,14 @@ func handleClusters(ctx context.Context, platformClient *platform.ClientWithResp
 
 	clusters := clustersResp.JSON200.Clusters
 	if clusters == nil {
-		log.Printf("Clusters list is nil")
-		return ""
+		return "", fmt.Errorf("clusters list is nil")
 	}
 
-	var clusterMap map[string]platform.ClusterType
+	clusterMap := make(map[string]platform.ClusterType)
 	for _, cluster := range clusters {
-		clusterMap[cluster.Id] = cluster.Type
+		if cluster.Id != "" {
+			clusterMap[cluster.Id] = cluster.Type
+		}
 	}
 
 	log.Printf("Importing Clusters: %v", maps.Keys(clusterMap))
@@ -346,7 +334,6 @@ import {
 	to = astro_cluster.cluster_%v
 }`, clusterId, clusterId)
 
-		// if clusterType is hybrid, we need to import the hybrid cluster workspace authorization
 		if clusterType == platform.ClusterTypeHYBRID {
 			clusterImportString += fmt.Sprintf(`
 import {
@@ -358,34 +345,23 @@ import {
 		importString += clusterImportString + "\n"
 	}
 
-	return importString
+	return importString, nil
 }
 
-func handleApiTokens(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) string {
+func handleApiTokens(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing API tokens for organization %s", organizationId)
 
 	apiTokensResp, err := iamClient.ListApiTokensWithResponse(ctx, organizationId, nil)
 	if err != nil {
-		log.Printf("Failed to list API tokens: %v", err)
-		return ""
+		return "", fmt.Errorf("failed to list API tokens: %v", err)
 	}
 
-	// Check HTTP status code
 	if apiTokensResp.StatusCode() != http.StatusOK {
-		log.Printf("Unexpected status code: %d", apiTokensResp.StatusCode())
-
-		// Try to read and log the response body
-		bodyString := string(apiTokensResp.Body)
-		log.Printf("Response body: %s", bodyString)
-		return ""
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", apiTokensResp.StatusCode(), string(apiTokensResp.Body))
 	}
 
 	if apiTokensResp.JSON200 == nil {
-		log.Printf("Failed to list API tokens, JSON200 resp is nil, organizationId: %v", organizationId)
-		// Try to read and log the response body
-		bodyString := string(apiTokensResp.Body)
-		log.Printf("Response body: %s", bodyString)
-		return ""
+		return "", fmt.Errorf("failed to list API tokens, JSON200 resp is nil, organizationId: %v", organizationId)
 	}
 
 	_, diagnostic := clients.NormalizeAPIError(ctx, apiTokensResp.HTTPResponse, apiTokensResp.Body)
@@ -395,8 +371,7 @@ func handleApiTokens(ctx context.Context, platformClient *platform.ClientWithRes
 
 	apiTokens := apiTokensResp.JSON200.Tokens
 	if apiTokens == nil {
-		log.Printf("API tokens list is nil")
-		return ""
+		return "", fmt.Errorf("API tokens list is nil")
 	}
 
 	apiTokenIds := lo.Map(apiTokens, func(apiToken iam.ApiToken, _ int) string {
@@ -416,34 +391,23 @@ import {
 		importString += apiTokenImportString + "\n"
 	}
 
-	return importString
+	return importString, nil
 }
 
-func handleTeams(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) string {
+func handleTeams(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing teams for organization %s", organizationId)
 
 	teamsResp, err := iamClient.ListTeamsWithResponse(ctx, organizationId, nil)
 	if err != nil {
-		log.Printf("Failed to list teams: %v", err)
-		return ""
+		return "", fmt.Errorf("failed to list teams: %v", err)
 	}
 
-	// Check HTTP status code
 	if teamsResp.StatusCode() != http.StatusOK {
-		log.Printf("Unexpected status code: %d", teamsResp.StatusCode())
-
-		// Try to read and log the response body
-		bodyString := string(teamsResp.Body)
-		log.Printf("Response body: %s", bodyString)
-		return ""
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", teamsResp.StatusCode(), string(teamsResp.Body))
 	}
 
 	if teamsResp.JSON200 == nil {
-		log.Printf("Failed to list teams, JSON200 resp is nil, organizationId: %v", organizationId)
-		// Try to read and log the response body
-		bodyString := string(teamsResp.Body)
-		log.Printf("Response body: %s", bodyString)
-		return ""
+		return "", fmt.Errorf("failed to list teams, JSON200 resp is nil, organizationId: %v", organizationId)
 	}
 
 	_, diagnostic := clients.NormalizeAPIError(ctx, teamsResp.HTTPResponse, teamsResp.Body)
@@ -453,8 +417,7 @@ func handleTeams(ctx context.Context, platformClient *platform.ClientWithRespons
 
 	teams := teamsResp.JSON200.Teams
 	if teams == nil {
-		log.Printf("Teams list is nil")
-		return ""
+		return "", fmt.Errorf("teams list is nil")
 	}
 
 	teamIds := lo.Map(teams, func(team iam.Team, _ int) string {
@@ -474,34 +437,23 @@ import {
 		importString += teamImportString + "\n"
 	}
 
-	return importString
+	return importString, nil
 }
 
-func handleTeamRoles(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) string {
+func handleTeamRoles(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing team roles for organization %s", organizationId)
 
 	teamsResp, err := iamClient.ListTeamsWithResponse(ctx, organizationId, nil)
 	if err != nil {
-		log.Printf("Failed to list teams: %v", err)
-		return ""
+		return "", fmt.Errorf("failed to list teams: %v", err)
 	}
 
-	// Check HTTP status code
 	if teamsResp.StatusCode() != http.StatusOK {
-		log.Printf("Unexpected status code: %d", teamsResp.StatusCode())
-
-		// Try to read and log the response body
-		bodyString := string(teamsResp.Body)
-		log.Printf("Response body: %s", bodyString)
-		return ""
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", teamsResp.StatusCode(), string(teamsResp.Body))
 	}
 
 	if teamsResp.JSON200 == nil {
-		log.Printf("Failed to list teams, JSON200 resp is nil, organizationId: %v", organizationId)
-		// Try to read and log the response body
-		bodyString := string(teamsResp.Body)
-		log.Printf("Response body: %s", bodyString)
-		return ""
+		return "", fmt.Errorf("failed to list teams, JSON200 resp is nil, organizationId: %v", organizationId)
 	}
 
 	_, diagnostic := clients.NormalizeAPIError(ctx, teamsResp.HTTPResponse, teamsResp.Body)
@@ -511,8 +463,7 @@ func handleTeamRoles(ctx context.Context, platformClient *platform.ClientWithRes
 
 	teams := teamsResp.JSON200.Teams
 	if teams == nil {
-		log.Printf("Teams list is nil")
-		return ""
+		return "", fmt.Errorf("teams list is nil")
 	}
 
 	teamIds := lo.Map(teams, func(team iam.Team, _ int) string {
@@ -532,34 +483,23 @@ import {
 		importString += teamImportString + "\n"
 	}
 
-	return importString
+	return importString, nil
 }
 
-func handleUserRoles(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) string {
+func handleUserRoles(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing user roles for organization %s", organizationId)
 
 	usersResp, err := iamClient.ListUsersWithResponse(ctx, organizationId, nil)
 	if err != nil {
-		log.Printf("Failed to list users: %v", err)
-		return ""
+		return "", fmt.Errorf("failed to list users: %v", err)
 	}
 
-	// Check HTTP status code
 	if usersResp.StatusCode() != http.StatusOK {
-		log.Printf("Unexpected status code: %d", usersResp.StatusCode())
-
-		// Try to read and log the response body
-		bodyString := string(usersResp.Body)
-		log.Printf("Response body: %s", bodyString)
-		return ""
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", usersResp.StatusCode(), string(usersResp.Body))
 	}
 
 	if usersResp.JSON200 == nil {
-		log.Printf("Failed to list users, JSON200 resp is nil, organizationId: %v", organizationId)
-		// Try to read and log the response body
-		bodyString := string(usersResp.Body)
-		log.Printf("Response body: %s", bodyString)
-		return ""
+		return "", fmt.Errorf("failed to list users, JSON200 resp is nil, organizationId: %v", organizationId)
 	}
 
 	_, diagnostic := clients.NormalizeAPIError(ctx, usersResp.HTTPResponse, usersResp.Body)
@@ -569,8 +509,7 @@ func handleUserRoles(ctx context.Context, platformClient *platform.ClientWithRes
 
 	users := usersResp.JSON200.Users
 	if users == nil {
-		log.Printf("Users list is nil")
-		return ""
+		return "", fmt.Errorf("users list is nil")
 	}
 
 	userIds := lo.Map(users, func(user iam.User, _ int) string {
@@ -590,5 +529,5 @@ import {
 		importString += userImportString + "\n"
 	}
 
-	return importString
+	return importString, nil
 }
