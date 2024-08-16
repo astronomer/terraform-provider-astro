@@ -30,7 +30,7 @@ func main() {
 	log.Println("Terraform Import Script Starting")
 
 	// collect all arguments from the user, indicating all the resources that need to be imported
-	resourcesPtr := flag.String("resources", "", "Comma separated list of resources to import")
+	resourcesPtr := flag.String("resources", "", "Comma separated list of resources to import. The only accepted values are workspace, deployment, cluster, api_token, team, team_roles, user_roles")
 	tokenPtr := flag.String("token", "", "API token to authenticate with the platform")
 	hostPtr := flag.String("host", "https://api.astronomer.io", "API host to connect to")
 	organizationIdPtr := flag.String("organizationId", "", "Organization ID to import resources into")
