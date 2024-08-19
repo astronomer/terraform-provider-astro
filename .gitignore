@@ -28,6 +28,7 @@ website/node_modules
 import.tf
 generated.tf
 import/import
+mocks/
 
 website/vendor
 test_results

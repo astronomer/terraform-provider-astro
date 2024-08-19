@@ -9,6 +9,9 @@ $(ENVTEST_ASSETS_DIR):
 	mkdir -p $(ENVTEST_ASSETS_DIR)
 OAPI_CODEGEN ?= $(ENVTEST_ASSETS_DIR)/oapi-codegen
 
+MOCKERY_VERSION := 2.34.0
+MOCKERY_DOWNLOAD_DIR := /tmp/mockery-$(MOCKERY_VERSION)
+
 # Run acceptance tests
 .PHONY: testacc
 testacc:
@@ -20,11 +23,26 @@ test:
 	go vet ./...
 	TF_ACC="" go test ./... -v $(TESTARGS)
 
+# Run script tests
+.PHONY: testscript
+testscript:
+	go test ./import/... -v $(TESTARGS)
+
 .PHONY: fmt
 fmt:
 	gofmt -w ./
 	goimports -w ./
 	[ -z "$$CIRCLECI" ] || git diff --exit-code --color=always # In CI: exit if anything changed
+
+.PHONY: mock
+mock:
+	@if [[ -z "$MOCKERY_VERSION" || ! "$MOCKERY_VERSION" =~ .*v2\.42\.0.* ]]; then \
+      echo "Mockery not found or incorrect version. Installing Mockery"; \
+      go install github.com/vektra/mockery/v2@v2.42.0; \
+    fi
+	rm -rf mocks
+	mockery --name=ClientWithResponsesInterface --dir=./internal/clients/iam --output=./internal/mocks/iam --outpkg=mocks_iam
+	mockery --name=ClientWithResponsesInterface --dir=./internal/clients/platform --output=./internal/mocks/platform --outpkg=mocks_platform
 
 .PHONY: validate-fmt
 validate-fmt:
