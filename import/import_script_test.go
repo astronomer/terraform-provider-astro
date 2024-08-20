@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"os/exec"
+	"path/filepath"
 
 	import_script "github.com/astronomer/terraform-provider-astro/import"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
@@ -378,59 +381,59 @@ var _ = Describe("Import Script", func() {
 	})
 })
 
-//// will only work locally if organizationId and token are set
-//var _ = Describe("Integration Test", func() {
-//	var organizationId, token, rootDir, importScriptPath string
-//
-//	BeforeEach(func() {
-//		organizationId = os.Getenv("HOSTED_ORGANIZATION_ID")
-//		token = os.Getenv("HOSTED_ORGANIZATION_API_TOKEN")
-//		Expect(organizationId).NotTo(BeEmpty(), "HOSTED_ORGANIZATION_ID environment variable is not set")
-//		Expect(token).NotTo(BeEmpty(), "HOSTED_ORGANIZATION_API_TOKEN environment variable is not set")
-//
-//		// Get the current working directory
-//		var err error
-//		rootDir, err = os.Getwd()
-//		Expect(err).To(BeNil(), "Failed to get current working directory")
-//
-//		// Find the import_script.go file
-//		importScriptPath = filepath.Join(rootDir, "import_script.go")
-//		_, err = os.Stat(importScriptPath)
-//		if err != nil {
-//			// If not found, try going up one directory
-//			rootDir = filepath.Dir(rootDir)
-//			importScriptPath = filepath.Join(rootDir, "import_script.go")
-//			_, err = os.Stat(importScriptPath)
-//		}
-//		Expect(err).To(BeNil(), fmt.Sprintf("import_script.go not found at %s", importScriptPath))
-//	})
-//
-//	It("should return a list of generated resources", func() {
-//		// Run the import_script.go file
-//		cmd := exec.Command("go", "run", importScriptPath,
-//			"-resources", "workspace,deployment,cluster,api_token,team,team_roles,user_roles",
-//			"-token", token,
-//			"-organizationId", organizationId,
-//			"-host", "dev")
-//
-//		// Set the working directory to the directory containing import_script.go
-//		cmd.Dir = filepath.Dir(importScriptPath)
-//
-//		// Capture the output of the command
-//		output, err := cmd.CombinedOutput()
-//		if err != nil {
-//			fmt.Printf("Error executing command: %v\n", err)
-//			fmt.Printf("Command output: %s\n", string(output))
-//			Fail(fmt.Sprintf("Command failed with error: %v", err))
-//		}
-//
-//		outputStr := string(output)
-//		Expect(outputStr).To(ContainSubstring("astro_workspace"))
-//		Expect(outputStr).To(ContainSubstring("astro_deployment"))
-//		Expect(outputStr).To(ContainSubstring("astro_cluster"))
-//		Expect(outputStr).To(ContainSubstring("astro_api_token"))
-//		Expect(outputStr).To(ContainSubstring("astro_team"))
-//		Expect(outputStr).To(ContainSubstring("astro_team_roles"))
-//		Expect(outputStr).To(ContainSubstring("astro_user_roles"))
-//	})
-//})
+// will only work locally if organizationId and token are set
+var _ = Describe("Integration Test", func() {
+	var organizationId, token, rootDir, importScriptPath string
+
+	BeforeEach(func() {
+		organizationId = os.Getenv("HOSTED_ORGANIZATION_ID")
+		token = os.Getenv("HOSTED_ORGANIZATION_API_TOKEN")
+		Expect(organizationId).NotTo(BeEmpty(), "HOSTED_ORGANIZATION_ID environment variable is not set")
+		Expect(token).NotTo(BeEmpty(), "HOSTED_ORGANIZATION_API_TOKEN environment variable is not set")
+
+		// Get the current working directory
+		var err error
+		rootDir, err = os.Getwd()
+		Expect(err).To(BeNil(), "Failed to get current working directory")
+
+		// Find the import_script.go file
+		importScriptPath = filepath.Join(rootDir, "import_script.go")
+		_, err = os.Stat(importScriptPath)
+		if err != nil {
+			// If not found, try going up one directory
+			rootDir = filepath.Dir(rootDir)
+			importScriptPath = filepath.Join(rootDir, "import_script.go")
+			_, err = os.Stat(importScriptPath)
+		}
+		Expect(err).To(BeNil(), fmt.Sprintf("import_script.go not found at %s", importScriptPath))
+	})
+
+	It("should return a list of generated resources", func() {
+		// Run the import_script.go file
+		cmd := exec.Command("go", "run", importScriptPath,
+			"-resources", "workspace,deployment,cluster,api_token,team,team_roles,user_roles",
+			"-token", token,
+			"-organizationId", organizationId,
+			"-host", "dev")
+
+		// Set the working directory to the directory containing import_script.go
+		cmd.Dir = filepath.Dir(importScriptPath)
+
+		// Capture the output of the command
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			fmt.Printf("Error executing command: %v\n", err)
+			fmt.Printf("Command output: %s\n", string(output))
+			Fail(fmt.Sprintf("Command failed with error: %v", err))
+		}
+
+		outputStr := string(output)
+		Expect(outputStr).To(ContainSubstring("astro_workspace"))
+		//Expect(outputStr).To(ContainSubstring("astro_deployment"))
+		Expect(outputStr).To(ContainSubstring("astro_cluster"))
+		Expect(outputStr).To(ContainSubstring("astro_api_token"))
+		Expect(outputStr).To(ContainSubstring("astro_team"))
+		Expect(outputStr).To(ContainSubstring("astro_team_roles"))
+		Expect(outputStr).To(ContainSubstring("astro_user_roles"))
+	})
+})
