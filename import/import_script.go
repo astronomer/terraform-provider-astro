@@ -111,7 +111,7 @@ func main() {
 	importString += fmt.Sprintf(`terraform {
 	required_providers {
 		astro = {
-			source = "registry.terraform.io/astronomer/astro"
+			source = "astronomer/astro"
 		}
 	}
 }
