@@ -245,14 +245,14 @@ go build ./import_script.go
    go run import_script.go -resources=workspace -token=your_api_token -organizationId=your_org_id -host=dev
    ```
 
-## Output
+### Output
 
 The script will generate two main files:
 
 1. `import.tf`: Contains the Terraform import blocks for the specified resources.
 2. `generated.tf`: Contains the Terraform resource configurations for the imported resources.
 
-## Notes
+### Notes
 
 - Ensure you have the necessary permissions in your Astro organization to access the resources you're attempting to import.
 - The generated Terraform configurations may require some manual adjustment to match your specific requirements or to resolve any conflicts.
