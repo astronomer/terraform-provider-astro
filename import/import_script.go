@@ -398,12 +398,15 @@ func handleClusters(ctx context.Context, platformClient *platform.ClientWithResp
 	log.Printf("Importing Clusters: %v", maps.Keys(clusterMap))
 
 	var importString string
+	var clusterImportString string
 	for clusterId, clusterType := range clusterMap {
-		clusterImportString := fmt.Sprintf(`
+		if clusterType != platform.ClusterTypeHYBRID {
+			clusterImportString = fmt.Sprintf(`
 import {
 	id = "%v"
 	to = astro_cluster.cluster_%v
 }`, clusterId, clusterId)
+		}
 
 		if clusterType == platform.ClusterTypeHYBRID {
 			clusterImportString += fmt.Sprintf(`
