@@ -165,12 +165,17 @@ provider "astro" {
 	}()
 
 	var allResults []HandlerResult
+	var deploymentImportString string
 	for result := range results {
 		allResults = append(allResults, result)
 		if result.Error != nil {
 			log.Printf("Error handling resource %s: %v", result.Resource, result.Error)
 		} else {
-			importString += result.ImportString
+			if result.Resource == "deployment" {
+				deploymentImportString += result.ImportString
+			} else {
+				importString += result.ImportString
+			}
 			log.Printf("Successfully handled resource %s", result.Resource)
 		}
 	}
@@ -190,6 +195,15 @@ provider "astro" {
 		log.Fatalf("Failed to run Terraform command: %v", err)
 		return
 	}
+
+	// Step 3: Add deployment import blocks and HCL to the generated file
+	err = addDeploymentsToGeneratedFile(deploymentImportString, organizationId, platformClient, ctx)
+	if err != nil {
+		log.Fatalf("Failed to add deployments to generated file: %v", err)
+		return
+	}
+
+	log.Println("Import process completed successfully. The 'generated.tf' file now includes all resources, including deployments.")
 
 	// Print summary of results
 	log.Println("Import process completed. Summary:")
@@ -587,4 +601,264 @@ import {
 	}
 
 	return importString, nil
+}
+
+func addDeploymentsToGeneratedFile(deploymentImportString string, organizationId string, platformClient *platform.ClientWithResponses, ctx context.Context) error {
+	var contentBytes []byte
+	var err error
+
+	// Try to read the existing generated.tf file
+	contentBytes, err = os.ReadFile("generated.tf")
+	if err != nil {
+		if os.IsNotExist(err) {
+			// File doesn't exist, we'll create our own content
+			log.Println("generated.tf does not exist. Creating new file with deployment information.")
+			contentBytes = []byte{}
+		} else {
+			// Some other error occurred
+			return fmt.Errorf("error reading generated.tf: %v", err)
+		}
+	}
+
+	// Generate deployment HCL
+	deploymentHCL, err := generateDeploymentHCL(ctx, platformClient, organizationId)
+	if err != nil {
+		return fmt.Errorf("failed to generate deployment HCL: %v", err)
+	}
+
+	// Combine existing content (if any), deployment import blocks, and deployment HCL
+	existingContent := strings.TrimSpace(string(contentBytes))
+	newContent := existingContent
+	if newContent != "" {
+		newContent += "\n\n"
+	}
+	newContent += "// generated Deployment HCL \n" + strings.TrimSpace(deploymentImportString) + "\n\n" + strings.TrimSpace(deploymentHCL)
+
+	// Write the updated content to generated.tf
+	err = os.WriteFile("generated.tf", []byte(newContent), 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write updated generated.tf: %v", err)
+	}
+
+	log.Println("Successfully updated generated.tf with deployment information.")
+	return nil
+}
+
+func generateDeploymentHCL(ctx context.Context, platformClient *platform.ClientWithResponses, organizationId string) (string, error) {
+	deploymentsResp, err := platformClient.ListDeploymentsWithResponse(ctx, organizationId, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to list deployments: %v", err)
+	}
+
+	if deploymentsResp.StatusCode() != http.StatusOK {
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", deploymentsResp.StatusCode(), string(deploymentsResp.Body))
+	}
+
+	if deploymentsResp.JSON200 == nil {
+		return "", fmt.Errorf("failed to list deployments, JSON200 resp is nil, organizationId: %v", organizationId)
+	}
+
+	deployments := deploymentsResp.JSON200.Deployments
+	if deployments == nil {
+		return "", fmt.Errorf("deployments list is nil")
+	}
+
+	deploymentIds := lo.Map(deployments, func(deployment platform.Deployment, _ int) string {
+		return deployment.Id
+	})
+
+	var hclString string
+	for _, deploymentId := range deploymentIds {
+		var deploymentHCL string
+
+		// get deployment details
+		deploymentResp, err := platformClient.GetDeploymentWithResponse(ctx, organizationId, deploymentId)
+		if err != nil {
+			return "", fmt.Errorf("failed to list deployments: %v", err)
+		}
+
+		if deploymentsResp.StatusCode() != http.StatusOK {
+			return "", fmt.Errorf("unexpected status code: %d, body: %s", deploymentsResp.StatusCode(), string(deploymentsResp.Body))
+		}
+
+		if deploymentsResp.JSON200 == nil {
+			return "", fmt.Errorf("failed to list deployments, JSON200 resp is nil, organizationId: %v", organizationId)
+		}
+
+		deployment := deploymentResp.JSON200
+		if deployment == nil {
+			return "", fmt.Errorf("deployment is nil")
+		}
+
+		contactEmailsString := formatContactEmails(deployment.ContactEmails)
+		environmentVariablesString := formatEnvironmentVariables(deployment.EnvironmentVariables)
+		workerQueuesString := formatWorkerQueues(deployment.WorkerQueues, (*string)(deployment.Executor))
+
+		deploymentType := deployment.Type
+
+		if *deploymentType == platform.DeploymentTypeDEDICATED {
+			deploymentHCL = fmt.Sprintf(`
+resource "astro_deployment" "deployment_%s" {
+	cluster_id = "%s"
+	%s
+	default_task_pod_cpu = "%s"
+	default_task_pod_memory = "%s"
+	description = "%s"
+	%s
+	executor = "%s"
+	is_cicd_enforced = %t
+	is_dag_deploy_enabled = %t
+	is_development_mode = %t
+	is_high_availability = %t
+	name = "%s"
+	resource_quota_cpu = "%s"
+	resource_quota_memory = "%s"
+	scheduler_size = "%s"
+	type = "%s"
+	workspace_id = "%s"
+	%s
+}
+`,
+				deployment.Id,
+				stringValue(deployment.ClusterId),
+				contactEmailsString,
+				stringValue(deployment.DefaultTaskPodCpu),
+				stringValue(deployment.DefaultTaskPodMemory),
+				stringValue(deployment.Description),
+				environmentVariablesString,
+				stringValue((*string)(deployment.Executor)),
+				deployment.IsCicdEnforced,
+				deployment.IsDagDeployEnabled,
+				boolValue(deployment.IsDevelopmentMode),
+				boolValue(deployment.IsHighAvailability),
+				deployment.Name,
+				stringValue(deployment.ResourceQuotaCpu),
+				stringValue(deployment.ResourceQuotaMemory),
+				stringValue((*string)(deployment.SchedulerSize)),
+				stringValue((*string)(deploymentType)),
+				deployment.WorkspaceId,
+				workerQueuesString,
+			)
+		} else if *deploymentType == platform.DeploymentTypeSTANDARD {
+			deploymentHCL = fmt.Sprintf(`
+resource "astro_deployment" "deployment_%s" {
+	cloud_provider = "%s"
+	%s
+	default_task_pod_cpu = "%s"
+	default_task_pod_memory = "%s"
+	description = "%s"
+	%s
+	executor = "%s"
+	is_cicd_enforced = %t
+	is_dag_deploy_enabled = %t
+	is_development_mode = %t
+	is_high_availability = %t
+	name = "%s"
+	region = "%s"
+	resource_quota_cpu = "%s"
+	resource_quota_memory = "%s"
+	scheduler_size = "%s"
+	type = "%s"
+	workspace_id = "%s"
+	%s
+}
+`,
+				deployment.Id,
+				stringValue((*string)(deployment.CloudProvider)),
+				contactEmailsString,
+				stringValue(deployment.DefaultTaskPodCpu),
+				stringValue(deployment.DefaultTaskPodMemory),
+				stringValue(deployment.Description),
+				environmentVariablesString,
+				stringValue((*string)(deployment.Executor)),
+				deployment.IsCicdEnforced,
+				deployment.IsDagDeployEnabled,
+				boolValue(deployment.IsDevelopmentMode),
+				boolValue(deployment.IsHighAvailability),
+				deployment.Name,
+				stringValue(deployment.Region),
+				stringValue(deployment.ResourceQuotaCpu),
+				stringValue(deployment.ResourceQuotaMemory),
+				stringValue((*string)(deployment.SchedulerSize)),
+				stringValue((*string)(deploymentType)),
+				deployment.WorkspaceId,
+				workerQueuesString,
+			)
+		} else {
+			log.Printf("Skipping deployment %s: unsupported deployment type %s", deployment.Id, deploymentType)
+		}
+
+		hclString += deploymentHCL
+	}
+
+	return hclString, nil
+}
+
+func stringValue(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
+func boolValue(b *bool) bool {
+	if b == nil {
+		return false
+	}
+	return *b
+}
+
+func formatContactEmails(emails *[]string) string {
+	if emails == nil || len(*emails) == 0 {
+		return fmt.Sprintf(`contact_emails = []`)
+	}
+	quotedEmails := make([]string, len(*emails))
+	for i, email := range *emails {
+		quotedEmails[i] = fmt.Sprintf(`"%s"`, email)
+	}
+	return fmt.Sprintf(`contact_emails = [%s]`, strings.Join(quotedEmails, ", "))
+}
+
+func formatEnvironmentVariables(envVars *[]platform.DeploymentEnvironmentVariable) string {
+	if envVars == nil || len(*envVars) == 0 {
+		return fmt.Sprintf(`environment_variables = []`)
+	}
+	variables := lo.Map(*envVars, func(envVar platform.DeploymentEnvironmentVariable, _ int) string {
+		return fmt.Sprintf(`{
+			name = "%s"
+			value = "%s"
+			is_secret = %t
+		}`, envVar.Key, stringValue(envVar.Value), envVar.IsSecret)
+	})
+	return fmt.Sprintf(`environment_variables = [%s]`, strings.Join(variables, ", "))
+}
+
+func formatWorkerQueues(queues *[]platform.WorkerQueue, executor *string) string {
+	// If queues is nil and executor is not CELERY, return an empty string
+	if queues == nil && (executor == nil || *executor != "CELERY") {
+		return ""
+	}
+
+	// If queues is empty but executor is CELERY, return an empty worker_queues array
+	if (queues == nil || len(*queues) == 0) && executor != nil && *executor == "CELERY" {
+		return `worker_queues = []`
+	}
+
+	// If we have queues, format them
+	if queues != nil && len(*queues) > 0 {
+		workerQueues := lo.Map(*queues, func(queue platform.WorkerQueue, _ int) string {
+			return fmt.Sprintf(`{
+				astro_machine = "%s"
+                name = "%s"
+                is_default = %t
+                max_worker_count = %d
+                min_worker_count = %d
+                worker_concurrency = %d
+	}`, stringValue(queue.AstroMachine), queue.Name, queue.IsDefault, queue.MaxWorkerCount, queue.MinWorkerCount, queue.WorkerConcurrency)
+		})
+		return fmt.Sprintf(`worker_queues = [%s]`, strings.Join(workerQueues, ", "))
+	}
+
+	// If we've reached here, it means queues is nil or empty, and executor is not CELERY
+	return ""
 }
