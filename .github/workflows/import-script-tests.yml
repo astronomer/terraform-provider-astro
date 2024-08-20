@@ -44,6 +44,8 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: go mod download
+      - name: Terraform Init
+        run: terraform init
       - env:
           IMPORT: "1"
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
@@ -68,6 +70,8 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: go mod download
+      - name: Terraform Init
+        run: terraform init
       - env:
           IMPORT: "1"
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HOSTED_ORGANIZATION_API_TOKEN }}
@@ -92,6 +96,8 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: go mod download
+      - name: Terraform Init
+        run: terraform init
       - env:
           IMPORT: "1"
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
