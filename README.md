@@ -203,5 +203,58 @@ You will also need to set all the environment variables described in `internal/p
 
 The acceptance tests will run against the Astronomer API and create/read/update/delete real resources.
 
+## Importing Existing Resources
+The Astro Terraform Import Script is a tool designed to help you import existing Astro resources into your Terraform configuration. This script automates the process of generating Terraform import blocks and resource configurations for various Astro resources such as workspaces, deployments, clusters, and more.
 
+To use the import script, run it with the following syntax:
+
+```
+go run ./import/import_script.go [options]
+```
+
+Additionally, you can build the script into a binary and run it as an executable:
+
+```
+go build ./import_script.go
+./import_script [options]
+```
+
+### Options
+
+- `-resources`: Comma-separated list of resources to import. Accepted values are workspace, deployment, cluster, api_token, team, team_roles, user_roles.
+- `-token`: API token to authenticate with the Astro platform. If not provided, the script will attempt to use the `ASTRO_API_TOKEN` environment variable.
+- `-host`: API host to connect to. Default is https://api.astronomer.io. Use 'dev' for https://api.astronomer-dev.io or 'stage' for https://api.astronomer-stage.io.
+- `-organizationId`: Organization ID to import resources from.
+- `-runTerraformInit`: Run `terraform init` after generating the import configuration.
+- `-help`: Display help information.
+
+### Examples
+
+1. Import workspaces and deployments:
+   ```
+   go run import_script.go -resources=workspace,deployment -token=your_api_token -organizationId=your_org_id
+   ```
+
+2. Import all supported resources and run Terraform init:
+   ```
+   go run import_script.go -resources=workspace,deployment,cluster,api_token,team,team_roles,user_roles -token=your_api_token -organizationId=your_org_id -runTerraformInit
+   ```
+
+3. Use a different API host (e.g., dev environment):
+   ```
+   go run import_script.go -resources=workspace -token=your_api_token -organizationId=your_org_id -host=dev
+   ```
+
+## Output
+
+The script will generate two main files:
+
+1. `import.tf`: Contains the Terraform import blocks for the specified resources.
+2. `generated.tf`: Contains the Terraform resource configurations for the imported resources.
+
+## Notes
+
+- Ensure you have the necessary permissions in your Astro organization to access the resources you're attempting to import.
+- The generated Terraform configurations may require some manual adjustment to match your specific requirements or to resolve any conflicts.
+- Always review the generated files before applying them to your Terraform state.
 
