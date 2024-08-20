@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 
 	"golang.org/x/exp/maps"
 
@@ -21,11 +22,12 @@ import (
 )
 
 type HandlerResult struct {
-	Resource string
-	Error    error
+	Resource     string
+	ImportString string
+	Error        error
 }
 
-func main() {
+func Main() {
 	log.SetFlags(0)
 	log.Println("Terraform Import Script Starting")
 
@@ -133,21 +135,43 @@ provider "astro" {
 		"user_roles": handleUserRoles,
 	}
 
-	var results []HandlerResult
+	results := make(chan HandlerResult, len(resources))
+	var wg sync.WaitGroup
 
 	for _, resource := range resources {
-		handler, exists := resourceHandlers[resource]
-		if !exists {
-			log.Printf("Resource not supported: %s", resource)
-			results = append(results, HandlerResult{Resource: resource, Error: fmt.Errorf("resource not supported")})
-			continue
-		}
-		result, err := handler(ctx, platformClient, iamClient, organizationId)
-		if err != nil {
-			log.Printf("Error handling resource %s: %v", resource, err)
-			results = append(results, HandlerResult{Resource: resource, Error: err})
+		wg.Add(1)
+
+		go func(resource string) {
+			defer wg.Done()
+			handler, exists := resourceHandlers[resource]
+			if !exists {
+				log.Printf("Resource not supported: %s", resource)
+				results <- HandlerResult{Resource: resource, Error: fmt.Errorf("resource not supported")}
+				return
+			}
+			result, err := handler(ctx, platformClient, iamClient, organizationId)
+			if err != nil {
+				log.Printf("Error handling resource %s: %v", resource, err)
+				results <- HandlerResult{Resource: resource, Error: err}
+			} else {
+				results <- HandlerResult{Resource: resource, ImportString: result}
+			}
+		}(resource)
+	}
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	var allResults []HandlerResult
+	for result := range results {
+		allResults = append(allResults, result)
+		if result.Error != nil {
+			log.Printf("Error handling resource %s: %v", result.Resource, result.Error)
 		} else {
-			importString += result
+			importString += result.ImportString
+			log.Printf("Successfully handled resource %s", result.Resource)
 		}
 	}
 
@@ -169,7 +193,7 @@ provider "astro" {
 
 	// Print summary of results
 	log.Println("Import process completed. Summary:")
-	for _, result := range results {
+	for _, result := range allResults {
 		if result.Error != nil {
 			log.Printf("Resource %s failed: %v", result.Resource, result.Error)
 		} else {
