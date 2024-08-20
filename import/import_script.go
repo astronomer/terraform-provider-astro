@@ -258,6 +258,8 @@ func printHelp() {
 	log.Println("        Use 'stage' for https://api.astronomer-stage.io")
 	log.Println("  -organizationId string")
 	log.Println("        Organization ID to import resources into")
+	log.Println("  -runTerraformInit")
+	log.Println("        Run terraform init after generating the import configuration")
 	log.Println("  -help")
 	log.Println("        Display this help information")
 	log.Println("\nExample:")
