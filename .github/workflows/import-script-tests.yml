@@ -44,13 +44,28 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: go mod download
-      - name: Terraform Init
-        run: terraform init
       - env:
           IMPORT: "1"
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clx42kkcm01fo01o06agtmshg
-        run: make test-import-script
+        run: |
+          cat <<EOF > main.tf
+          terraform {
+            required_providers {
+              astro = {
+                source = "registry.terraform.io/astronomer/astro"
+              }
+            }
+          }
+          provider "astro" {
+            organization_id = "${{HOSTED_ORGANIZATION_ID}}"
+            host = "https://api.astronomer-dev.io"
+            token = "${{HOSTED_ORGANIZATION_API_TOKEN}}"
+          }
+          EOF
+          
+          terraform init
+          make test-import-script
 
   test-import-script-stage:
     name: Import Script Tests - Stage
@@ -70,13 +85,28 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: go mod download
-      - name: Terraform Init
-        run: terraform init
       - env:
           IMPORT: "1"
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clx46acvv060e01ilddqlbsmc
-        run: make test-import-script
+        run: |
+          cat <<EOF > main.tf
+          terraform {
+            required_providers {
+              astro = {
+                source = "registry.terraform.io/astronomer/astro"
+              }
+            }
+          }
+          provider "astro" {
+            organization_id = "${{HOSTED_ORGANIZATION_ID}}"
+            host = "https://api.astronomer-dev.io"
+            token = "${{HOSTED_ORGANIZATION_API_TOKEN}}"
+          }
+          EOF
+
+          terraform init
+          make test-import-script
 
   test-import-script-dev:
     name: Import Script Tests - Dev
@@ -96,10 +126,25 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: go mod download
-      - name: Terraform Init
-        run: terraform init
       - env:
           IMPORT: "1"
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clx42kkcm01fo01o06agtmshg
-        run: make test-import-script
+        run: |
+          cat <<EOF > main.tf
+          terraform {
+            required_providers {
+              astro = {
+                source = "registry.terraform.io/astronomer/astro"
+              }
+            }
+          }
+          provider "astro" {
+            organization_id = "${{HOSTED_ORGANIZATION_ID}}"
+            host = "https://api.astronomer-dev.io"
+            token = "${{HOSTED_ORGANIZATION_API_TOKEN}}"
+          }
+          EOF
+
+          terraform init
+          make test-import-script
