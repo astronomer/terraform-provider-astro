@@ -785,7 +785,7 @@ resource "astro_deployment" "deployment_%s" {
 				workerQueuesString,
 			)
 		} else {
-			log.Printf("Skipping deployment %s: unsupported deployment type %s", deployment.Id, deploymentType)
+			log.Printf("Skipping deployment %s: unsupported deployment type %s", deployment.Id, stringValue((*string)(deploymentType)))
 		}
 
 		hclString += deploymentHCL
