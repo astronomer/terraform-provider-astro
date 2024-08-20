@@ -410,7 +410,7 @@ var _ = Describe("Integration Test", func() {
 
 	It("should return a list of generated resources", func() {
 		// Run the import_script executable
-		cmd := exec.Command(importScriptPath,
+		cmd := exec.Command("go", "run", importScriptPath,
 			"-resources", "workspace,cluster,api_token,team,team_roles,user_roles",
 			"-token", token,
 			"-organizationId", organizationId,
