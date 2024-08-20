@@ -24,4 +24,4 @@ jobs:
           cache: true
       - run: go mod download
       - run: go build -v .
-      - run: make testscript
+      - run: make test-import-script
