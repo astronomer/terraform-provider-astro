@@ -409,7 +409,7 @@ var _ = Describe("Integration Test", func() {
 	})
 
 	It("should return a list of generated resources - latest", func() {
-		if os.Getenv("SKIP_IMPORT_SCRIPT_TEST") == "True" {
+		if os.Getenv("SKIP_IMPORT_SCRIPT_TEST") == "" {
 			Skip("Skipping latest integration test")
 			return
 		}
@@ -441,7 +441,7 @@ var _ = Describe("Integration Test", func() {
 	})
 
 	It("should return a list of generated resources - dev", func() {
-		if os.Getenv("SKIP_IMPORT_SCRIPT_TEST_DEV") == "True" {
+		if os.Getenv("SKIP_IMPORT_SCRIPT_TEST_DEV") == "" {
 			Skip("Skipping dev integration test")
 			return
 		}
