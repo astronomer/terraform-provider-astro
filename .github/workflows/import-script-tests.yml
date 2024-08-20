@@ -58,9 +58,9 @@ jobs:
             }
           }
           provider "astro" {
-            organization_id = "${{HOSTED_ORGANIZATION_ID}}"
+            organization_id = "$HOSTED_ORGANIZATION_ID"
             host = "https://api.astronomer-dev.io"
-            token = "${{HOSTED_ORGANIZATION_API_TOKEN}}"
+            token = "$HOSTED_ORGANIZATION_API_TOKEN"
           }
           EOF
           
@@ -99,9 +99,9 @@ jobs:
             }
           }
           provider "astro" {
-            organization_id = "${{HOSTED_ORGANIZATION_ID}}"
+            organization_id = "$HOSTED_ORGANIZATION_ID"
             host = "https://api.astronomer-dev.io"
-            token = "${{HOSTED_ORGANIZATION_API_TOKEN}}"
+            token = "$HOSTED_ORGANIZATION_API_TOKEN"
           }
           EOF
 
@@ -140,9 +140,9 @@ jobs:
             }
           }
           provider "astro" {
-            organization_id = "${{HOSTED_ORGANIZATION_ID}}"
+            organization_id = "$HOSTED_ORGANIZATION_ID"
             host = "https://api.astronomer-dev.io"
-            token = "${{HOSTED_ORGANIZATION_API_TOKEN}}"
+            token = "$HOSTED_ORGANIZATION_API_TOKEN"
           }
           EOF
 
