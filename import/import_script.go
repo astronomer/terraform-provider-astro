@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -36,6 +37,7 @@ func main() {
 	tokenPtr := flag.String("token", "", "API token to authenticate with the platform")
 	hostPtr := flag.String("host", "https://api.astronomer.io", "API host to connect to")
 	organizationIdPtr := flag.String("organizationId", "", "Organization ID to import resources into")
+	runTerraformInitPtr := flag.Bool("runTerraformInit", false, "Run terraform init after generating the import configuration")
 	helpFlag := flag.Bool("help", false, "Display help information")
 
 	flag.Parse()
@@ -112,7 +114,6 @@ func main() {
 	required_providers {
 		astro = {
 			source = "astronomer/astro"
-			version = "0.3.1"
 		}
 	}
 }
@@ -197,7 +198,32 @@ provider "astro" {
 		return
 	}
 
-	// Step 3: Add deployment import blocks and HCL to the generated file
+	// Trigger terraform init if CI mode is enabled
+	if *runTerraformInitPtr {
+		log.Println("CI mode enabled. Running terraform init")
+		rootDir, err := os.Getwd()
+
+		// Find the import_script.go file
+		importScriptPath := filepath.Join(rootDir, "import_script.go")
+		_, err = os.Stat(importScriptPath)
+		if err != nil {
+			// If not found, try going up one directory
+			rootDir = filepath.Dir(rootDir)
+			importScriptPath = filepath.Join(rootDir, "import_script.go")
+			_, err = os.Stat(importScriptPath)
+		}
+
+		cmd := exec.Command("terraform", "init")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+
+		if err := cmd.Run(); err != nil {
+			log.Fatalf("Failed to run terraform init: %v", err)
+			return
+		}
+	}
+
+	// Add deployment import blocks and HCL to the generated file
 	err = addDeploymentsToGeneratedFile(deploymentImportString, organizationId, platformClient, ctx)
 	if err != nil {
 		log.Fatalf("Failed to add deployments to generated file: %v", err)
