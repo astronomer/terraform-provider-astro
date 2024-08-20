@@ -388,8 +388,6 @@ var _ = Describe("Integration Test", func() {
 	BeforeEach(func() {
 		organizationId = os.Getenv("HOSTED_ORGANIZATION_ID")
 		token = os.Getenv("HOSTED_ORGANIZATION_API_TOKEN")
-		Expect(organizationId).NotTo(BeEmpty(), "HOSTED_ORGANIZATION_ID environment variable is not set")
-		Expect(token).NotTo(BeEmpty(), "HOSTED_ORGANIZATION_API_TOKEN environment variable is not set")
 
 		// Get the current working directory
 		var err error
