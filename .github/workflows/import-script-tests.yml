@@ -23,7 +23,8 @@ jobs:
           go-version-file: 'go.mod'
           cache: true
       - run: go mod download
-      - run: go build -v .
+      - name: Build import script
+        run: go build -o import_script ./import/import_script.go
 
   test-import-script:
     name: Import Script Tests

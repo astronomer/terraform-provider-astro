@@ -396,28 +396,28 @@ var _ = Describe("Integration Test", func() {
 		rootDir, err = os.Getwd()
 		Expect(err).To(BeNil(), "Failed to get current working directory")
 
-		// Find the import_script executable
-		importScriptPath = filepath.Join(rootDir, "import", "import_script")
+		// Find the import_script.go file
+		importScriptPath = filepath.Join(rootDir, "import_script.go")
 		_, err = os.Stat(importScriptPath)
 		if err != nil {
 			// If not found, try going up one directory
 			rootDir = filepath.Dir(rootDir)
-			importScriptPath = filepath.Join(rootDir, "import", "import_script")
+			importScriptPath = filepath.Join(rootDir, "import_script.go")
 			_, err = os.Stat(importScriptPath)
 		}
-		Expect(err).To(BeNil(), fmt.Sprintf("import_script executable not found at %s", importScriptPath))
+		Expect(err).To(BeNil(), fmt.Sprintf("import_script.go not found at %s", importScriptPath))
 	})
 
 	It("should return a list of generated resources", func() {
-		// Run the import_script executable
+		// Run the import_script.go file
 		cmd := exec.Command("go", "run", importScriptPath,
 			"-resources", "workspace,cluster,api_token,team,team_roles,user_roles",
 			"-token", token,
 			"-organizationId", organizationId,
 			"-host", "dev")
 
-		// Set the working directory to the root directory
-		cmd.Dir = rootDir
+		// Set the working directory to the directory containing import_script.go
+		cmd.Dir = filepath.Dir(importScriptPath)
 
 		// Capture the output of the command
 		output, err := cmd.CombinedOutput()
