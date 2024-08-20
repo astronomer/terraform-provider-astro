@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"os/exec"
 
 	import_script "github.com/astronomer/terraform-provider-astro/import"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
@@ -328,7 +330,7 @@ var _ = Describe("Import Script", func() {
 		})
 	})
 
-	Describe("HandleUsers", func() {
+	Describe("HandleUserRoles", func() {
 		It("should return an error if the iam client returns an error", func() {
 			mockIAMClient.On("ListUsersWithResponse", ctx, organizationId, (*iam.ListUsersParams)(nil)).Return(nil, fmt.Errorf("error"))
 
@@ -374,6 +376,25 @@ var _ = Describe("Import Script", func() {
 			Expect(err).To(BeNil())
 			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_user_roles.user_%s", userId1)))
 			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_user_roles.user_%s", userId2)))
+		})
+	})
+
+	Describe("Integration Test", func() {
+		organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
+		token := os.Getenv("HOSTED_ORGANIZATION_API_TOKEN")
+
+		It("should return a list of generated resources", func() {
+			cmd := exec.Command("go", "run", "import_script.go", "-resources=workspace,deployment,cluster,api_token,team,team_roles,user_roles", "-token="+token, "-organization_id="+organizationId, "-host=dev")
+			output, err := cmd.CombinedOutput()
+
+			Expect(err).To(BeNil())
+			Expect(string(output)).To(ContainSubstring("astro_workspace."))
+			Expect(string(output)).To(ContainSubstring("astro_deployment."))
+			Expect(string(output)).To(ContainSubstring("astro_cluster."))
+			Expect(string(output)).To(ContainSubstring("astro_api_token."))
+			Expect(string(output)).To(ContainSubstring("astro_team."))
+			Expect(string(output)).To(ContainSubstring("astro_team_roles."))
+			Expect(string(output)).To(ContainSubstring("astro_user_roles."))
 		})
 	})
 })
