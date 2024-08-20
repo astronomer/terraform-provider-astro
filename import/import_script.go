@@ -112,7 +112,7 @@ func main() {
 	required_providers {
 		astro = {
 			source = "astronomer/astro"
-			version = "v0.3.1"
+			version = "0.3.1"
 		}
 	}
 }
