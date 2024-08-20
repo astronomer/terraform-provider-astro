@@ -32,6 +32,9 @@ jobs:
     timeout-minutes: 20
     strategy:
       fail-fast: true
+      matrix:
+        terraform:
+          - latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
@@ -44,7 +47,8 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: go mod download
-      - env:
+      - name: Run import script tests
+        env:
           IMPORT: "1"
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clx42kkcm01fo01o06agtmshg
@@ -63,7 +67,7 @@ jobs:
             token = "$HOSTED_ORGANIZATION_API_TOKEN"
           }
           EOF
-          
+
           terraform init
           make test-import-script
 
@@ -73,6 +77,14 @@ jobs:
     timeout-minutes: 20
     strategy:
       fail-fast: true
+      matrix:
+        terraform:
+          - latest
+        provider_version:
+          - v0.3.1
+          - v0.2.1
+          - v0.1.0-alpha
+          - main
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
@@ -85,7 +97,8 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: go mod download
-      - env:
+      - name: Run import script tests
+        env:
           IMPORT: "1"
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clx46acvv060e01ilddqlbsmc
@@ -114,6 +127,14 @@ jobs:
     timeout-minutes: 20
     strategy:
       fail-fast: true
+      matrix:
+        terraform:
+          - latest
+        provider_version:
+          - v0.3.1
+          - v0.2.1
+          - v0.1.0-alpha
+          - main
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
@@ -126,7 +147,8 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: go mod download
-      - env:
+      - name: Run import script tests
+        env:
           IMPORT: "1"
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clx42kkcm01fo01o06agtmshg
