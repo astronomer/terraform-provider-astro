@@ -20,7 +20,7 @@ jobs:
           go-version-file: 'go.mod'
           cache: true
       - run: go mod download
-      - run: go build -v -o terraform-import-script ./import/import.go
+      - run: go build -v -o terraform-import-script ./import/import_script.go
 
   lint:
     name: Lint
@@ -31,8 +31,8 @@ jobs:
         with:
           go-version-file: 'go.mod'
           cache: true
-      - run: go fmt ./import/import.go
-      - run: go vet ./import/import.go
+      - run: go fmt ./import/import_script.go
+      - run: go vet ./import/import_script.go
       - run: make validate-fmt
 
   goreleaser:
