@@ -409,8 +409,9 @@ var _ = Describe("Integration Test", func() {
 	})
 
 	It("should return a list of generated resources - latest", func() {
-		if os.Getenv("SKIP_IMPORT_SCRIPT_TEST") == "true" {
+		if os.Getenv("SKIP_IMPORT_SCRIPT_TEST") == "True" {
 			Skip("Skipping latest integration test")
+			return
 		}
 
 		// Run the import_script.go file
@@ -440,8 +441,9 @@ var _ = Describe("Integration Test", func() {
 	})
 
 	It("should return a list of generated resources - dev", func() {
-		if os.Getenv("SKIP_IMPORT_SCRIPT_TEST_DEV") == "true" {
+		if os.Getenv("SKIP_IMPORT_SCRIPT_TEST_DEV") == "True" {
 			Skip("Skipping dev integration test")
+			return
 		}
 
 		// Run the import_script.go file
@@ -465,7 +467,7 @@ var _ = Describe("Integration Test", func() {
 
 		outputStr := string(output)
 		Expect(outputStr).To(ContainSubstring("astro_workspace"))
-		//Expect(outputStr).To(ContainSubstring("astro_deployment"))
+		Expect(outputStr).To(ContainSubstring("astro_deployment"))
 		Expect(outputStr).To(ContainSubstring("astro_cluster"))
 		Expect(outputStr).To(ContainSubstring("astro_api_token"))
 		Expect(outputStr).To(ContainSubstring("astro_team"))

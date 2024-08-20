@@ -32,8 +32,8 @@ jobs:
       - run: go build -v .
       - name: Run unit tests
         env:
-          SKIP_IMPORT_SCRIPT_TEST: true
-          SKIP_IMPORT_SCRIPT_TEST_DEV: true
+          SKIP_IMPORT_SCRIPT_TEST: True
+          SKIP_IMPORT_SCRIPT_TEST_DEV: True
         run: make test
 
   lint:
