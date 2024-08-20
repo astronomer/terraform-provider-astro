@@ -204,7 +204,8 @@ You will also need to set all the environment variables described in `internal/p
 The acceptance tests will run against the Astronomer API and create/read/update/delete real resources.
 
 ## Importing Existing Resources
-The Astro Terraform Import Script is a tool designed to help you import existing Astro resources into your Terraform configuration. This script automates the process of generating Terraform import blocks and resource configurations for various Astro resources such as workspaces, deployments, clusters, and more.
+The Astro Terraform Import Script is a tool designed to help you import existing Astro resources into your Terraform configuration. 
+Currently, this script automates the process of generating Terraform import blocks and resource configurations for the following resources: workspaces, deployments, clusters, hybrid cluster workspace authorizations, API tokens, teams, team roles, and user roles.
 
 To use the import script, run it with the following syntax:
 
