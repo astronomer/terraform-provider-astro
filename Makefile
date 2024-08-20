@@ -20,12 +20,12 @@ testacc:
 .PHONY: test
 test:
 	go vet ./...
-	TF_ACC="" go test ./... -v $(TESTARGS)
+	TF_ACC="" IMPORT_SCRIPT="" IMPORT_SCRIPT_DEV="" go test ./... -v $(TESTARGS)
 
 # Run script tests
 .PHONY: test-import-script
 test-import-script:
-	go test ./import/... -v $(TESTARGS)
+	IMPORT_SCRIPT="" go test ./import/... -v $(TESTARGS)
 
 .PHONY: fmt
 fmt:

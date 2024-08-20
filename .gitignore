@@ -33,6 +33,7 @@ website/vendor
 test_results
 vendor/
 .terraformrc
+.terraform.lock.hcl
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate
