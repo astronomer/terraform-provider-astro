@@ -1,4 +1,4 @@
-package import_script_test
+package main_test
 
 import (
 	"testing"

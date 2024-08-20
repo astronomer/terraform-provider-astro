@@ -1,4 +1,4 @@
-package import_script_test
+package main_test
 
 import (
 	"context"
@@ -383,7 +383,7 @@ var _ = Describe("Import Script", func() {
 
 // will only work locally if organizationId and token are set
 var _ = Describe("Integration Test", func() {
-	var organizationId, token, rootDir string
+	var organizationId, token, rootDir, importScriptPath string
 
 	BeforeEach(func() {
 		organizationId = os.Getenv("HOSTED_ORGANIZATION_ID")
@@ -396,31 +396,21 @@ var _ = Describe("Integration Test", func() {
 		rootDir, err = os.Getwd()
 		Expect(err).To(BeNil(), "Failed to get current working directory")
 
-		// Ensure we're in the root directory of the project
-		maxAttempts := 10 // Adjust this value based on your project structure
-		for attempts := 0; attempts < maxAttempts; attempts++ {
-			_, err = os.Stat(filepath.Join(rootDir, "import_script_main.go"))
-			if err == nil {
-				break // Found the file, exit the loop
-			}
-			if rootDir == filepath.Dir(rootDir) {
-				// We've reached the root of the file system
-				break
-			}
+		// Find the import_script executable
+		importScriptPath = filepath.Join(rootDir, "import", "import_script")
+		_, err = os.Stat(importScriptPath)
+		if err != nil {
+			// If not found, try going up one directory
 			rootDir = filepath.Dir(rootDir)
+			importScriptPath = filepath.Join(rootDir, "import", "import_script")
+			_, err = os.Stat(importScriptPath)
 		}
-
-		Expect(err).To(BeNil(), fmt.Sprintf("import_script_main.go not found within %d levels of the directory tree", maxAttempts))
+		Expect(err).To(BeNil(), fmt.Sprintf("import_script executable not found at %s", importScriptPath))
 	})
 
 	It("should return a list of generated resources", func() {
-		// Check if the root directory exists and contains import_script_main.go
-		mainScriptPath := filepath.Join(rootDir, "import_script_main.go")
-		_, err := os.Stat(mainScriptPath)
-		Expect(err).To(BeNil(), fmt.Sprintf("import_script_main.go not found in root directory: %s", rootDir))
-
-		// Run the Go script
-		cmd := exec.Command("go", "run", mainScriptPath,
+		// Run the import_script executable
+		cmd := exec.Command(importScriptPath,
 			"-resources", "workspace,cluster,api_token,team,team_roles,user_roles",
 			"-token", token,
 			"-organizationId", organizationId,
@@ -439,7 +429,7 @@ var _ = Describe("Integration Test", func() {
 
 		outputStr := string(output)
 		Expect(outputStr).To(ContainSubstring("astro_workspace"))
-		//Expect(outputStr).To(ContainSubstring("astro_deployment"))
+		// Expect(outputStr).To(ContainSubstring("astro_deployment"))
 		Expect(outputStr).To(ContainSubstring("astro_cluster"))
 		Expect(outputStr).To(ContainSubstring("astro_api_token"))
 		Expect(outputStr).To(ContainSubstring("astro_team"))

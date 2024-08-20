@@ -1,4 +1,4 @@
-package import_script
+package main
 
 import (
 	"context"
@@ -27,7 +27,7 @@ type HandlerResult struct {
 	Error        error
 }
 
-func Main() {
+func main() {
 	log.SetFlags(0)
 	log.Println("Terraform Import Script Starting")
 

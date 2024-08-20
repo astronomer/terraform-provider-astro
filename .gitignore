@@ -27,7 +27,7 @@ website/node_modules
 *.tfvars
 import.tf
 generated.tf
-import/import_script_exe
+import/import_script
 
 website/vendor
 test_results
