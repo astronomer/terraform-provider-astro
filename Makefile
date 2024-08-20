@@ -20,7 +20,7 @@ testacc:
 .PHONY: test
 test:
 	go vet ./...
-	TF_ACC="" go test ./... -v $(TESTARGS)
+	TF_ACC="" SKIP_IMPORT_SCRIPT_TEST="" SKIP_IMPORT_SCRIPT_TEST_DEV="" go test ./... -v $(TESTARGS)
 
 # Run script tests
 .PHONY: test-import-script
