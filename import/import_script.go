@@ -191,16 +191,9 @@ provider "astro" {
 
 	log.Println("Successfully wrote import configuration to import.tf")
 
-	// Generate the corresponding terraform HCL configuration for each import block
-	err = runTerraformCommand()
-	if err != nil {
-		log.Fatalf("Failed to run Terraform command: %v", err)
-		return
-	}
-
-	// Trigger terraform init if CI mode is enabled
+	// Trigger terraform init if the flag is set
 	if *runTerraformInitPtr {
-		log.Println("CI mode enabled. Running terraform init")
+		log.Println("Running terraform init")
 		rootDir, err := os.Getwd()
 
 		// Find the import_script.go file
@@ -221,6 +214,13 @@ provider "astro" {
 			log.Fatalf("Failed to run terraform init: %v", err)
 			return
 		}
+	}
+
+	// Generate the corresponding terraform HCL configuration for each import block
+	err = runTerraformCommand()
+	if err != nil {
+		log.Fatalf("Failed to run Terraform command: %v", err)
+		return
 	}
 
 	// Add deployment import blocks and HCL to the generated file
