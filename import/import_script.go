@@ -217,7 +217,7 @@ provider "astro" {
 	}
 
 	// Generate the corresponding terraform HCL configuration for each import block
-	err = runTerraformCommand()
+	err = generateTerraformConfig()
 	if err != nil {
 		log.Fatalf("Failed to run Terraform command: %v", err)
 		return
@@ -267,7 +267,7 @@ func printHelp() {
 	log.Println("\nNote: If the -token flag is not provided, the script will attempt to use the ASTRO_API_TOKEN environment variable.")
 }
 
-func runTerraformCommand() error {
+func generateTerraformConfig() error {
 	// delete the generated.tf file if it exists
 	filenames := []string{"generated.tf", "terraform.tfstate"}
 	for _, filename := range filenames {
@@ -819,6 +819,7 @@ resource "astro_deployment" "deployment_%s" {
 		} else {
 			log.Printf("Skipping deployment %s: unsupported deployment type %s", deployment.Id, stringValue((*string)(deploymentType)))
 		}
+		log.Printf("Generated import for astro_deployment.deployment_%s", deployment.Id)
 
 		hclString += deploymentHCL
 	}
