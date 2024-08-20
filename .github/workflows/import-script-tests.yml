@@ -49,24 +49,8 @@ jobs:
       - run: go mod download
       - name: Run import script tests
         env:
-          IMPORT_SCRIPT: "1"
+          SKIP_IMPORT_SCRIPT_TEST: false
+          SKIP_IMPORT_SCRIPT_TEST_DEV: true
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clx42kkcm01fo01o06agtmshg
-        run: |
-          cat <<EOF > main.tf
-          terraform {
-            required_providers {
-              astro = {
-                source = "astronomer/astro"
-              }
-            }
-          }
-          provider "astro" {
-            organization_id = "$HOSTED_ORGANIZATION_ID"
-            host = "https://api.astronomer-dev.io"
-            token = "$HOSTED_ORGANIZATION_API_TOKEN"
-          }
-          EOF
-
-          terraform init
-          make test-import-script
+        run: make test-import-script

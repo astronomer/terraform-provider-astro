@@ -409,8 +409,8 @@ var _ = Describe("Integration Test", func() {
 	})
 
 	It("should return a list of generated resources - latest", func() {
-		if os.Getenv("IMPORT_SCRIPT") == "" {
-			Skip("IMPORT_SCRIPT environment variable is not set")
+		if os.Getenv("SKIP_IMPORT_SCRIPT_TEST") == "true" {
+			Skip("Skipping latest integration test")
 		}
 
 		// Run the import_script.go file
@@ -440,8 +440,8 @@ var _ = Describe("Integration Test", func() {
 	})
 
 	It("should return a list of generated resources - dev", func() {
-		if os.Getenv("IMPORT_SCRIPT_DEV") == "" {
-			Skip("IMPORT_SCRIPT_DEV environment variable is not set")
+		if os.Getenv("SKIP_IMPORT_SCRIPT_TEST_DEV") == "true" {
+			Skip("Skipping dev integration test")
 		}
 
 		// Run the import_script.go file

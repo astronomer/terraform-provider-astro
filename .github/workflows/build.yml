@@ -30,7 +30,11 @@ jobs:
           cache: true
       - run: go mod download
       - run: go build -v .
-      - run: make test
+      - name: Run unit tests
+        env:
+          SKIP_IMPORT_SCRIPT_TEST: true
+          SKIP_IMPORT_SCRIPT_TEST_DEV: true
+        run: make test
 
   lint:
     name: Lint
