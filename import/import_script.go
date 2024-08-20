@@ -829,10 +829,10 @@ func formatEnvironmentVariables(envVars *[]platform.DeploymentEnvironmentVariabl
 	}
 	variables := lo.Map(*envVars, func(envVar platform.DeploymentEnvironmentVariable, _ int) string {
 		return fmt.Sprintf(`{
-			name = "%s"
-			value = "%s"
-			is_secret = %t
-		}`, envVar.Key, stringValue(envVar.Value), envVar.IsSecret)
+		name = "%s"
+		value = "%s"
+		is_secret = %t
+	}`, envVar.Key, stringValue(envVar.Value), envVar.IsSecret)
 	})
 	return fmt.Sprintf(`environment_variables = [%s]`, strings.Join(variables, ", "))
 }
@@ -852,12 +852,12 @@ func formatWorkerQueues(queues *[]platform.WorkerQueue, executor *string) string
 	if queues != nil && len(*queues) > 0 {
 		workerQueues := lo.Map(*queues, func(queue platform.WorkerQueue, _ int) string {
 			return fmt.Sprintf(`{
-				astro_machine = "%s"
-                name = "%s"
-                is_default = %t
-                max_worker_count = %d
-                min_worker_count = %d
-                worker_concurrency = %d
+		astro_machine = "%s"
+		name = "%s"
+		is_default = %t
+		max_worker_count = %d
+		min_worker_count = %d
+		worker_concurrency = %d
 	}`, stringValue(queue.AstroMachine), queue.Name, queue.IsDefault, queue.MaxWorkerCount, queue.MinWorkerCount, queue.WorkerConcurrency)
 		})
 		return fmt.Sprintf(`worker_queues = [%s]`, strings.Join(workerQueues, ", "))
