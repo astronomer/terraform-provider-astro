@@ -40,6 +40,7 @@ jobs:
           cache: true
       - run: go mod download
       - env:
+          IMPORT: "1"
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clx42kkcm01fo01o06agtmshg
         run: make test-import-script
@@ -59,6 +60,7 @@ jobs:
           cache: true
       - run: go mod download
       - env:
+          IMPORT: "1"
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clx46acvv060e01ilddqlbsmc
         run: make test-import-script
@@ -78,6 +80,7 @@ jobs:
           cache: true
       - run: go mod download
       - env:
+          IMPORT: "1"
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clx42kkcm01fo01o06agtmshg
         run: make test-import-script
