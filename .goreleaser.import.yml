@@ -56,3 +56,9 @@ release:
     
     This release contains the Terraform import script, a standalone tool for importing resources into Terraform.
   prerelease: auto
+
+git:
+  tag_sort: taggerdate
+  prerelease_name_template: "{{.Tag}}"
+
+version_regexp: '^import/v([\d.]+)$'
