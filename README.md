@@ -209,10 +209,18 @@ Currently, this script automates the process of generating Terraform import bloc
 
 To use the import script, download the `terraform-provider-astro-import-script` executable file from [releases](https://github.com/astronomer/terraform-provider-astro/releases) based on your OS and architecture and run it with the following command:
 
+On Unix-based systems:
+
 ```
 chmod +x terraform-provider-astro-import-script_<version-number>_<os>_<arc>
 
 ./terraform-provider-astro-import-script_<version-number>_<os>_<arc> [options]
+```
+
+On Windows:
+
+```
+.\terraform-provider-astro-import-script_<version-number>_<os>_<arc>.exe [options]
 ```
 
 ### Options
