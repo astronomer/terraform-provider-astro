@@ -1,7 +1,7 @@
 project_name: terraform-import-script
 
 builds:
-  - main: ./import/import.go
+  - main: ./import/import_script.go
     binary: terraform-import-script
     goos:
       - linux
@@ -10,11 +10,15 @@ builds:
     goarch:
       - amd64
       - arm64
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - '-s -w'
 
 archives:
   - format: tar.gz
     name_template: >-
-      {{ .ProjectName }}_
+      {{ .ProjectName }}_{{ .Version }}_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
@@ -23,6 +27,21 @@ archives:
       - goos: windows
         format: zip
 
+checksum:
+  name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
+  algorithm: sha256
+
+signs:
+  - artifacts: checksum
+    args:
+      - "--batch"
+      - "--local-user"
+      - "{{ .Env.GPG_FINGERPRINT }}"
+      - "--output"
+      - "${signature}"
+      - "--detach-sign"
+      - "${artifact}"
+
 changelog:
   sort: asc
   filters:
@@ -30,19 +49,10 @@ changelog:
       - '^docs:'
       - '^test:'
 
-signs:
-  - cmd: gpg
-    args:
-      - "--output"
-      - "${signature}"
-      - "--detach-sign"
-      - "${artifact}"
-    artifacts: checksum
-
-# Customize the release name to differentiate it from your main project releases
 release:
   name_template: "Terraform Import Script {{.Tag}}"
   header: |
     # Terraform Import Script Release {{.Tag}}
     
     This release contains the Terraform import script, a standalone tool for importing resources into Terraform.
+  prerelease: auto

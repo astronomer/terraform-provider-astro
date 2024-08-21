@@ -3,7 +3,7 @@ name: Build and Release Import Script
 on:
   push:
     tags:
-      - 'import-v*'
+      - 'import/v*'
 
 permissions:
   contents: write
@@ -20,7 +20,12 @@ jobs:
           go-version-file: 'go.mod'
           cache: true
       - run: go mod download
-      - run: go build -v -o import ./import/import_script.go
+      - run: go build -v -o terraform-import-script ./import/import_script.go
+      - name: Upload Terraform import script artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-import-script
+          path: terraform-import-script
 
   lint:
     name: Lint
@@ -36,17 +41,16 @@ jobs:
       - run: make validate-fmt
 
   goreleaser:
+    needs: [build, lint]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
-        with:
-          fetch-depth: 0
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
         with:
           go-version-file: 'go.mod'
           cache: true
       - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@01dd5d3ca463c7f10f7f4f7b4f177225ac661ee4 # v6.1.0
+        uses: crazy-max/ghaction-import-gpg@v5
         id: import_gpg
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
@@ -54,12 +58,12 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@5742e2a039330cbb23ebf35f046f814d4c6ff811 # v5.1.0
         with:
-          args: release --clean --config .goreleaser.import.yml  # Use the import-specific config
+          args: release --clean --config .goreleaser.import.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-      - name: Upload Terraform import script artifact
+      - name: Upload GoReleaser artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: import
-          path: dist/import*
+          name: goreleaser-artifacts
+          path: dist/*
