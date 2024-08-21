@@ -499,6 +499,30 @@ import {
 func handleTeams(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing teams for organization %s", organizationId)
 
+	// Check if SCIM is enabled for the organization, if so, exit as teams cannot be imported
+	organizationResp, err := platformClient.GetOrganizationWithResponse(ctx, organizationId, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to get organization: %v", err)
+	}
+
+	if organizationResp.StatusCode() != http.StatusOK {
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", organizationResp.StatusCode(), string(organizationResp.Body))
+	}
+
+	if organizationResp.JSON200 == nil {
+		return "", fmt.Errorf("failed to get organization, JSON200 resp is nil, organizationId: %v", organizationId)
+	}
+
+	_, diagnostic := clients.NormalizeAPIError(ctx, organizationResp.HTTPResponse, organizationResp.Body)
+	if diagnostic != nil {
+		log.Printf("API Error diagnostic: %+v", diagnostic)
+	}
+
+	organization := organizationResp.JSON200
+	if organization.IsScimEnabled == true {
+		return "", fmt.Errorf("SCIM is enabled for the organization, teams cannot be imported")
+	}
+
 	teamsResp, err := iamClient.ListTeamsWithResponse(ctx, organizationId, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to list teams: %v", err)
@@ -512,7 +536,7 @@ func handleTeams(ctx context.Context, platformClient *platform.ClientWithRespons
 		return "", fmt.Errorf("failed to list teams, JSON200 resp is nil, organizationId: %v", organizationId)
 	}
 
-	_, diagnostic := clients.NormalizeAPIError(ctx, teamsResp.HTTPResponse, teamsResp.Body)
+	_, diagnostic = clients.NormalizeAPIError(ctx, teamsResp.HTTPResponse, teamsResp.Body)
 	if diagnostic != nil {
 		log.Printf("API Error diagnostic: %+v", diagnostic)
 	}
