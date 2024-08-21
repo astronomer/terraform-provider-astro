@@ -16,6 +16,10 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    strategy:
+      matrix:
+        goos: [ linux, windows, darwin ]
+        goarch: [ amd64, arm64 ]
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
@@ -23,12 +27,21 @@ jobs:
           go-version-file: 'go.mod'
           cache: true
       - run: go mod download
-      - run: go build -v -o terraform-import-script ./import/import_script.go
-      - name: Upload Terraform import script artifact
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          output_name="terraform-import-script_${{ matrix.goos }}_${{ matrix.goarch }}"
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            output_name="${output_name}.exe"
+          fi
+          go build -o "${output_name}" ./import/import_script.go
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: terraform-import-script
-          path: terraform-import-script
+          name: binaries
+          path: terraform-import-script_*
 
   lint:
     name: Lint
@@ -43,31 +56,48 @@ jobs:
       - run: go vet ./import/import_script.go
       - run: make validate-fmt
 
-  goreleaser:
+  release:
+    name: Create Release
     needs: [build, lint]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
-      - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
+      - name: Checkout code
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
         with:
-          go-version-file: 'go.mod'
-          cache: true
-      - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v5
-        id: import_gpg
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v4
-        with:
-          version: latest
-          args: release --clean --config .goreleaser.import.yml
+          name: binaries
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-      - name: Upload GoReleaser artifacts
-        uses: actions/upload-artifact@v3
         with:
-          name: goreleaser-artifacts
-          path: dist/*
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Assets
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs').promises;
+            const { repo: { owner, repo }, sha } = context;
+            const release = await github.rest.repos.getReleaseByTag({
+              owner,
+              repo,
+              tag: process.env.GITHUB_REF.replace('refs/tags/', '')
+            });
+            const files = await fs.readdir('.');
+            for (const file of files) {
+              if (file.startsWith('terraform-import-script_')) {
+                await github.rest.repos.uploadReleaseAsset({
+                  owner,
+                  repo,
+                  release_id: release.data.id,
+                  name: file,
+                  data: await fs.readFile(file)
+                });
+              }
+            }
