@@ -121,9 +121,8 @@ func main() {
 provider "astro" {
 	organization_id = "%s"
 	host = "%s"
-	token = "%s"
 }
-`, organizationId, host, token)
+`, organizationId, host)
 
 	//	for each resource, we get the list of entities and generate the terraform import command
 
