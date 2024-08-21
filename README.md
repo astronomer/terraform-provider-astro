@@ -207,10 +207,12 @@ The acceptance tests will run against the Astronomer API and create/read/update/
 The Astro Terraform Import Script is a tool designed to help you import existing Astro resources into your Terraform configuration. 
 Currently, this script automates the process of generating Terraform import blocks and resource configurations for the following resources: workspaces, deployments, clusters, hybrid cluster workspace authorizations, API tokens, teams, team roles, and user roles.
 
-To use the import script, download the `import_script` executable file from [releases](https://github.com/astronomer/terraform-provider-astro/releases) and run it with the following command:
+To use the import script, download the `terraform-provider-astro-import-script` executable file from [releases](https://github.com/astronomer/terraform-provider-astro/releases) based on your OS and architecture and run it with the following command:
 
 ```
-./import [options]
+chmod +x terraform-provider-astro-import-script_<version-number>_<os>_<arc>
+
+./terraform-provider-astro-import-script_<version-number>_<os>_<arc> [options]
 ```
 
 ### Options
@@ -219,24 +221,24 @@ To use the import script, download the `import_script` executable file from [rel
 - `-token`: API token to authenticate with the Astro platform. If not provided, the script will attempt to use the `ASTRO_API_TOKEN` environment variable.
 - `-host`: API host to connect to. Default is https://api.astronomer.io. Use "dev" for https://api.astronomer-dev.io or "stage" for https://api.astronomer-stage.io.
 - `-organizationId`: Organization ID to import resources from.
-- `-runTerraformInit`: Run `terraform init` after generating the import configuration.
+- `-runTerraformInit`: Run `terraform init` after generating the import configuration. Used for initializing the Terraform state in our GitHub Actions.
 - `-help`: Display help information.
 
 ### Examples
 
 1. Import workspaces and deployments:
    ```
-   ./import -resources workspace,deployment -token your_api_token -organizationId your_org_id
+   ./terraform-provider-astro-import-script_<version-number>_<os>_<arc> -resources workspace,deployment -token your_api_token -organizationId your_org_id
    ```
 
 2. Import all supported resources and run Terraform init:
    ```
-   ./import -resources workspace,deployment,cluster,api_token,team,team_roles,user_roles -token your_api_token -organizationId your_org_id -runTerraformInit
+   ./terraform-provider-astro-import-script_<version-number>_<os>_<arc> -resources workspace,deployment,cluster,api_token,team,team_roles,user_roles -token your_api_token -organizationId your_org_id -runTerraformInit
    ```
 
 3. Use a different API host (e.g., dev environment):
    ```
-   ./import -resources workspace -token your_api_token -organizationId your_org_id -host dev
+   ./terraform-provider-astro-import-script_<version-number>_<os>_<arc> -resources workspace -token your_api_token -organizationId your_org_id -host dev
    ```
 
 ### Output
