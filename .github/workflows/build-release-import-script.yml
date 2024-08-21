@@ -24,12 +24,15 @@ jobs:
           go-version-file: 'go.mod'
           cache: true
       - run: go mod download
+      - name: Get version
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/import/}" >> $GITHUB_OUTPUT
       - name: Build
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
         run: |
-          output_name="terraform-provider-astro-import-script_${{ matrix.goos }}_${{ matrix.goarch }}"
+          output_name="terraform-provider-astro-import-script_${{ steps.get_version.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}"
           if [ "${{ matrix.goos }}" = "windows" ]; then
             output_name="${output_name}.exe"
           fi
