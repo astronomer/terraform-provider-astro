@@ -20,7 +20,7 @@ jobs:
           go-version-file: 'go.mod'
           cache: true
       - run: go mod download
-      - run: go build -v -o terraform-import-script ./import/import_script.go
+      - run: go build -v -o import ./import/import_script.go
 
   lint:
     name: Lint
@@ -61,5 +61,5 @@ jobs:
       - name: Upload Terraform import script artifact
         uses: actions/upload-artifact@v3
         with:
-          name: terraform-import-script
-          path: dist/terraform-import-script*
+          name: import
+          path: dist/import*

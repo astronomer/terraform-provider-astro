@@ -191,7 +191,7 @@ provider "astro" {
 
 	log.Println("Successfully wrote import configuration to import.tf")
 
-	// Trigger terraform init if the flag is set
+	// Trigger terraform init if the flag is set - used to download the provider in CI integration tests
 	if *runTerraformInitPtr {
 		log.Println("Running terraform init")
 		rootDir, err := os.Getwd()
@@ -267,6 +267,7 @@ func printHelp() {
 	log.Println("\nNote: If the -token flag is not provided, the script will attempt to use the ASTRO_API_TOKEN environment variable.")
 }
 
+// generateTerraformConfig runs terraform plan to generate the configuration
 func generateTerraformConfig() error {
 	// delete the generated.tf file if it exists
 	filenames := []string{"generated.tf", "terraform.tfstate"}
@@ -435,9 +436,7 @@ import {
 	id = "%v"
 	to = astro_cluster.cluster_%v
 }`, clusterId, clusterId)
-		}
-
-		if clusterType == platform.ClusterTypeHYBRID {
+		} else {
 			clusterImportString += fmt.Sprintf(`
 import {
 	id = "%v"
@@ -635,6 +634,7 @@ import {
 	return importString, nil
 }
 
+// addDeploymentsToGeneratedFile adds the deployment import blocks and HCL to the generated.tf file
 func addDeploymentsToGeneratedFile(deploymentImportString string, organizationId string, platformClient *platform.ClientWithResponses, ctx context.Context) error {
 	var contentBytes []byte
 	var err error
@@ -676,6 +676,8 @@ func addDeploymentsToGeneratedFile(deploymentImportString string, organizationId
 	return nil
 }
 
+// generateDeploymentHCL generates the HCL for all deployments in the organization
+// generateTerraformConfig has trouble with deployments, so we generate the HCL manually
 func generateDeploymentHCL(ctx context.Context, platformClient *platform.ClientWithResponses, organizationId string) (string, error) {
 	deploymentsResp, err := platformClient.ListDeploymentsWithResponse(ctx, organizationId, nil)
 	if err != nil {

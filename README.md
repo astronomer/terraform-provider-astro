@@ -207,24 +207,17 @@ The acceptance tests will run against the Astronomer API and create/read/update/
 The Astro Terraform Import Script is a tool designed to help you import existing Astro resources into your Terraform configuration. 
 Currently, this script automates the process of generating Terraform import blocks and resource configurations for the following resources: workspaces, deployments, clusters, hybrid cluster workspace authorizations, API tokens, teams, team roles, and user roles.
 
-To use the import script, run it with the following syntax:
+To use the import script, download the `import_script` executable file from [releases](https://github.com/astronomer/terraform-provider-astro/releases) and run it with the following command:
 
 ```
-go run ./import/import_script.go [options]
-```
-
-Additionally, you can build the script into a binary and run it as an executable:
-
-```
-go build ./import_script.go
-./import_script [options]
+./import [options]
 ```
 
 ### Options
 
 - `-resources`: Comma-separated list of resources to import. Accepted values are workspace, deployment, cluster, api_token, team, team_roles, user_roles.
 - `-token`: API token to authenticate with the Astro platform. If not provided, the script will attempt to use the `ASTRO_API_TOKEN` environment variable.
-- `-host`: API host to connect to. Default is https://api.astronomer.io. Use 'dev' for https://api.astronomer-dev.io or 'stage' for https://api.astronomer-stage.io.
+- `-host`: API host to connect to. Default is https://api.astronomer.io. Use "dev" for https://api.astronomer-dev.io or "stage" for https://api.astronomer-stage.io.
 - `-organizationId`: Organization ID to import resources from.
 - `-runTerraformInit`: Run `terraform init` after generating the import configuration.
 - `-help`: Display help information.
@@ -233,17 +226,17 @@ go build ./import_script.go
 
 1. Import workspaces and deployments:
    ```
-   go run import_script.go -resources=workspace,deployment -token=your_api_token -organizationId=your_org_id
+   ./import -resources workspace,deployment -token your_api_token -organizationId your_org_id
    ```
 
 2. Import all supported resources and run Terraform init:
    ```
-   go run import_script.go -resources=workspace,deployment,cluster,api_token,team,team_roles,user_roles -token=your_api_token -organizationId=your_org_id -runTerraformInit
+   ./import -resources workspace,deployment,cluster,api_token,team,team_roles,user_roles -token your_api_token -organizationId your_org_id -runTerraformInit
    ```
 
 3. Use a different API host (e.g., dev environment):
    ```
-   go run import_script.go -resources=workspace -token=your_api_token -organizationId=your_org_id -host=dev
+   ./import -resources workspace -token your_api_token -organizationId your_org_id -host dev
    ```
 
 ### Output
