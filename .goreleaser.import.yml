@@ -1,3 +1,6 @@
+# .goreleaser.import.yml
+version: 2
+
 project_name: terraform-import-script
 
 builds:
@@ -18,7 +21,7 @@ builds:
 archives:
   - format: tar.gz
     name_template: >-
-      {{ .ProjectName }}_{{ .Version }}_
+      {{ .ProjectName }}_{{ .Tag }}_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
@@ -28,7 +31,7 @@ archives:
         format: zip
 
 checksum:
-  name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
+  name_template: '{{ .ProjectName }}_{{ .Tag }}_SHA256SUMS'
   algorithm: sha256
 
 signs:
@@ -58,7 +61,8 @@ release:
   prerelease: auto
 
 git:
-  tag_sort: taggerdate
-  prerelease_name_template: "{{.Tag}}"
+  prerelease_suffix: "-rc"
 
-version_regexp: '^import/v([\d.]+)$'
+# This will ensure the full tag (including 'import/') is used
+tag_names:
+  use_fully_qualified: true
