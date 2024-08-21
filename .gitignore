@@ -25,11 +25,15 @@ website/node_modules
 *.test
 *.iml
 *.tfvars
+import.tf
+generated.tf
+import/import_script
 
 website/vendor
 test_results
 vendor/
 .terraformrc
+.terraform.lock.hcl
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate

@@ -9,6 +9,8 @@ $(ENVTEST_ASSETS_DIR):
 	mkdir -p $(ENVTEST_ASSETS_DIR)
 OAPI_CODEGEN ?= $(ENVTEST_ASSETS_DIR)/oapi-codegen
 
+MOCKERY_VERSION := 2.42.0
+
 # Run acceptance tests
 .PHONY: testacc
 testacc:
@@ -18,13 +20,42 @@ testacc:
 .PHONY: test
 test:
 	go vet ./...
-	TF_ACC="" go test ./... -v $(TESTARGS)
+	TF_ACC="" SKIP_IMPORT_SCRIPT_TEST="" SKIP_IMPORT_SCRIPT_TEST_DEV="" go test ./... -v $(TESTARGS)
+
+# Run script tests
+.PHONY: test-import-script
+test-import-script:
+	go test ./import/... -v $(TESTARGS)
 
 .PHONY: fmt
 fmt:
 	gofmt -w ./
 	goimports -w ./
 	[ -z "$$CIRCLECI" ] || git diff --exit-code --color=always # In CI: exit if anything changed
+
+.PHONY: mock
+mock: ensure-mockery generate-mocks
+
+.PHONY: ensure-mockery
+ensure-mockery:
+	@if ! mockery --version | grep -q $(MOCKERY_VERSION); then \
+		echo "Installing Mockery $(MOCKERY_VERSION)"; \
+		go install $(MOCKERY_PACKAGE); \
+	fi
+
+.PHONY: generate-mocks
+generate-mocks:
+	@echo "Generating mocks..."
+	@rm -rf mocks
+	@mockery --name=ClientWithResponsesInterface \
+		--dir=./internal/clients/iam \
+		--output=./internal/mocks/iam \
+		--outpkg=mocks_iam
+	@mockery --name=ClientWithResponsesInterface \
+		--dir=./internal/clients/platform \
+		--output=./internal/mocks/platform \
+		--outpkg=mocks_platform
+	@echo "Mocks generated successfully."
 
 .PHONY: validate-fmt
 validate-fmt:
