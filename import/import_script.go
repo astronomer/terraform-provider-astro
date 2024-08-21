@@ -161,10 +161,8 @@ provider "astro" {
 		}(resource)
 	}
 
-	go func() {
-		wg.Wait()
-		close(results)
-	}()
+	wg.Wait()
+	close(results)
 
 	var allResults []HandlerResult
 	var deploymentImportString string
