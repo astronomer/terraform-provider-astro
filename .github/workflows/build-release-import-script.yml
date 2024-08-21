@@ -59,8 +59,9 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@5742e2a039330cbb23ebf35f046f814d4c6ff811 # v5.1.0
+        uses: goreleaser/goreleaser-action@v4
         with:
+          version: latest
           args: release --clean --config .goreleaser.import.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

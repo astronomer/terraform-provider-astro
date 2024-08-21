@@ -58,8 +58,7 @@ release:
   prerelease: auto
 
 git:
-  sort_tags: true
+  tag_sort: taggerdate
+  prerelease_name_template: "{{.Tag}}"
 
-# Use this if you're using a prefix on your tag names
-# Adjust the regex if your prefix is different
-tag_name_template: '{{.Tag}}'
+version_regexp: '^import/v([\d.]+)$'
