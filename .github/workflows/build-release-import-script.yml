@@ -57,27 +57,56 @@ jobs:
       - run: make validate-fmt
 
   release:
-    name: Create Release
-    needs: [build, lint]
+    name: Create Release (or Dry Run)
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        uses: actions/checkout@v3
+
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
           name: binaries
+
+      - name: Get the version
+        id: get_version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=pr-${{ github.event.pull_request.number }}-dry-run" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Dry Run - Create Release
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Dry Run: Would create release with tag ${{ steps.get_version.outputs.VERSION }}"
+          echo "Release assets:"
+          ls -l terraform-import-script_*
+
       - name: Create Release
+        if: github.event_name != 'pull_request'
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          release_name: Release ${{ steps.get_version.outputs.VERSION }}
           draft: false
           prerelease: false
+
+      - name: Dry Run - Upload Release Assets
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Dry Run: Would upload the following assets:"
+          for file in terraform-import-script_*; do
+            echo "  - $file"
+          done
+
       - name: Upload Release Assets
+        if: github.event_name != 'pull_request'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -87,7 +116,7 @@ jobs:
             const release = await github.rest.repos.getReleaseByTag({
               owner,
               repo,
-              tag: process.env.GITHUB_REF.replace('refs/tags/', '')
+              tag: '${{ steps.get_version.outputs.VERSION }}'
             });
             const files = await fs.readdir('.');
             for (const file of files) {
