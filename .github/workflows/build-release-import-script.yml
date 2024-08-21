@@ -1,12 +1,9 @@
-name: Build and Release Import Script
+name: Build and Release Astro Import Script
 
 on:
   push:
     tags:
       - 'import/v*'
-  pull_request:
-    branches:
-      - main
 
 permissions:
   contents: write
@@ -32,7 +29,7 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
         run: |
-          output_name="terraform-import-script_${{ matrix.goos }}_${{ matrix.goarch }}"
+          output_name="terraform-provider-astro-import-script_${{ matrix.goos }}_${{ matrix.goarch }}"
           if [ "${{ matrix.goos }}" = "windows" ]; then
             output_name="${output_name}.exe"
           fi
@@ -41,7 +38,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: binaries
-          path: terraform-import-script_*
+          path: terraform-provider-astro-import-script_*
 
   lint:
     name: Lint
@@ -57,12 +54,12 @@ jobs:
       - run: make validate-fmt
 
   release:
-    name: Create Release (or Dry Run)
-    needs: build
+    name: Create Release
+    needs: [build, lint]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
 
       - name: Download artifacts
         uses: actions/download-artifact@v3
@@ -71,22 +68,9 @@ jobs:
 
       - name: Get the version
         id: get_version
-        run: |
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          else
-            echo "VERSION=pr-${{ github.event.pull_request.number }}-dry-run" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Dry Run - Create Release
-        if: github.event_name == 'pull_request'
-        run: |
-          echo "Dry Run: Would create release with tag ${{ steps.get_version.outputs.VERSION }}"
-          echo "Release assets:"
-          ls -l terraform-import-script_*
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Create Release
-        if: github.event_name != 'pull_request'
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -97,17 +81,8 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Dry Run - Upload Release Assets
-        if: github.event_name == 'pull_request'
-        run: |
-          echo "Dry Run: Would upload the following assets:"
-          for file in terraform-import-script_*; do
-            echo "  - $file"
-          done
-
       - name: Upload Release Assets
-        if: github.event_name != 'pull_request'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -120,7 +95,7 @@ jobs:
             });
             const files = await fs.readdir('.');
             for (const file of files) {
-              if (file.startsWith('terraform-import-script_')) {
+              if (file.startsWith('terraform-provider-astro-import-script_')) {
                 await github.rest.repos.uploadReleaseAsset({
                   owner,
                   repo,
