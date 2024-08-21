@@ -224,13 +224,15 @@ provider "astro" {
 	}
 
 	// Add deployment import blocks and HCL to the generated file
-	err = addDeploymentsToGeneratedFile(deploymentImportString, organizationId, platformClient, ctx)
-	if err != nil {
-		log.Fatalf("Failed to add deployments to generated file: %v", err)
-		return
-	}
+	if deploymentImportString != "" {
+		err = addDeploymentsToGeneratedFile(deploymentImportString, organizationId, platformClient, ctx)
+		if err != nil {
+			log.Fatalf("Failed to add deployments to generated file: %v", err)
+			return
+		}
 
-	log.Println("Import process completed successfully. The 'generated.tf' file now includes all resources, including deployments.")
+		log.Println("Import process completed successfully. The 'generated.tf' file now includes all resources, including deployments.")
+	}
 
 	// Print summary of results
 	log.Println("Import process completed. Summary:")
