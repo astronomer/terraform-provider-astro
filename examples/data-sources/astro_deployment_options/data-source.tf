@@ -1,4 +1,4 @@
-data "astro_deployment_options" "example" {}
+data "astro_deployment_options" "example_deployment_options" {}
 
 data "astro_deployment_options" "example_with_deployment_id_query_param" {
   deployment_id = "clozc036j01to01jrlgvueo8t"
@@ -18,5 +18,5 @@ data "astro_deployment_options" "example_with_cloud_provider_query_param" {
 
 # Output the deployment options value using terraform apply
 output "deployment_options" {
-  value = data.astro_deployment_options.example
+  value = data.astro_deployment_options.example_deployment_options
 }

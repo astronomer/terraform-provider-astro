@@ -13,13 +13,13 @@ Deployment data source
 ## Example Usage
 
 ```terraform
-data "astro_deployment" "example" {
+data "astro_deployment" "example_deployment" {
   id = "clozc036j01to01jrlgvueo8t"
 }
 
 # Output the deployment value using terraform apply
 output "deployment" {
-  value = data.astro_deployment.example
+  value = data.astro_deployment.example_deployment
 }
 ```
 

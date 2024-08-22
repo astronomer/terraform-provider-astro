@@ -269,13 +269,13 @@ The script will generate two main files:
    - Workspaces, deployments, clusters, hybrid cluster workspace authorizations, API tokens, teams, team roles, and user roles.
 
 2. **How do I authenticate with the Astro API?**
-   - Use an API token set as the `ASTRO_API_TOKEN` environment variable or provided in the provider configuration.
+   - Use an API token set as the `ASTRO_API_TOKEN` environment variable or add it to the provider configuration.
 
 3. **Can I import existing Astro resources into Terraform?**
    - Yes, use the Astro Terraform Import Script to generate import blocks and resource configurations.
 
-4. **What Terraform and Go versions are required?**
-   - Terraform >= 1.7 and Go >= 1.21.
+4. **What Terraform versions are required?**
+   - Terraform >= 1.7.
 
 5. **How can I contribute to the provider's development?**
    - Submit pull requests, report issues, or suggest improvements on the GitHub repository.
@@ -293,7 +293,7 @@ The script will generate two main files:
 
    Solution:
     - Ensure you have the correct permissions in your Astro organization.
-    - Verify that your API token is valid and has the necessary scopes.
+    - Verify that your API token is valid and has the necessary scopes and permissions.
     - Double-check the organization ID provided to the script.
 
 3. **Issue: "Error: Invalid provider configuration" when initializing Terraform**

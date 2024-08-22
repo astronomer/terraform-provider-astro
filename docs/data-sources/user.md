@@ -13,13 +13,13 @@ User data source
 ## Example Usage
 
 ```terraform
-data "astro_user" "example" {
+data "astro_user" "example_user" {
   id = "clhpichn8002m01mqa4ocs7g6"
 }
 
 # Output the user value using terraform apply
 output "user" {
-  value = data.astro_user.example
+  value = data.astro_user.example_user
 }
 ```
 
