@@ -220,6 +220,15 @@ provider "astro" {
 			log.Fatalf("Failed to run terraform init: %v", err)
 			return
 		}
+
+		cmd = exec.Command("export ASTRO_API_TOKEN=%s", token)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+
+		if err := cmd.Run(); err != nil {
+			log.Fatalf("Failed to set ASTRO_API_TOKEN: %v", err)
+			return
+		}
 	}
 
 	// Generate the corresponding terraform HCL configuration for each import block
