@@ -1,3 +1,8 @@
 data "astro_cluster" "example" {
   id = "clozc036j01to01jrlgvueo8t"
 }
+
+# Output the cluster value using terraform apply
+output "cluster" {
+  value = data.astro_cluster.example
+}

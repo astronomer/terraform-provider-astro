@@ -28,6 +28,7 @@ website/node_modules
 import.tf
 generated.tf
 import/import_script
+terraform-provider-astro-import-script*
 
 website/vendor
 test_results

@@ -15,3 +15,8 @@ data "astro_deployment_options" "example_with_executor_query_param" {
 data "astro_deployment_options" "example_with_cloud_provider_query_param" {
   cloud_provider = "AWS"
 }
+
+# Output the deployment options value using terraform apply
+output "deployment_options" {
+  value = data.astro_deployment_options.example
+}
