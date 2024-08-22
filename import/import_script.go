@@ -78,6 +78,12 @@ func main() {
 		return
 	}
 
+	err = os.Setenv("ASTRO_API_TOKEN", token)
+	if err != nil {
+		log.Fatalf("Failed to set ASTRO_API_TOKEN environment variable: %v", err)
+		return
+	}
+
 	// set the host
 	var host string
 	if *hostPtr == "dev" {
@@ -199,12 +205,6 @@ provider "astro" {
 
 	// Trigger terraform init if the flag is set - used to download the provider in CI integration tests
 	if *runTerraformInitPtr {
-		// Set the ASTRO_API_TOKEN environment variable for the terraform command
-		err = os.Setenv("ASTRO_API_TOKEN", token)
-		if err != nil {
-			return
-		}
-
 		log.Println("Running terraform init")
 		rootDir, err := os.Getwd()
 
