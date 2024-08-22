@@ -171,8 +171,9 @@ If you discover a security vulnerability, please do NOT open an issue. Email sec
 
 ## Additional Resources
 
+- [Terraform Provider Astro Documentation](https://registry.terraform.io/providers/astronomer/astro/latest/docs)
+- [Astro API Documentation](https://docs.astronomer.io/astro/api-overview)
 - [Terraform Plugin Framework Documentation](https://developer.hashicorp.com/terraform/plugin/framework)
 - [Go Documentation](https://golang.org/doc/)
-- [Astro API Documentation](https://docs.astronomer.io/astro/api-overview)
 
 Thank you for contributing to the Terraform Provider Astro project! Your efforts help improve the experience for all Astro users.
