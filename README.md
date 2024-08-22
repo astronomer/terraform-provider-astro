@@ -227,7 +227,6 @@ On Windows:
 
 - `-resources`: Comma-separated list of resources to import. Accepted values are workspace, deployment, cluster, api_token, team, team_roles, user_roles.
 - `-token`: API token to authenticate with the Astro platform. If not provided, the script will attempt to use the `ASTRO_API_TOKEN` environment variable.
-- `-host`: API host to connect to. Default is https://api.astronomer.io. Use "dev" for https://api.astronomer-dev.io or "stage" for https://api.astronomer-stage.io.
 - `-organizationId`: Organization ID to import resources from.
 - `-runTerraformInit`: Run `terraform init` after generating the import configuration. Used for initializing the Terraform state in our GitHub Actions.
 - `-help`: Display help information.
@@ -246,7 +245,7 @@ On Windows:
 
 3. Use a different API host (e.g., dev environment):
    ```
-   ./terraform-provider-astro-import-script_<version-number>_<os>_<arc> -resources workspace -token your_api_token -organizationId your_org_id -host dev
+   ./terraform-provider-astro-import-script_<version-number>_<os>_<arc> -resources workspace -token your_api_token -organizationId your_org_id
    ```
 
 ### Output
