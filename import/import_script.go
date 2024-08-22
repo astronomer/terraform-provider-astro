@@ -275,13 +275,9 @@ func printHelp() {
 	log.Println("\nNote: If the -token flag is not provided, the script will attempt to use the ASTRO_API_TOKEN environment variable.")
 }
 
+// checkRequiredArguments checks if the required arguments are provided
 func checkRequiredArguments(resourcesPtr string, tokenPtr string, organizationIdPtr string) error {
 	var missingArgs []string
-
-	// Debug output
-	fmt.Printf("Debug - resourcesPtr: '%s'\n", resourcesPtr)
-	fmt.Printf("Debug - tokenPtr: '%s'\n", tokenPtr)
-	fmt.Printf("Debug - organizationIdPtr: '%s'\n", organizationIdPtr)
 
 	if resourcesPtr == "" {
 		missingArgs = append(missingArgs, "-resources (comma-separated list: workspace, deployment, cluster, api_token, team, team_roles, user_roles)")
@@ -296,13 +292,13 @@ func checkRequiredArguments(resourcesPtr string, tokenPtr string, organizationId
 	}
 
 	if len(missingArgs) > 0 {
-		fmt.Printf("%s", missingArgs)
 		return fmt.Errorf("Missing required argument(s):\n%s", strings.Join(missingArgs, "\n"))
 	}
 
 	return nil
 }
 
+// checkTerraformVersion checks if Terraform is installed and the version is supported
 func checkTerraformVersion() error {
 	// Check if Terraform is installed
 	_, err := exec.LookPath("terraform")
