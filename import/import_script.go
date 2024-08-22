@@ -199,6 +199,12 @@ provider "astro" {
 
 	// Trigger terraform init if the flag is set - used to download the provider in CI integration tests
 	if *runTerraformInitPtr {
+		// Set the ASTRO_API_TOKEN environment variable for the terraform command
+		err = os.Setenv("ASTRO_API_TOKEN", token)
+		if err != nil {
+			return
+		}
+
 		log.Println("Running terraform init")
 		rootDir, err := os.Getwd()
 
@@ -218,15 +224,6 @@ provider "astro" {
 
 		if err := cmd.Run(); err != nil {
 			log.Fatalf("Failed to run terraform init: %v", err)
-			return
-		}
-
-		cmd = exec.Command("export ASTRO_API_TOKEN=%s", token)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-
-		if err := cmd.Run(); err != nil {
-			log.Fatalf("Failed to set ASTRO_API_TOKEN: %v", err)
 			return
 		}
 	}
