@@ -55,6 +55,30 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 					}),
 				ExpectError: regexp.MustCompile("Unable to mutate roles, not every deployment role has a corresponding workspace role"),
 			},
+			// Test failure: check for missing corresponding workspace role if deployment role is present
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					userRoles(userRolesInput{
+						OrganizationRole: string(iam.ORGANIZATIONOWNER),
+						WorkspaceRoles: []utils.Role{
+							{
+								Role:     string(iam.WORKSPACEOWNER),
+								EntityId: workspaceId,
+							},
+						},
+						DeploymentRoles: []utils.Role{
+							{
+								Role:     "DEPLOYMENT_ADMIN",
+								EntityId: deploymentId,
+							},
+							{
+								Role:     "DEPLOYMENT_ADMIN",
+								EntityId: "cm070pg0r00wd01qgnskk0dir",
+							},
+						},
+					}),
+				ExpectError: regexp.MustCompile("Unable to mutate roles, not every deployment role has a corresponding workspace role"),
+			},
 			// Test failure: check for multiple roles with same entity id
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
