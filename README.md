@@ -227,7 +227,6 @@ On Windows:
 
 - `-resources`: Comma-separated list of resources to import. Accepted values are workspace, deployment, cluster, api_token, team, team_roles, user_roles.
 - `-token`: API token to authenticate with the Astro platform. If not provided, the script will attempt to use the `ASTRO_API_TOKEN` environment variable.
-- `-host`: API host to connect to. Default is https://api.astronomer.io. Use "dev" for https://api.astronomer-dev.io or "stage" for https://api.astronomer-stage.io.
 - `-organizationId`: Organization ID to import resources from.
 - `-runTerraformInit`: Run `terraform init` after generating the import configuration. Used for initializing the Terraform state in our GitHub Actions.
 - `-help`: Display help information.
@@ -246,7 +245,7 @@ On Windows:
 
 3. Use a different API host (e.g., dev environment):
    ```
-   ./terraform-provider-astro-import-script_<version-number>_<os>_<arc> -resources workspace -token your_api_token -organizationId your_org_id -host dev
+   ./terraform-provider-astro-import-script_<version-number>_<os>_<arc> -resources workspace -token your_api_token -organizationId your_org_id
    ```
 
 ### Output
@@ -262,3 +261,43 @@ The script will generate two main files:
 - The generated Terraform configurations may require some manual adjustment to match your specific requirements or to resolve any conflicts.
 - Always review the generated files before applying them to your Terraform state.
 
+## FAQ and Troubleshooting
+
+### Frequently Asked Questions
+
+1. **What resources can I manage with this Terraform provider?** 
+   - Workspaces, deployments, clusters, hybrid cluster workspace authorizations, API tokens, teams, team roles, and user roles.
+
+2. **How do I authenticate with the Astro API?**
+   - Use an API token set as the `ASTRO_API_TOKEN` environment variable or add it to the provider configuration.
+
+3. **Can I import existing Astro resources into Terraform?**
+   - Yes, use the Astro Terraform Import Script to generate import blocks and resource configurations.
+
+4. **What Terraform versions are required?**
+   - Terraform >= 1.7.
+
+5. **How can I contribute to the provider's development?**
+   - Submit pull requests, report issues, or suggest improvements on the GitHub repository.
+
+### Troubleshooting
+
+1. **Issue: 401 Unauthorized error when running `terraform plan` or `terraform apply`**
+
+   Solution: Your API token may have expired. Update your `ASTRO_API_TOKEN` environment variable with a fresh token:
+   ```
+   export ASTRO_API_TOKEN=<your-new-token>
+   ```
+   
+2. **Issue: Import script fails to find resources**
+
+   Solution:
+    - Ensure you have the correct permissions in your Astro organization.
+    - Verify that your API token is valid and has the necessary scopes and permissions.
+    - Double-check the organization ID provided to the script.
+
+3. **Issue: "Error: Invalid provider configuration" when initializing Terraform**
+
+   Solution: Ensure your `.terraformrc` file is correctly set up, especially if you're using a local build of the provider for development.
+
+If you encounter any issues not listed here, please check the [GitHub Issues](https://github.com/astronomer/terraform-provider-astro/issues) page or open a new issue with details about your problem.
