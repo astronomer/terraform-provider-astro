@@ -120,15 +120,15 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 	deploymentWorkspaceIds := lo.Map(listDeployments.JSON200.Deployments, func(deployment platform.Deployment, _ int) string {
 		return deployment.WorkspaceId
 	})
-	//deploymentWorkspaceIds = lo.Uniq(deploymentWorkspaceIds)
+	deploymentWorkspaceIds = lo.Uniq(deploymentWorkspaceIds)
+
 	// get list of workspaceIds
 	workspaceIds := lo.Map(input.WorkspaceRoles, func(role iam.WorkspaceRole, _ int) string {
 		return role.WorkspaceId
 	})
 
 	// check if deploymentWorkspaceIds are in workspaceIds
-	//workspaceIds = lo.Intersect(lo.Uniq(workspaceIds), deploymentWorkspaceIds)
-	workspaceIds = lo.Intersect(lo.Uniq(workspaceIds), lo.Uniq(deploymentWorkspaceIds))
+	workspaceIds = lo.Intersect(lo.Uniq(workspaceIds), deploymentWorkspaceIds)
 	if len(workspaceIds) != len(deploymentWorkspaceIds) {
 		tflog.Error(ctx, "failed to mutate roles")
 		return diag.Diagnostics{diag.NewErrorDiagnostic(

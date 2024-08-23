@@ -21,6 +21,7 @@ import (
 func TestAcc_ResourceUserRoles(t *testing.T) {
 	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
 	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
+	standardDeploymentId := os.Getenv("HOSTED_STANDARD_DEPLOYMENT_ID")
 	userId := os.Getenv("HOSTED_DUMMY_USER_ID")
 	tfVarName := fmt.Sprintf("astro_user_roles.%v", userId)
 	resource.Test(t, resource.TestCase{
@@ -73,7 +74,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 							},
 							{
 								Role:     "DEPLOYMENT_ADMIN",
-								EntityId: "cm070pg0r00wd01qgnskk0dir",
+								EntityId: standardDeploymentId,
 							},
 						},
 					}),

@@ -94,6 +94,7 @@ jobs:
           HOSTED_USER_ID: clz3a4ymt004x01on8w5ydq8j
           HOSTED_DUMMY_USER_ID: clzawipbm00bm01qw98vzzoca
           HOSTED_DEPLOYMENT_ID: clyn6kxud003x01mtxmccegnh
+          HOSTED_STANDARD_DEPLOYMENT_ID: cm070pg0r00wd01qgnskk0dir
           HOSTED_WORKSPACE_ID: clx42sxw501gl01o0gjenthnh
           HOSTED_API_TOKEN_ID: clxm4836f00ql01me3nigmcr6
           TESTARGS: "-failfast"
@@ -145,6 +146,7 @@ jobs:
           HOSTED_USER_ID: clz3a95hw00j301jj5jfmcgwd
           HOSTED_DUMMY_USER_ID: clzawlsb701vv01ikvsqz5mws
           HOSTED_DEPLOYMENT_ID: cly6exz4a00zd01k18t5bo1vf
+          HOSTED_STANDARD_DEPLOYMENT_ID: cm077ee2807g301kpjkqdoc15
           HOSTED_WORKSPACE_ID: clx480rvx068u01j9mp7t7fqh
           HOSTED_API_TOKEN_ID: clxm46ged05b301neuucdqwox
           TESTARGS: "-failfast"
@@ -196,6 +198,7 @@ jobs:
           HOSTED_USER_ID: clz3a4ymt004x01on8w5ydq8j
           HOSTED_DUMMY_USER_ID: clzawipbm00bm01qw98vzzoca
           HOSTED_DEPLOYMENT_ID: clyn6kxud003x01mtxmccegnh
+          HOSTED_STANDARD_DEPLOYMENT_ID: cm070pg0r00wd01qgnskk0dir
           HOSTED_WORKSPACE_ID: clx42sxw501gl01o0gjenthnh
           HOSTED_API_TOKEN_ID: clxm4836f00ql01me3nigmcr6
           TESTARGS: "-failfast"
