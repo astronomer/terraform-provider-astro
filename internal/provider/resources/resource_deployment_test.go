@@ -589,7 +589,7 @@ func workerQueuesDuplicateStr(nodePoolId string) string {
 },
 {
 	name = "default"
-	is_default = true
+	is_default = false
 	max_worker_count = 10
 	min_worker_count = 0
 	worker_concurrency = 1

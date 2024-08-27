@@ -931,9 +931,10 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 		}
 
 		// Check for duplicate worker_queue names
-		duplicateWorkerQueueNames := lo.FindDuplicatesBy(workerQueues, func(wq models.WorkerQueueResource) string {
+		workerQueuesNames := lo.Map(workerQueues, func(wq models.WorkerQueueResource, _ int) string {
 			return wq.Name.ValueString()
 		})
+		duplicateWorkerQueueNames := lo.FindDuplicates(workerQueuesNames)
 		if len(duplicateWorkerQueueNames) > 0 {
 			diags.AddError(
 				"worker_queue names must be unique",
