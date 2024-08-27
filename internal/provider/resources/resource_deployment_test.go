@@ -36,6 +36,20 @@ func TestAcc_ResourceDeploymentHybrid(t *testing.T) {
 			testAccCheckDeploymentExistence(t, deploymentName, false, false),
 		),
 		Steps: []resource.TestStep{
+			// Test for duplicate worker queue names
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HYBRID) + hybridDeployment(hybridDeploymentInput{
+					Name:                        deploymentName,
+					Description:                 utils.TestResourceDescription,
+					ClusterId:                   clusterId,
+					Executor:                    "CELERY",
+					IncludeEnvironmentVariables: false,
+					SchedulerAu:                 6,
+					NodePoolId:                  nodePoolId,
+					DuplicateWorkerQueues:       true,
+				}),
+				ExpectError: regexp.MustCompile(`worker_queue names must be unique`),
+			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HYBRID) + hybridDeployment(hybridDeploymentInput{
 					Name:                        deploymentName,
@@ -131,6 +145,20 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 			testAccCheckDeploymentExistence(t, awsDeploymentName, true, false),
 		),
 		Steps: []resource.TestStep{
+			// Test for duplicate worker queue names
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
+					Name:                        awsDeploymentName,
+					Description:                 utils.TestResourceDescription,
+					Region:                      "us-east-1",
+					CloudProvider:               "AWS",
+					Executor:                    "CELERY",
+					SchedulerSize:               string(platform.SchedulerMachineNameEXTRALARGE),
+					IncludeEnvironmentVariables: false,
+					DuplicateWorkerQueues:       true,
+				}),
+				ExpectError: regexp.MustCompile(`worker_queue names must be unique`),
+			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
@@ -546,6 +574,29 @@ func workerQueuesStr(nodePoolId string) string {
 }]`, workerStr)
 }
 
+func workerQueuesDuplicateStr(nodePoolId string) string {
+	workerStr := `astro_machine = "A5"`
+	if nodePoolId != "" {
+		workerStr = fmt.Sprintf(`node_pool_id = "%v"`, nodePoolId)
+	}
+	return fmt.Sprintf(`worker_queues = [{
+	name = "default"
+	is_default = true
+	max_worker_count = 10
+	min_worker_count = 0
+	worker_concurrency = 1
+	%v
+},
+{
+	name = "default"
+	is_default = true
+	max_worker_count = 10
+	min_worker_count = 0
+	worker_concurrency = 1
+	%v
+}]`, workerStr, workerStr)
+}
+
 func envVarsStr(includeEnvVars bool) string {
 	environmentVariables := "[]"
 	if includeEnvVars {
@@ -571,13 +622,18 @@ type hybridDeploymentInput struct {
 	IncludeEnvironmentVariables bool
 	SchedulerAu                 int
 	NodePoolId                  string
+	DuplicateWorkerQueues       bool
 }
 
 func hybridDeployment(input hybridDeploymentInput) string {
 	wqStr := ""
 	taskPodNodePoolIdStr := ""
 	if input.Executor == string(platform.DeploymentExecutorCELERY) {
-		wqStr = workerQueuesStr(input.NodePoolId)
+		if input.DuplicateWorkerQueues {
+			wqStr = workerQueuesDuplicateStr(input.NodePoolId)
+		} else {
+			wqStr = workerQueuesStr(input.NodePoolId)
+		}
 	} else {
 		taskPodNodePoolIdStr = fmt.Sprintf(`task_pod_node_pool_id = "%v"`, input.NodePoolId)
 	}
@@ -634,12 +690,17 @@ type standardDeploymentInput struct {
 	SchedulerSize               string
 	IsDevelopmentMode           bool
 	ScalingSpec                 string
+	DuplicateWorkerQueues       bool
 }
 
 func standardDeployment(input standardDeploymentInput) string {
 	wqStr := ""
 	if input.Executor == string(platform.DeploymentExecutorCELERY) {
-		wqStr = workerQueuesStr("")
+		if input.DuplicateWorkerQueues {
+			wqStr = workerQueuesDuplicateStr("")
+		} else {
+			wqStr = workerQueuesStr("")
+		}
 	}
 	var scalingSpecStr string
 
