@@ -128,8 +128,7 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 		tflog.Error(ctx, "failed to mutate roles")
 		return diag.Diagnostics{diag.NewErrorDiagnostic(
 			"Unable to mutate roles, not every deployment role has a corresponding valid deployment",
-			//fmt.Sprintf("Please ensure that every deployment role has a corresponding deployment, got invalid deployment ids: %v", invalidDeploymentIds),
-			fmt.Sprintf("Please ensure that every deployment role has a corresponding deployment, got invalid deployment ids: %v, deploymentRoleIds: %v, deploymentIds: %v, listdeployments: %v", invalidDeploymentIds, deploymentRoleIds, deploymentIds, listDeployments.JSON200.Deployments),
+			fmt.Sprintf("Please ensure that every deployment role has a corresponding deployment, got invalid deployment ids: %v", invalidDeploymentIds),
 		),
 		}
 	}
@@ -140,7 +139,7 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 	})
 	deploymentWorkspaceIds = lo.Uniq(deploymentWorkspaceIds)
 
-	// get list of workspaceRoleIds
+	// get list of workspaceRole ids
 	workspaceRoleIds := lo.Map(input.WorkspaceRoles, func(role iam.WorkspaceRole, _ int) string {
 		return role.WorkspaceId
 	})
