@@ -94,14 +94,15 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 		return nil
 	}
 
-	// get list of deployment ids
-	deploymentIds := lo.Map(input.DeploymentRoles, func(role iam.DeploymentRole, _ int) string {
+	// get list of deploymentRole ids
+	deploymentRoleIds := lo.Map(input.DeploymentRoles, func(role iam.DeploymentRole, _ int) string {
 		return role.DeploymentId
 	})
+	deploymentRoleIds = lo.Uniq(deploymentRoleIds)
 
 	// get list of deployments
 	listDeployments, err := input.PlatformClient.ListDeploymentsWithResponse(ctx, input.OrganizationId, &platform.ListDeploymentsParams{
-		DeploymentIds: &deploymentIds,
+		DeploymentIds: &deploymentRoleIds,
 	})
 	if err != nil {
 		tflog.Error(ctx, "failed to mutate roles", map[string]interface{}{"error": err})
@@ -116,20 +117,37 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 		return diag.Diagnostics{diagnostic}
 	}
 
+	// get list of deployment ids
+	deploymentIds := lo.Map(listDeployments.JSON200.Deployments, func(deployment platform.Deployment, _ int) string {
+		return deployment.Id
+	})
+
+	// check if deploymentRole ids are in list of deployments
+	invalidDeploymentIds, _ := lo.Difference(deploymentRoleIds, deploymentIds)
+	if len(invalidDeploymentIds) > 0 {
+		tflog.Error(ctx, "failed to mutate roles")
+		return diag.Diagnostics{diag.NewErrorDiagnostic(
+			"Unable to mutate roles, not every deployment role has a corresponding valid deployment",
+			//fmt.Sprintf("Please ensure that every deployment role has a corresponding deployment, got invalid deployment ids: %v", invalidDeploymentIds),
+			fmt.Sprintf("Please ensure that every deployment role has a corresponding deployment, got invalid deployment ids: %v, deploymentRoleIds: %v, deploymentIds: %v, listdeployments: %v", invalidDeploymentIds, deploymentRoleIds, deploymentIds, listDeployments.JSON200.Deployments),
+		),
+		}
+	}
+
 	// get list of workspace ids from deployments
 	deploymentWorkspaceIds := lo.Map(listDeployments.JSON200.Deployments, func(deployment platform.Deployment, _ int) string {
 		return deployment.WorkspaceId
 	})
 	deploymentWorkspaceIds = lo.Uniq(deploymentWorkspaceIds)
 
-	// get list of workspaceIds
-	workspaceIds := lo.Map(input.WorkspaceRoles, func(role iam.WorkspaceRole, _ int) string {
+	// get list of workspaceRoleIds
+	workspaceRoleIds := lo.Map(input.WorkspaceRoles, func(role iam.WorkspaceRole, _ int) string {
 		return role.WorkspaceId
 	})
 
-	// check if deploymentWorkspaceIds are in workspaceIds
-	workspaceIds = lo.Intersect(lo.Uniq(workspaceIds), deploymentWorkspaceIds)
-	if len(workspaceIds) != len(deploymentWorkspaceIds) {
+	// check if deploymentWorkspaceIds are in workspaceRoleIds
+	workspaceRoleIds = lo.Intersect(lo.Uniq(workspaceRoleIds), deploymentWorkspaceIds)
+	if len(workspaceRoleIds) != len(deploymentWorkspaceIds) {
 		tflog.Error(ctx, "failed to mutate roles")
 		return diag.Diagnostics{diag.NewErrorDiagnostic(
 			"Unable to mutate roles, not every deployment role has a corresponding workspace role",

@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/lucsky/cuid"
+
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
@@ -109,6 +111,28 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					},
 				}),
 				ExpectError: regexp.MustCompile("Invalid Configuration: Cannot have multiple roles with the same workspace id"),
+			},
+			// Test failure: check for invalid deploymentId
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
+					Name:             failTeamName,
+					Description:      utils.TestResourceDescription,
+					MemberIds:        []string{userId},
+					OrganizationRole: string(iam.ORGANIZATIONOWNER),
+					WorkspaceRoles: []utils.Role{
+						{
+							Role:     string(iam.WORKSPACEOWNER),
+							EntityId: workspaceId,
+						},
+					},
+					DeploymentRoles: []utils.Role{
+						{
+							Role:     "DEPLOYMENT_ADMIN",
+							EntityId: cuid.New(),
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("Unable to mutate roles, not every deployment role has a corresponding valid deployment"),
 			},
 			// Create team with all fields
 			{
