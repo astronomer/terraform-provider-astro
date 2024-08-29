@@ -38,7 +38,7 @@ jobs:
           fi
           go build -o "${output_name}" ./import/import_script.go
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: binaries
           path: terraform-provider-astro-import-script_*
