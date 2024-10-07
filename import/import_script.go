@@ -12,6 +12,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/hashicorp/go-version"
+
 	"golang.org/x/exp/maps"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
@@ -33,7 +35,7 @@ func main() {
 	log.Println("Terraform Import Script Starting")
 
 	// collect all arguments from the user, indicating all the resources that need to be imported
-	resourcesPtr := flag.String("resources", "", "Comma separated list of resources to import. The only accepted values are workspace, deployment, cluster, api_token, team, team_roles, user_roles")
+	resourcesPtr := flag.String("resources", "workspace,deployment,cluster,api_token,team,team_roles,user_roles", "Comma separated list of resources to import. The only accepted values are workspace, deployment, cluster, api_token, team, team_roles, user_roles")
 	tokenPtr := flag.String("token", "", "API token to authenticate with the platform")
 	hostPtr := flag.String("host", "https://api.astronomer.io", "API host to connect to")
 	organizationIdPtr := flag.String("organizationId", "", "Organization ID to import resources into")
@@ -46,6 +48,11 @@ func main() {
 	if *helpFlag {
 		printHelp()
 		return
+	}
+
+	err := checkRequiredArguments(*resourcesPtr, *tokenPtr, *organizationIdPtr)
+	if err != nil {
+		log.Fatalf("Error: %v", err)
 	}
 
 	// validate the resources argument
@@ -71,6 +78,12 @@ func main() {
 		return
 	}
 
+	err = os.Setenv("ASTRO_API_TOKEN", token)
+	if err != nil {
+		log.Fatalf("Failed to set ASTRO_API_TOKEN environment variable: %v", err)
+		return
+	}
+
 	// set the host
 	var host string
 	if *hostPtr == "dev" {
@@ -78,7 +91,7 @@ func main() {
 	} else if *hostPtr == "stage" {
 		host = "https://api.astronomer-stage.io"
 	} else {
-		host = *hostPtr
+		host = "https://api.astronomer.io"
 	}
 
 	// set the organization ID
@@ -89,10 +102,10 @@ func main() {
 
 	log.Printf("Using organization ID: %s", organizationId)
 
-	// Check if Terraform is installed
-	_, err := exec.LookPath("terraform")
+	// Check if Terraform is installed and the version is supported
+	err = checkTerraformVersion()
 	if err != nil {
-		log.Fatalf("Error: Terraform is not installed or not in PATH. Please install Terraform and make sure it's in your system PATH")
+		log.Fatalf("Error: %v", err)
 	}
 
 	// connect to v1beta1 client
@@ -121,9 +134,8 @@ func main() {
 provider "astro" {
 	organization_id = "%s"
 	host = "%s"
-	token = "%s"
 }
-`, organizationId, host, token)
+`, organizationId, host)
 
 	//	for each resource, we get the list of entities and generate the terraform import command
 
@@ -254,10 +266,6 @@ func printHelp() {
 	log.Println("        workspace, deployment, cluster, api_token, team, team_roles, user_roles")
 	log.Println("  -token string")
 	log.Println("        API token to authenticate with the platform")
-	log.Println("  -host string")
-	log.Println("        API host to connect to (default: https://api.astronomer.io)")
-	log.Println("        Use 'dev' for https://api.astronomer-dev.io")
-	log.Println("        Use 'stage' for https://api.astronomer-stage.io")
 	log.Println("  -organizationId string")
 	log.Println("        Organization ID to import resources into")
 	log.Println("  -runTerraformInit")
@@ -267,6 +275,66 @@ func printHelp() {
 	log.Println("\nExample:")
 	log.Println("  go run script.go -resources=workspace,deployment -token=your_api_token -organizationId=your_org_id")
 	log.Println("\nNote: If the -token flag is not provided, the script will attempt to use the ASTRO_API_TOKEN environment variable.")
+}
+
+// checkRequiredArguments checks if the required arguments are provided
+func checkRequiredArguments(resourcesPtr string, tokenPtr string, organizationIdPtr string) error {
+	var missingArgs []string
+
+	if resourcesPtr == "" {
+		missingArgs = append(missingArgs, "-resources (comma-separated list: workspace, deployment, cluster, api_token, team, team_roles, user_roles)")
+	}
+
+	if tokenPtr == "" && len(os.Getenv("ASTRO_API_TOKEN")) == 0 {
+		missingArgs = append(missingArgs, "-token (or ASTRO_API_TOKEN environment variable)")
+	}
+
+	if organizationIdPtr == "" {
+		missingArgs = append(missingArgs, "-organizationId")
+	}
+
+	if len(missingArgs) > 0 {
+		return fmt.Errorf("Missing required argument(s):\n%s", strings.Join(missingArgs, "\n"))
+	}
+
+	return nil
+}
+
+// checkTerraformVersion checks if Terraform is installed and the version is supported
+func checkTerraformVersion() error {
+	// Check if Terraform is installed
+	_, err := exec.LookPath("terraform")
+	if err != nil {
+		return fmt.Errorf("Terraform is not installed or not in PATH. Please install Terraform and make sure it's in your system PATH")
+	}
+
+	// Get Terraform version
+	cmd := exec.Command("terraform", "version")
+	output, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("Failed to get Terraform version: %v", err)
+	}
+
+	// Parse the version string
+	versionStr := strings.TrimSpace(strings.Split(string(output), "\n")[0])
+	versionStr = strings.TrimPrefix(versionStr, "Terraform v")
+
+	// Parse the version
+	currentVersion, err := version.NewVersion(versionStr)
+	if err != nil {
+		return fmt.Errorf("Failed to parse Terraform version: %v", err)
+	}
+
+	// Define the minimum required version
+	minVersion, _ := version.NewVersion("1.7.0")
+
+	// Compare versions
+	if currentVersion.LessThan(minVersion) {
+		return fmt.Errorf("Terraform version %s is required. Your version (%s) is too old. Please upgrade Terraform", minVersion, currentVersion)
+	}
+
+	fmt.Printf("Terraform version %s is installed and meets the minimum required version.\n", currentVersion)
+	return nil
 }
 
 // generateTerraformConfig runs terraform plan to generate the configuration

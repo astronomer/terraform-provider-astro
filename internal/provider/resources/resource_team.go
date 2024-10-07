@@ -197,6 +197,28 @@ func (r *TeamResource) Create(
 		diags = r.MutateRoles(ctx, &data, teamId)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
+
+			// if there is an error in creating team with workspace or deployment roles, delete the team
+			team, err := r.IamClient.DeleteTeamWithResponse(
+				ctx,
+				r.OrganizationId,
+				teamId,
+			)
+			if err != nil {
+				tflog.Error(ctx, "failed to delete Team", map[string]interface{}{"error": err})
+				resp.Diagnostics.AddError(
+					"Client Error",
+					fmt.Sprintf("Unable to delete Team, got error: %s", err),
+				)
+				return
+			}
+			statusCode, diagnostic := clients.NormalizeAPIError(ctx, team.HTTPResponse, team.Body)
+			// It is recommended to ignore 404 Resource Not Found errors when deleting a resource
+			if statusCode != http.StatusNotFound && diagnostic != nil {
+				resp.Diagnostics.Append(diagnostic)
+				return
+			}
+
 			return
 		}
 	}

@@ -757,6 +757,17 @@ func validateHybridConfig(ctx context.Context, data *models.DeploymentResource) 
 				)
 			}
 		}
+
+		// Check for duplicate worker_queue names
+		duplicateWorkerQueueNames := lo.FindDuplicatesBy(workerQueues, func(wq models.WorkerQueueResource) string {
+			return wq.Name.ValueString()
+		})
+		if len(duplicateWorkerQueueNames) > 0 {
+			diags.AddError(
+				"worker_queue names must be unique",
+				fmt.Sprintf("The following worker_queue names are duplicated: %v", duplicateWorkerQueueNames),
+			)
+		}
 	}
 
 	if data.Executor.ValueString() == string(platform.DeploymentExecutorKUBERNETES) && data.TaskPodNodePoolId.IsNull() {
@@ -917,6 +928,18 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 					"Please remove node_pool_id",
 				)
 			}
+		}
+
+		// Check for duplicate worker_queue names
+		workerQueuesNames := lo.Map(workerQueues, func(wq models.WorkerQueueResource, _ int) string {
+			return wq.Name.ValueString()
+		})
+		duplicateWorkerQueueNames := lo.FindDuplicates(workerQueuesNames)
+		if len(duplicateWorkerQueueNames) > 0 {
+			diags.AddError(
+				"worker_queue names must be unique",
+				fmt.Sprintf("The following worker_queue names are duplicated: %v", duplicateWorkerQueueNames),
+			)
 		}
 	}
 

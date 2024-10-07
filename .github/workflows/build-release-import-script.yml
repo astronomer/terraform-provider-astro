@@ -80,7 +80,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.get_version.outputs.VERSION }}
-          release_name: Release Astro Import Script ${{ steps.get_version.outputs.VERSION }}
+          release_name: Astro Import Script ${{ steps.get_version.outputs.VERSION }}
           draft: false
           prerelease: false
 

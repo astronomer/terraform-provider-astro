@@ -21,6 +21,7 @@ import (
 func TestAcc_ResourceUserRoles(t *testing.T) {
 	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
 	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
+	standardDeploymentId := os.Getenv("HOSTED_STANDARD_DEPLOYMENT_ID")
 	userId := os.Getenv("HOSTED_DUMMY_USER_ID")
 	tfVarName := fmt.Sprintf("astro_user_roles.%v", userId)
 	resource.Test(t, resource.TestCase{
@@ -125,6 +126,59 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 							{
 								Role:     "DEPLOYMENT_ADMIN",
 								EntityId: deploymentId,
+							},
+						},
+					),
+				),
+			},
+			// Check that multiple deployment roles under one workspace are correctly set
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					userRoles(userRolesInput{
+						OrganizationRole: string(iam.ORGANIZATIONOWNER),
+						WorkspaceRoles: []utils.Role{
+							{
+								Role:     string(iam.WORKSPACEOWNER),
+								EntityId: workspaceId,
+							},
+						},
+						DeploymentRoles: []utils.Role{
+							{
+								Role:     "DEPLOYMENT_ADMIN",
+								EntityId: deploymentId,
+							},
+							{
+								Role:     "DEPLOYMENT_ADMIN",
+								EntityId: standardDeploymentId,
+							},
+						},
+					}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfVarName, "user_id", userId),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.ORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
+					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "2"),
+					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.0.role", string(iam.WORKSPACEOWNER)),
+					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.0.role", "DEPLOYMENT_ADMIN"),
+					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.1.role", "DEPLOYMENT_ADMIN"),
+
+					// Check via API that user has correct roles
+					testAccCheckUserRolesCorrect(t,
+						string(iam.ORGANIZATIONOWNER),
+						[]utils.Role{
+							{
+								Role:     string(iam.WORKSPACEOWNER),
+								EntityId: workspaceId,
+							},
+						},
+						[]utils.Role{
+							{
+								Role:     "DEPLOYMENT_ADMIN",
+								EntityId: deploymentId,
+							},
+							{
+								Role:     "DEPLOYMENT_ADMIN",
+								EntityId: standardDeploymentId,
 							},
 						},
 					),
