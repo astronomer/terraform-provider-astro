@@ -5,15 +5,15 @@ Astro Provider for Terraform allows you to manage Astro resources from a Terrafo
 ---
 
 # Astro Provider
-Unlock the ability to automate, scale, and manage your [Astro](https://www.astronomer.io/product/) infrastructure.
+[Astro](https://www.astronomer.io/product/) is a unified data platform built on Apache Airflow® that ensures data is delivered on time, securely, and accurately.
+This is the official [Astro Terraform Provider](https://github.com/astronomer/terraform-provider-astro), built to allow you to automate, scale, and manage your Astro infrastructure.
 Reduce manual effort, minimize errors, and create a more streamlined approach to managing data orchestration.
 
 ## Authentication
 Create an [API token](https://www.astronomer.io/docs/astro/automation-authentication#step-1-create-an-api-token) with the minimum required [permissions](https://www.astronomer.io/docs/astro/user-permissions) to securely use Terraform, ensuring it only has access to the resources necessary.
-You can create a [Deployment](https://www.astronomer.io/docs/astro/deployment-api-tokens), [Workspace](https://www.astronomer.io/docs/astro/workspace-api-tokens), or [Organizaton](https://www.astronomer.io/docs/astro/organization-api-tokens) API token.
-Ensure the API token is configured as an environment variable `ASTRO_API_TOKEN` when running Terraform commands:
-
-`export ASTRO_API_TOKEN=...`
+You can create a [Deployment](https://www.astronomer.io/docs/astro/deployment-api-tokens), [Workspace](https://www.astronomer.io/docs/astro/workspace-api-tokens), or [Organizaton](https://www.astronomer.io/docs/astro/organization-api-tokens) API token. 
+An Organizaton token is the most flexible option for authenticating high level changes and touching multiple different resources.
+Ensure the API token is configured as an environment variable `ASTRO_API_TOKEN` when running Terraform commands.
 
 ## Example usage
 ```terraform
