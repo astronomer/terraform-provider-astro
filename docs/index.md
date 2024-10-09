@@ -12,8 +12,8 @@ Reduce manual effort, minimize errors, and create a more streamlined approach to
 ## Authentication
 Create an [API token](https://www.astronomer.io/docs/astro/automation-authentication#step-1-create-an-api-token) with the minimum required [permissions](https://www.astronomer.io/docs/astro/user-permissions) to securely use Terraform, ensuring it only has access to the resources necessary.
 You can create a [Deployment](https://www.astronomer.io/docs/astro/deployment-api-tokens), [Workspace](https://www.astronomer.io/docs/astro/workspace-api-tokens), or [Organizaton](https://www.astronomer.io/docs/astro/organization-api-tokens) API token. 
-An Organizaton token is the most flexible option for authenticating high level changes and touching multiple different resources.
-Ensure the API token is configured as an environment variable `ASTRO_API_TOKEN` when running Terraform commands.
+An Organizaton token is the most flexible option to authenticate for high level changes accross multiple different resources.
+Ensure the API token is configured as an environment variable, `ASTRO_API_TOKEN` when running Terraform commands.
 
 ## Example usage
 ```terraform
