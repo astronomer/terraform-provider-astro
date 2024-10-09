@@ -13,7 +13,7 @@ terraform {
   required_providers {
     astro = {
       source  = "astronomer/astro"
-      version = "1.0.0"
+      version = "0.3.0"
     }
   }
 }
@@ -32,9 +32,9 @@ $ terraform init
 Initializing the backend...
 
 Initializing provider plugins...
-- Finding astronomer/astro versions matching "1.0.0"...
-- Installing astronomer/astro v1.0.0...
-- Installed astronomer/astro v1.0.0 (signed by a HashiCorp partner, key ID F5206453FDEA33CF)
+- Finding astronomer/astro versions matching "0.3.0"...
+- Installing astronomer/astro v0.3.0...
+- Installed astronomer/astro v0.3.0 (signed by a HashiCorp partner, key ID F5206453FDEA33CF)
 
 ...
 
@@ -48,7 +48,7 @@ should now work.
 
 ## Step 3: Authenticate with Astro
 1. [Create an API token](https://www.astronomer.io/docs/astro/automation-authentication#step-1-create-an-api-token) in Astro. Since you are creating a Workspace, you need an [Organization API token](https://www.astronomer.io/docs/astro/organization-api-tokens) with [Organization Owner permissions](https://www.astronomer.io/docs/astro/user-permissions#organization-roles).
-2. Configure the API token as an [environment variable](https://www.astronomer.io/docs/astro/environment-variables) `ASTRO_API_TOKEN` to run Terraform commands:
+2. Configure the API token as an environment variable `ASTRO_API_TOKEN` to run Terraform commands:
 `export ASTRO_API_TOKEN=...`
 
 ## Step 4: Define Resources in Terraform
