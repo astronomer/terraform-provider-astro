@@ -51,6 +51,14 @@ should now work.
 2. Configure the API token as an environment variable `ASTRO_API_TOKEN` to run Terraform commands:
 `export ASTRO_API_TOKEN=...`
 
+Alternatively, users can set their API token value in the provider block:
+```
+provider "astro" {
+  organization_id = <your-organization-id>
+  token = <your-api-token>
+}
+```
+
 ## Step 4: Define Resources in Terraform
 In a file `main.tf`, define two resources, an `astro_workspace` and an `astro_deployment`. These resources will represent an Astro workspace and Astro Deployment, defined in Terraform code:
 ```
