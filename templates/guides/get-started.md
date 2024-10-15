@@ -19,7 +19,7 @@ terraform {
 }
 
 provider "astro" {
-  organization_id = <your-organization-id>
+  organization_id = &lt;your-organization-id&gt;
 }
 ```
 3. Insert your organization's ID for `<your-organization-id>`. The working directory will contain all your Terraform code, and all Terraform commands will be run from this directory.
@@ -54,8 +54,8 @@ should now work.
 Alternatively, users can set their API token value in the provider block:
 ```
 provider "astro" {
-  organization_id = <your-organization-id>
-  token = <your-api-token>
+  organization_id = &lt;your-organization-id&gt;
+  token = &lt;your-api-token&gt;
 }
 ```
 
