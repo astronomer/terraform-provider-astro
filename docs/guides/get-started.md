@@ -54,8 +54,8 @@ should now work.
 Alternatively, users can set their API token value in the provider block:
 ```
 provider "astro" {
-  organization_id = &lt;your-organization-id&gt;
-  token = &lt;your-api-token&gt;
+  organization_id = "&lt;your-organization-id&gt;"
+  token = "&lt;your-api-token&gt;"
 }
 ```
 
