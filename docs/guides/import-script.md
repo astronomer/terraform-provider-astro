@@ -49,33 +49,24 @@ chmod +x terraform-provider-astro-import-script_&lt;version-number&gt;_&lt;os&gt
 - `-runTerraformInit`: Run terraform init after generating the import configuration. Used for initializing the Terraform state in our GitHub Actions.
 - `-help`: Display help information.
 
-You following is an example output from running the import script with `-resources deployment` and `-organizationId cf23qgwp001ag01qf0o8er413`:
+The following is an example output from running the import script with `-resources deployment` and `-organizationId cf23qgwp001ag01qf0o8er413`:
 ```
 Terraform Import Script Starting
 Resources to import:  [deployment]
-Using organization ID: cm23qgwp001ap01qm0o3er493
+Using organization ID: cf23qgwp001ag01qf0o8er413
 Terraform version 1.9.7 is installed and meets the minimum required version.
-Importing deployments for organization cm23qgwp001ap01qm0o3er493
-Importing Deployments: [cf23qgwp001ag01qf0o8er413]
+Importing deployments for organization cf23qgwp001ag01qf0o8er413
+Importing Deployments: [cm2c7rnub087d01n3mcrt4u3p]
 Successfully handled resource deployment
 Successfully wrote import configuration to import.tf
-generated.tf does not exist, no need to delete
-terraform.tfstate does not exist, no need to delete
-astro_deployment.deployment_cf23qgwp001ag01qf0o8er413: Preparing import... [id=cf23qgwp001ag01qf0o8er413]
-astro_deployment.deployment_cf23qgwp001ag01qf0o8er413: Refreshing state... [id=cf23qgwp001ag01qf0o8er413]
+Successfully deleted generated.tf
+Successfully deleted terraform.tfstate
 
-Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
-  + create
-  ~ update in-place
+No changes. Your infrastructure matches the configuration.
 
-Terraform will perform the following actions:
-
-...
-
-Plan: 1 to import, 6 to add, 1 to change, 0 to destroy.
-
+Terraform has compared your real infrastructure against your configuration and found no differences, so no changes are needed.
 generated.tf does not exist. Creating new file with deployment information.
-Generated import for astro_deployment.deployment_cf23qgwp001ag01qf0o8er413
+Generated import for astro_deployment.deployment_cm2c7rnub087d01n3mcrt4u3p
 Successfully updated generated.tf with deployment information.
 Import process completed successfully. The 'generated.tf' file now includes all resources, including deployments.
 Import process completed. Summary:
@@ -89,7 +80,7 @@ The script will generate two main files:
 The generated Terraform configurations may require some manual adjustment to match your specific requirements or to resolve any conflicts.
 
 ## Step 4: Extract and organize resources
-The `generated.tf` file that is created by the import script will contain all of the specified resources in one file. It is recommended that you extract and modularize the resources so they are easily maintained and reusable:
+The `generated.tf` file that is created by the import script will contain all of the specified resources in one file. It is recommended that you extract and modularize the resources so they are easily maintained and reusable. This is an example of a well structured Terraform project for managing Astro infrastructure:
 ```
 terraform-astro-project/
 ├── environments/
