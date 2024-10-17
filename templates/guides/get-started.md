@@ -49,7 +49,7 @@ should now work.
 ## Step 3: Authenticate with Astro
 1. [Create an API token](https://www.astronomer.io/docs/astro/automation-authentication#step-1-create-an-api-token) in Astro. Since you are creating a Workspace, you need an [Organization API token](https://www.astronomer.io/docs/astro/organization-api-tokens) with [Organization Owner permissions](https://www.astronomer.io/docs/astro/user-permissions#organization-roles).
 2. Configure the API token as an environment variable `ASTRO_API_TOKEN` to run Terraform commands:
-`export ASTRO_API_TOKEN=...`
+`export ASTRO_API_TOKEN=<your-api-token>`
 
 Alternatively, users can set their API token value in the provider block:
 ```

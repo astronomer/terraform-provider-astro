@@ -3,11 +3,13 @@ page_title: "Use Terraform Import Script to migrate existing resources"
 ---
 
 # Use Import Script to migrate existing resources
-In this guide, we will automate the migration of existing resources into Terraform using the [Terraform Import Script](https://github.com/astronomer/terraform-provider-astro/releases/tag/import/v0.1.3). The Astro Terraform Import Script is a tool designed to help you import existing Astro resources into your Terraform configuration.
+The Astro Terraform Import Script is a tool designed to help you import existing Astro resources into your Terraform configuration.
+
+In this guide, we will automate the migration of an existing Deployment, API token and Team into Terraform using the Terraform Import Script. 
 
 ### Supported Resources
 - Workspace 
-- Deployment 
+- Deployment
 - Cluster
 - Hybrid Cluster Workspace Authorization
 - API Token 
@@ -16,18 +18,22 @@ In this guide, we will automate the migration of existing resources into Terrafo
 - User Roles
 
 ## Step 1: Download the Import Script
-1. Download the `terraform-provider-astro-import-script` executable file from [releases](https://github.com/astronomer/terraform-provider-astro/releases) based on your OS and architecture.
-
+1. Download the `terraform-provider-astro-import-script` executable file from [releases](https://github.com/astronomer/terraform-provider-astro/releases) based on your OS and architecture. For this guide, the script will be `terraform-provider-astro-import-script_v0.1.3_darwin_arm64`.
 
 ## Step 2: Run the Import Script
 
 -> Make sure you run `terraform init` before using the import script, or use the `-runTerraformInit` option when running the import script.
 
-1. If you are using a Unix-based systems, add execute permission to the script file: 
+1. Authenticate with Astro by creating an [API token](https://www.astronomer.io/docs/astro/organization-api-tokens#create-an-organization-api-token) with the organization owner role and configure it as an `ASTRO_API_TOKEN` environment variable:
+```
+export ASTRO_API_TOKEN=&lt;your-api-token&gt;
+```
+
+2. If you are using a Unix-based systems, add execute permission to the script file: 
 ```
 chmod +x terraform-provider-astro-import-script_&lt;version-number&gt;_&lt;os&gt;_&lt;arc&gt;
 ```
-2. Run the import script. Insert the script's version, your computer's operating system, and your computer's architecture for `<version-number>`, `<os>` and `<arc>`.
+3. Run the import script. Insert the script's version, your computer's operating system, and your computer's architecture for `<version-number>`, `<os>` and `<arc>`.
 
 - On Unix-based systems:
 ```
@@ -38,7 +44,6 @@ chmod +x terraform-provider-astro-import-script_&lt;version-number&gt;_&lt;os&gt
 ```
 .\terraform-provider-astro-import-script_&lt;version-number&gt;_&lt;os&gt;_&lt;arc&gt;.exe [options]
 ```
-
 ### Options
 - `-resources`: Comma-separated list of resources to import. Accepted values are workspace, deployment, cluster, api_token, team, team_roles, user_roles. If not provided, all resources are imported.
 
@@ -49,28 +54,38 @@ chmod +x terraform-provider-astro-import-script_&lt;version-number&gt;_&lt;os&gt
 - `-runTerraformInit`: Run terraform init after generating the import configuration. Used for initializing the Terraform state in our GitHub Actions.
 - `-help`: Display help information.
 
-The following is an example output from running the import script with `-resources deployment` and `-organizationId cf23qgwp001ag01qf0o8er413`:
+In this guide, you will import your existing Deployment and Team resources so specify those resources with the `-resources` option. The other option you will need to specify is `-organizationId`:
+```
+./terraform-provider-astro-import-script_v0.1.3_darwin_arm64 -organizationId &lt;your-organization-id&gt; -resources deployment,team
+```
+
+The following is an example output from running the import script with `-resources deployment,api_token,team` and `-organizationId cf23qgwp001ag01qf0o8er413`:
 ```
 Terraform Import Script Starting
-Resources to import:  [deployment]
-Using organization ID: cf23qgwp001ag01qf0o8er413
+Resources to import:  [team api_token]
+Using organization ID: cm23qgwp001ap01qm0o3er493
 Terraform version 1.9.7 is installed and meets the minimum required version.
-Importing deployments for organization cf23qgwp001ag01qf0o8er413
-Importing Deployments: [cm2c7rnub087d01n3mcrt4u3p]
-Successfully handled resource deployment
+Importing teams for organization cm23qgwp001ap01qm0o3er493
+Importing API tokens for organization cm23qgwp001ap01qm0o3er493
+Importing Teams: [cm2cj1mct0af201mgjjl4lwbt]
+Successfully handled resource team
+Importing API Tokens: [cm2c9slvb08p601n3lb4jljps]
+Successfully handled resource api_token
 Successfully wrote import configuration to import.tf
 Successfully deleted generated.tf
-Successfully deleted terraform.tfstate
+terraform.tfstate does not exist, no need to delete
+astro_api_token.api_token_cm2c9slvb08p601n3lb4jljps: Preparing import... [id=cm2c9slvb08p601n3lb4jljps]
+astro_team.team_cm2cj1mct0af201mgjjl4lwbt: Preparing import... [id=cm2cj1mct0af201mgjjl4lwbt]
+astro_team.team_cm2cj1mct0af201mgjjl4lwbt: Refreshing state... [id=cm2cj1mct0af201mgjjl4lwbt]
+astro_api_token.api_token_cm2c9slvb08p601n3lb4jljps: Refreshing state... [id=cm2c9slvb08p601n3lb4jljps]
 
-No changes. Your infrastructure matches the configuration.
+Terraform will perform the following actions:
 
-Terraform has compared your real infrastructure against your configuration and found no differences, so no changes are needed.
-generated.tf does not exist. Creating new file with deployment information.
-Generated import for astro_deployment.deployment_cm2c7rnub087d01n3mcrt4u3p
-Successfully updated generated.tf with deployment information.
-Import process completed successfully. The 'generated.tf' file now includes all resources, including deployments.
-Import process completed. Summary:
-Resource deployment processed successfully
+...
+
+Plan: 2 to import, 0 to add, 0 to change, 0 to destroy.
+
+Terraform has generated configuration and written it to generated.tf. Please review the configuration and edit it as necessary before adding it to version control.
 ```
 
 ## Step 3: Review output
