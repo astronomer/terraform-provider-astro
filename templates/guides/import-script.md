@@ -28,7 +28,7 @@ In this guide, we will migrate an existing Workspace, API token and Team into Te
 
 ## Step 2: Run the Import Script
 
--> Make sure you run `terraform init` before using the import script, or use the `-runTerraformInit` option when running the import script.
+-> Make sure you run `terraform init` before using the Import Script, or use the `-runTerraformInit` option when running the Import Script.
 
 1. Authenticate with Astro by creating an [API token](https://www.astronomer.io/docs/astro/organization-api-tokens#create-an-organization-api-token) with the **organization owner** role and configure it as an `ASTRO_API_TOKEN` environment variable:
 ```
@@ -39,7 +39,7 @@ export ASTRO_API_TOKEN=&lt;your-api-token&gt;
 ```
 chmod +x terraform-provider-astro-import-script_&lt;version-number&gt;_&lt;os&gt;_&lt;arc&gt;
 ```
-3. Run the import script. Insert the script's version, your computer's operating system, and your computer's architecture for `<version-number>`, `<os>` and `<arc>`.
+3. Run the Import Script. Insert the script's version, your computer's operating system, and your computer's architecture for `<version-number>`, `<os>` and `<arc>`.
 
 - On Unix-based systems:
 ```
@@ -75,7 +75,7 @@ Successfully wrote import configuration to import.tf
 Successfully deleted generated.tf
 terraform.tfstate does not exist, no need to delete
 astro_team.team_&lt;team-id&gt: Preparing import... [id=&lt;team-id&gt]
-astro_api_token.api_token_cm2c9slvb08p601n3lb4jljps: Preparing import... [id=cm2c9slvb08p601n3lb4jljps]
+astro_api_token.api_token_&lt;api_token-id&gt: Preparing import... [id=&lt;api_token-id&gt]
 astro_workspace.workspace_&lt;workspace-id&gt: Preparing import... [id=&lt;workspace-id&gt]
 astro_workspace.workspace_&lt;workspace-id&gt: Refreshing state... [id=&lt;workspace-id&gt]
 astro_api_token.api_token_&lt;api_token-id&gt: Refreshing state... [id=&lt;api_token-id&gt]
@@ -106,7 +106,7 @@ The script will generate two main files:
 The generated Terraform configurations may require some manual adjustment to match your specific requirements or to resolve any conflicts.
 
 ## Step 4: Extract and organize resources
-The `generated.tf` file that is created by the import script will contain all of the specified resources in one file. It is recommended that you extract and modularize the resources so they are easily maintained and reusable. This is an example of a well structured Terraform project for managing Astro infrastructure:
+The `generated.tf` file that is created by the Import Script will contain all of the specified resources in one file. It is recommended that you extract and modularize the resources so they are easily maintained and reusable. This is an example of a well structured Terraform project for managing Astro infrastructure:
 ```
 terraform-astro-project/
 ├── environments/

@@ -163,16 +163,16 @@ Do you want to perform these actions?
   Enter a value: yes
 
 astro_workspace.my_first_tf_workspace: Creating...
-astro_workspace.my_first_tf_workspace: Creation complete after 0s [id=clxn24vhy0as101ohmeg9i72o]
+astro_workspace.my_first_tf_workspace: Creation complete after 0s [id=&lt;workspace-id&gt]
 astro_deployment.my_first_tf_deployment: Creating...
-astro_deployment.my_first_tf_deployment: Creation complete after 1s [id=clxn24vs00afv01ot12ph6ejb]
+astro_deployment.my_first_tf_deployment: Creation complete after 1s [id=&lt;deployment-id&gt]
 
 Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
 
 Outputs:
 
-terraform_deployment = "clxn24vs00afv01ot12ph6ejb"
-terraform_workspace = "clxn24vhy0as101ohmeg9i72o"
+terraform_deployment = "&lt;deployment-id&gt"
+terraform_workspace = "&lt;workspace-id&gt"
 ```
 The resources were created and will now be visible in Astro.
 
@@ -181,9 +181,9 @@ Run `terraform destroy` and select `yes`:
 ```
 $ terraform destroy
 astro_workspace.my_first_tf_workspace: Refreshing state...
-  [id=clxn24vhy0as101ohmeg9i72o]
+  [id=&lt;workspace-id&gt]
 astro_deployment.my_first_tf_deployment: Refreshing state...
-  [id=clxn24vs00afv01ot12ph6ejb]
+  [id=&lt;deployment-id&gt]
 
 Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
   - destroy
@@ -195,8 +195,8 @@ Terraform will perform the following actions:
 Plan: 0 to add, 0 to change, 2 to destroy.
 
 Changes to Outputs:
-  - terraform_deployment = "clxn24vs00afv01ot12ph6ejb" -> null
-  - terraform_workspace  = "clxn24vhy0as101ohmeg9i72o" -> null
+  - terraform_deployment = "&lt;deployment-id&gt" -> null
+  - terraform_workspace  = "&lt;workspace-id&gt" -> null
 
 Do you really want to destroy all resources?
   Terraform will destroy all your managed infrastructure, as shown above.
@@ -205,10 +205,10 @@ Do you really want to destroy all resources?
   Enter a value: yes
 
 astro_deployment.my_first_tf_deployment: Destroying...
-  [id=clxn24vs00afv01ot12ph6ejb]
+  [id=&lt;deployment-id&gt]
 astro_deployment.my_first_tf_deployment: Destruction complete after 1s
 astro_workspace.my_first_tf_workspace: Destroying...
-  [id=clxn24vhy0as101ohmeg9i72o]
+  [id=&lt;workspace-id&gt]
 astro_workspace.my_first_tf_workspace: Destruction complete after 0s
 
 Destroy complete! Resources: 2 destroyed.
