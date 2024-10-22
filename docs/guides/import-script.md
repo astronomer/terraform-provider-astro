@@ -7,13 +7,13 @@ The Astro Terraform Import Script is a tool designed to help you import existing
 
 In this guide, we will migrate an existing Workspace, API token and Team into Terraform using the Terraform Import Script.
 
-### Import Script options
+## Import Script options
 - `-resources`: Comma-separated list of resources to import. Accepted values are 
 `workspace`, `deployment`, `cluster`, `api_token`, `team`, `team_roles`,and `user_roles`. If not provided, all resources are imported.
 
 -> Ensure you have the necessary permissions in your Astro organization to access the resources you're attempting to import.
 
-- `-token`: API token to authenticate with the Astro platform. If not provided, the script will attempt to use the ASTRO_API_TOKEN environment variable.
+- `-token`: API token to authenticate with the Astro platform. If not provided, the script will attempt to use the `ASTRO_API_TOKEN` environment variable.
 - `-organizationId`: Organization ID to import resources from.
 - `-runTerraformInit`: Run terraform init after generating the import configuration. Used for initializing the Terraform state in our GitHub Actions.
 - `-help`: Display help information.
@@ -97,7 +97,7 @@ Resource workspace processed successfully
 Resource api_token processed successfully
 Resource team processed successfully
 ```
--> If you import Deployments, they will not count torwards the `Plan: 3 to import, 0 to add, 0 to change, 0 to destroy` line of the output even when the Deployments are successfully imported.
+-> If you import Deployments, they will not count torwards the `Plan: 3 to import, 0 to add, 0 to change, 0 to destroy` line of the output even when the Deployments are successfully imported. This is a known issue and is in the process of being fixed.
 
 ## Step 3: Review output
 The script will generate two main files:
