@@ -30,7 +30,7 @@ In this guide, we will migrate an existing Workspace, API token and Team into Te
 
 -> Make sure you run `terraform init` before using the Import Script, or use the `-runTerraformInit` option when running the Import Script.
 
-1. Authenticate with Astro by creating an [API token](https://www.astronomer.io/docs/astro/organization-api-tokens#create-an-organization-api-token) with the **organization owner** role and configure it as an `ASTRO_API_TOKEN` environment variable:
+1. Authenticate with Astro by creating an [API token](https://www.astronomer.io/docs/astro/organization-api-tokens#create-an-organization-api-token) with the **Organization owner** role and configure it as an `ASTRO_API_TOKEN` environment variable:
 ```
 export ASTRO_API_TOKEN=&lt;your-api-token&gt;
 ```
