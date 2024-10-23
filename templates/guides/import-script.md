@@ -24,7 +24,7 @@ In this guide, we will migrate an existing Workspace, API token and Team into Te
 - An initialized Terraform working directory
 
 ## Step 1: Download the Import Script
-1. Download the `terraform-provider-astro-import-script` executable file from [releases](https://github.com/astronomer/terraform-provider-astro/releases) based on your OS and architecture. For this guide, the script will be `terraform-provider-astro-import-script_v0.1.3_darwin_arm64`.
+1. Download the `terraform-provider-astro-import-script` executable file from the [Astro Terraform Provider releases](https://github.com/astronomer/terraform-provider-astro/releases) based on your OS and architecture. For this guide, the script will be `terraform-provider-astro-import-script_v0.1.3_darwin_arm64`.
 
 ## Step 2: Run the Import Script
 
