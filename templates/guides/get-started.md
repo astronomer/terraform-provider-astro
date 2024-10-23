@@ -116,7 +116,7 @@ output "terraform_deployment" {
 ```
 
 ## Step 6: Preview the Terraform changes
-You should now have 3 files: `terraform.tf`, `main.tf` and `outputs.tf` (optional).
+You now have up to 3 files: `terraform.tf`, `main.tf` and the optional `outputs.tf`.
 1. Run [`terraform plan`](https://developer.hashicorp.com/terraform/cli/commands/plan) to let Terraform create an execution plan and preview the infrastructure changes that Terraform will make. You should see the following text:
 ```
 $ terraform plan
