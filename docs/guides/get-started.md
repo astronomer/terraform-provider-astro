@@ -3,7 +3,11 @@ page_title: "Get started with Astro Terraform Provider"
 ---
 
 # Get started with Astro Terraform Provider
-In this guide, we will automate the onboarding of a new team by creating and managing an Astro Workspace and Deployment. By the end of this tutorial, you will have a fully automated setup that is reproducible and easily scalable to more teams.
+In this guide, you will automate the onboarding of a new team onto Astro by creating and managing a Workspace and Deployment. By the end of this tutorial, you will have a fully automated setup that is reproducible and easily scalable to more teams.
+
+## Prerequisites
+- [Terraform](https://developer.hashicorp.com/terraform/install)
+- An Astro Organization
 
 ## Step 1: Create Your Terraform Working Directory
 1. Create a folder, `my-data-platform` for your Terraform project.
@@ -22,10 +26,10 @@ provider "astro" {
   organization_id = &lt;your-organization-id&gt;
 }
 ```
-3. Insert your organization's ID for `<your-organization-id>`. The working directory will contain all your Terraform code, and all Terraform commands will be run from this directory.
+3. Edit the `terraform.tf` file with your Organization's ID for `<your-organization-id>`. The working directory contains all your Terraform code, and all Terraform commands run from this directory.
 
 ## Step 2: Initialize the Terraform Working Directory
-1. Run `terraform init`. You will see Terraform downloading and installing the Astro Terraform provider to your local computer:
+1. Run `terraform init`. You will see Terraform downloading and installing the Astro Terraform provider locally:
 ```
 $ terraform init
 
@@ -44,7 +48,9 @@ You may now begin working with Terraform. Try running "terraform plan" to see
 any changes that are required for your infrastructure. All Terraform commands
 should now work.
 ```
-2. The versions and hashes of providers are stored in a generated file `.terraform.lock.hcl`. Store this file in version control.
+2. The versions and hashes of providers are stored in a generated file `.terraform.lock.hcl`.
+
+-> Astronomer recommends you store `.terraform.lock.hcl` in your version control system so that you can track potential changes to your external dependencies.
 
 ## Step 3: Authenticate with Astro
 1. [Create an API token](https://www.astronomer.io/docs/astro/automation-authentication#step-1-create-an-api-token) in Astro. Since you are creating a Workspace, you need an [Organization API token](https://www.astronomer.io/docs/astro/organization-api-tokens) with [Organization Owner permissions](https://www.astronomer.io/docs/astro/user-permissions#organization-roles).
@@ -102,7 +108,7 @@ resource "astro_deployment" "my_first_tf_deployment" {
 -> One of the key characteristics (and benefits) of using Terraform is that it's *declarative*. For example, `workspace_id = astro_workspace.my_first_tf_workspace.id` tells Terraform to configure the Workspace ID in the Deployment. This means the Workspace must be created first, producing an ID which is a generated value and unknown at the time of writing. You don't have to instruct Terraform to create resources in a certain order, you only have to instruct what to create. The resources above can be defined in any order. Terraform takes the relationships between resources into account when deciding the order of creating resources.
 
 ## Step 5: (Optional) Define Outputs
-In a file `outputs.tf`, define values you'd like to log after creating the infrastructure. We'll output the Workspace and Deployment IDs:
+In a file called `outputs.tf`, define values you want to log after creating the infrastructure. The following code configures Workspace and Deployment IDs as the output:
 ```
 output "terraform_workspace" {
   description = "ID of the TF created workspace"
@@ -116,7 +122,7 @@ output "terraform_deployment" {
 ```
 
 ## Step 6: Preview the Terraform changes
-You should now have 3 files: `terraform.tf`, `main.tf` and `outputs.tf` (optional).
+You now have up to 3 files: `terraform.tf`, `main.tf` and the optional `outputs.tf`.
 1. Run [`terraform plan`](https://developer.hashicorp.com/terraform/cli/commands/plan) to let Terraform create an execution plan and preview the infrastructure changes that Terraform will make. You should see the following text:
 ```
 $ terraform plan

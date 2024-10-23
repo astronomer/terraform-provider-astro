@@ -24,13 +24,13 @@ In this guide, we will migrate an existing Workspace, API token and Team into Te
 - An initialized Terraform working directory
 
 ## Step 1: Download the Import Script
-1. Download the `terraform-provider-astro-import-script` executable file from [releases](https://github.com/astronomer/terraform-provider-astro/releases) based on your OS and architecture. For this guide, the script will be `terraform-provider-astro-import-script_v0.1.3_darwin_arm64`.
+1. Download the `terraform-provider-astro-import-script` executable file from the [Astro Terraform Provider releases](https://github.com/astronomer/terraform-provider-astro/releases) based on your OS and architecture. For this guide, the script will be `terraform-provider-astro-import-script_v0.1.3_darwin_arm64`.
 
 ## Step 2: Run the Import Script
 
 -> Make sure you run `terraform init` before using the Import Script, or use the `-runTerraformInit` option when running the Import Script.
 
-1. Authenticate with Astro by creating an [API token](https://www.astronomer.io/docs/astro/organization-api-tokens#create-an-organization-api-token) with the **organization owner** role and configure it as an `ASTRO_API_TOKEN` environment variable:
+1. Authenticate with Astro by creating an [API token](https://www.astronomer.io/docs/astro/organization-api-tokens#create-an-organization-api-token) with the **Organization owner** role and configure it as an `ASTRO_API_TOKEN` environment variable:
 ```
 export ASTRO_API_TOKEN=&lt;your-api-token&gt;
 ```
@@ -51,7 +51,7 @@ chmod +x terraform-provider-astro-import-script_&lt;version-number&gt;_&lt;os&gt
 .\terraform-provider-astro-import-script_&lt;version-number&gt;_&lt;os&gt;_&lt;arc&gt;.exe [options]
 ```
 
-To import your existing Workspace, API token and Team, specify those resources with the `-resources` option. The other option you will need to specify is `-organizationId`:
+To import your existing Workspace, API token and Team, specify those resources with the `-resources` option. The other option you need to specify is `-organizationId`:
 ```
 ./terraform-provider-astro-import-script_v0.1.3_darwin_arm64 -organizationId &lt;your-organization-id&gt; -resources api_token,team,workspace
 ```
@@ -103,10 +103,10 @@ Resource team processed successfully
 The script will generate two main files:
 - `import.tf`: Contains the Terraform import blocks for the specified resources.
 - `generated.tf`: Contains the Terraform resource configurations for the imported resources.
-The generated Terraform configurations may require some manual adjustment to match your specific requirements or to resolve any conflicts.
+The generated Terraform configurations might require some manual adjustment to match your specific requirements or to resolve any conflicts.
 
 ## Step 4: Extract and organize resources
-The `generated.tf` file that is created by the Import Script will contain all of the specified resources in one file. It is recommended that you extract and modularize the resources so they are easily maintained and reusable. This is an example of a well structured Terraform project for managing Astro infrastructure:
+The `generated.tf` file created by the Import Script contains all of the specified resources in one file. Astronomer recommends that you extract and modularize the resources so they are easily maintained and reusable. The following example shows a well structured Terraform project for managing Astro infrastructure:
 ```
 terraform-astro-project/
 ├── environments/
