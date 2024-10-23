@@ -25,7 +25,7 @@ provider "astro" {
 3. Edit the `terraform.tf` file with your Organization's ID for `<your-organization-id>`. The working directory contains all your Terraform code, and all Terraform commands run from this directory.
 
 ## Step 2: Initialize the Terraform Working Directory
-1. Run `terraform init`. You will see Terraform downloading and installing the Astro Terraform provider to your local computer:
+1. Run `terraform init`. You will see Terraform downloading and installing the Astro Terraform provider locally:
 ```
 $ terraform init
 
