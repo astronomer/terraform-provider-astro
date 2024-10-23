@@ -106,7 +106,7 @@ The script will generate two main files:
 The generated Terraform configurations may require some manual adjustment to match your specific requirements or to resolve any conflicts.
 
 ## Step 4: Extract and organize resources
-The `generated.tf` file that is created by the Import Script will contain all of the specified resources in one file. It is recommended that you extract and modularize the resources so they are easily maintained and reusable. This is an example of a well structured Terraform project for managing Astro infrastructure:
+The `generated.tf` file created by the Import Script contains all of the specified resources in one file. Astronomer recommends that you extract and modularize the resources so they are easily maintained and reusable. The following example shows a well structured Terraform project for managing Astro infrastructure:
 ```
 terraform-astro-project/
 ├── environments/
