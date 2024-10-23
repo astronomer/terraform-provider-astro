@@ -51,7 +51,7 @@ chmod +x terraform-provider-astro-import-script_&lt;version-number&gt;_&lt;os&gt
 .\terraform-provider-astro-import-script_&lt;version-number&gt;_&lt;os&gt;_&lt;arc&gt;.exe [options]
 ```
 
-To import your existing Workspace, API token and Team, specify those resources with the `-resources` option. The other option you will need to specify is `-organizationId`:
+To import your existing Workspace, API token and Team, specify those resources with the `-resources` option. The other option you need to specify is `-organizationId`:
 ```
 ./terraform-provider-astro-import-script_v0.1.3_darwin_arm64 -organizationId &lt;your-organization-id&gt; -resources api_token,team,workspace
 ```
