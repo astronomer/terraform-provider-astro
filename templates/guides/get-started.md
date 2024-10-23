@@ -3,7 +3,7 @@ page_title: "Get started with Astro Terraform Provider"
 ---
 
 # Get started with Astro Terraform Provider
-In this guide, we will automate the onboarding of a new team by creating and managing an Astro Workspace and Deployment. By the end of this tutorial, you will have a fully automated setup that is reproducible and easily scalable to more teams.
+In this guide, you will automate the onboarding of a new team onto Astro by creating and managing a Workspace and Deployment. By the end of this tutorial, you will have a fully automated setup that is reproducible and easily scalable to more teams.
 
 ## Step 1: Create Your Terraform Working Directory
 1. Create a folder, `my-data-platform` for your Terraform project.
