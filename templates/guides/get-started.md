@@ -48,7 +48,9 @@ You may now begin working with Terraform. Try running "terraform plan" to see
 any changes that are required for your infrastructure. All Terraform commands
 should now work.
 ```
-2. The versions and hashes of providers are stored in a generated file `.terraform.lock.hcl`. Store this file in version control.
+2. The versions and hashes of providers are stored in a generated file `.terraform.lock.hcl`.
+
+-> Astronomer recommends you store `.terraform.lock.hcl` in your version control system so that you can track potential changes to your external dependencies.
 
 ## Step 3: Authenticate with Astro
 1. [Create an API token](https://www.astronomer.io/docs/astro/automation-authentication#step-1-create-an-api-token) in Astro. Since you are creating a Workspace, you need an [Organization API token](https://www.astronomer.io/docs/astro/organization-api-tokens) with [Organization Owner permissions](https://www.astronomer.io/docs/astro/user-permissions#organization-roles).
