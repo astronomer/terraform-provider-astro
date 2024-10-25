@@ -67,7 +67,7 @@ provider "astro" {
 ```
 
 ## Step 4: Define Resources in Terraform
-In a file `main.tf`, define two resources, an `astro_workspace` and an `astro_deployment`. These resources will represent an Astro workspace and Astro Deployment, defined in Terraform code:
+In a file `main.tf`, define two resources, an `astro_workspace` and an `astro_deployment`. These resources represent an Astro Workspace and Astro Deployment, defined in Terraform code:
 ```
 # Create a new workspace
 resource "astro_workspace" "my_first_tf_workspace" {
