@@ -152,7 +152,7 @@ Changes to Outputs:
 2. Verify the generated plan contains the text `Plan: 2 to add, 0 to change, 0 to destroy.` This validates that the plan is to create two resources, which are the Workspace and Deployment as defined in `main.tf`.
 
 ## Step 7: Apply the Terraform Plan
-Run `terraform apply` and select `yes` to execute the plan. This creates the Astro resources and will print their ids, as you defined in `outputs.tf`: 
+Run `terraform apply` and select `yes` to execute the plan. This creates the Astro resources and prints their ids, as you defined in `outputs.tf`: 
 ```
 $ terraform apply
 
