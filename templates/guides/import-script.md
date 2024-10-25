@@ -11,7 +11,7 @@ In this guide, you will migrate an existing Workspace, API token and Team into T
 - `-resources`: Comma-separated list of resources to import. Accepted values are 
 `workspace`, `deployment`, `cluster`, `api_token`, `team`, `team_roles`,and `user_roles`. If not provided, all resources are imported.
 
--> Ensure you have the necessary permissions in your Astro organization to access the resources you're attempting to import.
+-> Ensure you have the necessary permissions in your Astro Organization to access the resources you're attempting to import. See [Astro User Permissions Reference](https://www.astronomer.io/docs/astro/user-permissions) for more information.
 
 - `-token`: API token to authenticate with the Astro platform. If not provided, the script will attempt to use the `ASTRO_API_TOKEN` environment variable.
 - `-organizationId`: Organization ID to import resources from.
