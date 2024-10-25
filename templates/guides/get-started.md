@@ -58,7 +58,7 @@ should now work.
 2. Configure the API token as an environment variable `ASTRO_API_TOKEN` to run Terraform commands:
 `export ASTRO_API_TOKEN=<your-api-token>`
 
-Alternatively, users can set their API token value in the provider block:
+Alternatively, you can set their API token value in the provider block:
 ```
 provider "astro" {
   organization_id = "&lt;your-organization-id&gt;"
