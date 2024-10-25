@@ -15,7 +15,7 @@ In this guide, we will migrate an existing Workspace, API token and Team into Te
 
 - `-token`: API token to authenticate with the Astro platform. If not provided, the script will attempt to use the `ASTRO_API_TOKEN` environment variable.
 - `-organizationId`: Organization ID to import resources from.
-- `-runTerraformInit`: Run terraform init after generating the import configuration. Used for initializing the Terraform state in our GitHub Actions.
+- `-runTerraformInit`: Run `terraform init` after generating the import configuration. Used for initializing the Terraform state in our GitHub Actions.
 - `-help`: Display help information.
 
 
