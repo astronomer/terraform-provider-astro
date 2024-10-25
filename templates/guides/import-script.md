@@ -5,7 +5,7 @@ page_title: "Use Terraform Import Script to migrate existing resources"
 # Use Import Script to migrate existing resources
 The Astro Terraform Import Script helps you import existing Astro resources into your Terraform configuration.
 
-In this guide, we will migrate an existing Workspace, API token and Team into Terraform using the Terraform Import Script.
+In this guide, you will migrate an existing Workspace, API token and Team into Terraform using the Terraform Import Script.
 
 ## Import Script options
 - `-resources`: Comma-separated list of resources to import. Accepted values are 
