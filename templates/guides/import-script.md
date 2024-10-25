@@ -20,7 +20,7 @@ In this guide, you will migrate an existing Workspace, API token and Team into T
 
 
 ## Prerequisites
-- An [Astro](https://www.astronomer.io/product/) organization with a Workspace, Team, and API token
+- An [Astro](https://www.astronomer.io/product/) Organization with a Workspace, Team, and API token
 - An initialized Terraform working directory
 
 ## Step 1: Download the Import Script
