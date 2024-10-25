@@ -6,8 +6,9 @@ page_title: "Get started with Astro Terraform Provider"
 In this guide, you will automate the onboarding of a new team onto Astro by creating and managing a Workspace and Deployment. By the end of this tutorial, you will have a fully automated setup that is reproducible and easily scalable to more teams.
 
 ## Prerequisites
-- [Terraform](https://developer.hashicorp.com/terraform/install)
 - An Astro Organization
+- [Terraform](https://developer.hashicorp.com/terraform/install)
+
 
 ## Step 1: Create Your Terraform Working Directory
 1. Create a folder, `my-data-platform` for your Terraform project.
