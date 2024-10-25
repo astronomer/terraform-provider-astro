@@ -106,7 +106,7 @@ resource "astro_deployment" "my_first_tf_deployment" {
   }]
 }
 ```
--> One of the key characteristics (and benefits) of using Terraform is that it's *declarative*. For example, `workspace_id = astro_workspace.my_first_tf_workspace.id` tells Terraform to configure the Workspace ID in the Deployment. This means the Workspace must be created first, producing an ID which is a generated value and unknown at the time of writing. You don't have to instruct Terraform to create resources in a certain order, you only have to instruct what to create. The resources above can be defined in any order. Terraform takes the relationships between resources into account when deciding the order of creating resources.
+-> One of the key characteristics (and benefits) of using Terraform is that it's *declarative*. For example, `workspace_id = astro_workspace.my_first_tf_workspace.id` tells Terraform to configure the Workspace ID in the Deployment. This means the Workspace must be created first, producing an ID which is a generated value and unknown at the time you initially define the resources in Terraform. You don't have to instruct Terraform to create resources in a certain order, you only have to instruct what to create. The resources above can be defined in any order. Terraform takes the relationships between resources into account when deciding the order of creating resources.
 
 ## Step 5: (Optional) Define Outputs
 In a file called `outputs.tf`, define values you want to log after creating the infrastructure. The following code configures Workspace and Deployment IDs as the output:

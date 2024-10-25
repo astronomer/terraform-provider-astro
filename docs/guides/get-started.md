@@ -58,7 +58,7 @@ should now work.
 2. Configure the API token as an environment variable `ASTRO_API_TOKEN` to run Terraform commands:
 `export ASTRO_API_TOKEN=<your-api-token>`
 
-Alternatively, users can set their API token value in the provider block:
+Alternatively, you can set their API token value in the provider block:
 ```
 provider "astro" {
   organization_id = "&lt;your-organization-id&gt;"
@@ -67,7 +67,7 @@ provider "astro" {
 ```
 
 ## Step 4: Define Resources in Terraform
-In a file `main.tf`, define two resources, an `astro_workspace` and an `astro_deployment`. These resources will represent an Astro workspace and Astro Deployment, defined in Terraform code:
+In a file `main.tf`, define two resources, an `astro_workspace` and an `astro_deployment`. These resources represent an Astro Workspace and Astro Deployment, defined in Terraform code:
 ```
 # Create a new workspace
 resource "astro_workspace" "my_first_tf_workspace" {
@@ -106,7 +106,7 @@ resource "astro_deployment" "my_first_tf_deployment" {
   }]
 }
 ```
--> One of the key characteristics (and benefits) of using Terraform is that it's *declarative*. For example, `workspace_id = astro_workspace.my_first_tf_workspace.id` tells Terraform to configure the Workspace ID in the Deployment. This means the Workspace must be created first, producing an ID which is a generated value and unknown at the time of writing. You don't have to instruct Terraform to create resources in a certain order, you only have to instruct what to create. The resources above can be defined in any order. Terraform takes the relationships between resources into account when deciding the order of creating resources.
+-> One of the key characteristics (and benefits) of using Terraform is that it's *declarative*. For example, `workspace_id = astro_workspace.my_first_tf_workspace.id` tells Terraform to configure the Workspace ID in the Deployment. This means the Workspace must be created first, producing an ID which is a generated value and unknown at the time you initially define the resources in Terraform. You don't have to instruct Terraform to create resources in a certain order, you only have to instruct what to create. The resources above can be defined in any order. Terraform takes the relationships between resources into account when deciding the order of creating resources.
 
 ## Step 5: (Optional) Define Outputs
 In a file called `outputs.tf`, define values you want to log after creating the infrastructure. The following code configures Workspace and Deployment IDs as the output:
@@ -124,7 +124,7 @@ output "terraform_deployment" {
 
 ## Step 6: Preview the Terraform changes
 You now have up to 3 files: `terraform.tf`, `main.tf` and the optional `outputs.tf`.
-1. Run [`terraform plan`](https://developer.hashicorp.com/terraform/cli/commands/plan) to let Terraform create an execution plan and preview the infrastructure changes that Terraform will make. You should see the following text:
+1. Run [`terraform plan`](https://developer.hashicorp.com/terraform/cli/commands/plan) to let Terraform create an execution plan, so you can preview the infrastructure changes that Terraform will make. As Terraform makes a plan, it shares a summary of the plan as an output similar to the following text:
 ```
 $ terraform plan
 
@@ -152,7 +152,7 @@ Changes to Outputs:
 2. Verify the generated plan contains the text `Plan: 2 to add, 0 to change, 0 to destroy.` This validates that the plan is to create two resources, which are the Workspace and Deployment as defined in `main.tf`.
 
 ## Step 7: Apply the Terraform Plan
-Run `terraform apply` and select `yes` to execute the plan. This creates the Astro resources and will print their ids, as you defined in `outputs.tf`: 
+Run `terraform apply` and select `yes` to execute the plan. This creates the Astro resources and prints their ids, as you defined in `outputs.tf`: 
 ```
 $ terraform apply
 

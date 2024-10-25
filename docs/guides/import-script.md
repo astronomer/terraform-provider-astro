@@ -3,24 +3,24 @@ page_title: "Use Terraform Import Script to migrate existing resources"
 ---
 
 # Use Import Script to migrate existing resources
-The Astro Terraform Import Script is a tool designed to help you import existing Astro resources into your Terraform configuration.
+The Astro Terraform Import Script helps you import existing Astro resources into your Terraform configuration.
 
-In this guide, we will migrate an existing Workspace, API token and Team into Terraform using the Terraform Import Script.
+In this guide, you will migrate an existing Workspace, API token and Team into Terraform using the Terraform Import Script.
 
 ## Import Script options
 - `-resources`: Comma-separated list of resources to import. Accepted values are 
 `workspace`, `deployment`, `cluster`, `api_token`, `team`, `team_roles`,and `user_roles`. If not provided, all resources are imported.
 
--> Ensure you have the necessary permissions in your Astro organization to access the resources you're attempting to import.
+-> Ensure you have the necessary permissions in your Astro Organization to access the resources you're attempting to import. See [Astro User Permissions Reference](https://www.astronomer.io/docs/astro/user-permissions) for more information.
 
 - `-token`: API token to authenticate with the Astro platform. If not provided, the script will attempt to use the `ASTRO_API_TOKEN` environment variable.
 - `-organizationId`: Organization ID to import resources from.
-- `-runTerraformInit`: Run terraform init after generating the import configuration. Used for initializing the Terraform state in our GitHub Actions.
+- `-runTerraformInit`: Run `terraform init` after generating the import configuration. Used for initializing the Terraform state in our GitHub Actions.
 - `-help`: Display help information.
 
 
 ## Prerequisites
-- An [Astro](https://www.astronomer.io/product/) organization with a Workspace, Team, and API token
+- An [Astro](https://www.astronomer.io/product/) Organization with a Workspace, Team, and API token
 - An initialized Terraform working directory
 
 ## Step 1: Download the Import Script
