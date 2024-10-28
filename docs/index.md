@@ -1,7 +1,5 @@
 ---
 page_title: "Astro Provider"
-description: 
-Astro Provider for Terraform allows you to manage Astro resources from a Terraform script. The Provider uses the Astro API.
 ---
 
 # Astro Provider
