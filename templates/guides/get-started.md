@@ -3,7 +3,7 @@ page_title: "Get started with Astro Terraform Provider"
 ---
 
 # Get started with Astro Terraform Provider
-In this guide, you will automate the onboarding of a new team onto Astro by creating and managing a Workspace and Deployment. By the end of this tutorial, you will have a fully automated setup that is reproducible and easily scalable to more teams.
+This guide shows you how to automate the onboarding of a new team onto Astro by creating and managing a Workspace and Deployment. By the end of this tutorial, you will have a fully automated setup that is reproducible and easily scalable to more teams.
 
 ## Prerequisites
 - An Astro Organization
@@ -49,7 +49,7 @@ You may now begin working with Terraform. Try running "terraform plan" to see
 any changes that are required for your infrastructure. All Terraform commands
 should now work.
 ```
-2. The versions and hashes of providers are stored in a generated file `.terraform.lock.hcl`.
+2. Terraform stores the versions and hashes of providers in a generated file `.terraform.lock.hcl`.
 
 -> Astronomer recommends you store `.terraform.lock.hcl` in your version control system so that you can track potential changes to your external dependencies.
 
@@ -106,7 +106,7 @@ resource "astro_deployment" "my_first_tf_deployment" {
   }]
 }
 ```
--> One of the key characteristics (and benefits) of using Terraform is that it's *declarative*. For example, `workspace_id = astro_workspace.my_first_tf_workspace.id` tells Terraform to configure the Workspace ID in the Deployment. This means the Workspace must be created first, producing an ID which is a generated value and unknown at the time you initially define the resources in Terraform. You don't have to instruct Terraform to create resources in a certain order, you only have to instruct what to create. The resources above can be defined in any order. Terraform takes the relationships between resources into account when deciding the order of creating resources.
+-> One of the key characteristics (and benefits) of using Terraform is that it's *declarative*. For example, `workspace_id = astro_workspace.my_first_tf_workspace.id` tells Terraform to configure the Workspace ID in the Deployment. This means the Workspace must be created first, producing an ID which is a generated value and unknown at the time you initially define the resources in Terraform. You don't have to instruct Terraform to create resources in a certain order, you only have to instruct what to create. You can define the resources in the previous code example in any order. Terraform takes the relationships between resources into account when deciding the order of creating resources.
 
 ## Step 5: (Optional) Define Outputs
 In a file called `outputs.tf`, define values you want to log after creating the infrastructure. The following code configures Workspace and Deployment IDs as the output:
@@ -149,7 +149,7 @@ Changes to Outputs:
   + terraform_deployment = (known after apply)
   + terraform_workspace  = (known after apply)
   ```
-2. Verify the generated plan contains the text `Plan: 2 to add, 0 to change, 0 to destroy.` This validates that the plan is to create two resources, which are the Workspace and Deployment as defined in `main.tf`.
+2. Verify that the generated plan contains the text `Plan: 2 to add, 0 to change, 0 to destroy.` This confirms that `main.tf` creates two new resources. In this case, a Workspace and a Deployment.
 
 ## Step 7: Apply the Terraform Plan
 Run `terraform apply` and select `yes` to execute the plan. This creates the Astro resources and prints their ids, as you defined in `outputs.tf`: 
