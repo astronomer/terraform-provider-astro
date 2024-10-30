@@ -5,7 +5,7 @@ page_title: "Use Terraform Import Script to migrate existing resources"
 # Use Import Script to migrate existing resources
 The Astro Terraform Import Script helps you import existing Astro resources into your Terraform configuration.
 
-In this guide, you will migrate an existing Workspace, API token and Team into Terraform using the Terraform Import Script.
+This guide shows you how to migrate an existing Workspace, API token, and Team into Terraform using the Terraform Import Script.
 
 ## Import Script options
 - `-resources`: Comma-separated list of resources to import. Accepted values are 
@@ -39,7 +39,7 @@ export ASTRO_API_TOKEN=&lt;your-api-token&gt;
 ```
 chmod +x terraform-provider-astro-import-script_&lt;version-number&gt;_&lt;os&gt;_&lt;arc&gt;
 ```
-3. Run the Import Script. Insert the script's version, your computer's operating system, and your computer's architecture for `<version-number>`, `<os>` and `<arc>`.
+3. Run the Import Script. Insert the script's version, your computer's operating system, and your computer's architecture for `<version-number>`, `<os>`, and `<arc>`.
 
 - On Unix-based systems:
 ```
@@ -97,10 +97,10 @@ Resource workspace processed successfully
 Resource api_token processed successfully
 Resource team processed successfully
 ```
--> If you import Deployments, they will not count torwards the `Plan: 3 to import, 0 to add, 0 to change, 0 to destroy` line of the output even when the Deployments are successfully imported. This is a known issue and is in the process of being fixed.
+-> If you import Deployments, they don't count towards the `Plan: 3 to import, 0 to add, 0 to change, 0 to destroy` line of the output, even when the Deployments are successfully imported. This is a known issue and is in the process of being fixed.
 
 ## Step 3: Review output
-The script will generate two main files:
+The script generates two main files:
 - `import.tf`: Contains the Terraform import blocks for the specified resources.
 - `generated.tf`: Contains the Terraform resource configurations for the imported resources.
 The generated Terraform configurations might require some manual adjustment to match your specific requirements or to resolve any conflicts.
