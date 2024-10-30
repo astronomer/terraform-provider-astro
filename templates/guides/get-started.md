@@ -181,7 +181,7 @@ Outputs:
 terraform_deployment = "&lt;deployment-id&gt"
 terraform_workspace = "&lt;workspace-id&gt"
 ```
-The resources were created and will now be visible in Astro.
+The resources were created and are now visible in Astro.
 
 ## Step 8: Clean Up Terraform-Created Resources
 Run `terraform destroy` and select `yes`:
