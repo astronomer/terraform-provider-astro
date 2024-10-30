@@ -220,4 +220,4 @@ astro_workspace.my_first_tf_workspace: Destruction complete after 0s
 
 Destroy complete! Resources: 2 destroyed.
 ```
-The output shows two destroyed resources which are the Workspace and Deployment that you first created.
+The output shows two destroyed resources, which are the Workspace and Deployment that you first created.
