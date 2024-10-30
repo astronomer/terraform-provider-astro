@@ -97,7 +97,7 @@ Resource workspace processed successfully
 Resource api_token processed successfully
 Resource team processed successfully
 ```
--> If you import Deployments, they will not count torwards the `Plan: 3 to import, 0 to add, 0 to change, 0 to destroy` line of the output even when the Deployments are successfully imported. This is a known issue and is in the process of being fixed.
+-> If you import Deployments, they don't count towards the `Plan: 3 to import, 0 to add, 0 to change, 0 to destroy` line of the output, even when the Deployments are successfully imported. This is a known issue and is in the process of being fixed.
 
 ## Step 3: Review output
 The script generates two main files:
