@@ -39,7 +39,7 @@ export ASTRO_API_TOKEN=&lt;your-api-token&gt;
 ```
 chmod +x terraform-provider-astro-import-script_&lt;version-number&gt;_&lt;os&gt;_&lt;arc&gt;
 ```
-3. Run the Import Script. Insert the script's version, your computer's operating system, and your computer's architecture for `<version-number>`, `<os>` and `<arc>`.
+3. Run the Import Script. Insert the script's version, your computer's operating system, and your computer's architecture for `<version-number>`, `<os>`, and `<arc>`.
 
 - On Unix-based systems:
 ```
