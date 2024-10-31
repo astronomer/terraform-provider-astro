@@ -35,7 +35,7 @@ This guide shows you how to migrate an existing Workspace, API token, and Team i
 export ASTRO_API_TOKEN=&lt;your-api-token&gt;
 ```
 
-2. If you are using a Unix-based systems, add execute permission to the script file: 
+2. If you are using a Unix-based systems, add execute permissions to the script file: 
 ```
 chmod +x terraform-provider-astro-import-script_&lt;version-number&gt;_&lt;os&gt;_&lt;arc&gt;
 ```
