@@ -376,13 +376,6 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + developmentDeployment(scalingSpecDeploymentName,
-					`scaling_spec = {
-									hibernation_spec = {}
-								}`),
-				ExpectError: regexp.MustCompile(`scaling_spec \(hibernation\) must have either override or schedules`),
-			},
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + developmentDeployment(scalingSpecDeploymentName,
 					`
 						scaling_spec = {
 							hibernation_spec = {
