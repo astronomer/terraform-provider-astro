@@ -496,6 +496,60 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.hibernation_spec.schedules.0.wake_at_cron", "59 * * * *"),
 				),
 			},
+			// Dynamically creating scaling spec depending on variable: setting it to null
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + developmentDeployment(scalingSpecDeploymentName,
+					` `),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.%", "0"),
+				),
+			},
+			{
+				Config: `variable "environment_name" {
+						  type    = string
+						  default = "dev"
+						}` +
+					astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + developmentDeployment(scalingSpecDeploymentName,
+					`scaling_spec = var.environment_name != "prd" ? {
+									hibernation_spec = {
+									  schedules = [{
+										is_enabled       = true
+										hibernate_at_cron = "0 22 * * *"
+										wake_at_cron     = "0 14 * * *"
+									  }]
+									}
+								  } : null`),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.hibernation_spec.schedules.0.is_enabled", "true"),
+				),
+			},
+			// Dynamically creating scaling spec depending on variable: setting it to null
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + developmentDeployment(scalingSpecDeploymentName,
+					` `),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.%", "0"),
+				),
+			},
+			{
+				Config: `variable "environment_name" {
+						  type    = string
+						  default = "prd"
+						}` +
+					astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + developmentDeployment(scalingSpecDeploymentName,
+					`scaling_spec = var.environment_name != "prd" ? {
+									hibernation_spec = {
+									  schedules = [{
+										is_enabled       = true
+										hibernate_at_cron = "0 22 * * *"
+										wake_at_cron     = "0 14 * * *"
+									  }]
+									}
+								  } : null`),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.%", "0"), // scaling spec should be null
+				),
+			},
 			// Import existing deployment and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests
 			{
 				ResourceName:            scalingSpecResourceVar,
