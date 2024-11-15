@@ -902,13 +902,6 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 			tflog.Error(ctx, "failed to convert hibernation spec", map[string]interface{}{"error": diags})
 			return diags
 		}
-		if hibernationSpec.Override.IsNull() && hibernationSpec.Schedules.IsNull() {
-			diags.AddError(
-				"scaling_spec (hibernation) must have either override or schedules",
-				"Please provide either override or schedules in 'scaling_spec.hibernation_spec'",
-			)
-			return diags
-		}
 	}
 
 	// Need to check worker_queues for hosted deployments have `astro_machine` and do not have `node_pool_id`
@@ -1006,8 +999,8 @@ func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*plat
 	platformScalingSpec.HibernationSpec = &platform.DeploymentHibernationSpecRequest{}
 
 	if hibernationSpec.Override.IsNull() && hibernationSpec.Schedules.IsNull() {
-		// If the hibernation spec is set but both override and schedules are not set, return an empty hibernation spec for the request
-		return platformScalingSpec, nil
+		// If the hibernation spec is set but both override and schedules are not set, return an error
+		return platformScalingSpec, diag.Diagnostics{diag.NewErrorDiagnostic("scaling_spec.hibernation_spec must have either override or schedules", "Please provide either override or schedules in 'scaling_spec.hibernation_spec")}
 	}
 	if !hibernationSpec.Override.IsNull() {
 		var override models.HibernationSpecOverride
