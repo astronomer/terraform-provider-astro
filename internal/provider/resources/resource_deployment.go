@@ -872,14 +872,6 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 		)
 	}
 
-	// Need to check that scaling_spec is only for is_development_mode set to true
-	if !data.IsDevelopmentMode.ValueBool() && !data.ScalingSpec.IsNull() {
-		diags.AddError(
-			"scaling_spec (hibernation) is only supported for is_development_mode set to true",
-			"Either set is_development_mode to true or remove scaling_spec",
-		)
-	}
-
 	// Need to check that scaling_spec has either override or schedules
 	if !data.ScalingSpec.IsNull() {
 		var scalingSpec models.DeploymentScalingSpec
