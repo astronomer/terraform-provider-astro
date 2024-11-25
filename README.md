@@ -1,39 +1,17 @@
 # Terraform Provider Astro
 
-## Requirements
+<div align="center">
+    <picture>
+        <img src="https://github.com/user-attachments/assets/22586f12-3871-4bb6-8ead-40bec82ec3ce" width="200">
+    </picture>
+    <p>Official Astro Terraform Provider to automate, scale, and manage your Astro infrastructure through an API.</p>
+    <a href="https://registry.terraform.io/providers/astronomer/astro/latest/docs"><img src="https://img.shields.io/static/v1?label=Docs&labelColor=0F0C27&message=terraform-provider-astro&color=4E408D&style=for-the-badge" /></a>
+    <a href="https://astronomer.docs.buildwithfern.com/docs/api/overview"><img src="https://img.shields.io/static/v1?label=Docs&labelColor=0F0C27&message=API Ref&color=4E408D&style=for-the-badge" /></a>
+</div>
 
-- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.7
-- [Go](https://golang.org/doc/install) >= 1.21
-
-## Building The Provider
-
-1. Clone the repository
-2. Enter the repository directory
-3. Build the provider using the following `Makefile` command:
-
-```shell
-make dep
-make build
-```
-
-4. The provider binary will be available in the `bin` directory
-
-## Adding Dependencies
-
-This provider uses [Go modules](https://github.com/golang/go/wiki/Modules).
-Please see the Go documentation for the most up-to-date information about using Go modules.
-
-To add a new dependency `github.com/author/dependency` to your Terraform provider:
-
-```shell
-go get github.com/author/dependency
-go mod tidy
-```
-
-Then commit the changes to `go.mod` and `go.sum`.
 
 ## Using the provider
-1. Create an [API Token](https://docs.astronomer.io/astro/automation-authentication#step-1-create-an-api-token) to use in the provider. We recommend creating an organization API token since it is the most flexible but the type of your API token will depend on your use case.
+1. Create an [API Token](https://docs.astronomer.io/astro/automation-authentication#step-1-create-an-api-token) to use in the provider. Astronomer recommends creating an organization API token since it is the most flexible but the type of your API token will depend on your use case.
 2. Create a `main.tf` file with the following content:
 ```terraform
 terraform {
@@ -58,26 +36,7 @@ terraform plan # creates a plan consisting of a set of changes that will make yo
 terraform apply # performs a plan just like terraform plan does, but then actually carries out the planned changes to each resource using the relevant infrastructure provider's API
 ```
 
-## Developing the Provider
-
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (see [Requirements](#requirements) above).
-
-To compile the provider, see [Building The Provider](#building-the-provider).
-
-To add example docs, add the correspond `.tf` files to the `examples` directory. These should be added for every new data source and resource.
-
-To run terraform with the provider, create a `.terraformrc` file in your home directory (`~`) with the following content to override the provider installation with the local build:
-
-```hcl
-provider_installation {
-  dev_overrides {
-    "registry.terraform.io/astronomer/astro" = "~/terraform-provider-astro/bin" # Your path to the provider binary
-  }
-  direct {}
-}
-```
-
-## Example `main.tf` file for development and testing data sources and resources
+## Example `main.tf` file for testing data sources and resources
 ```terraform
 terraform {
   required_providers {
@@ -185,24 +144,6 @@ resource "astro_deployment" "tf_standard_deployment" {
 }
 ```
 
-## Testing
-Unit tests can be run with `make test`.
-
-### Acceptance tests
-Acceptance integration tests use a Terraform CLI binary to run real Terraform commands against the Astro API. The goal is to approximate using the provider with Terraform in production as closely as possible.
-
-Using the terraform-plugin-testing framework, each `resource.Test` runs an acceptance test on a resource.
-- `ProtoV6ProviderFactories`: map of the provider factories that the test suite will use to create the provider - just has the `astronomer` provider
-- `PreCheck`: a function that runs before the test suite starts to check that all the required environment variables are set
-- `Steps`: a list of `terraform apply` sequences that the test suite will run. Each step is a `resource.TestStep` that contains a `Config` and `Check` function.
-  - `Config`: the Terraform configuration that the test will run (ie. the `.tf` file)
-  - `Check`: function that will verify the state of the resources after the `terraform apply` command has run.
-
-In order to run the full suite of Acceptance tests, run `make testacc`.
-You will also need to set all the environment variables described in `internal/provider/provider_test_utils.go`.
-
-The acceptance tests will run against the Astronomer API and create/read/update/delete real resources.
-
 ## Importing Existing Resources
 The Astro Terraform Import Script is a tool designed to help you import existing Astro resources into your Terraform configuration. 
 Currently, this script automates the process of generating Terraform import blocks and resource configurations for the following resources: workspaces, deployments, clusters, hybrid cluster workspace authorizations, API tokens, teams, team roles, and user roles.
@@ -277,8 +218,6 @@ The script will generate two main files:
 4. **What Terraform versions are required?**
    - Terraform >= 1.7.
 
-5. **How can I contribute to the provider's development?**
-   - Submit pull requests, report issues, or suggest improvements on the GitHub repository.
 
 ### Troubleshooting
 
