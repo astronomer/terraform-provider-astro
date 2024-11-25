@@ -11,7 +11,7 @@
 
 
 ## Using the provider
-1. Create an [API Token](https://docs.astronomer.io/astro/automation-authentication#step-1-create-an-api-token) to use in the provider. Astronomer recommends creating an organization API token since it is the most flexible but the type of your API token will depend on your use case.
+1. Create an [API Token](https://docs.astronomer.io/astro/automation-authentication#step-1-create-an-api-token) to use in the provider. Astronomer recommends creating an Organization API token since it is the most flexible but the type of your API token will depend on your use case.
 2. Create a `main.tf` file with the following content:
 ```terraform
 terraform {
