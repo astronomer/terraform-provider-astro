@@ -1,5 +1,3 @@
-# Terraform Provider Astro
-
 <div align="center">
     <picture>
         <img src="https://github.com/user-attachments/assets/22586f12-3871-4bb6-8ead-40bec82ec3ce" width="200">
