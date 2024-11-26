@@ -5,12 +5,11 @@ Welcome to the Terraform Provider Astro project! We're excited that you're inter
 ## Table of Contents
 
 1. [Development Environment Setup](#development-environment-setup)
-2. [Adding Dependencies](#adding-dependencies)
-3. [Making Changes](#making-changes)
-4. [Testing](#testing)
-5. [Reporting Issues](#reporting-issues)
-6. [Best Practices](#best-practices)
-7. [Additional Resources](#additional-resources)
+2. [Making Changes](#making-changes)
+3. [Testing](#testing)
+4. [Reporting Issues](#reporting-issues)
+5. [Best Practices](#best-practices)
+6. [Additional Resources](#additional-resources)
 
 ## Development Environment Setup
 
@@ -66,20 +65,6 @@ Ensure you have the following installed:
    ```
    export ASTRO_API_TOKEN=<your-api-token>
    ```
-   
-## Adding Dependencies
-
-This provider uses [Go modules](https://go.dev/wiki/Modules).
-Please see the Go documentation for the most up-to-date information about using Go modules.
-
-To add a new dependency `github.com/author/dependency` to your Terraform provider:
-
-```shell
-go get github.com/author/dependency
-go mod tidy
-```
-
-Then commit the changes to `go.mod` and `go.sum`.
 
 ## Making Changes
 
