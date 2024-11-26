@@ -84,23 +84,30 @@ Ensure you have the following installed:
 4. Update documentation if your changes affect the provider's behavior or add new features.
 
 ## Testing
-Unit tests can be run with `make test`.
+1. Run unit tests with `make test`.
 
-### Acceptance tests
-Acceptance integration tests use a Terraform CLI binary to run real Terraform commands against the Astro API. The goal is to approximate using the provider with Terraform in production as closely as possible.
+2. Run acceptance tests (these will create real resources in your      Astro account) with `make testacc`.
+   Acceptance integration tests use a Terraform CLI binary to run real Terraform commands against the Astro API. The goal is to approximate using the provider with Terraform in production as closely as possible.
 
-Using the terraform-plugin-testing framework, each `resource.Test` runs an acceptance test on a resource.
-- `ProtoV6ProviderFactories`: map of the provider factories that the test suite will use to create the provider - just has the `astronomer` provider
-- `PreCheck`: a function that runs before the test suite starts to check that all the required environment variables are set
-- `Steps`: a list of `terraform apply` sequences that the test suite will run. Each step is a `resource.TestStep` that contains a `Config` and `Check` function.
-  - `Config`: the Terraform configuration that the test will run (ie. the `.tf` file)
-  - `Check`: function that will verify the state of the resources after the `terraform apply` command has run.
+   Using the terraform-plugin-testing framework, each `resource.Test` runs an acceptance test on a resource.
+   - `ProtoV6ProviderFactories`: map of the provider factories that the test suite will use to create the provider - just has the `astronomer` provider
+   - `PreCheck`: a function that runs before the test suite starts to check that all the required environment variables are set
+   - `Steps`: a list of `terraform apply` sequences that the test suite will run. Each step is a `resource.TestStep` that contains a `Config` and `Check` function.
+   - `Config`: the Terraform configuration that the test will run (ie. the `.tf` file)
+   - `Check`: function that will verify the state of the resources after the `terraform apply` command has run.
 
-In order to run the full suite of Acceptance tests, run `make testacc`.
-You will also need to set all the environment variables described in `internal/provider/provider_test_utils.go`.
+   In order to run the full suite of Acceptance tests, run `make testacc`.
+   You will also need to set all the environment variables described in `internal/provider/provider_test_utils.go`.
 
-The acceptance tests will run against the Astronomer API and create/read/update/delete real resources.
+   The acceptance tests will run against the Astronomer API and create/read/update/delete real resources.
 
+3. Test your changes manually using the main.tf file you created earlier:
+
+   ```
+   terraform init
+   terraform plan
+   terraform apply
+   ```
 
 ## Reporting Issues
 
