@@ -34,6 +34,9 @@ terraform plan # creates a plan consisting of a set of changes that will make yo
 terraform apply # performs a plan just like terraform plan does, but then actually carries out the planned changes to each resource using the relevant infrastructure provider's API
 ```
 
+For more information on using the Astro provider, including supported resources and data sources, see [Astro's Terraform docs](https://registry.terraform.io/providers/astronomer/astro/latest/docs).
+
+
 
 ## Importing Existing Resources
 The Astro Terraform Import Script is a tool designed to help you import existing Astro resources into your Terraform configuration. 
