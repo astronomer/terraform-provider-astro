@@ -86,8 +86,7 @@ Ensure you have the following installed:
 ## Testing
 1. Run unit tests with `make test`.
 
-2. Run acceptance tests (these will create real resources in your      Astro account) with `make testacc`.
-   Acceptance integration tests use a Terraform CLI binary to run real Terraform commands against the Astro API. The goal is to approximate using the provider with Terraform in production as closely as possible.
+2. Run acceptance tests (these will create real resources in your      Astro account) with `make testacc`. Acceptance integration tests use a Terraform CLI binary to run real Terraform commands against the Astro API. The goal is to approximate using the provider with Terraform in production as closely as possible.
 
    Using the terraform-plugin-testing framework, each `resource.Test` runs an acceptance test on a resource.
    - `ProtoV6ProviderFactories`: map of the provider factories that the test suite will use to create the provider - just has the `astronomer` provider
