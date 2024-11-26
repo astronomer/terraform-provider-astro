@@ -26,7 +26,7 @@ provider "astro" {
 
 # your terraform commands here
 ```
-   For more information on using the Astro provider, including supported resources and data sources, see [Astro's Terraform docs](https://registry.terraform.io/providers/astronomer/astro/latest/docs).
+   See [Astro Provider docs](https://registry.terraform.io/providers/astronomer/astro/latest/docs) for supported resources and data sources.
 
 3. Run the following commands to apply the provider:
 ```shell
