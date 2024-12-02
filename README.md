@@ -36,13 +36,10 @@ terraform plan # creates a plan consisting of a set of changes that will make yo
 terraform apply # performs a plan just like terraform plan does, but then actually carries out the planned changes to each resource using the relevant infrastructure provider's API
 ```
 
-
-
-
 ## Importing Existing Resources
 The Astro Terraform Import Script is a tool designed to help you import existing Astro resources into your Terraform configuration. 
 This script automates the process of generating Terraform import blocks and resource configurations for the following resources: workspaces, deployments, clusters, hybrid cluster workspace authorizations, API tokens, teams, team roles, and user roles.
-See Astro's [import script guide](https://registry.terraform.io/providers/astronomer/astro/latest/docs) for more information.
+See Astro's [import script guide](https://registry.terraform.io/providers/astronomer/astro/latest/docs/guides/import-script) for more information.
 
 To use the import script, download the `terraform-provider-astro-import-script` executable file from [releases](https://github.com/astronomer/terraform-provider-astro/releases) based on your OS and architecture and run it with the following command:
 
