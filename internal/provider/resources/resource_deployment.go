@@ -872,14 +872,6 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 		)
 	}
 
-	// Need to check that scaling_spec is only for is_development_mode set to true
-	if !data.IsDevelopmentMode.ValueBool() && !data.ScalingSpec.IsNull() {
-		diags.AddError(
-			"scaling_spec (hibernation) is only supported for is_development_mode set to true",
-			"Either set is_development_mode to true or remove scaling_spec",
-		)
-	}
-
 	// Need to check that scaling_spec has either override or schedules
 	if !data.ScalingSpec.IsNull() {
 		var scalingSpec models.DeploymentScalingSpec
@@ -900,13 +892,6 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 		})
 		if diags.HasError() {
 			tflog.Error(ctx, "failed to convert hibernation spec", map[string]interface{}{"error": diags})
-			return diags
-		}
-		if hibernationSpec.Override.IsNull() && hibernationSpec.Schedules.IsNull() {
-			diags.AddError(
-				"scaling_spec (hibernation) must have either override or schedules",
-				"Please provide either override or schedules in 'scaling_spec.hibernation_spec'",
-			)
 			return diags
 		}
 	}
@@ -1006,8 +991,8 @@ func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*plat
 	platformScalingSpec.HibernationSpec = &platform.DeploymentHibernationSpecRequest{}
 
 	if hibernationSpec.Override.IsNull() && hibernationSpec.Schedules.IsNull() {
-		// If the hibernation spec is set but both override and schedules are not set, return an empty hibernation spec for the request
-		return platformScalingSpec, nil
+		// If the hibernation spec is set but both override and schedules are not set, return an error
+		return platformScalingSpec, diag.Diagnostics{diag.NewErrorDiagnostic("scaling_spec.hibernation_spec must have either override or schedules", "Please provide either override or schedules in 'scaling_spec.hibernation_spec")}
 	}
 	if !hibernationSpec.Override.IsNull() {
 		var override models.HibernationSpecOverride
