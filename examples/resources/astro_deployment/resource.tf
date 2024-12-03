@@ -74,6 +74,34 @@ resource "astro_deployment" "hybrid" {
   }]
 }
 
+resource "astro_deployment" "hybrid_celery" {
+  original_astro_runtime_version = "11.3.0"
+  name                           = "my hybrid celery deployment"
+  description                    = "an example deployment with celery executor"
+  type                           = "HYBRID"
+  cluster_id                     = "clnp86ly5000401ndagu20g81"
+  contact_emails                 = ["example@astronomer.io"]
+  executor                       = "CELERY"
+  is_cicd_enforced               = true
+  is_dag_deploy_enabled          = true
+  scheduler_replicas             = 1
+  scheduler_au                   = 5
+  workspace_id                   = "clnp86ly5000401ndaga20g81"
+  environment_variables = [{
+    key       = "key1"
+    value     = "value1"
+    is_secret = false
+  }]
+  worker_queues = [{
+    name               = "default"
+    is_default         = true
+    node_pool_id       = "clnp86ly5000301ndzfxz895w"
+    max_worker_count   = 10
+    min_worker_count   = 0
+    worker_concurrency = 1
+  }]
+}
+
 // Import an existing deployment
 import {
   id = "clv17vgft000801kkydsws63x" // ID of the existing deployment
