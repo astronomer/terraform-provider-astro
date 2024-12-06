@@ -7,10 +7,9 @@ Welcome to the Terraform Provider Astro project! We're excited that you're inter
 1. [Development Environment Setup](#development-environment-setup)
 2. [Making Changes](#making-changes)
 3. [Testing](#testing)
-4. [Submitting Pull Requests](#submitting-pull-requests)
-5. [Reporting Issues](#reporting-issues)
-6. [Best Practices](#best-practices)
-7. [Additional Resources](#additional-resources)
+4. [Reporting Issues](#reporting-issues)
+5. [Best Practices](#best-practices)
+6. [Additional Resources](#additional-resources)
 
 ## Development Environment Setup
 
@@ -85,45 +84,29 @@ Ensure you have the following installed:
 4. Update documentation if your changes affect the provider's behavior or add new features.
 
 ## Testing
+1. Run unit tests with `make test`.
 
-1. Run unit tests:
-   ```
-   make test
-   ```
+2. Run acceptance tests (these will create real resources in your Astro account) with `make testacc`. Acceptance integration tests use a Terraform CLI binary to run real Terraform commands against the Astro API. The goal is to approximate using the provider with Terraform in production as closely as possible.
 
-2. Run acceptance tests (these will create real resources in your Astro account):
-   ```
-   make testacc
-   ```
-   Note: Ensure all required environment variables are set as described in `internal/provider/provider_test_utils.go`.
+   Using the terraform-plugin-testing framework, each `resource.Test` runs an acceptance test on a resource.
+   - `ProtoV6ProviderFactories`: map of the provider factories that the test suite will use to create the provider - just has the `astronomer` provider
+   - `PreCheck`: a function that runs before the test suite starts to check that all the required environment variables are set
+   - `Steps`: a list of `terraform apply` sequences that the test suite will run. Each step is a `resource.TestStep` that contains a `Config` and `Check` function.
+   - `Config`: the Terraform configuration that the test will run (ie. the `.tf` file)
+   - `Check`: function that will verify the state of the resources after the `terraform apply` command has run.
 
-3. Test your changes manually using the `main.tf` file you created earlier:
+   In order to run the full suite of Acceptance tests, run `make testacc`.
+   You will also need to set all the environment variables described in `internal/provider/provider_test_utils.go`.
+
+   The acceptance tests will run against the Astronomer API and create/read/update/delete real resources.
+
+3. Test your changes manually using the main.tf file you created earlier:
+
    ```
    terraform init
    terraform plan
    terraform apply
    ```
-
-## Submitting Pull Requests
-
-1. Commit your changes:
-   ```
-   git add .
-   git commit -m "Description of your changes"
-   ```
-
-2. Push your branch to GitHub:
-   ```
-   git push origin feature/your-feature-name
-   ```
-
-3. Open a pull request on GitHub.
-
-4. In your pull request description, include:
-    - A clear description of the changes
-    - Any related issue numbers
-    - Steps to test the changes
-    - Screenshots or code snippets if applicable
 
 ## Reporting Issues
 
