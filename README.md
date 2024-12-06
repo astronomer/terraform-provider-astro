@@ -82,7 +82,7 @@ On Windows:
    ./terraform-provider-astro-import-script_<version-number>_<os>_<arc> -resources workspace,deployment,cluster,api_token,team,team_roles,user_roles -token <your_api_token> -organizationId <your_org_id> -runTerraformInit
    ```
 
-4. Use a different API host (e.g., dev environment):
+4. Use a different API host (for example, dev environment):
    ```
    ./terraform-provider-astro-import-script_<version-number>_<os>_<arc> -resources workspace -token <your_api_token> -organizationId <your_org_id>
    ```
