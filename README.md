@@ -7,7 +7,6 @@
     <a href="https://astronomer.docs.buildwithfern.com/docs/api/overview"><img src="https://img.shields.io/static/v1?label=Docs&labelColor=0F0C27&message=API Ref&color=4E408D&style=for-the-badge" /></a>
 </div>
 
-
 ## Using the provider
 1. Create an [API Token](https://docs.astronomer.io/astro/automation-authentication#step-1-create-an-api-token) to use in the provider. Astronomer recommends creating an Organization API token since it is the most flexible but the type of your API token will depend on your use case.
 2. Create a `main.tf` file with the following content:
