@@ -645,20 +645,6 @@ func (r *DeploymentResource) ValidateConfig(
 		return
 	}
 
-	// Need to do dynamic validation based on the executor and worker queues
-	if data.Executor.ValueString() == string(platform.DeploymentExecutorKUBERNETES) && len(data.WorkerQueues.Elements()) > 0 {
-		resp.Diagnostics.AddError(
-			"worker_queues are not supported for 'KUBERNETES' executor",
-			"Either change the executor to 'CELERY' or remove worker_queues",
-		)
-	}
-	if data.Executor.ValueString() == string(platform.DeploymentExecutorCELERY) && (data.WorkerQueues.IsNull() || len(data.WorkerQueues.Elements()) == 0) {
-		resp.Diagnostics.AddError(
-			"worker_queues must be included for 'CELERY' executor",
-			"Either change the executor to 'KUBERNETES' or include worker_queues",
-		)
-	}
-
 	// Type specific validation
 	switch platform.DeploymentType(data.Type.ValueString()) {
 	case platform.DeploymentTypeSTANDARD:
