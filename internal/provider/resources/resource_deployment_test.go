@@ -168,7 +168,6 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Executor:                    "KUBERNETES",
 					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
 					IncludeEnvironmentVariables: true,
-					WorkerQueuesStr:             workerQueuesStr(""),
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(awsResourceVar, "name", awsDeploymentName),
