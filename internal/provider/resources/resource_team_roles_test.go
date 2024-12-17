@@ -67,6 +67,7 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 						IncludeEnvironmentVariables: false,
 						SchedulerSize:               string(platform.DeploymentSchedulerSizeSMALL),
 						IsDevelopmentMode:           false,
+						WorkerQueuesStr:             workerQueuesStr(""),
 					}) +
 					teamRoles(string(iam.ORGANIZATIONMEMBER),
 						fmt.Sprintf(`[{workspace_id = %s
