@@ -155,7 +155,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Executor:                    "CELERY",
 					SchedulerSize:               string(platform.SchedulerMachineNameEXTRALARGE),
 					IncludeEnvironmentVariables: false,
-					DuplicateWorkerQueues:       true,
+					WorkerQueuesStr:             workerQueuesDuplicateStr(""),
 				}),
 				ExpectError: regexp.MustCompile(`worker_queue names must be unique`),
 			},
@@ -168,6 +168,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Executor:                    "KUBERNETES",
 					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
 					IncludeEnvironmentVariables: true,
+					WorkerQueuesStr: 		   workerQueuesStr(""),
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(awsResourceVar, "name", awsDeploymentName),
@@ -193,6 +194,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Executor:                    "CELERY",
 					SchedulerSize:               string(platform.SchedulerMachineNameEXTRALARGE),
 					IncludeEnvironmentVariables: false,
+					WorkerQueuesStr: 		   workerQueuesStr(""),
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(awsResourceVar, "description", utils.TestResourceDescription),
@@ -200,6 +202,56 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					resource.TestCheckResourceAttr(awsResourceVar, "worker_queues.0.name", "default"),
 					resource.TestCheckNoResourceAttr(awsResourceVar, "environment_variables.0.key"),
 					resource.TestCheckResourceAttr(awsResourceVar, "executor", "CELERY"),
+					// Check via API that deployment exists
+					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
+				),
+			},
+			// Change worker queues to depend on a variable
+			{
+				Config: `
+						variable "env" {
+						  type = string
+						  default = "dev"
+						}
+
+						locals {
+						  worker_queue_config = {
+							dev = [
+							  {
+								name               = "default"
+								is_default         = true
+								astro_machine      = "A5"
+								max_worker_count   = 10
+								min_worker_count   = 0
+								worker_concurrency = 5
+							  }
+							]
+							default = [
+							  {
+								name               = "default"
+								is_default         = false
+								astro_machine      = "A10"
+								max_worker_count   = 3
+								min_worker_count   = 1
+								worker_concurrency = 10
+							  }
+								]
+							  }
+							}
+					` +
+					astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
+					Name:                        awsDeploymentName,
+					Description:                 utils.TestResourceDescription,
+					Region:                      "us-east-1",
+					CloudProvider:               "AWS",
+					Executor:                    "CELERY",
+					SchedulerSize:               string(platform.SchedulerMachineNameMEDIUM),
+					IncludeEnvironmentVariables: false,
+					WorkerQueuesStr: `worker_queues = lookup(local.worker_queue_config, var.env, local.worker_queue_config["default"])`
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(awsResourceVar, "executor", "CELERY"),
+					resource.TestCheckResourceAttr(awsResourceVar, "worker_queues.0.name", "default"),
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
 				),
@@ -290,6 +342,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Executor:                    "CELERY",
 					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
 					IncludeEnvironmentVariables: true,
+					WorkerQueuesStr: 		   workerQueuesStr(""),
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(azureCeleryResourceVar, "name", azureCeleryDeploymentName),
@@ -724,6 +777,7 @@ func developmentDeployment(scalingSpecDeploymentName, scalingSpec string) string
 		SchedulerSize:     string(platform.SchedulerMachineNameSMALL),
 		IsDevelopmentMode: true,
 		ScalingSpec:       scalingSpec,
+		WorkerQueuesStr: 		   workerQueuesStr(""),
 	})
 }
 
@@ -737,18 +791,10 @@ type standardDeploymentInput struct {
 	SchedulerSize               string
 	IsDevelopmentMode           bool
 	ScalingSpec                 string
-	DuplicateWorkerQueues       bool
+	WorkerQueuesStr             string
 }
 
 func standardDeployment(input standardDeploymentInput) string {
-	wqStr := ""
-	if input.Executor == string(platform.DeploymentExecutorCELERY) {
-		if input.DuplicateWorkerQueues {
-			wqStr = workerQueuesDuplicateStr("")
-		} else {
-			wqStr = workerQueuesStr("")
-		}
-	}
 	var scalingSpecStr string
 
 	if input.IsDevelopmentMode {
@@ -802,7 +848,7 @@ resource "astro_deployment" "%v" {
 }
 `,
 		input.Name, input.Name, utils.TestResourceDescription, input.Name, input.Name, input.Description, input.Region, input.CloudProvider, input.Executor, input.IsDevelopmentMode, input.SchedulerSize, input.Name,
-		envVarsStr(input.IncludeEnvironmentVariables), wqStr, scalingSpecStr)
+		envVarsStr(input.IncludeEnvironmentVariables), input.WorkerQueuesStr, scalingSpecStr)
 }
 
 func standardDeploymentWithVariableName(input standardDeploymentInput) string {
