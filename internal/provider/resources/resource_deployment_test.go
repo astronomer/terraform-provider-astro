@@ -168,7 +168,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Executor:                    "KUBERNETES",
 					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
 					IncludeEnvironmentVariables: true,
-					WorkerQueuesStr: 		   workerQueuesStr(""),
+					WorkerQueuesStr:             workerQueuesStr(""),
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(awsResourceVar, "name", awsDeploymentName),
@@ -194,7 +194,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Executor:                    "CELERY",
 					SchedulerSize:               string(platform.SchedulerMachineNameEXTRALARGE),
 					IncludeEnvironmentVariables: false,
-					WorkerQueuesStr: 		   workerQueuesStr(""),
+					WorkerQueuesStr:             workerQueuesStr(""),
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(awsResourceVar, "description", utils.TestResourceDescription),
@@ -247,7 +247,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Executor:                    "CELERY",
 					SchedulerSize:               string(platform.SchedulerMachineNameMEDIUM),
 					IncludeEnvironmentVariables: false,
-					WorkerQueuesStr: `worker_queues = lookup(local.worker_queue_config, var.env, local.worker_queue_config["default"])`
+					WorkerQueuesStr:             `worker_queues = lookup(local.worker_queue_config, var.env, local.worker_queue_config["default"])`,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(awsResourceVar, "executor", "CELERY"),
@@ -342,7 +342,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Executor:                    "CELERY",
 					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
 					IncludeEnvironmentVariables: true,
-					WorkerQueuesStr: 		   workerQueuesStr(""),
+					WorkerQueuesStr:             workerQueuesStr(""),
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(azureCeleryResourceVar, "name", azureCeleryDeploymentName),
@@ -777,7 +777,7 @@ func developmentDeployment(scalingSpecDeploymentName, scalingSpec string) string
 		SchedulerSize:     string(platform.SchedulerMachineNameSMALL),
 		IsDevelopmentMode: true,
 		ScalingSpec:       scalingSpec,
-		WorkerQueuesStr: 		   workerQueuesStr(""),
+		WorkerQueuesStr:   workerQueuesStr(""),
 	})
 }
 
