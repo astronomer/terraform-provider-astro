@@ -214,7 +214,7 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: WorkerQueueResourceSchemaAttributes(),
 			},
-			MarkdownDescription: "Deployment worker queues - required for deployments with 'CELERY' executor",
+			MarkdownDescription: "Deployment worker queues - required for deployments with 'CELERY' executor. For 'STANDARD' and 'DEDICATED' deployments, use astro_machine. For 'HYBRID' deployments, use node_pool_id.",
 			Validators: []validator.Set{
 				// Dynamic validation with 'executor' done in the resource.ValidateConfig function
 				setvalidator.SizeAtLeast(1),
