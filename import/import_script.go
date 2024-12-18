@@ -773,7 +773,7 @@ func addDeploymentsToGeneratedFile(deploymentImportString string, organizationId
 // generateDeploymentHCL generates the HCL for all deployments in the organization
 // generateTerraformConfig has trouble with deployments, so we generate the HCL manually
 func generateDeploymentHCL(ctx context.Context, platformClient *platform.ClientWithResponses, organizationId string) (string, error) {
-	deploymentsResp, err := platformClient.ListDeploymentsWithResponse(ctx, organizationId, nil)
+	deploymentsResp, err := platformClient.ListDeploymentsWithResponse(ctx, organizationId, &platform.ListDeploymentsParams{Limit: lo.ToPtr(1000)})
 	if err != nil {
 		return "", fmt.Errorf("failed to list deployments: %v", err)
 	}
