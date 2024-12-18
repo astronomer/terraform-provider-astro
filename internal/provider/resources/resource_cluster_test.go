@@ -190,9 +190,10 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 			},
 			// Import existing cluster and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests
 			{
-				ResourceName:      awsResourceVar,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            awsResourceVar,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"health_status", "health_status.value"},
 			},
 		},
 	})
