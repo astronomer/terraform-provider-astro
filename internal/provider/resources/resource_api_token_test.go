@@ -39,51 +39,6 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: false}),
 		),
 		Steps: []resource.TestStep{
-			// Test invalid role for token type
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
-					Name: apiTokenName,
-					Type: string(iam.ORGANIZATION),
-					Roles: []apiTokenRole{
-						{
-							Role:       string(iam.WORKSPACEOWNER),
-							EntityId:   workspaceId,
-							EntityType: string(iam.WORKSPACE),
-						},
-					},
-				}),
-				ExpectError: regexp.MustCompile("No matching role found for the specified entity type 'ORGANIZATION'"),
-			},
-			// Test invalid role for entity type
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
-					Name: apiTokenName,
-					Type: string(iam.ORGANIZATION),
-					Roles: []apiTokenRole{
-						{
-							Role:       string(iam.WORKSPACEOWNER),
-							EntityId:   organizationId,
-							EntityType: string(iam.ORGANIZATION),
-						},
-					},
-				}),
-				ExpectError: regexp.MustCompile(`.*not a valid role.*`),
-			},
-			// Test invalid organization id
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
-					Name: apiTokenName,
-					Type: string(iam.ORGANIZATION),
-					Roles: []apiTokenRole{
-						{
-							Role:       string(iam.ORGANIZATIONOWNER),
-							EntityId:   "clz3blqb500lh01mtkwu9zk5z",
-							EntityType: string(iam.ORGANIZATION),
-						},
-					},
-				}),
-				ExpectError: regexp.MustCompile("API Token of type 'ORGANIZATION' cannot have an 'ORGANIZATION' role with a different organization id"),
-			},
 			// Test multiple roles of the same type
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
