@@ -530,7 +530,7 @@ func TestAcc_ResourceDeploymentApiTokenDynamicCreation(t *testing.T) {
 				  deployment_tokens = {
 					admin = "DEPLOYMENT_ADMIN"
 				  }
-				}`, resourceVar, apiTokenName, deploymentId),
+				}`, apiTokenName, apiTokenName, deploymentId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
