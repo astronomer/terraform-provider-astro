@@ -102,7 +102,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("API Token of type 'ORGANIZATION' cannot have more than one role of the same type"),
+				ExpectError: regexp.MustCompile(".*exactly one organization role.*"),
 			},
 			// Test invalid workspace
 			{
