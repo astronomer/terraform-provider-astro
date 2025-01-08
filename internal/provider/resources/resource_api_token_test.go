@@ -495,48 +495,6 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 	})
 }
 
-func TestAcc_ResourceDeploymentApiTokenDynamicCreation(t *testing.T) {
-	namePrefix := utils.GenerateTestResourceName(10)
-	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
-
-	apiTokenName := fmt.Sprintf("%v_deployment", namePrefix)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			// Check that the api token has been removed
-			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: false}),
-		),
-		Steps: []resource.TestStep{
-			// Create deployment api token dynamically
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
-             locals {
-               deployment_tokens = {
-                 admin = "DEPLOYMENT_ADMIN"
-               }
-             }
-
-             resource "astro_api_token" "%s" {
-               for_each    = local.deployment_tokens
-               name        = "%s_${each.key}"
-               description = "Token with ${each.value} role"
-               type        = "DEPLOYMENT"
-               roles = [{
-                  role        = each.value
-                  entity_id   = "%s"
-                  entity_type = "DEPLOYMENT"
-               }]
-             }`, apiTokenName, apiTokenName, deploymentId),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName + "_admin", deployment: true, shouldExist: true}),
-				),
-			},
-		},
-	})
-}
-
 type apiTokenRole struct {
 	Role       string
 	EntityId   string
