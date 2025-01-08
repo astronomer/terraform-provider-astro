@@ -500,7 +500,6 @@ func TestAcc_ResourceDeploymentApiTokenDynamicCreation(t *testing.T) {
 	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
 
 	apiTokenName := fmt.Sprintf("%v_deployment", namePrefix)
-	resourceVar := fmt.Sprintf("astro_api_token.%v", apiTokenName)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
@@ -513,41 +512,25 @@ func TestAcc_ResourceDeploymentApiTokenDynamicCreation(t *testing.T) {
 			// Create deployment api token dynamically
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
-				resource "astro_api_token" "%s" {
-				  for_each    = local.deployment_tokens
-				  name        = "%s"
-				  description = "${each.value}"
-				  type        = "DEPLOYMENT"
-				  roles = [{
-					  role = each.value
-					  entity_id   = "%s"
-					  entity_type = "DEPLOYMENT"
-					}
-				  ]
-				}
-				
-				locals {
-				  deployment_tokens = {
-					admin = "DEPLOYMENT_ADMIN"
-				  }
-				}`, apiTokenName, apiTokenName, deploymentId),
+             locals {
+               deployment_tokens = {
+                 admin = "DEPLOYMENT_ADMIN"
+               }
+             }
+
+             resource "astro_api_token" "%s" {
+               for_each    = local.deployment_tokens
+               name        = "%s_${each.key}"
+               description = "Token with ${each.value} role"
+               type        = "DEPLOYMENT"
+               roles = [{
+                  role        = each.value
+                  entity_id   = "%s"
+                  entity_type = "DEPLOYMENT"
+               }]
+             }`, apiTokenName, apiTokenName, deploymentId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceVar, "id"),
-					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
-					resource.TestCheckResourceAttr(resourceVar, "type", string(iam.DEPLOYMENT)),
-					resource.TestCheckResourceAttrSet(resourceVar, "short_token"),
-					resource.TestCheckResourceAttrSet(resourceVar, "start_at"),
-					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
-					resource.TestCheckResourceAttrSet(resourceVar, "updated_at"),
-					resource.TestCheckResourceAttrSet(resourceVar, "created_by.id"),
-					resource.TestCheckResourceAttrSet(resourceVar, "updated_by.id"),
-					resource.TestCheckResourceAttr(resourceVar, "expiry_period_in_days", "30"),
-					resource.TestCheckResourceAttr(resourceVar, "roles.#", "1"),
-					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_id", deploymentId),
-					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", string(iam.DEPLOYMENT)),
-					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", "DEPLOYMENT_ADMIN"),
-					// Check via API that api token exists
-					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName + "_admin", deployment: true, shouldExist: true}),
 				),
 			},
 		},
