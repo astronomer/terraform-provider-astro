@@ -67,7 +67,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Role 'WORKSPACE_OWNER' is not valid for token type 'ORGANIZATION'"),
+				ExpectError: regexp.MustCompile("Role WORKSPACE_OWNER is not a valid role for an organization token"),
 			},
 			// Test invalid organization id
 			{
