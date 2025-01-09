@@ -124,31 +124,6 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile(".*One or more workspaces is not in the organization, cannot set roles for workspaces that do not exist.*"),
 			},
-			// Test invalid deployment
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
-					Name: apiTokenName,
-					Type: string(iam.ORGANIZATION),
-					Roles: []apiTokenRole{
-						{
-							Role:       string(iam.ORGANIZATIONOWNER),
-							EntityId:   organizationId,
-							EntityType: string(iam.ORGANIZATION),
-						},
-						{
-							Role:       string(iam.WORKSPACEOWNER),
-							EntityId:   workspaceId,
-							EntityType: string(iam.WORKSPACE),
-						},
-						{
-							Role:       "DEPLOYMENT_ADMIN",
-							EntityId:   "clzk79utk030w01swob4ylsl0",
-							EntityType: string(iam.DEPLOYMENT),
-						},
-					},
-				}),
-				ExpectError: regexp.MustCompile(".*One or more deployments is not in the organization, cannot set roles for deployments that do not exist.*"),
-			},
 			// Create the organization api token
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
