@@ -35,7 +35,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			// Check that the api token has been removed
+			// Check that the organization api token has been removed
 			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: false}),
 		),
 		Steps: []resource.TestStep{
@@ -52,7 +52,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile(".*No matching role found for the specified entity type 'ORGANIZATION'.*"),
+				ExpectError: regexp.MustCompile("No matching role found for the specified entity type 'ORGANIZATION'"),
 			},
 			// Test invalid role for entity type
 			{
@@ -67,7 +67,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile(".*status: 400.*"),
+				ExpectError: regexp.MustCompile("Role 'WORKSPACE_OWNER' is not valid for token type 'ORGANIZATION'"),
 			},
 			// Test invalid organization id
 			{
@@ -82,7 +82,27 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile(".*API Token of type 'ORGANIZATION' cannot have an 'ORGANIZATION' role with a different organization id.*"),
+				ExpectError: regexp.MustCompile("API Token of type 'ORGANIZATION' cannot have an 'ORGANIZATION' role with a different organization id"),
+			},
+			// Test multiple roles of the same type
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
+					Name: apiTokenName,
+					Type: string(iam.ORGANIZATION),
+					Roles: []apiTokenRole{
+						{
+							Role:       string(iam.ORGANIZATIONOWNER),
+							EntityId:   organizationId,
+							EntityType: string(iam.ORGANIZATION),
+						},
+						{
+							Role:       string(iam.ORGANIZATIONBILLINGADMIN),
+							EntityId:   organizationId,
+							EntityType: string(iam.ORGANIZATION),
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("API Token of type 'ORGANIZATION' cannot have more than one role of the same type"),
 			},
 			// Test invalid workspace
 			{
@@ -102,7 +122,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile(".*One or more workspaces is not in the organization, cannot set roles for workspaces that do not exist.*"),
+				ExpectError: regexp.MustCompile("One or more workspaces is not in the organization, cannot set roles for workspaces that do not exist"),
 			},
 			// Test invalid deployment
 			{
@@ -127,7 +147,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile(".*One or more deployments is not in the organization, cannot set roles for deployments that do not exist.*"),
+				ExpectError: regexp.MustCompile("One or more deployments is not in the organization, cannot set roles for deployments that do not exist"),
 			},
 			// Create the organization api token
 			{
@@ -176,7 +196,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "roles.2.entity_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "roles.2.entity_type", string(iam.DEPLOYMENT)),
 					resource.TestCheckResourceAttr(resourceVar, "roles.2.role", "DEPLOYMENT_ADMIN"),
-					// Check via API that api token exists
+					// Check via API that organization api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
 			},
@@ -207,7 +227,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "description", "new description"),
-					// Check via API that api token exists
+					// Check via API that organization api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
 			},
@@ -290,7 +310,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "type", string(iam.ORGANIZATION)),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
-					// Check via API that api token exists
+					// Check via API that organization api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
 			},
@@ -319,7 +339,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			// Check that the api token has been removed
+			// Check that the organization api token has been removed
 			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: false}),
 		),
 		Steps: []resource.TestStep{
@@ -336,7 +356,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile(".*No matching role found for the specified entity type 'WORKSPACE'.*"),
+				ExpectError: regexp.MustCompile("No matching role found for the specified entity type 'WORKSPACE'"),
 			},
 			// Test invalid role for entity type
 			{
@@ -351,7 +371,27 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile(".*status: 400.*"),
+				ExpectError: regexp.MustCompile("Role 'ORGANIZATION_OWNER' is not valid for token type 'WORKSPACE'"),
+			},
+			// Test multiple roles of the same type
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
+					Name: apiTokenName,
+					Type: string(iam.WORKSPACE),
+					Roles: []apiTokenRole{
+						{
+							Role:       string(iam.WORKSPACEOWNER),
+							EntityId:   workspaceId,
+							EntityType: string(iam.WORKSPACE),
+						},
+						{
+							Role:       string(iam.WORKSPACEOPERATOR),
+							EntityId:   workspaceId,
+							EntityType: string(iam.WORKSPACE),
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("API Token of type 'WORKSPACE' cannot have more than one role of the same type"),
 			},
 			// Test invalid workspace
 			{
@@ -427,7 +467,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "roles.1.entity_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "roles.1.entity_type", string(iam.DEPLOYMENT)),
 					resource.TestCheckResourceAttr(resourceVar, "roles.1.role", "DEPLOYMENT_ADMIN"),
-					// Check via API that api token exists
+					// Check via API that organization api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: true}),
 				),
 			},
@@ -453,7 +493,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "description", "new description"),
-					// Check via API that api token exists
+					// Check via API that organization api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: true}),
 				),
 			},
@@ -504,7 +544,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "type", string(iam.WORKSPACE)),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
-					// Check via API that api token exists
+					// Check via API that organization api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: true}),
 				),
 			},
@@ -533,7 +573,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			// Check that the api token has been removed
+			// Check that the organization api token has been removed
 			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: false}),
 		),
 		Steps: []resource.TestStep{
@@ -550,7 +590,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile(".*No matching role found for the specified entity type 'DEPLOYMENT'.*"),
+				ExpectError: regexp.MustCompile("No matching role found for the specified entity type 'DEPLOYMENT'"),
 			},
 			// Test invalid role for entity type
 			{
@@ -565,7 +605,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile(".*Deployment role ORGANIZATION_OWNER does not exist.*"),
+				ExpectError: regexp.MustCompile("Role 'ORGANIZATION_OWNER' is not valid for token type 'DEPLOYMENT'"),
 			},
 			// Test invalid role for API token type
 			{
@@ -628,7 +668,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", string(iam.DEPLOYMENT)),
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", "DEPLOYMENT_ADMIN"),
-					// Check via API that api token exists
+					// Check via API that organization api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
 				),
 			},
@@ -649,7 +689,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "description", "new description"),
-					// Check via API that api token exists
+					// Check via API that organization api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
 				),
 			},
@@ -696,7 +736,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "type", string(iam.DEPLOYMENT)),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
-					// Check via API that api token exists
+					// Check via API that organization api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
 				),
 			},
