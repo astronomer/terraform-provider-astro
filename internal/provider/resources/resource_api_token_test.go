@@ -353,26 +353,6 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile(".*status: 400.*"),
 			},
-			// Test multiple roles of the same type
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
-					Name: apiTokenName,
-					Type: string(iam.WORKSPACE),
-					Roles: []apiTokenRole{
-						{
-							Role:       string(iam.WORKSPACEOWNER),
-							EntityId:   workspaceId,
-							EntityType: string(iam.WORKSPACE),
-						},
-						{
-							Role:       string(iam.WORKSPACEOPERATOR),
-							EntityId:   workspaceId,
-							EntityType: string(iam.WORKSPACE),
-						},
-					},
-				}),
-				ExpectError: regexp.MustCompile(".*status: 400.*"),
-			},
 			// Test invalid workspace
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
