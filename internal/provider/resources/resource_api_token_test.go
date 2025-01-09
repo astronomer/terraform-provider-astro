@@ -104,31 +104,6 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile(".*status: 400.*"),
 			},
-			// Test invalid deployment
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
-					Name: apiTokenName,
-					Type: string(iam.ORGANIZATION),
-					Roles: []apiTokenRole{
-						{
-							Role:       string(iam.ORGANIZATIONOWNER),
-							EntityId:   organizationId,
-							EntityType: string(iam.ORGANIZATION),
-						},
-						{
-							Role:       string(iam.WORKSPACEOWNER),
-							EntityId:   workspaceId,
-							EntityType: string(iam.WORKSPACE),
-						},
-						{
-							Role:       "DEPLOYMENT_ADMIN",
-							EntityId:   "clzk79utk030w01swob4ylsl0",
-							EntityType: string(iam.DEPLOYMENT),
-						},
-					},
-				}),
-				ExpectError: regexp.MustCompile(".*One or more deployments is not in the organization, cannot set roles for deployments that do not exist.*"),
-			},
 			// Create the organization api token
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
@@ -179,6 +154,53 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
+			},
+			// Test invalid workspace
+			// Needs to be after token is actually created since it uses UpdateTokenRoles endpoint or else we will have dangling token after the tests
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
+					Name: apiTokenName,
+					Type: string(iam.ORGANIZATION),
+					Roles: []apiTokenRole{
+						{
+							Role:       string(iam.ORGANIZATIONOWNER),
+							EntityId:   organizationId,
+							EntityType: string(iam.ORGANIZATION),
+						},
+						{
+							Role:       string(iam.WORKSPACEOWNER),
+							EntityId:   "clzjm8ixj001g01lmumcyo74q",
+							EntityType: string(iam.WORKSPACE),
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile(".*One or more workspaces is not in the organization, cannot set roles for workspaces that do not exist.*"),
+			},
+			// Test invalid deployment
+			// Needs to be after token is actually created since it uses UpdateTokenRoles endpoint or else we will have dangling token after the tests
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
+					Name: apiTokenName,
+					Type: string(iam.ORGANIZATION),
+					Roles: []apiTokenRole{
+						{
+							Role:       string(iam.ORGANIZATIONOWNER),
+							EntityId:   organizationId,
+							EntityType: string(iam.ORGANIZATION),
+						},
+						{
+							Role:       string(iam.WORKSPACEOWNER),
+							EntityId:   workspaceId,
+							EntityType: string(iam.WORKSPACE),
+						},
+						{
+							Role:       "DEPLOYMENT_ADMIN",
+							EntityId:   "clzk79utk030w01swob4ylsl0",
+							EntityType: string(iam.DEPLOYMENT),
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile(".*One or more deployments is not in the organization, cannot set roles for deployments that do not exist.*"),
 			},
 			// Change properties and check they have been updated in terraform state
 			{
