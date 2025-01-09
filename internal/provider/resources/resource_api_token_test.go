@@ -565,7 +565,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile(".*status: 400.*"),
+				ExpectError: regexp.MustCompile(".*Deployment role ORGANIZATION_OWNER does not exist.*"),
 			},
 			// Test invalid role for API token type
 			{
