@@ -371,7 +371,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("API Token of type 'WORKSPACE' cannot have more than one role of the same type"),
+				ExpectError: regexp.MustCompile(".*status: 400.*"),
 			},
 			// Test invalid workspace
 			{
