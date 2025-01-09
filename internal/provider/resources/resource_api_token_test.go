@@ -52,7 +52,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile(".*400.*"),
+				ExpectError: regexp.MustCompile(".*No matching role found for the specified entity type 'ORGANIZATION'.*"),
 			},
 			// Test invalid organization id
 			{
