@@ -38,7 +38,7 @@ jobs:
           fi
           go build -o "${output_name}" ./import/import_script.go
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: binaries
           path: terraform-provider-astro-import-script_*
@@ -65,13 +65,30 @@ jobs:
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
 
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: binaries
 
       - name: Get the version
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Generate Changelog
+        id: changelog
+        run: |
+          # Extract previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))
+          
+          # Generate changelog with PR numbers and authors in the desired format
+          CHANGELOG=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"* %s by @%an in #%b" | \
+          sed -E 's/\(#[0-9]+\)//g' | \  # Remove PR numbers if they exist in commit message
+          sed -E 's/  */ /g' | \         # Clean up extra spaces
+          sed -E 's/ in #$//')           # Remove trailing "in #" if no PR number
+          
+          # Store changelog in output
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create Release
         id: create_release
@@ -81,6 +98,11 @@ jobs:
         with:
           tag_name: ${{ steps.get_version.outputs.VERSION }}
           release_name: Astro Import Script ${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ## What's Changed
+            ${{ steps.changelog.outputs.CHANGELOG }}
+
+            For full changelog, see [here](https://github.com/${{ github.repository }}/compare/${{ env.PREVIOUS_TAG }}...${{ steps.get_version.outputs.VERSION }})
           draft: false
           prerelease: false
 
