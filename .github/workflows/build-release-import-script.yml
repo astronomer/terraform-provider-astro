@@ -78,8 +78,13 @@ jobs:
         run: |
           # Extract previous tag
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))
-          # Generate changelog with PR numbers
-          CHANGELOG=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"* %s")
+          
+          # Generate changelog with PR numbers and authors in the desired format
+          CHANGELOG=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"* %s by @%an in #%b" | \
+          sed -E 's/\(#[0-9]+\)//g' | \  # Remove PR numbers if they exist in commit message
+          sed -E 's/  */ /g' | \         # Clean up extra spaces
+          sed -E 's/ in #$//')           # Remove trailing "in #" if no PR number
+          
           # Store changelog in output
           echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGELOG" >> $GITHUB_OUTPUT
