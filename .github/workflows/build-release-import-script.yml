@@ -40,8 +40,12 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: binary-${{ matrix.goos }}-${{ matrix.goarch }}
           path: terraform-provider-astro-import-script_*
+          if-no-files-found: warn
+          compression-level: 6
+          overwrite: false
+          include-hidden-files: false
 
   lint:
     name: Lint
@@ -67,7 +71,8 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: binaries
+          pattern: binary-*
+          merge-multiple: true  # This will merge all matching artifacts into one directory
 
       - name: Get the version
         id: get_version
