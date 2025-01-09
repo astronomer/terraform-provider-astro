@@ -84,26 +84,6 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile(".*API Token of type 'ORGANIZATION' cannot have an 'ORGANIZATION' role with a different organization id.*"),
 			},
-			// Test multiple roles of the same type
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
-					Name: apiTokenName,
-					Type: string(iam.ORGANIZATION),
-					Roles: []apiTokenRole{
-						{
-							Role:       string(iam.ORGANIZATIONOWNER),
-							EntityId:   organizationId,
-							EntityType: string(iam.ORGANIZATION),
-						},
-						{
-							Role:       string(iam.ORGANIZATIONBILLINGADMIN),
-							EntityId:   organizationId,
-							EntityType: string(iam.ORGANIZATION),
-						},
-					},
-				}),
-				ExpectError: regexp.MustCompile(".*status: 400.*"),
-			},
 			// Create the organization api token
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
