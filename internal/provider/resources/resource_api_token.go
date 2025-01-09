@@ -27,7 +27,6 @@ import (
 var _ resource.Resource = &ApiTokenResource{}
 var _ resource.ResourceWithImportState = &ApiTokenResource{}
 var _ resource.ResourceWithConfigure = &ApiTokenResource{}
-var _ resource.ResourceWithValidateConfig = &ApiTokenResource{}
 
 func NewApiTokenResource() resource.Resource {
 	return &ApiTokenResource{}
@@ -131,6 +130,13 @@ func (r *ApiTokenResource) Create(
 	// Validate deployments
 	deploymentRoles := FilterApiTokenRolesByType(roles, string(iam.DEPLOYMENT))
 	diags = r.HasValidDeployments(ctx, deploymentRoles)
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	// Validate roles
+	diags = r.ValidateApiTokenRoles(data.Type.ValueString(), roles)
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -349,6 +355,13 @@ func (r *ApiTokenResource) Update(
 		return
 	}
 
+	// Validate roles
+	diags = r.ValidateApiTokenRoles(data.Type.ValueString(), roles)
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
 	// Update API token roles
 	updateApiTokenRolesRequest := iam.UpdateApiTokenRolesRequest{
 		Roles: roles,
@@ -478,49 +491,6 @@ func (r *ApiTokenResource) ImportState(
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func (r *ApiTokenResource) ValidateConfig(
-	ctx context.Context,
-	req resource.ValidateConfigRequest,
-	resp *resource.ValidateConfigResponse,
-) {
-	var data models.ApiTokenResource
-
-	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Convert Terraform set of roles to API token roles
-	roles, diags := RequestApiTokenRoles(ctx, data.Roles)
-	if diags.HasError() {
-		resp.Diagnostics.Append(diags...)
-		return
-	}
-
-	tokenRole, diags := RequestApiTokenPrimaryRole(roles, data.Type.ValueString())
-	if diags != nil {
-		resp.Diagnostics.Append(diags...)
-		return
-	}
-
-	entityType := data.Type.ValueString()
-
-	// Check if the role is valid for the token entity type
-	if !common.ValidateRoleMatchesEntityType(tokenRole.Role, entityType) {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Role '%s' is not valid for token type '%s'", tokenRole.Role, entityType),
-			fmt.Sprintf("Please provide a valid role for the entity type '%s'", entityType),
-		)
-		return
-	}
-
-	diags = r.ValidateApiTokenRoles(entityType, roles)
-	if diags != nil {
-		resp.Diagnostics.Append(diags...)
-		return
-	}
-}
-
 func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []iam.ApiTokenRole) diag.Diagnostics {
 	var numRolesMatchingEntityType int
 	var invalidRoleError string
@@ -547,8 +517,8 @@ func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []iam.
 		if !common.ValidateRoleMatchesEntityType(role.Role, string(role.EntityType)) {
 			return diag.Diagnostics{
 				diag.NewErrorDiagnostic(
-					fmt.Sprintf("Role '%s' is not valid for entity type '%s'", role.Role, role.EntityType),
-					fmt.Sprintf("Please provide a valid role for the entity type '%s'", role.EntityType),
+					fmt.Sprintf("Role '%s' is not valid for token type '%s'", role.Role, role.EntityType),
+					fmt.Sprintf("Please provide a valid role for the token type '%s'", role.EntityType),
 				),
 			}
 		}

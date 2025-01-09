@@ -35,7 +35,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			// Check that the organization api token has been removed
+			// Check that the api token has been removed
 			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: false}),
 		),
 		Steps: []resource.TestStep{
@@ -196,7 +196,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "roles.2.entity_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "roles.2.entity_type", string(iam.DEPLOYMENT)),
 					resource.TestCheckResourceAttr(resourceVar, "roles.2.role", "DEPLOYMENT_ADMIN"),
-					// Check via API that organization api token exists
+					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
 			},
@@ -227,7 +227,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "description", "new description"),
-					// Check via API that organization api token exists
+					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
 			},
@@ -310,7 +310,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "type", string(iam.ORGANIZATION)),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
-					// Check via API that organization api token exists
+					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
 			},
@@ -339,7 +339,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			// Check that the organization api token has been removed
+			// Check that the api token has been removed
 			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: false}),
 		),
 		Steps: []resource.TestStep{
@@ -467,7 +467,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "roles.1.entity_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "roles.1.entity_type", string(iam.DEPLOYMENT)),
 					resource.TestCheckResourceAttr(resourceVar, "roles.1.role", "DEPLOYMENT_ADMIN"),
-					// Check via API that organization api token exists
+					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: true}),
 				),
 			},
@@ -493,7 +493,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "description", "new description"),
-					// Check via API that organization api token exists
+					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: true}),
 				),
 			},
@@ -544,7 +544,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "type", string(iam.WORKSPACE)),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
-					// Check via API that organization api token exists
+					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: true}),
 				),
 			},
@@ -573,7 +573,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			// Check that the organization api token has been removed
+			// Check that the api token has been removed
 			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: false}),
 		),
 		Steps: []resource.TestStep{
@@ -668,7 +668,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", string(iam.DEPLOYMENT)),
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", "DEPLOYMENT_ADMIN"),
-					// Check via API that organization api token exists
+					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
 				),
 			},
@@ -689,7 +689,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "description", "new description"),
-					// Check via API that organization api token exists
+					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
 				),
 			},
@@ -736,7 +736,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "type", string(iam.DEPLOYMENT)),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
-					// Check via API that organization api token exists
+					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
 				),
 			},
