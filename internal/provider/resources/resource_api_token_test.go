@@ -102,7 +102,52 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("API Token of type 'ORGANIZATION' cannot have more than one role of the same type"),
+				ExpectError: regexp.MustCompile(".*status: 400.*"),
+			},
+			// Test invalid workspace
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
+					Name: apiTokenName,
+					Type: string(iam.ORGANIZATION),
+					Roles: []apiTokenRole{
+						{
+							Role:       string(iam.ORGANIZATIONOWNER),
+							EntityId:   organizationId,
+							EntityType: string(iam.ORGANIZATION),
+						},
+						{
+							Role:       string(iam.WORKSPACEOWNER),
+							EntityId:   "clzjm8ixj001g01lmumcyo74q",
+							EntityType: string(iam.WORKSPACE),
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile(".*status: 400.*"),
+			},
+			// Test invalid deployment
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
+					Name: apiTokenName,
+					Type: string(iam.ORGANIZATION),
+					Roles: []apiTokenRole{
+						{
+							Role:       string(iam.ORGANIZATIONOWNER),
+							EntityId:   organizationId,
+							EntityType: string(iam.ORGANIZATION),
+						},
+						{
+							Role:       string(iam.WORKSPACEOWNER),
+							EntityId:   workspaceId,
+							EntityType: string(iam.WORKSPACE),
+						},
+						{
+							Role:       "DEPLOYMENT_ADMIN",
+							EntityId:   "clzk79utk030w01swob4ylsl0",
+							EntityType: string(iam.DEPLOYMENT),
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile(".*status: 400.*"),
 			},
 			// Create the organization api token
 			{
