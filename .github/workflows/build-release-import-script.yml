@@ -32,7 +32,7 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
         run: |
-          output_name="terraform-provider-astro-import-script_${{ steps.get_version.outputs.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}"
+          output_name="terraform-provider-astro-import-script-${{ steps.get_version.outputs.VERSION }}-${{ matrix.goos }}-${{ matrix.goarch }}"
           if [ "${{ matrix.goos }}" = "windows" ]; then
             output_name="${output_name}.exe"
           fi
@@ -40,8 +40,12 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: binaries
-          path: terraform-provider-astro-import-script_*
+          name: binary-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: terraform-provider-astro-import-script-*
+          if-no-files-found: warn
+          compression-level: 6
+          overwrite: false
+          include-hidden-files: false
 
   lint:
     name: Lint
@@ -67,7 +71,8 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: binaries
+          pattern: binary-*
+          merge-multiple: true  # This will merge all matching artifacts into one directory
 
       - name: Get the version
         id: get_version
@@ -120,7 +125,7 @@ jobs:
             });
             const files = await fs.readdir('.');
             for (const file of files) {
-              if (file.startsWith('terraform-provider-astro-import-script_')) {
+              if (file.startsWith('terraform-provider-astro-import-script-')) {
                 await github.rest.repos.uploadReleaseAsset({
                   owner,
                   repo,
