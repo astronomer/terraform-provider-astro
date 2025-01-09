@@ -135,6 +135,13 @@ func (r *ApiTokenResource) Create(
 		return
 	}
 
+	// Validate roles
+	diags = r.ValidateApiTokenRoles(data.Type.ValueString(), roles)
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
 	// Create the API token request
 	createApiTokenRequest := iam.CreateApiTokenRequest{
 		Name: data.Name.ValueString(),
@@ -348,6 +355,13 @@ func (r *ApiTokenResource) Update(
 		return
 	}
 
+	// Validate roles
+	diags = r.ValidateApiTokenRoles(data.Type.ValueString(), roles)
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
 	// Update API token roles
 	updateApiTokenRolesRequest := iam.UpdateApiTokenRolesRequest{
 		Roles: roles,
@@ -503,8 +517,8 @@ func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []iam.
 		if !common.ValidateRoleMatchesEntityType(role.Role, string(role.EntityType)) {
 			return diag.Diagnostics{
 				diag.NewErrorDiagnostic(
-					fmt.Sprintf("Role '%s' is not valid for entity type '%s'", role.Role, role.EntityType),
-					fmt.Sprintf("Please provide a valid role for the entity type '%s'", role.EntityType),
+					fmt.Sprintf("Role '%s' is not valid for token type '%s'", role.Role, role.EntityType),
+					fmt.Sprintf("Please provide a valid role for the token type '%s'", role.EntityType),
 				),
 			}
 		}
