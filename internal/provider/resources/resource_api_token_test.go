@@ -122,7 +122,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile(".*status: 400.*"),
+				ExpectError: regexp.MustCompile(".*One or more workspaces is not in the organization, cannot set roles for workspaces that do not exist.*"),
 			},
 			// Test invalid deployment
 			{
@@ -147,7 +147,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile(".*status: 400.*"),
+				ExpectError: regexp.MustCompile(".*One or more deployments is not in the organization, cannot set roles for deployments that do not exist.*"),
 			},
 			// Create the organization api token
 			{
