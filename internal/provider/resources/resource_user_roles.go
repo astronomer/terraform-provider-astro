@@ -96,6 +96,11 @@ func (r *UserRolesResource) MutateRoles(
 	}
 
 	// Validate the roles
+	diags = common.ValidateRoles(workspaceRoles, deploymentRoles)
+	if diags.HasError() {
+		return diags
+	}
+
 	diags = common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 		PlatformClient:  r.platformClient,
 		OrganizationId:  r.organizationId,
@@ -310,69 +315,4 @@ func (r *UserRolesResource) ImportState(
 	resp *resource.ImportStateResponse,
 ) {
 	resource.ImportStatePassthroughID(ctx, path.Root("user_id"), req, resp)
-}
-
-func (r *UserRolesResource) ValidateConfig(
-	ctx context.Context,
-	req resource.ValidateConfigRequest,
-	resp *resource.ValidateConfigResponse,
-) {
-	var data models.UserRoles
-
-	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Validate workspace roles
-	workspaceRoles, diags := common.RequestWorkspaceRoles(ctx, data.WorkspaceRoles)
-	if diags.HasError() {
-		resp.Diagnostics.Append(diags...)
-		return
-	}
-
-	for _, role := range workspaceRoles {
-		if !common.ValidateRoleMatchesEntityType(string(role.Role), string(iam.WORKSPACE)) {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Role '%s' is not valid for role type '%s'", string(role.Role), string(iam.WORKSPACE)),
-				fmt.Sprintf("Please provide a valid role for the type '%s'", string(iam.WORKSPACE)),
-			)
-			return
-		}
-	}
-
-	duplicateWorkspaceIds := common.GetDuplicateWorkspaceIds(workspaceRoles)
-	if len(duplicateWorkspaceIds) > 0 {
-		resp.Diagnostics.AddError(
-			"Invalid Configuration: Cannot have multiple roles with the same workspace id",
-			fmt.Sprintf("Please provide a unique workspace id for each role. The following workspace ids are duplicated: %v", duplicateWorkspaceIds),
-		)
-		return
-	}
-
-	// Validate deployment roles
-	deploymentRoles, diags := common.RequestDeploymentRoles(ctx, data.DeploymentRoles)
-	if diags.HasError() {
-		resp.Diagnostics.Append(diags...)
-		return
-	}
-
-	for _, role := range deploymentRoles {
-		if !common.ValidateRoleMatchesEntityType(role.Role, string(iam.DEPLOYMENT)) {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Role '%s' is not valid for role type '%s'", role.Role, string(iam.DEPLOYMENT)),
-				fmt.Sprintf("Please provide a valid role for the type '%s'", string(iam.DEPLOYMENT)),
-			)
-			return
-		}
-	}
-
-	duplicateDeploymentIds := common.GetDuplicateDeploymentIds(deploymentRoles)
-	if len(duplicateDeploymentIds) > 0 {
-		resp.Diagnostics.AddError(
-			"Invalid Configuration: Cannot have multiple roles with the same deployment id",
-			fmt.Sprintf("Please provide unique deployment id for each role. The following deployment ids are duplicated: %v", duplicateDeploymentIds),
-		)
-		return
-	}
 }
