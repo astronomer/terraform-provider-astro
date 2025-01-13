@@ -74,7 +74,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile(".*value must be one of.*"),
+				ExpectError: regexp.MustCompile(".*Invalid Attribute Value Match.*"),
 			},
 			// Test failure: check for missing corresponding workspace role if deployment role is present
 			{
