@@ -40,7 +40,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 							},
 						},
 					}),
-				ExpectError: regexp.MustCompile(fmt.Sprintf("Role '%s' is not valid for role type '%s'", string(iam.ORGANIZATIONOWNER), string(iam.WORKSPACE))),
+				ExpectError: regexp.MustCompile(".*Invalid Attribute Value Match.*"),
 			},
 			// Test failure: check for missing corresponding workspace role if deployment role is present
 			{
