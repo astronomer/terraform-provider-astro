@@ -1,80 +1,77 @@
 package schemas
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework/attr"
-	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func EnvironmentObjectDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
-	return map[string]datasourceSchema.Attribute{
-		"id": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Environment Object identifier",
-			Required:            true,
-		},
-		"object_key": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Key of the environment object",
-			Computed:            true,
-		},
-		"object_type": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Type of the environment object",
-			Computed:            true,
-		},
-		"scope": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Scope of the environment object",
-			Computed:            true,
-		},
-		"scope_entity_id": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Scope entity ID of the environment object",
-			Computed:            true,
-		},
-		"connection": datasourceSchema.ObjectAttribute{
-			MarkdownDescription: "Connection details for the environment object",
-			Computed:            true,
-			AttributeTypes: map[string]attr.Type{
-				"host":     types.StringType,
-				"login":    types.StringType,
-				"password": types.StringType,
-				"port":     types.Int64Type,
-				"schema":   types.StringType,
-				"type":     types.StringType,
-			},
-		},
-		"airflow_variable": datasourceSchema.ObjectAttribute{
-			MarkdownDescription: "Airflow variable details for the environment object",
-			Computed:            true,
-			AttributeTypes: map[string]attr.Type{
-				"is_secret": types.BoolType,
-				"value":     types.StringType,
-			},
-		},
-		"auto_link_deployments": datasourceSchema.BoolAttribute{
-			MarkdownDescription: "Auto link deployments flag",
-			Computed:            true,
-		},
-		"exclude_links": datasourceSchema.SetAttribute{
-			MarkdownDescription: "Links to exclude",
-			Computed:            true,
-			ElementType:         types.StringType,
-		},
-		"links": datasourceSchema.SetAttribute{
-			MarkdownDescription: "Links associated with the environment object",
-			Computed:            true,
-			ElementType:         types.StringType,
-		},
-		"metrics_export": datasourceSchema.ObjectAttribute{
-			MarkdownDescription: "Metrics export details for the environment object",
-			Computed:            true,
-			AttributeTypes: map[string]attr.Type{
-				"endpoint":      types.StringType,
-				"exporter_type": types.StringType,
-			},
-		},
-	}
-}
+// func EnvironmentObjectDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
+// 	return map[string]datasourceSchema.Attribute{
+// 		"id": datasourceSchema.StringAttribute{
+// 			MarkdownDescription: "Environment Object identifier",
+// 			Required:            true,
+// 		},
+// 		"object_key": datasourceSchema.StringAttribute{
+// 			MarkdownDescription: "Key of the environment object",
+// 			Computed:            true,
+// 		},
+// 		"object_type": datasourceSchema.StringAttribute{
+// 			MarkdownDescription: "Type of the environment object",
+// 			Computed:            true,
+// 		},
+// 		"scope": datasourceSchema.StringAttribute{
+// 			MarkdownDescription: "Scope of the environment object",
+// 			Computed:            true,
+// 		},
+// 		"scope_entity_id": datasourceSchema.StringAttribute{
+// 			MarkdownDescription: "Scope entity ID of the environment object",
+// 			Computed:            true,
+// 		},
+// 		"connection": datasourceSchema.ObjectAttribute{
+// 			MarkdownDescription: "Connection details for the environment object",
+// 			Computed:            true,
+// 			AttributeTypes: map[string]attr.Type{
+// 				"host":     types.StringType,
+// 				"login":    types.StringType,
+// 				"password": types.StringType,
+// 				"port":     types.Int64Type,
+// 				"schema":   types.StringType,
+// 				"type":     types.StringType,
+// 			},
+// 		},
+// 		"airflow_variable": datasourceSchema.ObjectAttribute{
+// 			MarkdownDescription: "Airflow variable details for the environment object",
+// 			Computed:            true,
+// 			AttributeTypes: map[string]attr.Type{
+// 				"is_secret": types.BoolType,
+// 				"value":     types.StringType,
+// 			},
+// 		},
+// 		"auto_link_deployments": datasourceSchema.BoolAttribute{
+// 			MarkdownDescription: "Auto link deployments flag",
+// 			Computed:            true,
+// 		},
+// 		"exclude_links": datasourceSchema.SetAttribute{
+// 			MarkdownDescription: "Links to exclude",
+// 			Computed:            true,
+// 			ElementType:         types.StringType,
+// 		},
+// 		"links": datasourceSchema.SetAttribute{
+// 			MarkdownDescription: "Links associated with the environment object",
+// 			Computed:            true,
+// 			ElementType:         types.StringType,
+// 		},
+// 		"metrics_export": datasourceSchema.ObjectAttribute{
+// 			MarkdownDescription: "Metrics export details for the environment object",
+// 			Computed:            true,
+// 			AttributeTypes: map[string]attr.Type{
+// 				"endpoint":      types.StringType,
+// 				"exporter_type": types.StringType,
+// 			},
+// 		},
+// 	}
+// }
 
 func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
@@ -101,7 +98,7 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 			MarkdownDescription: "Scope entity ID of the environment object",
 			Optional:            true,
 		},
-		"connection": resourceSchema.SingleNestedAttribute{
+		"airflow_connection": resourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "Connection details for the environment object",
 			Optional:            true,
 			Attributes: map[string]resourceSchema.Attribute{
@@ -147,20 +144,6 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 				},
 			},
 		},
-		"auto_link_deployments": resourceSchema.BoolAttribute{
-			MarkdownDescription: "Auto link deployments flag",
-			Optional:            true,
-		},
-		"exclude_links": resourceSchema.SetAttribute{
-			MarkdownDescription: "Links to exclude",
-			Optional:            true,
-			ElementType:         types.StringType,
-		},
-		"links": resourceSchema.SetAttribute{
-			MarkdownDescription: "Links associated with the environment object",
-			Optional:            true,
-			ElementType:         types.StringType,
-		},
 		"metrics_export": resourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "Metrics export details for the environment object",
 			Optional:            true,
@@ -175,5 +158,19 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 				},
 			},
 		},
+		"auto_link_deployments": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Auto link deployments flag",
+			Optional:            true,
+		},
+		// "exclude_links": resourceSchema.SetAttribute{
+		// 	MarkdownDescription: "Links to exclude",
+		// 	Optional:            true,
+		// 	ElementType:         types.StringType,
+		// },
+		// "links": resourceSchema.SetAttribute{
+		// 	MarkdownDescription: "Links associated with the environment object",
+		// 	Optional:            true,
+		// 	ElementType:         types.StringType,
+		// },
 	}
 }

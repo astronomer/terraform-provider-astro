@@ -4,27 +4,32 @@ import (
 	"context"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type EnvironmentObjectDataSource struct {
-	Id            types.String `tfsdk:"id"`
-	ObjectKey     types.String `tfsdk:"object_key"`
-	ObjectType    types.String `tfsdk:"object_type"`
-	Scope         types.String `tfsdk:"scope"`
+type EnvironmentObjectConnection struct {
+	Host     types.String `tfsdk:"host"`
+	Login    types.String `tfsdk:"login"`
+	Password types.String `tfsdk:"password"`
+	Port     types.Int64  `tfsdk:"port"`
+	Schema   types.String `tfsdk:"schema"`
+	Type     types.String `tfsdk:"type"`
+}
+
+type EnvironmentObjectAirflowVariable struct {
+	IsSecret types.Bool   `tfsdk:"is_secret"`
+	Value    types.String `tfsdk:"value"`
+}
+
+type EnvironmentObjectMetricsExport struct {
+	Endpoint     types.String `tfsdk:"endpoint"`
+	ExporterType types.String `tfsdk:"exporter_type"`
+}
+
+type EnvironmentObjectExcludeLink struct {
 	ScopeEntityId types.String `tfsdk:"scope_entity_id"`
-	// Optional fields for CONNECTION type
-	Connection types.Object `tfsdk:"connection"`
-	// Optional fields for AIRFLOW_VARIABLE type
-	AirflowVariable types.Object `tfsdk:"airflow_variable"`
-	// Optional fields for WORKSPACE scope
-	AutoLinkDeployments types.Bool `tfsdk:"auto_link_deployments"`
-	ExcludeLinks        types.Set  `tfsdk:"exclude_links"`
-	Links               types.Set  `tfsdk:"links"`
-	// Optional fields for METRICS_EXPORT type
-	MetricsExport types.Object `tfsdk:"metrics_export"`
+	Scope         types.String `tfsdk:"scope"`
 }
 
 type EnvironmentObjectResource struct {
@@ -33,163 +38,60 @@ type EnvironmentObjectResource struct {
 	ObjectType    types.String `tfsdk:"object_type"`
 	Scope         types.String `tfsdk:"scope"`
 	ScopeEntityId types.String `tfsdk:"scope_entity_id"`
-	// Optional fields for CONNECTION type
-	Connection types.Object `tfsdk:"connection"`
-	// Optional fields for AIRFLOW_VARIABLE type
-	AirflowVariable types.Object `tfsdk:"airflow_variable"`
+	// Optional fields for CONNECTION, AIRFLOW_VARIABLE, and METRICS_EXPORT type
+	Connection      *EnvironmentObjectConnection      `tfsdk:"airflow_connection"`
+	AirflowVariable *EnvironmentObjectAirflowVariable `tfsdk:"airflow_variable"`
+	MetricsExport   *EnvironmentObjectMetricsExport   `tfsdk:"metrics_export"`
 	// Optional fields for WORKSPACE scope
 	AutoLinkDeployments types.Bool `tfsdk:"auto_link_deployments"`
-	ExcludeLinks        types.Set  `tfsdk:"exclude_links"`
-	Links               types.Set  `tfsdk:"links"`
-	// Optional fields for METRICS_EXPORT type
-	MetricsExport types.Object `tfsdk:"metrics_export"`
+	// TODO: Handle ExcludeLinks and Links later
+	// ExcludeLinks        types.Set  `tfsdk:"exclude_links"`
+	// Links               types.Set  `tfsdk:"links"`
 }
 
-func (data *EnvironmentObjectDataSource) ReadFromResponse(ctx context.Context, user *platform.EnvironmentObject) diag.Diagnostics {
+func (data *EnvironmentObjectResource) ReadFromResponse(ctx context.Context, envObject *platform.EnvironmentObject) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	if user.Id != nil {
-		data.Id = types.StringValue(*user.Id)
+	// Id is not returned for resolved environment objects
+	if envObject.Id != nil {
+		data.Id = types.StringValue(*envObject.Id)
 	}
-	data.ObjectKey = types.StringValue(user.ObjectKey)
-	data.ObjectType = types.StringValue(string(user.ObjectType))
-	data.Scope = types.StringValue(string(user.Scope))
-	data.ScopeEntityId = types.StringValue(user.ScopeEntityId)
+	data.ObjectKey = types.StringValue(envObject.ObjectKey)
+	data.ObjectType = types.StringValue(string(envObject.ObjectType))
+	data.Scope = types.StringValue(string(envObject.Scope))
+	data.ScopeEntityId = types.StringValue(envObject.ScopeEntityId)
 
-	if user.Connection != nil {
-		connectionType := map[string]attr.Type{
-			"host":     types.StringType,
-			"login":    types.StringType,
-			"password": types.StringType,
-			"port":     types.Int64Type,
-			"schema":   types.StringType,
-			"type":     types.StringType,
+	// Set one of the optional fields
+	switch envObject.ObjectType {
+	case platform.EnvironmentObjectObjectTypeCONNECTION:
+		if envObject.Connection != nil {
+			data.Connection = &EnvironmentObjectConnection{
+				Host:     types.StringValue(*envObject.Connection.Host),
+				Login:    types.StringValue(*envObject.Connection.Login),
+				Password: types.StringValue(*envObject.Connection.Password),
+				Port:     types.Int64Value(int64(*envObject.Connection.Port)),
+				Schema:   types.StringValue(*envObject.Connection.Schema),
+				Type:     types.StringValue(envObject.Connection.Type),
+			}
 		}
-		connectionValue := map[string]attr.Value{
-			"host":     types.StringValue(*user.Connection.Host),
-			"login":    types.StringValue(*user.Connection.Login),
-			"password": types.StringValue(*user.Connection.Password),
-			"port":     types.Int64Value(int64(*user.Connection.Port)),
-			"schema":   types.StringValue(*user.Connection.Schema),
-			"type":     types.StringValue(user.Connection.Type),
+	case platform.EnvironmentObjectObjectTypeAIRFLOWVARIABLE:
+		if envObject.AirflowVariable != nil {
+			data.AirflowVariable = &EnvironmentObjectAirflowVariable{
+				IsSecret: types.BoolValue(envObject.AirflowVariable.IsSecret),
+				Value:    types.StringValue(envObject.AirflowVariable.Value),
+			}
 		}
-		data.Connection, _ = types.ObjectValue(connectionType, connectionValue)
-	}
-	if user.AirflowVariable != nil {
-		afVarType := map[string]attr.Type{
-			"is_secret": types.BoolType,
-			"value":     types.StringType,
+	case platform.EnvironmentObjectObjectTypeMETRICSEXPORT:
+		if envObject.MetricsExport != nil {
+			data.MetricsExport = &EnvironmentObjectMetricsExport{
+				Endpoint:     types.StringValue(envObject.MetricsExport.Endpoint),
+				ExporterType: types.StringValue(string(envObject.MetricsExport.ExporterType)),
+			}
 		}
-		afVarValue := map[string]attr.Value{
-			"is_secret": types.BoolValue(user.AirflowVariable.IsSecret),
-			"value":     types.StringValue(user.AirflowVariable.Value),
-		}
-		data.AirflowVariable, _ = types.ObjectValue(afVarType, afVarValue)
-	}
-	if user.AutoLinkDeployments != nil {
-		data.AutoLinkDeployments = types.BoolValue(*user.AutoLinkDeployments)
-	}
-	if user.ExcludeLinks != nil {
-		excludeLinkType := types.SetType{ElemType: types.StringType}
-		excludeLinkValues := make([]attr.Value, len(*user.ExcludeLinks))
-		for i, link := range *user.ExcludeLinks {
-			excludeLinkValues[i] = types.StringValue(link.ScopeEntityId)
-		}
-		data.ExcludeLinks, _ = types.SetValue(excludeLinkType, excludeLinkValues)
-	}
-	if user.Links != nil {
-		linkType := types.SetType{ElemType: types.StringType}
-		linkValues := make([]attr.Value, len(*user.Links))
-		for i, link := range *user.Links {
-			linkValues[i] = types.StringValue(link.ScopeEntityId)
-		}
-		data.Links, _ = types.SetValue(linkType, linkValues)
-	}
-	if user.MetricsExport != nil {
-		metricsExportType := map[string]attr.Type{
-			"endpoint":      types.StringType,
-			"exporter_type": types.StringType,
-		}
-		metricsExportValue := map[string]attr.Value{
-			"endpoint":      types.StringValue(user.MetricsExport.Endpoint),
-			"exporter_type": types.StringValue(string(user.MetricsExport.ExporterType)),
-		}
-		data.MetricsExport, _ = types.ObjectValue(metricsExportType, metricsExportValue)
 	}
 
-	return diags
-}
-
-func (data *EnvironmentObjectResource) ReadFromResponse(ctx context.Context, user *platform.EnvironmentObject) diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	if user.Id != nil {
-		data.Id = types.StringValue(*user.Id)
-	}
-	data.ObjectKey = types.StringValue(user.ObjectKey)
-	data.ObjectType = types.StringValue(string(user.ObjectType))
-	data.Scope = types.StringValue(string(user.Scope))
-	data.ScopeEntityId = types.StringValue(user.ScopeEntityId)
-
-	if user.Connection != nil {
-		connectionType := map[string]attr.Type{
-			"host":     types.StringType,
-			"login":    types.StringType,
-			"password": types.StringType,
-			"port":     types.Int64Type,
-			"schema":   types.StringType,
-			"type":     types.StringType,
-		}
-		connectionValue := map[string]attr.Value{
-			"host":     types.StringValue(*user.Connection.Host),
-			"login":    types.StringValue(*user.Connection.Login),
-			"password": types.StringValue(*user.Connection.Password),
-			"port":     types.Int64Value(int64(*user.Connection.Port)),
-			"schema":   types.StringValue(*user.Connection.Schema),
-			"type":     types.StringValue(user.Connection.Type),
-		}
-		data.Connection, _ = types.ObjectValue(connectionType, connectionValue)
-	}
-	if user.AirflowVariable != nil {
-		afVarType := map[string]attr.Type{
-			"is_secret": types.BoolType,
-			"value":     types.StringType,
-		}
-		afVarValue := map[string]attr.Value{
-			"is_secret": types.BoolValue(user.AirflowVariable.IsSecret),
-			"value":     types.StringValue(user.AirflowVariable.Value),
-		}
-		data.AirflowVariable, _ = types.ObjectValue(afVarType, afVarValue)
-	}
-	if user.AutoLinkDeployments != nil {
-		data.AutoLinkDeployments = types.BoolValue(*user.AutoLinkDeployments)
-	}
-	if user.ExcludeLinks != nil {
-		excludeLinkType := types.SetType{ElemType: types.StringType}
-		excludeLinkValues := make([]attr.Value, len(*user.ExcludeLinks))
-		for i, link := range *user.ExcludeLinks {
-			excludeLinkValues[i] = types.StringValue(link.ScopeEntityId)
-		}
-		data.ExcludeLinks, _ = types.SetValue(excludeLinkType, excludeLinkValues)
-	}
-	if user.Links != nil {
-		linkType := types.SetType{ElemType: types.StringType}
-		linkValues := make([]attr.Value, len(*user.Links))
-		for i, link := range *user.Links {
-			linkValues[i] = types.StringValue(link.ScopeEntityId)
-		}
-		data.Links, _ = types.SetValue(linkType, linkValues)
-	}
-	if user.MetricsExport != nil {
-		metricsExportType := map[string]attr.Type{
-			"endpoint":      types.StringType,
-			"exporter_type": types.StringType,
-		}
-		metricsExportValue := map[string]attr.Value{
-			"endpoint":      types.StringValue(user.MetricsExport.Endpoint),
-			"exporter_type": types.StringValue(string(user.MetricsExport.ExporterType)),
-		}
-		data.MetricsExport, _ = types.ObjectValue(metricsExportType, metricsExportValue)
+	if envObject.AutoLinkDeployments != nil {
+		data.AutoLinkDeployments = types.BoolValue(*envObject.AutoLinkDeployments)
 	}
 
 	return diags
