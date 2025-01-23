@@ -112,6 +112,34 @@ const (
 	CreateDedicatedDeploymentRequestTypeSTANDARD  CreateDedicatedDeploymentRequestType = "STANDARD"
 )
 
+// Defines values for CreateEnvironmentObjectLinkRequestScope.
+const (
+	CreateEnvironmentObjectLinkRequestScopeDEPLOYMENT CreateEnvironmentObjectLinkRequestScope = "DEPLOYMENT"
+)
+
+// Defines values for CreateEnvironmentObjectMetricsExportOverridesRequestExporterType.
+const (
+	CreateEnvironmentObjectMetricsExportOverridesRequestExporterTypePROMETHEUS CreateEnvironmentObjectMetricsExportOverridesRequestExporterType = "PROMETHEUS"
+)
+
+// Defines values for CreateEnvironmentObjectMetricsExportRequestExporterType.
+const (
+	CreateEnvironmentObjectMetricsExportRequestExporterTypePROMETHEUS CreateEnvironmentObjectMetricsExportRequestExporterType = "PROMETHEUS"
+)
+
+// Defines values for CreateEnvironmentObjectRequestObjectType.
+const (
+	CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE CreateEnvironmentObjectRequestObjectType = "AIRFLOW_VARIABLE"
+	CreateEnvironmentObjectRequestObjectTypeCONNECTION      CreateEnvironmentObjectRequestObjectType = "CONNECTION"
+	CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT   CreateEnvironmentObjectRequestObjectType = "METRICS_EXPORT"
+)
+
+// Defines values for CreateEnvironmentObjectRequestScope.
+const (
+	CreateEnvironmentObjectRequestScopeDEPLOYMENT CreateEnvironmentObjectRequestScope = "DEPLOYMENT"
+	CreateEnvironmentObjectRequestScopeWORKSPACE  CreateEnvironmentObjectRequestScope = "WORKSPACE"
+)
+
 // Defines values for CreateGcpClusterRequestCloudProvider.
 const (
 	CreateGcpClusterRequestCloudProviderAWS   CreateGcpClusterRequestCloudProvider = "AWS"
@@ -210,6 +238,50 @@ const (
 	WAKE      DeploymentHibernationStatusNextEventType = "WAKE"
 )
 
+// Defines values for EnvironmentObjectObjectType.
+const (
+	EnvironmentObjectObjectTypeAIRFLOWVARIABLE EnvironmentObjectObjectType = "AIRFLOW_VARIABLE"
+	EnvironmentObjectObjectTypeCONNECTION      EnvironmentObjectObjectType = "CONNECTION"
+	EnvironmentObjectObjectTypeMETRICSEXPORT   EnvironmentObjectObjectType = "METRICS_EXPORT"
+)
+
+// Defines values for EnvironmentObjectScope.
+const (
+	EnvironmentObjectScopeDEPLOYMENT EnvironmentObjectScope = "DEPLOYMENT"
+	EnvironmentObjectScopeWORKSPACE  EnvironmentObjectScope = "WORKSPACE"
+)
+
+// Defines values for EnvironmentObjectSourceScope.
+const (
+	EnvironmentObjectSourceScopeDEPLOYMENT EnvironmentObjectSourceScope = "DEPLOYMENT"
+	EnvironmentObjectSourceScopeWORKSPACE  EnvironmentObjectSourceScope = "WORKSPACE"
+)
+
+// Defines values for EnvironmentObjectExcludeLinkScope.
+const (
+	EnvironmentObjectExcludeLinkScopeDEPLOYMENT EnvironmentObjectExcludeLinkScope = "DEPLOYMENT"
+)
+
+// Defines values for EnvironmentObjectLinkScope.
+const (
+	EnvironmentObjectLinkScopeDEPLOYMENT EnvironmentObjectLinkScope = "DEPLOYMENT"
+)
+
+// Defines values for EnvironmentObjectMetricsExportExporterType.
+const (
+	EnvironmentObjectMetricsExportExporterTypePROMETHEUS EnvironmentObjectMetricsExportExporterType = "PROMETHEUS"
+)
+
+// Defines values for EnvironmentObjectMetricsExportOverridesExporterType.
+const (
+	EnvironmentObjectMetricsExportOverridesExporterTypePROMETHEUS EnvironmentObjectMetricsExportOverridesExporterType = "PROMETHEUS"
+)
+
+// Defines values for ExcludeLinkEnvironmentObjectRequestScope.
+const (
+	ExcludeLinkEnvironmentObjectRequestScopeDEPLOYMENT ExcludeLinkEnvironmentObjectRequestScope = "DEPLOYMENT"
+)
+
 // Defines values for ManagedDomainStatus.
 const (
 	PENDING  ManagedDomainStatus = "PENDING"
@@ -286,6 +358,21 @@ const (
 	UpdateDedicatedDeploymentRequestTypeDEDICATED UpdateDedicatedDeploymentRequestType = "DEDICATED"
 	UpdateDedicatedDeploymentRequestTypeHYBRID    UpdateDedicatedDeploymentRequestType = "HYBRID"
 	UpdateDedicatedDeploymentRequestTypeSTANDARD  UpdateDedicatedDeploymentRequestType = "STANDARD"
+)
+
+// Defines values for UpdateEnvironmentObjectLinkRequestScope.
+const (
+	UpdateEnvironmentObjectLinkRequestScopeDEPLOYMENT UpdateEnvironmentObjectLinkRequestScope = "DEPLOYMENT"
+)
+
+// Defines values for UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType.
+const (
+	UpdateEnvironmentObjectMetricsExportOverridesRequestExporterTypePROMETHEUS UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType = "PROMETHEUS"
+)
+
+// Defines values for UpdateEnvironmentObjectMetricsExportRequestExporterType.
+const (
+	UpdateEnvironmentObjectMetricsExportRequestExporterTypePROMETHEUS UpdateEnvironmentObjectMetricsExportRequestExporterType = "PROMETHEUS"
 )
 
 // Defines values for UpdateHybridClusterRequestClusterType.
@@ -434,14 +521,33 @@ const (
 	ListDeploymentsParamsSortsUpdatedAtDesc ListDeploymentsParamsSorts = "updatedAt:desc"
 )
 
+// Defines values for ListEnvironmentObjectsParamsSorts.
+const (
+	ListEnvironmentObjectsParamsSortsCreatedAtAsc   ListEnvironmentObjectsParamsSorts = "createdAt:asc"
+	ListEnvironmentObjectsParamsSortsCreatedAtDesc  ListEnvironmentObjectsParamsSorts = "createdAt:desc"
+	ListEnvironmentObjectsParamsSortsObjectKeyAsc   ListEnvironmentObjectsParamsSorts = "objectKey:asc"
+	ListEnvironmentObjectsParamsSortsObjectKeyDesc  ListEnvironmentObjectsParamsSorts = "objectKey:desc"
+	ListEnvironmentObjectsParamsSortsObjectTypeAsc  ListEnvironmentObjectsParamsSorts = "objectType:asc"
+	ListEnvironmentObjectsParamsSortsObjectTypeDesc ListEnvironmentObjectsParamsSorts = "objectType:desc"
+	ListEnvironmentObjectsParamsSortsUpdatedAtAsc   ListEnvironmentObjectsParamsSorts = "updatedAt:asc"
+	ListEnvironmentObjectsParamsSortsUpdatedAtDesc  ListEnvironmentObjectsParamsSorts = "updatedAt:desc"
+)
+
+// Defines values for ListEnvironmentObjectsParamsObjectType.
+const (
+	AIRFLOWVARIABLE ListEnvironmentObjectsParamsObjectType = "AIRFLOW_VARIABLE"
+	CONNECTION      ListEnvironmentObjectsParamsObjectType = "CONNECTION"
+	METRICSEXPORT   ListEnvironmentObjectsParamsObjectType = "METRICS_EXPORT"
+)
+
 // Defines values for ListWorkspacesParamsSorts.
 const (
-	ListWorkspacesParamsSortsCreatedAtAsc  ListWorkspacesParamsSorts = "createdAt:asc"
-	ListWorkspacesParamsSortsCreatedAtDesc ListWorkspacesParamsSorts = "createdAt:desc"
-	ListWorkspacesParamsSortsNameAsc       ListWorkspacesParamsSorts = "name:asc"
-	ListWorkspacesParamsSortsNameDesc      ListWorkspacesParamsSorts = "name:desc"
-	ListWorkspacesParamsSortsUpdatedAtAsc  ListWorkspacesParamsSorts = "updatedAt:asc"
-	ListWorkspacesParamsSortsUpdatedAtDesc ListWorkspacesParamsSorts = "updatedAt:desc"
+	CreatedAtAsc  ListWorkspacesParamsSorts = "createdAt:asc"
+	CreatedAtDesc ListWorkspacesParamsSorts = "createdAt:desc"
+	NameAsc       ListWorkspacesParamsSorts = "name:asc"
+	NameDesc      ListWorkspacesParamsSorts = "name:desc"
+	UpdatedAtAsc  ListWorkspacesParamsSorts = "updatedAt:asc"
+	UpdatedAtDesc ListWorkspacesParamsSorts = "updatedAt:desc"
 )
 
 // BasicSubjectProfile defines model for BasicSubjectProfile.
@@ -557,7 +663,8 @@ type ClusterHealthStatusValue string
 // ClusterHealthStatusDetail defines model for ClusterHealthStatusDetail.
 type ClusterHealthStatusDetail struct {
 	// Code The health status for a specific component.
-	Code string `json:"code"`
+	Code      string  `json:"code"`
+	Component *string `json:"component,omitempty"`
 
 	// Description A description of the component that was assessed.
 	Description string `json:"description"`
@@ -642,6 +749,63 @@ type ClustersPaginated struct {
 
 	// TotalCount The total number of clusters.
 	TotalCount int `json:"totalCount"`
+}
+
+// ConnectionAuthType defines model for ConnectionAuthType.
+type ConnectionAuthType struct {
+	// AirflowType The type of connection in Airflow
+	AirflowType string `json:"airflowType"`
+
+	// AuthMethodName The name of the auth method used in the connection
+	AuthMethodName string `json:"authMethodName"`
+
+	// Description A description of the connection auth type
+	Description string `json:"description"`
+
+	// GuidePath The URL to the guide for the connection auth type
+	GuidePath *string `json:"guidePath,omitempty"`
+
+	// Id The ID of the connection auth type
+	Id string `json:"id"`
+
+	// Name The name of the connection auth type
+	Name string `json:"name"`
+
+	// Parameters The parameters for the connection auth type
+	Parameters []ConnectionAuthTypeParameter `json:"parameters"`
+
+	// ProviderLogo The URL of the provider logo
+	ProviderLogo *string `json:"providerLogo,omitempty"`
+
+	// ProviderPackageName The name of the provider package
+	ProviderPackageName string `json:"providerPackageName"`
+}
+
+// ConnectionAuthTypeParameter defines model for ConnectionAuthTypeParameter.
+type ConnectionAuthTypeParameter struct {
+	// AirflowParamName The name of the parameter in Airflow
+	AirflowParamName string `json:"airflowParamName"`
+
+	// DataType The data type of the parameter
+	DataType string `json:"dataType"`
+
+	// Description A description of the parameter
+	Description string `json:"description"`
+
+	// Example An example value for the parameter
+	Example *string `json:"example,omitempty"`
+
+	// FriendlyName The UI-friendly name for the parameter
+	FriendlyName string `json:"friendlyName"`
+
+	// IsInExtra Whether or not the parameter is included in the "extra" field
+	IsInExtra bool `json:"isInExtra"`
+
+	// IsRequired Whether the parameter is required
+	IsRequired bool `json:"isRequired"`
+
+	// IsSecret Whether the parameter is a secret
+	IsSecret bool `json:"isSecret"`
 }
 
 // CreateAwsClusterRequest defines model for CreateAwsClusterRequest.
@@ -790,7 +954,7 @@ type CreateDedicatedDeploymentRequest struct {
 	// WorkloadIdentity The Deployment's workload identity.
 	WorkloadIdentity *string `json:"workloadIdentity,omitempty"`
 
-	// WorkspaceId The ID of the workspace to which the Deployment belongs.
+	// WorkspaceId The ID of the Workspace to which the Deployment belongs.
 	WorkspaceId string `json:"workspaceId"`
 }
 
@@ -807,6 +971,187 @@ type CreateDedicatedDeploymentRequestType string
 type CreateDeploymentRequest struct {
 	union json.RawMessage
 }
+
+// CreateEnvironmentObject defines model for CreateEnvironmentObject.
+type CreateEnvironmentObject struct {
+	// Id The ID of the environment object
+	Id string `json:"id"`
+}
+
+// CreateEnvironmentObjectAirflowVariableOverridesRequest defines model for CreateEnvironmentObjectAirflowVariableOverridesRequest.
+type CreateEnvironmentObjectAirflowVariableOverridesRequest struct {
+	// Value The value of the Airflow variable
+	Value *string `json:"value,omitempty"`
+}
+
+// CreateEnvironmentObjectAirflowVariableRequest defines model for CreateEnvironmentObjectAirflowVariableRequest.
+type CreateEnvironmentObjectAirflowVariableRequest struct {
+	// IsSecret Whether the value is a secret or not
+	IsSecret *bool `json:"isSecret,omitempty"`
+
+	// Value The value of the Airflow variable
+	Value *string `json:"value,omitempty"`
+}
+
+// CreateEnvironmentObjectConnectionOverridesRequest defines model for CreateEnvironmentObjectConnectionOverridesRequest.
+type CreateEnvironmentObjectConnectionOverridesRequest struct {
+	// Extra Extra connection details, if any
+	Extra *map[string]interface{} `json:"extra,omitempty"`
+
+	// Host The host address for the connection
+	Host *string `json:"host,omitempty"`
+
+	// Login The username used for the connection
+	Login *string `json:"login,omitempty"`
+
+	// Password The password used for the connection
+	Password *string `json:"password,omitempty"`
+
+	// Port The port for the connection
+	Port *int `json:"port,omitempty"`
+
+	// Schema The schema for the connection
+	Schema *string `json:"schema,omitempty"`
+
+	// Type The type of connection
+	Type *string `json:"type,omitempty"`
+}
+
+// CreateEnvironmentObjectConnectionRequest defines model for CreateEnvironmentObjectConnectionRequest.
+type CreateEnvironmentObjectConnectionRequest struct {
+	// AuthTypeId The ID for the connection auth type
+	AuthTypeId *string `json:"authTypeId,omitempty"`
+
+	// Extra Extra connection details, if any
+	Extra *map[string]interface{} `json:"extra,omitempty"`
+
+	// Host The host address for the connection
+	Host *string `json:"host,omitempty"`
+
+	// Login The username used for the connection
+	Login *string `json:"login,omitempty"`
+
+	// Password The password used for the connection
+	Password *string `json:"password,omitempty"`
+
+	// Port The port for the connection
+	Port *int `json:"port,omitempty"`
+
+	// Schema The schema for the connection
+	Schema *string `json:"schema,omitempty"`
+
+	// Type The type of connection
+	Type string `json:"type"`
+}
+
+// CreateEnvironmentObjectLinkRequest defines model for CreateEnvironmentObjectLinkRequest.
+type CreateEnvironmentObjectLinkRequest struct {
+	Overrides *CreateEnvironmentObjectOverridesRequest `json:"overrides,omitempty"`
+
+	// Scope Scope to link the environment object
+	Scope CreateEnvironmentObjectLinkRequestScope `json:"scope"`
+
+	// ScopeEntityId Entity ID of the scope to link the environment object
+	ScopeEntityId string `json:"scopeEntityId"`
+}
+
+// CreateEnvironmentObjectLinkRequestScope Scope to link the environment object
+type CreateEnvironmentObjectLinkRequestScope string
+
+// CreateEnvironmentObjectMetricsExportOverridesRequest defines model for CreateEnvironmentObjectMetricsExportOverridesRequest.
+type CreateEnvironmentObjectMetricsExportOverridesRequest struct {
+	// BasicToken The bearer token to connect to the remote endpoint
+	BasicToken *string `json:"basicToken,omitempty"`
+
+	// Endpoint The Prometheus endpoint where the metrics are exported
+	Endpoint *string `json:"endpoint,omitempty"`
+
+	// ExporterType The type of exporter
+	ExporterType *CreateEnvironmentObjectMetricsExportOverridesRequestExporterType `json:"exporterType,omitempty"`
+
+	// Headers Add key-value pairs to the HTTP request headers made by Astro when connecting to the remote endpoint
+	Headers *map[string]string `json:"headers,omitempty"`
+
+	// Labels Any key-value pair metrics labels for your export. You can use these to filter your metrics in downstream applications.
+	Labels *map[string]string `json:"labels,omitempty"`
+
+	// Password The password to connect to the remote endpoint
+	Password *string `json:"password,omitempty"`
+
+	// Username The username to connect to the remote endpoint
+	Username *string `json:"username,omitempty"`
+}
+
+// CreateEnvironmentObjectMetricsExportOverridesRequestExporterType The type of exporter
+type CreateEnvironmentObjectMetricsExportOverridesRequestExporterType string
+
+// CreateEnvironmentObjectMetricsExportRequest defines model for CreateEnvironmentObjectMetricsExportRequest.
+type CreateEnvironmentObjectMetricsExportRequest struct {
+	// BasicToken The bearer token to connect to the remote endpoint
+	BasicToken *string `json:"basicToken,omitempty"`
+
+	// Endpoint The Prometheus endpoint where the metrics are exported
+	Endpoint string `json:"endpoint"`
+
+	// ExporterType The type of exporter
+	ExporterType CreateEnvironmentObjectMetricsExportRequestExporterType `json:"exporterType"`
+
+	// Headers Add key-value pairs to the HTTP request headers made by Astro when connecting to the remote endpoint
+	Headers *map[string]string `json:"headers,omitempty"`
+
+	// Labels Any key-value pair metrics labels for your export. You can use these to filter your metrics in downstream applications.
+	Labels *map[string]string `json:"labels,omitempty"`
+
+	// Password The password to connect to the remote endpoint
+	Password *string `json:"password,omitempty"`
+
+	// Username The username to connect to the remote endpoint
+	Username *string `json:"username,omitempty"`
+}
+
+// CreateEnvironmentObjectMetricsExportRequestExporterType The type of exporter
+type CreateEnvironmentObjectMetricsExportRequestExporterType string
+
+// CreateEnvironmentObjectOverridesRequest defines model for CreateEnvironmentObjectOverridesRequest.
+type CreateEnvironmentObjectOverridesRequest struct {
+	AirflowVariable *CreateEnvironmentObjectAirflowVariableOverridesRequest `json:"airflowVariable,omitempty"`
+	Connection      *CreateEnvironmentObjectConnectionOverridesRequest      `json:"connection,omitempty"`
+	MetricsExport   *CreateEnvironmentObjectMetricsExportOverridesRequest   `json:"metricsExport,omitempty"`
+}
+
+// CreateEnvironmentObjectRequest defines model for CreateEnvironmentObjectRequest.
+type CreateEnvironmentObjectRequest struct {
+	AirflowVariable *CreateEnvironmentObjectAirflowVariableRequest `json:"airflowVariable,omitempty"`
+
+	// AutoLinkDeployments Whether or not to automatically link Deployments to the environment object. Only applicable for WORKSPACE scope
+	AutoLinkDeployments *bool                                     `json:"autoLinkDeployments,omitempty"`
+	Connection          *CreateEnvironmentObjectConnectionRequest `json:"connection,omitempty"`
+
+	// ExcludeLinks The links to exclude from the environment object. Only applicable for WORKSPACE scope
+	ExcludeLinks *[]ExcludeLinkEnvironmentObjectRequest `json:"excludeLinks,omitempty"`
+
+	// Links The Deployments that Astro links to the environment object. Only applicable for WORKSPACE scope
+	Links         *[]CreateEnvironmentObjectLinkRequest        `json:"links,omitempty"`
+	MetricsExport *CreateEnvironmentObjectMetricsExportRequest `json:"metricsExport,omitempty"`
+
+	// ObjectKey The key for the environment object
+	ObjectKey string `json:"objectKey"`
+
+	// ObjectType The type of environment object
+	ObjectType CreateEnvironmentObjectRequestObjectType `json:"objectType"`
+
+	// Scope The scope of the environment object
+	Scope CreateEnvironmentObjectRequestScope `json:"scope"`
+
+	// ScopeEntityId The ID of the scope entity where the environment object is created
+	ScopeEntityId string `json:"scopeEntityId"`
+}
+
+// CreateEnvironmentObjectRequestObjectType The type of environment object
+type CreateEnvironmentObjectRequestObjectType string
+
+// CreateEnvironmentObjectRequestScope The scope of the environment object
+type CreateEnvironmentObjectRequestScope string
 
 // CreateGcpClusterRequest defines model for CreateGcpClusterRequest.
 type CreateGcpClusterRequest struct {
@@ -898,7 +1243,7 @@ type CreateHybridDeploymentRequest struct {
 	// WorkloadIdentity The Deployment's workload identity.
 	WorkloadIdentity *string `json:"workloadIdentity,omitempty"`
 
-	// WorkspaceId The ID of the workspace to which the Deployment belongs.
+	// WorkspaceId The ID of the Workspace to which the Deployment belongs.
 	WorkspaceId string `json:"workspaceId"`
 }
 
@@ -989,7 +1334,7 @@ type CreateStandardDeploymentRequest struct {
 	// WorkloadIdentity The Deployment's workload identity.
 	WorkloadIdentity *string `json:"workloadIdentity,omitempty"`
 
-	// WorkspaceId The ID of the workspace to which the Deployment belongs.
+	// WorkspaceId The ID of the Workspace to which the Deployment belongs.
 	WorkspaceId string `json:"workspaceId"`
 }
 
@@ -1348,12 +1693,240 @@ type DeploymentsPaginated struct {
 	TotalCount int `json:"totalCount"`
 }
 
+// EnvironmentObject defines model for EnvironmentObject.
+type EnvironmentObject struct {
+	AirflowVariable *EnvironmentObjectAirflowVariable `json:"airflowVariable,omitempty"`
+
+	// AutoLinkDeployments Whether or not to automatically link Deployments to the environment object
+	AutoLinkDeployments *bool                        `json:"autoLinkDeployments,omitempty"`
+	Connection          *EnvironmentObjectConnection `json:"connection,omitempty"`
+
+	// CreatedAt The time when the environment object was created in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`
+	CreatedAt *string              `json:"createdAt,omitempty"`
+	CreatedBy *BasicSubjectProfile `json:"createdBy,omitempty"`
+
+	// ExcludeLinks The excluded links for the environment object
+	ExcludeLinks *[]EnvironmentObjectExcludeLink `json:"excludeLinks,omitempty"`
+
+	// Id The ID of the environment object
+	Id *string `json:"id,omitempty"`
+
+	// Links The Deployments linked to the environment object
+	Links         *[]EnvironmentObjectLink        `json:"links,omitempty"`
+	MetricsExport *EnvironmentObjectMetricsExport `json:"metricsExport,omitempty"`
+
+	// ObjectKey The key for the environment object
+	ObjectKey string `json:"objectKey"`
+
+	// ObjectType The type of environment object
+	ObjectType EnvironmentObjectObjectType `json:"objectType"`
+
+	// Scope The scope of the environment object
+	Scope EnvironmentObjectScope `json:"scope"`
+
+	// ScopeEntityId The ID of the scope entity where the environment object is created
+	ScopeEntityId string `json:"scopeEntityId"`
+
+	// SourceScope The source scope of the environment object, if it is resolved from a link
+	SourceScope *EnvironmentObjectSourceScope `json:"sourceScope,omitempty"`
+
+	// SourceScopeEntityId The source scope entity ID of the environment object, if it is resolved from a link
+	SourceScopeEntityId *string `json:"sourceScopeEntityId,omitempty"`
+
+	// UpdatedAt The time when the environment object was updated in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`
+	UpdatedAt *string              `json:"updatedAt,omitempty"`
+	UpdatedBy *BasicSubjectProfile `json:"updatedBy,omitempty"`
+}
+
+// EnvironmentObjectObjectType The type of environment object
+type EnvironmentObjectObjectType string
+
+// EnvironmentObjectScope The scope of the environment object
+type EnvironmentObjectScope string
+
+// EnvironmentObjectSourceScope The source scope of the environment object, if it is resolved from a link
+type EnvironmentObjectSourceScope string
+
+// EnvironmentObjectAirflowVariable defines model for EnvironmentObjectAirflowVariable.
+type EnvironmentObjectAirflowVariable struct {
+	// IsSecret Whether the value is a secret or not
+	IsSecret bool `json:"isSecret"`
+
+	// Value The value of the Airflow variable. If the value is a secret, the value returned is empty
+	Value string `json:"value"`
+}
+
+// EnvironmentObjectAirflowVariableOverrides defines model for EnvironmentObjectAirflowVariableOverrides.
+type EnvironmentObjectAirflowVariableOverrides struct {
+	// Value The value of the Airflow variable
+	Value string `json:"value"`
+}
+
+// EnvironmentObjectConnection defines model for EnvironmentObjectConnection.
+type EnvironmentObjectConnection struct {
+	ConnectionAuthType *ConnectionAuthType `json:"connectionAuthType,omitempty"`
+
+	// Extra Extra connection details, if any
+	Extra *map[string]interface{} `json:"extra,omitempty"`
+
+	// Host The host address for the connection
+	Host *string `json:"host,omitempty"`
+
+	// Login The username used for the connection
+	Login *string `json:"login,omitempty"`
+
+	// Password The password used for the connection
+	Password *string `json:"password,omitempty"`
+
+	// Port The port for the connection
+	Port *int `json:"port,omitempty"`
+
+	// Schema The schema for the connection
+	Schema *string `json:"schema,omitempty"`
+
+	// Type The type of connection
+	Type string `json:"type"`
+}
+
+// EnvironmentObjectConnectionOverrides defines model for EnvironmentObjectConnectionOverrides.
+type EnvironmentObjectConnectionOverrides struct {
+	// Extra Extra connection details, if any
+	Extra *map[string]interface{} `json:"extra,omitempty"`
+
+	// Host The host address for the connection
+	Host *string `json:"host,omitempty"`
+
+	// Login The username used for the connection
+	Login *string `json:"login,omitempty"`
+
+	// Password The password used for the connection
+	Password *string `json:"password,omitempty"`
+
+	// Port The port for the connection
+	Port *int `json:"port,omitempty"`
+
+	// Schema The schema for the connection
+	Schema *string `json:"schema,omitempty"`
+
+	// Type The type of connection
+	Type *string `json:"type,omitempty"`
+}
+
+// EnvironmentObjectExcludeLink defines model for EnvironmentObjectExcludeLink.
+type EnvironmentObjectExcludeLink struct {
+	// Scope Scope of the excluded entity for environment object
+	Scope EnvironmentObjectExcludeLinkScope `json:"scope"`
+
+	// ScopeEntityId ID for the excluded entity for the environment object
+	ScopeEntityId string `json:"scopeEntityId"`
+}
+
+// EnvironmentObjectExcludeLinkScope Scope of the excluded entity for environment object
+type EnvironmentObjectExcludeLinkScope string
+
+// EnvironmentObjectLink defines model for EnvironmentObjectLink.
+type EnvironmentObjectLink struct {
+	AirflowVariableOverrides *EnvironmentObjectAirflowVariableOverrides `json:"airflowVariableOverrides,omitempty"`
+	ConnectionOverrides      *EnvironmentObjectConnectionOverrides      `json:"connectionOverrides,omitempty"`
+	MetricsExportOverrides   *EnvironmentObjectMetricsExportOverrides   `json:"metricsExportOverrides,omitempty"`
+
+	// Scope Scope of the linked entity for the environment object
+	Scope EnvironmentObjectLinkScope `json:"scope"`
+
+	// ScopeEntityId Linked entity ID the environment object
+	ScopeEntityId string `json:"scopeEntityId"`
+}
+
+// EnvironmentObjectLinkScope Scope of the linked entity for the environment object
+type EnvironmentObjectLinkScope string
+
+// EnvironmentObjectMetricsExport defines model for EnvironmentObjectMetricsExport.
+type EnvironmentObjectMetricsExport struct {
+	// BasicToken The bearer token to connect to the remote endpoint
+	BasicToken *string `json:"basicToken,omitempty"`
+
+	// Endpoint The Prometheus endpoint where the metrics are exported
+	Endpoint string `json:"endpoint"`
+
+	// ExporterType The type of exporter
+	ExporterType EnvironmentObjectMetricsExportExporterType `json:"exporterType"`
+
+	// Headers Add key-value pairs to the HTTP request headers made by Astro when connecting to the remote endpoint
+	Headers *map[string]string `json:"headers,omitempty"`
+
+	// Labels Any key-value pair metrics labels for your export. You can use these to filter your metrics in downstream applications.
+	Labels *map[string]string `json:"labels,omitempty"`
+
+	// Password The password to connect to the remote endpoint
+	Password *string `json:"password,omitempty"`
+
+	// Username The username to connect to the remote endpoint
+	Username *string `json:"username,omitempty"`
+}
+
+// EnvironmentObjectMetricsExportExporterType The type of exporter
+type EnvironmentObjectMetricsExportExporterType string
+
+// EnvironmentObjectMetricsExportOverrides defines model for EnvironmentObjectMetricsExportOverrides.
+type EnvironmentObjectMetricsExportOverrides struct {
+	// BasicToken The bearer token to connect to the remote endpoint
+	BasicToken *string `json:"basicToken,omitempty"`
+
+	// Endpoint The Prometheus endpoint where the metrics are exported
+	Endpoint *string `json:"endpoint,omitempty"`
+
+	// ExporterType The type of exporter
+	ExporterType *EnvironmentObjectMetricsExportOverridesExporterType `json:"exporterType,omitempty"`
+
+	// Headers Add key-value pairs to the HTTP request headers made by Astro when connecting to the remote endpoint
+	Headers *map[string]string `json:"headers,omitempty"`
+
+	// Labels Any key-value pair metrics labels for your export. You can use these to filter your metrics in downstream applications.
+	Labels *map[string]string `json:"labels,omitempty"`
+
+	// Password The password to connect to the remote endpoint
+	Password *string `json:"password,omitempty"`
+
+	// Username The username to connect to the remote endpoint
+	Username *string `json:"username,omitempty"`
+}
+
+// EnvironmentObjectMetricsExportOverridesExporterType The type of exporter
+type EnvironmentObjectMetricsExportOverridesExporterType string
+
+// EnvironmentObjectsPaginated defines model for EnvironmentObjectsPaginated.
+type EnvironmentObjectsPaginated struct {
+	// EnvironmentObjects The list of environment objects
+	EnvironmentObjects []EnvironmentObject `json:"environmentObjects"`
+
+	// Limit The maximum number of environment objects in current page
+	Limit int `json:"limit"`
+
+	// Offset The offset of the current page of environment objects
+	Offset int `json:"offset"`
+
+	// TotalCount The total number of environment objects
+	TotalCount int `json:"totalCount"`
+}
+
 // Error defines model for Error.
 type Error struct {
 	Message    string `json:"message"`
 	RequestId  string `json:"requestId"`
 	StatusCode int    `json:"statusCode"`
 }
+
+// ExcludeLinkEnvironmentObjectRequest defines model for ExcludeLinkEnvironmentObjectRequest.
+type ExcludeLinkEnvironmentObjectRequest struct {
+	// Scope Scope of the entity to exclude for environment object
+	Scope ExcludeLinkEnvironmentObjectRequestScope `json:"scope"`
+
+	// ScopeEntityId Entity ID to exclude for the environment object
+	ScopeEntityId string `json:"scopeEntityId"`
+}
+
+// ExcludeLinkEnvironmentObjectRequestScope Scope of the entity to exclude for environment object
+type ExcludeLinkEnvironmentObjectRequestScope string
 
 // HybridWorkerQueueRequest defines model for HybridWorkerQueueRequest.
 type HybridWorkerQueueRequest struct {
@@ -1726,6 +2299,160 @@ type UpdateDeploymentRequest struct {
 	union json.RawMessage
 }
 
+// UpdateEnvironmentObjectAirflowVariableOverridesRequest defines model for UpdateEnvironmentObjectAirflowVariableOverridesRequest.
+type UpdateEnvironmentObjectAirflowVariableOverridesRequest struct {
+	// Value The value of the Airflow variable
+	Value *string `json:"value,omitempty"`
+}
+
+// UpdateEnvironmentObjectAirflowVariableRequest defines model for UpdateEnvironmentObjectAirflowVariableRequest.
+type UpdateEnvironmentObjectAirflowVariableRequest struct {
+	// Value The value of the Airflow variable
+	Value *string `json:"value,omitempty"`
+}
+
+// UpdateEnvironmentObjectConnectionOverridesRequest defines model for UpdateEnvironmentObjectConnectionOverridesRequest.
+type UpdateEnvironmentObjectConnectionOverridesRequest struct {
+	// Extra Extra connection details, if any
+	Extra *map[string]interface{} `json:"extra,omitempty"`
+
+	// Host The host address for the connection
+	Host *string `json:"host,omitempty"`
+
+	// Login The username used for the connection
+	Login *string `json:"login,omitempty"`
+
+	// Password The password used for the connection
+	Password *string `json:"password,omitempty"`
+
+	// Port The port for the connection
+	Port *int `json:"port,omitempty"`
+
+	// Schema The schema for the connection
+	Schema *string `json:"schema,omitempty"`
+
+	// Type The type of connection
+	Type *string `json:"type,omitempty"`
+}
+
+// UpdateEnvironmentObjectConnectionRequest defines model for UpdateEnvironmentObjectConnectionRequest.
+type UpdateEnvironmentObjectConnectionRequest struct {
+	// AuthTypeId The ID for the connection auth type
+	AuthTypeId *string `json:"authTypeId,omitempty"`
+
+	// Extra Extra connection details, if any
+	Extra *map[string]interface{} `json:"extra,omitempty"`
+
+	// Host The host address for the connection
+	Host *string `json:"host,omitempty"`
+
+	// Login The username used for the connection
+	Login *string `json:"login,omitempty"`
+
+	// Password The password used for the connection
+	Password *string `json:"password,omitempty"`
+
+	// Port The port for the connection
+	Port *int `json:"port,omitempty"`
+
+	// Schema The schema for the connection
+	Schema *string `json:"schema,omitempty"`
+
+	// Type The type of connection
+	Type string `json:"type"`
+}
+
+// UpdateEnvironmentObjectLinkRequest defines model for UpdateEnvironmentObjectLinkRequest.
+type UpdateEnvironmentObjectLinkRequest struct {
+	Overrides *UpdateEnvironmentObjectOverridesRequest `json:"overrides,omitempty"`
+
+	// Scope Scope of the entity to link the environment object
+	Scope UpdateEnvironmentObjectLinkRequestScope `json:"scope"`
+
+	// ScopeEntityId Entity ID to link the environment object
+	ScopeEntityId string `json:"scopeEntityId"`
+}
+
+// UpdateEnvironmentObjectLinkRequestScope Scope of the entity to link the environment object
+type UpdateEnvironmentObjectLinkRequestScope string
+
+// UpdateEnvironmentObjectMetricsExportOverridesRequest defines model for UpdateEnvironmentObjectMetricsExportOverridesRequest.
+type UpdateEnvironmentObjectMetricsExportOverridesRequest struct {
+	// BasicToken The bearer token to connect to the remote endpoint
+	BasicToken *string `json:"basicToken,omitempty"`
+
+	// Endpoint The Prometheus endpoint where the metrics are exported
+	Endpoint *string `json:"endpoint,omitempty"`
+
+	// ExporterType The type of exporter
+	ExporterType *UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType `json:"exporterType,omitempty"`
+
+	// Headers Add key-value pairs to the HTTP request headers made by Astro when connecting to the remote endpoint
+	Headers *map[string]string `json:"headers,omitempty"`
+
+	// Labels Any key-value pair metrics labels for your export. You can use these to filter your metrics in downstream applications.
+	Labels *map[string]string `json:"labels,omitempty"`
+
+	// Password The password to connect to the remote endpoint
+	Password *string `json:"password,omitempty"`
+
+	// Username The username to connect to the remote endpoint
+	Username *string `json:"username,omitempty"`
+}
+
+// UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType The type of exporter
+type UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType string
+
+// UpdateEnvironmentObjectMetricsExportRequest defines model for UpdateEnvironmentObjectMetricsExportRequest.
+type UpdateEnvironmentObjectMetricsExportRequest struct {
+	// BasicToken The bearer token to connect to the remote endpoint
+	BasicToken *string `json:"basicToken,omitempty"`
+
+	// Endpoint The Prometheus endpoint where the metrics are exported
+	Endpoint *string `json:"endpoint,omitempty"`
+
+	// ExporterType The type of exporter
+	ExporterType *UpdateEnvironmentObjectMetricsExportRequestExporterType `json:"exporterType,omitempty"`
+
+	// Headers Add key-value pairs to the HTTP request headers made by Astro when connecting to the remote endpoint
+	Headers *map[string]string `json:"headers,omitempty"`
+
+	// Labels Any key-value pair metrics labels for your export. You can use these to filter your metrics in downstream applications.
+	Labels *map[string]string `json:"labels,omitempty"`
+
+	// Password The password to connect to the remote endpoint
+	Password *string `json:"password,omitempty"`
+
+	// Username The username to connect to the remote endpoint
+	Username *string `json:"username,omitempty"`
+}
+
+// UpdateEnvironmentObjectMetricsExportRequestExporterType The type of exporter
+type UpdateEnvironmentObjectMetricsExportRequestExporterType string
+
+// UpdateEnvironmentObjectOverridesRequest defines model for UpdateEnvironmentObjectOverridesRequest.
+type UpdateEnvironmentObjectOverridesRequest struct {
+	AirflowVariable *UpdateEnvironmentObjectAirflowVariableOverridesRequest `json:"airflowVariable,omitempty"`
+	Connection      *UpdateEnvironmentObjectConnectionOverridesRequest      `json:"connection,omitempty"`
+	MetricsExport   *UpdateEnvironmentObjectMetricsExportOverridesRequest   `json:"metricsExport,omitempty"`
+}
+
+// UpdateEnvironmentObjectRequest defines model for UpdateEnvironmentObjectRequest.
+type UpdateEnvironmentObjectRequest struct {
+	AirflowVariable *UpdateEnvironmentObjectAirflowVariableRequest `json:"airflowVariable,omitempty"`
+
+	// AutoLinkDeployments Whether or not to automatically link Deployments to the environment object. Only applicable for WORKSPACE scope
+	AutoLinkDeployments *bool                                     `json:"autoLinkDeployments,omitempty"`
+	Connection          *UpdateEnvironmentObjectConnectionRequest `json:"connection,omitempty"`
+
+	// ExcludeLinks The links to exclude from the environment object. Only applicable for WORKSPACE scope
+	ExcludeLinks *[]ExcludeLinkEnvironmentObjectRequest `json:"excludeLinks,omitempty"`
+
+	// Links The Deployments that Astro links to the environment object. Only applicable for WORKSPACE scope
+	Links         *[]UpdateEnvironmentObjectLinkRequest        `json:"links,omitempty"`
+	MetricsExport *UpdateEnvironmentObjectMetricsExportRequest `json:"metricsExport,omitempty"`
+}
+
 // UpdateHybridClusterRequest defines model for UpdateHybridClusterRequest.
 type UpdateHybridClusterRequest struct {
 	// ClusterType The cluster's type.
@@ -2058,6 +2785,15 @@ type GetOrganizationParams struct {
 	IsLookUpOnly *bool `form:"isLookUpOnly,omitempty" json:"isLookUpOnly,omitempty"`
 }
 
+// GetOrganizationAuditLogsParams defines parameters for GetOrganizationAuditLogs.
+type GetOrganizationAuditLogsParams struct {
+	// StartDate The start date of the logs.
+	StartDate *time.Time `form:"startDate,omitempty" json:"startDate,omitempty"`
+
+	// EndDate The end date of the logs.
+	EndDate *time.Time `form:"endDate,omitempty" json:"endDate,omitempty"`
+}
+
 // GetClusterOptionsParams defines parameters for GetClusterOptions.
 type GetClusterOptionsParams struct {
 	// Provider The cluster's cloud provider.
@@ -2145,6 +2881,42 @@ type ListDeploymentsParams struct {
 // ListDeploymentsParamsSorts defines parameters for ListDeployments.
 type ListDeploymentsParamsSorts string
 
+// ListEnvironmentObjectsParams defines parameters for ListEnvironmentObjects.
+type ListEnvironmentObjectsParams struct {
+	// Offset The number of results to skip before returning values.
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Limit The maximum number of results to return.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Sorts A list of field names to sort by, and whether to show results as ascending or descending. Formatted as `<fieldName>:asc` or `<fieldName>:desc`.
+	Sorts *[]ListEnvironmentObjectsParamsSorts `form:"sorts,omitempty" json:"sorts,omitempty"`
+
+	// WorkspaceId The Workspace ID to filter for. The API returns details for all environment objects belonging only to this specified Workspace.
+	WorkspaceId *string `form:"workspaceId,omitempty" json:"workspaceId,omitempty"`
+
+	// DeploymentId The Deployment ID to filter for. The API returns details for all environment objects belonging only to this specified Deployment.
+	DeploymentId *string `form:"deploymentId,omitempty" json:"deploymentId,omitempty"`
+
+	// ObjectType The environment object type to filter for. The API returns details for all environment objects belonging only to this specified object type.
+	ObjectType *ListEnvironmentObjectsParamsObjectType `form:"objectType,omitempty" json:"objectType,omitempty"`
+
+	// ObjectKey The environment object key to filter for. The API returns details for all environment objects belonging only to the specified object key.
+	ObjectKey *string `form:"objectKey,omitempty" json:"objectKey,omitempty"`
+
+	// ShowSecrets If true, returns the actual values of fields of type secret in the API response.
+	ShowSecrets *bool `form:"showSecrets,omitempty" json:"showSecrets,omitempty"`
+
+	// ResolveLinked Resolve and return the environment objects linked to the specified Deployment or Workspace in the API response.
+	ResolveLinked *bool `form:"resolveLinked,omitempty" json:"resolveLinked,omitempty"`
+}
+
+// ListEnvironmentObjectsParamsSorts defines parameters for ListEnvironmentObjects.
+type ListEnvironmentObjectsParamsSorts string
+
+// ListEnvironmentObjectsParamsObjectType defines parameters for ListEnvironmentObjects.
+type ListEnvironmentObjectsParamsObjectType string
+
 // ListWorkspacesParams defines parameters for ListWorkspaces.
 type ListWorkspacesParams struct {
 	// WorkspaceIds A list of IDs for specific Workspaces to list. The API will list information only for Workspaces which have been specified in this list.
@@ -2183,6 +2955,15 @@ type UpdateDeploymentJSONRequestBody = UpdateDeploymentRequest
 
 // UpdateDeploymentHibernationOverrideJSONRequestBody defines body for UpdateDeploymentHibernationOverride for application/json ContentType.
 type UpdateDeploymentHibernationOverrideJSONRequestBody = OverrideDeploymentHibernationBody
+
+// CreateEnvironmentObjectJSONRequestBody defines body for CreateEnvironmentObject for application/json ContentType.
+type CreateEnvironmentObjectJSONRequestBody = CreateEnvironmentObjectRequest
+
+// UpdateEnvironmentObjectJSONRequestBody defines body for UpdateEnvironmentObject for application/json ContentType.
+type UpdateEnvironmentObjectJSONRequestBody = UpdateEnvironmentObjectRequest
+
+// ExcludeLinkingEnvironmentObjectJSONRequestBody defines body for ExcludeLinkingEnvironmentObject for application/json ContentType.
+type ExcludeLinkingEnvironmentObjectJSONRequestBody = ExcludeLinkEnvironmentObjectRequest
 
 // CreateWorkspaceJSONRequestBody defines body for CreateWorkspace for application/json ContentType.
 type CreateWorkspaceJSONRequestBody = CreateWorkspaceRequest
@@ -2600,6 +3381,9 @@ type ClientInterface interface {
 
 	UpdateOrganization(ctx context.Context, organizationId string, body UpdateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetOrganizationAuditLogs request
+	GetOrganizationAuditLogs(ctx context.Context, organizationId string, params *GetOrganizationAuditLogsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetClusterOptions request
 	GetClusterOptions(ctx context.Context, organizationId string, params *GetClusterOptionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -2651,6 +3435,30 @@ type ClientInterface interface {
 	UpdateDeploymentHibernationOverrideWithBody(ctx context.Context, organizationId string, deploymentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateDeploymentHibernationOverride(ctx context.Context, organizationId string, deploymentId string, body UpdateDeploymentHibernationOverrideJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListEnvironmentObjects request
+	ListEnvironmentObjects(ctx context.Context, organizationId string, params *ListEnvironmentObjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateEnvironmentObjectWithBody request with any body
+	CreateEnvironmentObjectWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateEnvironmentObject(ctx context.Context, organizationId string, body CreateEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteEnvironmentObject request
+	DeleteEnvironmentObject(ctx context.Context, organizationId string, environmentObjectId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetEnvironmentObject request
+	GetEnvironmentObject(ctx context.Context, organizationId string, environmentObjectId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateEnvironmentObjectWithBody request with any body
+	UpdateEnvironmentObjectWithBody(ctx context.Context, organizationId string, environmentObjectId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateEnvironmentObject(ctx context.Context, organizationId string, environmentObjectId string, body UpdateEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ExcludeLinkingEnvironmentObjectWithBody request with any body
+	ExcludeLinkingEnvironmentObjectWithBody(ctx context.Context, organizationId string, environmentObjectId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ExcludeLinkingEnvironmentObject(ctx context.Context, organizationId string, environmentObjectId string, body ExcludeLinkingEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListWorkspaces request
 	ListWorkspaces(ctx context.Context, organizationId string, params *ListWorkspacesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2710,6 +3518,18 @@ func (c *Client) UpdateOrganizationWithBody(ctx context.Context, organizationId 
 
 func (c *Client) UpdateOrganization(ctx context.Context, organizationId string, body UpdateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateOrganizationRequest(c.Server, organizationId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOrganizationAuditLogs(ctx context.Context, organizationId string, params *GetOrganizationAuditLogsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOrganizationAuditLogsRequest(c.Server, organizationId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -2938,6 +3758,114 @@ func (c *Client) UpdateDeploymentHibernationOverrideWithBody(ctx context.Context
 
 func (c *Client) UpdateDeploymentHibernationOverride(ctx context.Context, organizationId string, deploymentId string, body UpdateDeploymentHibernationOverrideJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateDeploymentHibernationOverrideRequest(c.Server, organizationId, deploymentId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListEnvironmentObjects(ctx context.Context, organizationId string, params *ListEnvironmentObjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListEnvironmentObjectsRequest(c.Server, organizationId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateEnvironmentObjectWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateEnvironmentObjectRequestWithBody(c.Server, organizationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateEnvironmentObject(ctx context.Context, organizationId string, body CreateEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateEnvironmentObjectRequest(c.Server, organizationId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteEnvironmentObject(ctx context.Context, organizationId string, environmentObjectId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteEnvironmentObjectRequest(c.Server, organizationId, environmentObjectId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetEnvironmentObject(ctx context.Context, organizationId string, environmentObjectId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetEnvironmentObjectRequest(c.Server, organizationId, environmentObjectId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateEnvironmentObjectWithBody(ctx context.Context, organizationId string, environmentObjectId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateEnvironmentObjectRequestWithBody(c.Server, organizationId, environmentObjectId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateEnvironmentObject(ctx context.Context, organizationId string, environmentObjectId string, body UpdateEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateEnvironmentObjectRequest(c.Server, organizationId, environmentObjectId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ExcludeLinkingEnvironmentObjectWithBody(ctx context.Context, organizationId string, environmentObjectId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewExcludeLinkingEnvironmentObjectRequestWithBody(c.Server, organizationId, environmentObjectId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ExcludeLinkingEnvironmentObject(ctx context.Context, organizationId string, environmentObjectId string, body ExcludeLinkingEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewExcludeLinkingEnvironmentObjectRequest(c.Server, organizationId, environmentObjectId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3244,6 +4172,78 @@ func NewUpdateOrganizationRequestWithBody(server string, organizationId string, 
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetOrganizationAuditLogsRequest generates requests for GetOrganizationAuditLogs
+func NewGetOrganizationAuditLogsRequest(server string, organizationId string, params *GetOrganizationAuditLogsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/audit-logs", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.StartDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "startDate", runtime.ParamLocationQuery, *params.StartDate); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.EndDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "endDate", runtime.ParamLocationQuery, *params.EndDate); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -4137,6 +5137,427 @@ func NewUpdateDeploymentHibernationOverrideRequestWithBody(server string, organi
 	return req, nil
 }
 
+// NewListEnvironmentObjectsRequest generates requests for ListEnvironmentObjects
+func NewListEnvironmentObjectsRequest(server string, organizationId string, params *ListEnvironmentObjectsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/environment-objects", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Sorts != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sorts", runtime.ParamLocationQuery, *params.Sorts); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.WorkspaceId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "workspaceId", runtime.ParamLocationQuery, *params.WorkspaceId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.DeploymentId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "deploymentId", runtime.ParamLocationQuery, *params.DeploymentId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ObjectType != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "objectType", runtime.ParamLocationQuery, *params.ObjectType); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ObjectKey != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "objectKey", runtime.ParamLocationQuery, *params.ObjectKey); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ShowSecrets != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "showSecrets", runtime.ParamLocationQuery, *params.ShowSecrets); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ResolveLinked != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "resolveLinked", runtime.ParamLocationQuery, *params.ResolveLinked); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateEnvironmentObjectRequest calls the generic CreateEnvironmentObject builder with application/json body
+func NewCreateEnvironmentObjectRequest(server string, organizationId string, body CreateEnvironmentObjectJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateEnvironmentObjectRequestWithBody(server, organizationId, "application/json", bodyReader)
+}
+
+// NewCreateEnvironmentObjectRequestWithBody generates requests for CreateEnvironmentObject with any type of body
+func NewCreateEnvironmentObjectRequestWithBody(server string, organizationId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/environment-objects", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteEnvironmentObjectRequest generates requests for DeleteEnvironmentObject
+func NewDeleteEnvironmentObjectRequest(server string, organizationId string, environmentObjectId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "environmentObjectId", runtime.ParamLocationPath, environmentObjectId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/environment-objects/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetEnvironmentObjectRequest generates requests for GetEnvironmentObject
+func NewGetEnvironmentObjectRequest(server string, organizationId string, environmentObjectId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "environmentObjectId", runtime.ParamLocationPath, environmentObjectId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/environment-objects/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateEnvironmentObjectRequest calls the generic UpdateEnvironmentObject builder with application/json body
+func NewUpdateEnvironmentObjectRequest(server string, organizationId string, environmentObjectId string, body UpdateEnvironmentObjectJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateEnvironmentObjectRequestWithBody(server, organizationId, environmentObjectId, "application/json", bodyReader)
+}
+
+// NewUpdateEnvironmentObjectRequestWithBody generates requests for UpdateEnvironmentObject with any type of body
+func NewUpdateEnvironmentObjectRequestWithBody(server string, organizationId string, environmentObjectId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "environmentObjectId", runtime.ParamLocationPath, environmentObjectId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/environment-objects/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewExcludeLinkingEnvironmentObjectRequest calls the generic ExcludeLinkingEnvironmentObject builder with application/json body
+func NewExcludeLinkingEnvironmentObjectRequest(server string, organizationId string, environmentObjectId string, body ExcludeLinkingEnvironmentObjectJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewExcludeLinkingEnvironmentObjectRequestWithBody(server, organizationId, environmentObjectId, "application/json", bodyReader)
+}
+
+// NewExcludeLinkingEnvironmentObjectRequestWithBody generates requests for ExcludeLinkingEnvironmentObject with any type of body
+func NewExcludeLinkingEnvironmentObjectRequestWithBody(server string, organizationId string, environmentObjectId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "environmentObjectId", runtime.ParamLocationPath, environmentObjectId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/environment-objects/%s/exclude-linking", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListWorkspacesRequest generates requests for ListWorkspaces
 func NewListWorkspacesRequest(server string, organizationId string, params *ListWorkspacesParams) (*http.Request, error) {
 	var err error
@@ -4494,6 +5915,9 @@ type ClientWithResponsesInterface interface {
 
 	UpdateOrganizationWithResponse(ctx context.Context, organizationId string, body UpdateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOrganizationResponse, error)
 
+	// GetOrganizationAuditLogsWithResponse request
+	GetOrganizationAuditLogsWithResponse(ctx context.Context, organizationId string, params *GetOrganizationAuditLogsParams, reqEditors ...RequestEditorFn) (*GetOrganizationAuditLogsResponse, error)
+
 	// GetClusterOptionsWithResponse request
 	GetClusterOptionsWithResponse(ctx context.Context, organizationId string, params *GetClusterOptionsParams, reqEditors ...RequestEditorFn) (*GetClusterOptionsResponse, error)
 
@@ -4545,6 +5969,30 @@ type ClientWithResponsesInterface interface {
 	UpdateDeploymentHibernationOverrideWithBodyWithResponse(ctx context.Context, organizationId string, deploymentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDeploymentHibernationOverrideResponse, error)
 
 	UpdateDeploymentHibernationOverrideWithResponse(ctx context.Context, organizationId string, deploymentId string, body UpdateDeploymentHibernationOverrideJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDeploymentHibernationOverrideResponse, error)
+
+	// ListEnvironmentObjectsWithResponse request
+	ListEnvironmentObjectsWithResponse(ctx context.Context, organizationId string, params *ListEnvironmentObjectsParams, reqEditors ...RequestEditorFn) (*ListEnvironmentObjectsResponse, error)
+
+	// CreateEnvironmentObjectWithBodyWithResponse request with any body
+	CreateEnvironmentObjectWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEnvironmentObjectResponse, error)
+
+	CreateEnvironmentObjectWithResponse(ctx context.Context, organizationId string, body CreateEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateEnvironmentObjectResponse, error)
+
+	// DeleteEnvironmentObjectWithResponse request
+	DeleteEnvironmentObjectWithResponse(ctx context.Context, organizationId string, environmentObjectId string, reqEditors ...RequestEditorFn) (*DeleteEnvironmentObjectResponse, error)
+
+	// GetEnvironmentObjectWithResponse request
+	GetEnvironmentObjectWithResponse(ctx context.Context, organizationId string, environmentObjectId string, reqEditors ...RequestEditorFn) (*GetEnvironmentObjectResponse, error)
+
+	// UpdateEnvironmentObjectWithBodyWithResponse request with any body
+	UpdateEnvironmentObjectWithBodyWithResponse(ctx context.Context, organizationId string, environmentObjectId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEnvironmentObjectResponse, error)
+
+	UpdateEnvironmentObjectWithResponse(ctx context.Context, organizationId string, environmentObjectId string, body UpdateEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEnvironmentObjectResponse, error)
+
+	// ExcludeLinkingEnvironmentObjectWithBodyWithResponse request with any body
+	ExcludeLinkingEnvironmentObjectWithBodyWithResponse(ctx context.Context, organizationId string, environmentObjectId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ExcludeLinkingEnvironmentObjectResponse, error)
+
+	ExcludeLinkingEnvironmentObjectWithResponse(ctx context.Context, organizationId string, environmentObjectId string, body ExcludeLinkingEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*ExcludeLinkingEnvironmentObjectResponse, error)
 
 	// ListWorkspacesWithResponse request
 	ListWorkspacesWithResponse(ctx context.Context, organizationId string, params *ListWorkspacesParams, reqEditors ...RequestEditorFn) (*ListWorkspacesResponse, error)
@@ -4640,6 +6088,27 @@ func (r UpdateOrganizationResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateOrganizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOrganizationAuditLogsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOrganizationAuditLogsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOrganizationAuditLogsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -5013,6 +6482,170 @@ func (r UpdateDeploymentHibernationOverrideResponse) StatusCode() int {
 	return 0
 }
 
+type ListEnvironmentObjectsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EnvironmentObjectsPaginated
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON405      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ListEnvironmentObjectsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListEnvironmentObjectsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateEnvironmentObjectResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CreateEnvironmentObject
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON405      *Error
+	JSON409      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateEnvironmentObjectResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateEnvironmentObjectResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteEnvironmentObjectResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON405      *Error
+	JSON409      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteEnvironmentObjectResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteEnvironmentObjectResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetEnvironmentObjectResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EnvironmentObject
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON405      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetEnvironmentObjectResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetEnvironmentObjectResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateEnvironmentObjectResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EnvironmentObject
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON405      *Error
+	JSON409      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateEnvironmentObjectResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateEnvironmentObjectResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ExcludeLinkingEnvironmentObjectResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON405      *Error
+	JSON409      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ExcludeLinkingEnvironmentObjectResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ExcludeLinkingEnvironmentObjectResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListWorkspacesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5181,6 +6814,15 @@ func (c *ClientWithResponses) UpdateOrganizationWithResponse(ctx context.Context
 	return ParseUpdateOrganizationResponse(rsp)
 }
 
+// GetOrganizationAuditLogsWithResponse request returning *GetOrganizationAuditLogsResponse
+func (c *ClientWithResponses) GetOrganizationAuditLogsWithResponse(ctx context.Context, organizationId string, params *GetOrganizationAuditLogsParams, reqEditors ...RequestEditorFn) (*GetOrganizationAuditLogsResponse, error) {
+	rsp, err := c.GetOrganizationAuditLogs(ctx, organizationId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOrganizationAuditLogsResponse(rsp)
+}
+
 // GetClusterOptionsWithResponse request returning *GetClusterOptionsResponse
 func (c *ClientWithResponses) GetClusterOptionsWithResponse(ctx context.Context, organizationId string, params *GetClusterOptionsParams, reqEditors ...RequestEditorFn) (*GetClusterOptionsResponse, error) {
 	rsp, err := c.GetClusterOptions(ctx, organizationId, params, reqEditors...)
@@ -5345,6 +6987,84 @@ func (c *ClientWithResponses) UpdateDeploymentHibernationOverrideWithResponse(ct
 		return nil, err
 	}
 	return ParseUpdateDeploymentHibernationOverrideResponse(rsp)
+}
+
+// ListEnvironmentObjectsWithResponse request returning *ListEnvironmentObjectsResponse
+func (c *ClientWithResponses) ListEnvironmentObjectsWithResponse(ctx context.Context, organizationId string, params *ListEnvironmentObjectsParams, reqEditors ...RequestEditorFn) (*ListEnvironmentObjectsResponse, error) {
+	rsp, err := c.ListEnvironmentObjects(ctx, organizationId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListEnvironmentObjectsResponse(rsp)
+}
+
+// CreateEnvironmentObjectWithBodyWithResponse request with arbitrary body returning *CreateEnvironmentObjectResponse
+func (c *ClientWithResponses) CreateEnvironmentObjectWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEnvironmentObjectResponse, error) {
+	rsp, err := c.CreateEnvironmentObjectWithBody(ctx, organizationId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateEnvironmentObjectResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateEnvironmentObjectWithResponse(ctx context.Context, organizationId string, body CreateEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateEnvironmentObjectResponse, error) {
+	rsp, err := c.CreateEnvironmentObject(ctx, organizationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateEnvironmentObjectResponse(rsp)
+}
+
+// DeleteEnvironmentObjectWithResponse request returning *DeleteEnvironmentObjectResponse
+func (c *ClientWithResponses) DeleteEnvironmentObjectWithResponse(ctx context.Context, organizationId string, environmentObjectId string, reqEditors ...RequestEditorFn) (*DeleteEnvironmentObjectResponse, error) {
+	rsp, err := c.DeleteEnvironmentObject(ctx, organizationId, environmentObjectId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteEnvironmentObjectResponse(rsp)
+}
+
+// GetEnvironmentObjectWithResponse request returning *GetEnvironmentObjectResponse
+func (c *ClientWithResponses) GetEnvironmentObjectWithResponse(ctx context.Context, organizationId string, environmentObjectId string, reqEditors ...RequestEditorFn) (*GetEnvironmentObjectResponse, error) {
+	rsp, err := c.GetEnvironmentObject(ctx, organizationId, environmentObjectId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetEnvironmentObjectResponse(rsp)
+}
+
+// UpdateEnvironmentObjectWithBodyWithResponse request with arbitrary body returning *UpdateEnvironmentObjectResponse
+func (c *ClientWithResponses) UpdateEnvironmentObjectWithBodyWithResponse(ctx context.Context, organizationId string, environmentObjectId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEnvironmentObjectResponse, error) {
+	rsp, err := c.UpdateEnvironmentObjectWithBody(ctx, organizationId, environmentObjectId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateEnvironmentObjectResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateEnvironmentObjectWithResponse(ctx context.Context, organizationId string, environmentObjectId string, body UpdateEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEnvironmentObjectResponse, error) {
+	rsp, err := c.UpdateEnvironmentObject(ctx, organizationId, environmentObjectId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateEnvironmentObjectResponse(rsp)
+}
+
+// ExcludeLinkingEnvironmentObjectWithBodyWithResponse request with arbitrary body returning *ExcludeLinkingEnvironmentObjectResponse
+func (c *ClientWithResponses) ExcludeLinkingEnvironmentObjectWithBodyWithResponse(ctx context.Context, organizationId string, environmentObjectId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ExcludeLinkingEnvironmentObjectResponse, error) {
+	rsp, err := c.ExcludeLinkingEnvironmentObjectWithBody(ctx, organizationId, environmentObjectId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseExcludeLinkingEnvironmentObjectResponse(rsp)
+}
+
+func (c *ClientWithResponses) ExcludeLinkingEnvironmentObjectWithResponse(ctx context.Context, organizationId string, environmentObjectId string, body ExcludeLinkingEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*ExcludeLinkingEnvironmentObjectResponse, error) {
+	rsp, err := c.ExcludeLinkingEnvironmentObject(ctx, organizationId, environmentObjectId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseExcludeLinkingEnvironmentObjectResponse(rsp)
 }
 
 // ListWorkspacesWithResponse request returning *ListWorkspacesResponse
@@ -5579,6 +7299,22 @@ func ParseUpdateOrganizationResponse(rsp *http.Response) (*UpdateOrganizationRes
 		}
 		response.JSON500 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseGetOrganizationAuditLogsResponse parses an HTTP response from a GetOrganizationAuditLogsWithResponse call
+func ParseGetOrganizationAuditLogsResponse(rsp *http.Response) (*GetOrganizationAuditLogsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOrganizationAuditLogsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
@@ -6355,6 +8091,386 @@ func ParseUpdateDeploymentHibernationOverrideResponse(rsp *http.Response) (*Upda
 			return nil, err
 		}
 		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListEnvironmentObjectsResponse parses an HTTP response from a ListEnvironmentObjectsWithResponse call
+func ParseListEnvironmentObjectsResponse(rsp *http.Response) (*ListEnvironmentObjectsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListEnvironmentObjectsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EnvironmentObjectsPaginated
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 405:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON405 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateEnvironmentObjectResponse parses an HTTP response from a CreateEnvironmentObjectWithResponse call
+func ParseCreateEnvironmentObjectResponse(rsp *http.Response) (*CreateEnvironmentObjectResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateEnvironmentObjectResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CreateEnvironmentObject
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 405:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON405 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteEnvironmentObjectResponse parses an HTTP response from a DeleteEnvironmentObjectWithResponse call
+func ParseDeleteEnvironmentObjectResponse(rsp *http.Response) (*DeleteEnvironmentObjectResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteEnvironmentObjectResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 405:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON405 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetEnvironmentObjectResponse parses an HTTP response from a GetEnvironmentObjectWithResponse call
+func ParseGetEnvironmentObjectResponse(rsp *http.Response) (*GetEnvironmentObjectResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetEnvironmentObjectResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EnvironmentObject
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 405:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON405 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateEnvironmentObjectResponse parses an HTTP response from a UpdateEnvironmentObjectWithResponse call
+func ParseUpdateEnvironmentObjectResponse(rsp *http.Response) (*UpdateEnvironmentObjectResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateEnvironmentObjectResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EnvironmentObject
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 405:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON405 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseExcludeLinkingEnvironmentObjectResponse parses an HTTP response from a ExcludeLinkingEnvironmentObjectWithResponse call
+func ParseExcludeLinkingEnvironmentObjectResponse(rsp *http.Response) (*ExcludeLinkingEnvironmentObjectResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ExcludeLinkingEnvironmentObjectResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 405:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON405 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
