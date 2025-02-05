@@ -50,51 +50,65 @@ const (
 
 // Defines values for CreateTeamRequestOrganizationRole.
 const (
-	CreateTeamRequestOrganizationRoleORGANIZATIONBILLINGADMIN CreateTeamRequestOrganizationRole = "ORGANIZATION_BILLING_ADMIN"
-	CreateTeamRequestOrganizationRoleORGANIZATIONMEMBER       CreateTeamRequestOrganizationRole = "ORGANIZATION_MEMBER"
-	CreateTeamRequestOrganizationRoleORGANIZATIONOWNER        CreateTeamRequestOrganizationRole = "ORGANIZATION_OWNER"
+	CreateTeamRequestOrganizationRoleORGANIZATIONBILLINGADMIN  CreateTeamRequestOrganizationRole = "ORGANIZATION_BILLING_ADMIN"
+	CreateTeamRequestOrganizationRoleORGANIZATIONMEMBER        CreateTeamRequestOrganizationRole = "ORGANIZATION_MEMBER"
+	CreateTeamRequestOrganizationRoleORGANIZATIONOBSERVEADMIN  CreateTeamRequestOrganizationRole = "ORGANIZATION_OBSERVE_ADMIN"
+	CreateTeamRequestOrganizationRoleORGANIZATIONOBSERVEMEMBER CreateTeamRequestOrganizationRole = "ORGANIZATION_OBSERVE_MEMBER"
+	CreateTeamRequestOrganizationRoleORGANIZATIONOWNER         CreateTeamRequestOrganizationRole = "ORGANIZATION_OWNER"
 )
 
 // Defines values for CreateUserInviteRequestRole.
 const (
-	CreateUserInviteRequestRoleORGANIZATIONBILLINGADMIN CreateUserInviteRequestRole = "ORGANIZATION_BILLING_ADMIN"
-	CreateUserInviteRequestRoleORGANIZATIONMEMBER       CreateUserInviteRequestRole = "ORGANIZATION_MEMBER"
-	CreateUserInviteRequestRoleORGANIZATIONOWNER        CreateUserInviteRequestRole = "ORGANIZATION_OWNER"
+	CreateUserInviteRequestRoleORGANIZATIONBILLINGADMIN  CreateUserInviteRequestRole = "ORGANIZATION_BILLING_ADMIN"
+	CreateUserInviteRequestRoleORGANIZATIONMEMBER        CreateUserInviteRequestRole = "ORGANIZATION_MEMBER"
+	CreateUserInviteRequestRoleORGANIZATIONOBSERVEADMIN  CreateUserInviteRequestRole = "ORGANIZATION_OBSERVE_ADMIN"
+	CreateUserInviteRequestRoleORGANIZATIONOBSERVEMEMBER CreateUserInviteRequestRole = "ORGANIZATION_OBSERVE_MEMBER"
+	CreateUserInviteRequestRoleORGANIZATIONOWNER         CreateUserInviteRequestRole = "ORGANIZATION_OWNER"
 )
 
 // Defines values for SubjectRolesOrganizationRole.
 const (
-	SubjectRolesOrganizationRoleORGANIZATIONBILLINGADMIN SubjectRolesOrganizationRole = "ORGANIZATION_BILLING_ADMIN"
-	SubjectRolesOrganizationRoleORGANIZATIONMEMBER       SubjectRolesOrganizationRole = "ORGANIZATION_MEMBER"
-	SubjectRolesOrganizationRoleORGANIZATIONOWNER        SubjectRolesOrganizationRole = "ORGANIZATION_OWNER"
+	SubjectRolesOrganizationRoleORGANIZATIONBILLINGADMIN  SubjectRolesOrganizationRole = "ORGANIZATION_BILLING_ADMIN"
+	SubjectRolesOrganizationRoleORGANIZATIONMEMBER        SubjectRolesOrganizationRole = "ORGANIZATION_MEMBER"
+	SubjectRolesOrganizationRoleORGANIZATIONOBSERVEADMIN  SubjectRolesOrganizationRole = "ORGANIZATION_OBSERVE_ADMIN"
+	SubjectRolesOrganizationRoleORGANIZATIONOBSERVEMEMBER SubjectRolesOrganizationRole = "ORGANIZATION_OBSERVE_MEMBER"
+	SubjectRolesOrganizationRoleORGANIZATIONOWNER         SubjectRolesOrganizationRole = "ORGANIZATION_OWNER"
 )
 
 // Defines values for TeamOrganizationRole.
 const (
-	TeamOrganizationRoleORGANIZATIONBILLINGADMIN TeamOrganizationRole = "ORGANIZATION_BILLING_ADMIN"
-	TeamOrganizationRoleORGANIZATIONMEMBER       TeamOrganizationRole = "ORGANIZATION_MEMBER"
-	TeamOrganizationRoleORGANIZATIONOWNER        TeamOrganizationRole = "ORGANIZATION_OWNER"
+	TeamOrganizationRoleORGANIZATIONBILLINGADMIN  TeamOrganizationRole = "ORGANIZATION_BILLING_ADMIN"
+	TeamOrganizationRoleORGANIZATIONMEMBER        TeamOrganizationRole = "ORGANIZATION_MEMBER"
+	TeamOrganizationRoleORGANIZATIONOBSERVEADMIN  TeamOrganizationRole = "ORGANIZATION_OBSERVE_ADMIN"
+	TeamOrganizationRoleORGANIZATIONOBSERVEMEMBER TeamOrganizationRole = "ORGANIZATION_OBSERVE_MEMBER"
+	TeamOrganizationRoleORGANIZATIONOWNER         TeamOrganizationRole = "ORGANIZATION_OWNER"
 )
 
 // Defines values for UpdateTeamRolesRequestOrganizationRole.
 const (
-	UpdateTeamRolesRequestOrganizationRoleORGANIZATIONBILLINGADMIN UpdateTeamRolesRequestOrganizationRole = "ORGANIZATION_BILLING_ADMIN"
-	UpdateTeamRolesRequestOrganizationRoleORGANIZATIONMEMBER       UpdateTeamRolesRequestOrganizationRole = "ORGANIZATION_MEMBER"
-	UpdateTeamRolesRequestOrganizationRoleORGANIZATIONOWNER        UpdateTeamRolesRequestOrganizationRole = "ORGANIZATION_OWNER"
+	UpdateTeamRolesRequestOrganizationRoleORGANIZATIONBILLINGADMIN  UpdateTeamRolesRequestOrganizationRole = "ORGANIZATION_BILLING_ADMIN"
+	UpdateTeamRolesRequestOrganizationRoleORGANIZATIONMEMBER        UpdateTeamRolesRequestOrganizationRole = "ORGANIZATION_MEMBER"
+	UpdateTeamRolesRequestOrganizationRoleORGANIZATIONOBSERVEADMIN  UpdateTeamRolesRequestOrganizationRole = "ORGANIZATION_OBSERVE_ADMIN"
+	UpdateTeamRolesRequestOrganizationRoleORGANIZATIONOBSERVEMEMBER UpdateTeamRolesRequestOrganizationRole = "ORGANIZATION_OBSERVE_MEMBER"
+	UpdateTeamRolesRequestOrganizationRoleORGANIZATIONOWNER         UpdateTeamRolesRequestOrganizationRole = "ORGANIZATION_OWNER"
 )
 
 // Defines values for UpdateUserRolesRequestOrganizationRole.
 const (
-	UpdateUserRolesRequestOrganizationRoleORGANIZATIONBILLINGADMIN UpdateUserRolesRequestOrganizationRole = "ORGANIZATION_BILLING_ADMIN"
-	UpdateUserRolesRequestOrganizationRoleORGANIZATIONMEMBER       UpdateUserRolesRequestOrganizationRole = "ORGANIZATION_MEMBER"
-	UpdateUserRolesRequestOrganizationRoleORGANIZATIONOWNER        UpdateUserRolesRequestOrganizationRole = "ORGANIZATION_OWNER"
+	UpdateUserRolesRequestOrganizationRoleORGANIZATIONBILLINGADMIN  UpdateUserRolesRequestOrganizationRole = "ORGANIZATION_BILLING_ADMIN"
+	UpdateUserRolesRequestOrganizationRoleORGANIZATIONMEMBER        UpdateUserRolesRequestOrganizationRole = "ORGANIZATION_MEMBER"
+	UpdateUserRolesRequestOrganizationRoleORGANIZATIONOBSERVEADMIN  UpdateUserRolesRequestOrganizationRole = "ORGANIZATION_OBSERVE_ADMIN"
+	UpdateUserRolesRequestOrganizationRoleORGANIZATIONOBSERVEMEMBER UpdateUserRolesRequestOrganizationRole = "ORGANIZATION_OBSERVE_MEMBER"
+	UpdateUserRolesRequestOrganizationRoleORGANIZATIONOWNER         UpdateUserRolesRequestOrganizationRole = "ORGANIZATION_OWNER"
 )
 
 // Defines values for UserOrganizationRole.
 const (
-	ORGANIZATIONBILLINGADMIN UserOrganizationRole = "ORGANIZATION_BILLING_ADMIN"
-	ORGANIZATIONMEMBER       UserOrganizationRole = "ORGANIZATION_MEMBER"
-	ORGANIZATIONOWNER        UserOrganizationRole = "ORGANIZATION_OWNER"
+	ORGANIZATIONBILLINGADMIN  UserOrganizationRole = "ORGANIZATION_BILLING_ADMIN"
+	ORGANIZATIONMEMBER        UserOrganizationRole = "ORGANIZATION_MEMBER"
+	ORGANIZATIONOBSERVEADMIN  UserOrganizationRole = "ORGANIZATION_OBSERVE_ADMIN"
+	ORGANIZATIONOBSERVEMEMBER UserOrganizationRole = "ORGANIZATION_OBSERVE_MEMBER"
+	ORGANIZATIONOWNER         UserOrganizationRole = "ORGANIZATION_OWNER"
 )
 
 // Defines values for UserStatus.

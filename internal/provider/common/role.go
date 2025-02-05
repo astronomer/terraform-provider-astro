@@ -190,3 +190,44 @@ func GetDuplicateDeploymentIds(deploymentRoles []iam.DeploymentRole) []string {
 
 	return duplicates
 }
+
+func ValidateRoles(
+	workspaceRoles []iam.WorkspaceRole,
+	deploymentRoles []iam.DeploymentRole,
+) diag.Diagnostics {
+	for _, role := range workspaceRoles {
+		if !ValidateRoleMatchesEntityType(string(role.Role), string(iam.WORKSPACE)) {
+			return diag.Diagnostics{diag.NewErrorDiagnostic(
+				fmt.Sprintf("Role '%s' is not valid for role type '%s'", string(role.Role), string(iam.WORKSPACE)),
+				fmt.Sprintf("Please provide a valid role for the type '%s'", string(iam.WORKSPACE)),
+			)}
+		}
+	}
+
+	duplicateWorkspaceIds := GetDuplicateWorkspaceIds(workspaceRoles)
+	if len(duplicateWorkspaceIds) > 0 {
+		return diag.Diagnostics{diag.NewErrorDiagnostic(
+			"Invalid Configuration: Cannot have multiple roles with the same workspace id",
+			fmt.Sprintf("Please provide a unique workspace id for each role. The following workspace ids are duplicated: %v", duplicateWorkspaceIds),
+		)}
+	}
+
+	for _, role := range deploymentRoles {
+		if !ValidateRoleMatchesEntityType(role.Role, string(iam.DEPLOYMENT)) {
+			return diag.Diagnostics{diag.NewErrorDiagnostic(
+				fmt.Sprintf("Role '%s' is not valid for role type '%s'", role.Role, string(iam.DEPLOYMENT)),
+				fmt.Sprintf("Please provide a valid role for the type '%s'", string(iam.DEPLOYMENT)),
+			)}
+		}
+	}
+
+	duplicateDeploymentIds := GetDuplicateDeploymentIds(deploymentRoles)
+	if len(duplicateDeploymentIds) > 0 {
+		return diag.Diagnostics{diag.NewErrorDiagnostic(
+			"Invalid Configuration: Cannot have multiple roles with the same deployment id",
+			fmt.Sprintf("Please provide unique deployment id for each role. The following deployment ids are duplicated: %v", duplicateDeploymentIds),
+		)}
+	}
+
+	return nil
+}
