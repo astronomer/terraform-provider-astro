@@ -374,7 +374,7 @@ func generateTerraformConfig() error {
 func handleWorkspaces(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing workspaces for organization %s", organizationId)
 
-	workspacesResp, err := platformClient.ListWorkspacesWithResponse(ctx, organizationId, nil)
+	workspacesResp, err := platformClient.ListWorkspacesWithResponse(ctx, organizationId, &platform.ListWorkspacesParams{Limit: lo.ToPtr(1000)})
 	if err != nil {
 		return "", fmt.Errorf("failed to list workspaces: %v", err)
 	}
@@ -420,7 +420,7 @@ import {
 func handleDeployments(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing deployments for organization %s", organizationId)
 
-	deploymentsResp, err := platformClient.ListDeploymentsWithResponse(ctx, organizationId, nil)
+	deploymentsResp, err := platformClient.ListDeploymentsWithResponse(ctx, organizationId, &platform.ListDeploymentsParams{Limit: lo.ToPtr(1000)})
 	if err != nil {
 		return "", fmt.Errorf("failed to list deployments: %v", err)
 	}
@@ -465,7 +465,7 @@ import {
 func handleClusters(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing clusters for organization %s", organizationId)
 
-	clustersResp, err := platformClient.ListClustersWithResponse(ctx, organizationId, nil)
+	clustersResp, err := platformClient.ListClustersWithResponse(ctx, organizationId, &platform.ListClustersParams{Limit: lo.ToPtr(1000)})
 	if err != nil {
 		return "", fmt.Errorf("failed to list clusters: %v", err)
 	}
@@ -953,11 +953,17 @@ func formatEnvironmentVariables(envVars *[]platform.DeploymentEnvironmentVariabl
 		return fmt.Sprintf(`environment_variables = []`)
 	}
 	variables := lo.Map(*envVars, func(envVar platform.DeploymentEnvironmentVariable, _ int) string {
+		value := fmt.Sprintf(`"%s"`, stringValue(envVar.Value))
+
+		if envVar.IsSecret {
+			value = "null"
+		}
+
 		return fmt.Sprintf(`{
-		name = "%s"
-		value = "%s"
+		key = "%s"
+		value = %s
 		is_secret = %t
-	}`, envVar.Key, stringValue(envVar.Value), envVar.IsSecret)
+	}`, envVar.Key, value, envVar.IsSecret)
 	})
 	return fmt.Sprintf(`environment_variables = [%s]`, strings.Join(variables, ", "))
 }
