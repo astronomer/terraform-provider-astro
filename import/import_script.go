@@ -827,7 +827,7 @@ func generateDeploymentHCL(ctx context.Context, platformClient *platform.ClientW
 		workloadIdentity := deployment.WorkloadIdentity
 		workloadIdentityString := ""
 		if workloadIdentity != nil {
-			workloadIdentityString = fmt.Sprintf(`workload_identity = "%s"`, *workloadIdentity)
+			workloadIdentityString = fmt.Sprintf(`desired_workload_identity = "%s"`, *workloadIdentity)
 		}
 
 		if *deploymentType == platform.DeploymentTypeDEDICATED {
