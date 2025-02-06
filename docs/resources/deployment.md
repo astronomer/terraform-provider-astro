@@ -31,6 +31,7 @@ resource "astro_deployment" "dedicated" {
   resource_quota_memory          = "20Gi"
   scheduler_size                 = "SMALL"
   workspace_id                   = "clnp86ly5000401ndaga21g81"
+  desired_workload_identity      = "arn:aws:iam::123456789:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0"
   environment_variables = [{
     key       = "key1"
     value     = "value1"
