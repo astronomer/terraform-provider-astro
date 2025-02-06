@@ -66,6 +66,17 @@ Ensure you have the following installed:
    export ASTRO_API_TOKEN=<your-api-token>
    ```
 
+### Setting up the Import script for Local Development
+
+1. Build the import script from the import directory
+   ```
+   go build import_script.go
+   ```
+2. Run the import script
+   ```
+   ./import_script -resources deployment -organizationId <your-org-id> -host dev -token YOU_API_TOKEN
+   ```
+
 ## Making Changes
 
 1. Create a new branch for your changes:
