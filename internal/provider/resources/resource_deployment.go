@@ -106,6 +106,8 @@ func (r *DeploymentResource) Create(
 		}
 	}
 
+	desiredWorkloadIdentity := data.DesiredWorkloadIdentity.ValueString()
+
 	switch data.Type.ValueString() {
 	case string(platform.DeploymentTypeSTANDARD):
 		createStandardDeploymentRequest := platform.CreateStandardDeploymentRequest{
@@ -126,6 +128,9 @@ func (r *DeploymentResource) Create(
 			SchedulerSize:        platform.CreateStandardDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString()),
 			Type:                 platform.CreateStandardDeploymentRequestTypeSTANDARD,
 			WorkspaceId:          data.WorkspaceId.ValueString(),
+		}
+		if desiredWorkloadIdentity != "" {
+			createStandardDeploymentRequest.WorkloadIdentity = &desiredWorkloadIdentity
 		}
 
 		// contact emails
@@ -187,6 +192,9 @@ func (r *DeploymentResource) Create(
 			Type:                 platform.CreateDedicatedDeploymentRequestTypeDEDICATED,
 			WorkspaceId:          data.WorkspaceId.ValueString(),
 		}
+		if desiredWorkloadIdentity != "" {
+			createDedicatedDeploymentRequest.WorkloadIdentity = &desiredWorkloadIdentity
+		}
 
 		// contact emails
 		contactEmails, diags := utils.TypesSetToStringSlice(ctx, data.ContactEmails)
@@ -244,6 +252,10 @@ func (r *DeploymentResource) Create(
 			TaskPodNodePoolId: data.TaskPodNodePoolId.ValueStringPointer(),
 			Type:              platform.CreateHybridDeploymentRequestTypeHYBRID,
 			WorkspaceId:       data.WorkspaceId.ValueString(),
+		}
+
+		if desiredWorkloadIdentity != "" {
+			createHybridDeploymentRequest.WorkloadIdentity = &desiredWorkloadIdentity
 		}
 
 		// contact emails
@@ -386,6 +398,8 @@ func (r *DeploymentResource) Update(
 	var updateDeploymentRequest platform.UpdateDeploymentRequest
 	var envVars []platform.DeploymentEnvironmentVariableRequest
 
+	desiredWorkloadIdentity := data.DesiredWorkloadIdentity.ValueString()
+
 	switch data.Type.ValueString() {
 	case string(platform.DeploymentTypeSTANDARD):
 		updateStandardDeploymentRequest := platform.UpdateStandardDeploymentRequest{
@@ -403,6 +417,10 @@ func (r *DeploymentResource) Update(
 			SchedulerSize:        platform.UpdateStandardDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString()),
 			Type:                 platform.UpdateStandardDeploymentRequestTypeSTANDARD,
 			WorkspaceId:          data.WorkspaceId.ValueString(),
+		}
+
+		if desiredWorkloadIdentity != "" {
+			updateStandardDeploymentRequest.WorkloadIdentity = &desiredWorkloadIdentity
 		}
 
 		// contact emails
@@ -463,6 +481,10 @@ func (r *DeploymentResource) Update(
 			WorkspaceId:          data.WorkspaceId.ValueString(),
 		}
 
+		if desiredWorkloadIdentity != "" {
+			updateDedicatedDeploymentRequest.WorkloadIdentity = &desiredWorkloadIdentity
+		}
+
 		// contact emails
 		contactEmails, diags := utils.TypesSetToStringSlice(ctx, data.ContactEmails)
 		updateDedicatedDeploymentRequest.ContactEmails = &contactEmails
@@ -517,6 +539,10 @@ func (r *DeploymentResource) Update(
 			TaskPodNodePoolId: data.TaskPodNodePoolId.ValueStringPointer(),
 			Type:              platform.UpdateHybridDeploymentRequestTypeHYBRID,
 			WorkspaceId:       data.WorkspaceId.ValueString(),
+		}
+
+		if desiredWorkloadIdentity != "" {
+			updateHybridDeploymentRequest.WorkloadIdentity = &desiredWorkloadIdentity
 		}
 
 		// contact emails
