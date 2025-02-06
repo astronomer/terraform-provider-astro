@@ -84,6 +84,7 @@ func TestAcc_ResourceDeploymentHybrid(t *testing.T) {
 					IncludeEnvironmentVariables: false,
 					SchedulerAu:                 6,
 					NodePoolId:                  nodePoolId,
+					DesiredWorkloadIdentity:     "arn:aws:iam::123456789:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0",
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
@@ -91,6 +92,7 @@ func TestAcc_ResourceDeploymentHybrid(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "environment_variables.#", "0"),
 					resource.TestCheckResourceAttr(resourceVar, "executor", "CELERY"),
 					resource.TestCheckResourceAttr(resourceVar, "scheduler_au", "6"),
+					resource.TestCheckResourceAttr(resourceVar, "workload_identity", "arn:aws:iam::123456789:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0"),
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, deploymentName, false, true),
 				),
@@ -194,6 +196,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					SchedulerSize:               string(platform.SchedulerMachineNameEXTRALARGE),
 					IncludeEnvironmentVariables: false,
 					WorkerQueuesStr:             workerQueuesStr(""),
+					DesiredWorkloadIdentity:     "arn:aws:iam::123456789:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0",
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(awsResourceVar, "description", utils.TestResourceDescription),
@@ -201,6 +204,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					resource.TestCheckResourceAttr(awsResourceVar, "worker_queues.0.name", "default"),
 					resource.TestCheckNoResourceAttr(awsResourceVar, "environment_variables.0.key"),
 					resource.TestCheckResourceAttr(awsResourceVar, "executor", "CELERY"),
+					resource.TestCheckResourceAttr(awsResourceVar, "workload_identity", "arn:aws:iam::123456789:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0"),
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
 				),
@@ -722,6 +726,7 @@ type hybridDeploymentInput struct {
 	SchedulerAu                 int
 	NodePoolId                  string
 	DuplicateWorkerQueues       bool
+	DesiredWorkloadIdentity     string
 }
 
 func hybridDeployment(input hybridDeploymentInput) string {
@@ -735,6 +740,10 @@ func hybridDeployment(input hybridDeploymentInput) string {
 		}
 	} else {
 		taskPodNodePoolIdStr = fmt.Sprintf(`task_pod_node_pool_id = "%v"`, input.NodePoolId)
+	}
+	desiredWorkloadIdentityStr := ""
+	if input.DesiredWorkloadIdentity != "" {
+		desiredWorkloadIdentityStr = input.DesiredWorkloadIdentity
 	}
 
 	return fmt.Sprintf(`
@@ -758,12 +767,13 @@ resource "astro_deployment" "%v" {
 	%v
 	%v
 	%v
+    %v
   }
 `,
 		input.Name, input.Name, utils.TestResourceDescription,
 		input.Name, input.Name, utils.TestResourceDescription,
 		input.ClusterId, input.Executor, input.SchedulerAu, input.Name,
-		envVarsStr(input.IncludeEnvironmentVariables), wqStr, taskPodNodePoolIdStr)
+		envVarsStr(input.IncludeEnvironmentVariables), wqStr, taskPodNodePoolIdStr, desiredWorkloadIdentityStr)
 }
 
 func developmentDeployment(scalingSpecDeploymentName, scalingSpec string) string {
@@ -791,6 +801,7 @@ type standardDeploymentInput struct {
 	IsDevelopmentMode           bool
 	ScalingSpec                 string
 	WorkerQueuesStr             string
+	DesiredWorkloadIdentity     string
 }
 
 func standardDeployment(input standardDeploymentInput) string {
@@ -815,6 +826,10 @@ func standardDeployment(input standardDeploymentInput) string {
 		} else {
 			scalingSpecStr = input.ScalingSpec
 		}
+	}
+	desiredWorkloadIdentityStr := ""
+	if input.DesiredWorkloadIdentity != "" {
+		desiredWorkloadIdentityStr = input.DesiredWorkloadIdentity
 	}
 	return fmt.Sprintf(`
 resource "astro_workspace" "%v_workspace" {
@@ -844,10 +859,11 @@ resource "astro_deployment" "%v" {
 	%v
 	%v
     %v
+    %v
 }
 `,
 		input.Name, input.Name, utils.TestResourceDescription, input.Name, input.Name, input.Description, input.Region, input.CloudProvider, input.Executor, input.IsDevelopmentMode, input.SchedulerSize, input.Name,
-		envVarsStr(input.IncludeEnvironmentVariables), input.WorkerQueuesStr, scalingSpecStr)
+		envVarsStr(input.IncludeEnvironmentVariables), input.WorkerQueuesStr, scalingSpecStr, desiredWorkloadIdentityStr)
 }
 
 func standardDeploymentWithVariableName(input standardDeploymentInput) string {
