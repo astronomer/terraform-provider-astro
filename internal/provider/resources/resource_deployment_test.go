@@ -741,10 +741,6 @@ func hybridDeployment(input hybridDeploymentInput) string {
 	} else {
 		taskPodNodePoolIdStr = fmt.Sprintf(`task_pod_node_pool_id = "%v"`, input.NodePoolId)
 	}
-	desiredWorkloadIdentityStr := ""
-	if input.DesiredWorkloadIdentity != "" {
-		desiredWorkloadIdentityStr = fmt.Sprintf(`desired_workload_identity      = "%s"`, input.DesiredWorkloadIdentity)
-	}
 
 	return fmt.Sprintf(`
 resource "astro_workspace" "%v_workspace" {
@@ -767,13 +763,12 @@ resource "astro_deployment" "%v" {
 	%v
 	%v
 	%v
-    %v
   }
 `,
 		input.Name, input.Name, utils.TestResourceDescription,
 		input.Name, input.Name, utils.TestResourceDescription,
 		input.ClusterId, input.Executor, input.SchedulerAu, input.Name,
-		envVarsStr(input.IncludeEnvironmentVariables), wqStr, taskPodNodePoolIdStr, desiredWorkloadIdentityStr)
+		envVarsStr(input.IncludeEnvironmentVariables), wqStr, taskPodNodePoolIdStr)
 }
 
 func developmentDeployment(scalingSpecDeploymentName, scalingSpec string) string {
