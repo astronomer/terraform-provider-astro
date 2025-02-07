@@ -743,7 +743,7 @@ func hybridDeployment(input hybridDeploymentInput) string {
 	}
 	desiredWorkloadIdentityStr := ""
 	if input.DesiredWorkloadIdentity != "" {
-		desiredWorkloadIdentityStr = input.DesiredWorkloadIdentity
+		desiredWorkloadIdentityStr = fmt.Sprintf(`desired_workload_identity      = "%s"`, input.DesiredWorkloadIdentity)
 	}
 
 	return fmt.Sprintf(`
@@ -829,7 +829,7 @@ func standardDeployment(input standardDeploymentInput) string {
 	}
 	desiredWorkloadIdentityStr := ""
 	if input.DesiredWorkloadIdentity != "" {
-		desiredWorkloadIdentityStr = input.DesiredWorkloadIdentity
+		desiredWorkloadIdentityStr = fmt.Sprintf(`desired_workload_identity      = "%s"`, input.DesiredWorkloadIdentity)
 	}
 	return fmt.Sprintf(`
 resource "astro_workspace" "%v_workspace" {
