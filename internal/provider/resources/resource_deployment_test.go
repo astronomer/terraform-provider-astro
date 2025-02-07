@@ -84,7 +84,6 @@ func TestAcc_ResourceDeploymentHybrid(t *testing.T) {
 					IncludeEnvironmentVariables: false,
 					SchedulerAu:                 6,
 					NodePoolId:                  nodePoolId,
-					DesiredWorkloadIdentity:     "arn:aws:iam::123456789:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0",
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
