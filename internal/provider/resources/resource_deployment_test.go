@@ -203,7 +203,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					resource.TestCheckResourceAttr(awsResourceVar, "worker_queues.0.name", "default"),
 					resource.TestCheckNoResourceAttr(awsResourceVar, "environment_variables.0.key"),
 					resource.TestCheckResourceAttr(awsResourceVar, "executor", "CELERY"),
-					resource.TestCheckResourceAttr(awsResourceVar, "workload_identity", "arn:aws:iam::123456789:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0"),
+					resource.TestCheckResourceAttr(awsResourceVar, "desired_workload_identity", "arn:aws:iam::123456789:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0"),
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
 				),
