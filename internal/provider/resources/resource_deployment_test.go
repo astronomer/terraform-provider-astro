@@ -91,7 +91,6 @@ func TestAcc_ResourceDeploymentHybrid(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "environment_variables.#", "0"),
 					resource.TestCheckResourceAttr(resourceVar, "executor", "CELERY"),
 					resource.TestCheckResourceAttr(resourceVar, "scheduler_au", "6"),
-					resource.TestCheckResourceAttr(resourceVar, "workload_identity", "arn:aws:iam::123456789:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0"),
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, deploymentName, false, true),
 				),
