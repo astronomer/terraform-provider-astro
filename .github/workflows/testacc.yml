@@ -79,24 +79,24 @@ jobs:
          echo "SKIP_CLUSTER_RESOURCE_TESTS=$SKIP_TESTS" >> $GITHUB_ENV
       - env:
           TF_ACC: "1"
-          HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HYBRID_ORGANIZATION_API_TOKEN }}
-          HYBRID_ORGANIZATION_ID: clx44v7op01nf01m5iohqjkk6
-          HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
-          HOSTED_ORGANIZATION_ID: clx42kkcm01fo01o06agtmshg
-          HOSTED_SCIM_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_SCIM_ORGANIZATION_API_TOKEN }}
-          HOSTED_SCIM_ORGANIZATION_ID: clz3bcmd3003m01qemptnfenp
-          HYBRID_CLUSTER_ID: clxkqfzvm001d01ncr9rs80si
-          HYBRID_DRY_RUN_CLUSTER_ID: clxko4djp008601njcuoxt4z5
-          HYBRID_NODE_POOL_ID: clxkqfzvm001c01nc1eosyxzg
-          ASTRO_API_HOST: https://api.astronomer-dev.io
+          HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HYBRID_ORGANIZATION_API_TOKEN }}
+          HYBRID_ORGANIZATION_ID: clx46ca4y061z01jleyku7sr6
+          HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HOSTED_ORGANIZATION_API_TOKEN }}
+          HOSTED_ORGANIZATION_ID: clx46acvv060e01ilddqlbsmc
+          HOSTED_SCIM_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HOSTED_SCIM_ORGANIZATION_API_TOKEN }}
+          HOSTED_SCIM_ORGANIZATION_ID: clz3blqb500lh01mtkwu9zk5z
+          HYBRID_CLUSTER_ID: clxm3xg9e05bl01ixsrhxje4e
+          HYBRID_DRY_RUN_CLUSTER_ID: clxm3y54805bs01ix5owqhfff
+          HYBRID_NODE_POOL_ID: clxm3xg9e05bk01ixrqk52cob
+          ASTRO_API_HOST: https://api.astronomer-stage.io
+          HOSTED_TEAM_ID: clx486hno068301il306nuhsm
+          HOSTED_USER_ID: clz3a95hw00j301jj5jfmcgwd
+          HOSTED_DUMMY_USER_ID: clzawlsb701vv01ikvsqz5mws
+          HOSTED_DEPLOYMENT_ID: cly6exz4a00zd01k18t5bo1vf
+          HOSTED_STANDARD_DEPLOYMENT_ID: cm077ee2807g301kpjkqdoc15
+          HOSTED_WORKSPACE_ID: clx480rvx068u01j9mp7t7fqh
+          HOSTED_API_TOKEN_ID: clxm46ged05b301neuucdqwox
           SKIP_CLUSTER_RESOURCE_TESTS: ${{ env.SKIP_CLUSTER_RESOURCE_TESTS }}
-          HOSTED_TEAM_ID: clx44rvzr01nc01o06pze6qb7
-          HOSTED_USER_ID: clz3a4ymt004x01on8w5ydq8j
-          HOSTED_DUMMY_USER_ID: clzawipbm00bm01qw98vzzoca
-          HOSTED_DEPLOYMENT_ID: cm1zkps2a0cv301ph39benet6
-          HOSTED_STANDARD_DEPLOYMENT_ID: cm070pg0r00wd01qgnskk0dir
-          HOSTED_WORKSPACE_ID: clx42sxw501gl01o0gjenthnh
-          HOSTED_API_TOKEN_ID: clxm4836f00ql01me3nigmcr6
           TESTARGS: "-failfast"
         run: make testacc
 
