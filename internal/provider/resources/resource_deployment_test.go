@@ -150,7 +150,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
-					Region:                      "us-east-1",
+					Region:                      "us-east-4",
 					CloudProvider:               "AWS",
 					Executor:                    "CELERY",
 					SchedulerSize:               string(platform.SchedulerMachineNameEXTRALARGE),
@@ -163,7 +163,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
-					Region:                      "us-east-1",
+					Region:                      "us-east-4",
 					CloudProvider:               "AWS",
 					Executor:                    "KUBERNETES",
 					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
@@ -172,7 +172,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(awsResourceVar, "name", awsDeploymentName),
 					resource.TestCheckResourceAttr(awsResourceVar, "description", utils.TestResourceDescription),
-					resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-1"),
+					resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-4"),
 					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
 					resource.TestCheckResourceAttr(awsResourceVar, "executor", "KUBERNETES"),
 					resource.TestCheckNoResourceAttr(awsResourceVar, "worker_queues"),
@@ -188,7 +188,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
-					Region:                      "us-east-1",
+					Region:                      "us-east-4",
 					CloudProvider:               "AWS",
 					Executor:                    "CELERY",
 					SchedulerSize:               string(platform.SchedulerMachineNameEXTRALARGE),
@@ -243,7 +243,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
-					Region:                      "us-east-1",
+					Region:                      "us-east-4",
 					CloudProvider:               "AWS",
 					Executor:                    "CELERY",
 					SchedulerSize:               string(platform.SchedulerMachineNameMEDIUM),
@@ -262,7 +262,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
-					Region:                      "us-east-1",
+					Region:                      "us-east-4",
 					CloudProvider:               "AWS",
 					Executor:                    "KUBERNETES",
 					SchedulerSize:               string(platform.SchedulerMachineNameMEDIUM),
@@ -280,7 +280,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
-					Region:                      "us-east-1",
+					Region:                      "us-east-4",
 					CloudProvider:               "AWS",
 					Executor:                    "KUBERNETES",
 					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
@@ -299,7 +299,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
-					Region:                      "us-east-1",
+					Region:                      "us-east-4",
 					CloudProvider:               "AWS",
 					Executor:                    "KUBERNETES",
 					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
@@ -614,7 +614,7 @@ func TestAcc_ResourceDeploymentStandardRemovedOutsideOfTerraform(t *testing.T) {
 	depInput := standardDeploymentInput{
 		Name:                        standardDeploymentName,
 		Description:                 utils.TestResourceDescription,
-		Region:                      "us-east-1",
+		Region:                      "us-east-4",
 		CloudProvider:               "AWS",
 		Executor:                    "KUBERNETES",
 		IncludeEnvironmentVariables: true,
