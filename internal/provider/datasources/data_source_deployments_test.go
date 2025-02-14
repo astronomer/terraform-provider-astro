@@ -150,7 +150,7 @@ resource "astro_deployment" "test_deployment_celery" {
 	name = "%v-2"
 	description = "%v"
 	type = "STANDARD"
-	region = "us-east-1"
+	region = "us-west-2"
 	cloud_provider = "AWS"
 	contact_emails = []
 	default_task_pod_cpu = "0.25"
