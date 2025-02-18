@@ -31,6 +31,7 @@ resource "astro_deployment" "dedicated" {
   resource_quota_memory          = "20Gi"
   scheduler_size                 = "SMALL"
   workspace_id                   = "clnp86ly5000401ndaga21g81"
+  desired_workload_identity      = "arn:aws:iam::123456789:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0"
   environment_variables = [{
     key       = "key1"
     value     = "value1"
@@ -164,6 +165,7 @@ resource "astro_deployment" "imported_deployment" {
 - `cluster_id` (String) Deployment cluster identifier - required for 'HYBRID' and 'DEDICATED' deployments. If changing this value, the deployment will be recreated in the new cluster
 - `default_task_pod_cpu` (String) Deployment default task pod CPU - required for 'STANDARD' and 'DEDICATED' deployments
 - `default_task_pod_memory` (String) Deployment default task pod memory - required for 'STANDARD' and 'DEDICATED' deployments
+- `desired_workload_identity` (String) Deployment's desired workload identity. The Terraform provider will use this provided workload identity to create the Deployment. If it is not provided the workload identity will be assigned automatically.
 - `is_development_mode` (Boolean) Deployment development mode - required for 'STANDARD' and 'DEDICATED' deployments. If changing from 'False' to 'True', the deployment will be recreated
 - `is_high_availability` (Boolean) Deployment high availability - required for 'STANDARD' and 'DEDICATED' deployments
 - `original_astro_runtime_version` (String) Deployment's original Astro Runtime version. The Terraform provider will use this provided Astro runtime version to create the Deployment. The Astro runtime version can be updated with your Astro project Dockerfile, but if this value is changed, the Deployment will be recreated with this new Astro runtime version.

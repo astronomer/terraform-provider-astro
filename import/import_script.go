@@ -824,6 +824,12 @@ func generateDeploymentHCL(ctx context.Context, platformClient *platform.ClientW
 
 		deploymentType := deployment.Type
 
+		workloadIdentity := deployment.WorkloadIdentity
+		workloadIdentityString := ""
+		if workloadIdentity != nil {
+			workloadIdentityString = fmt.Sprintf(`desired_workload_identity = "%s"`, *workloadIdentity)
+		}
+
 		if *deploymentType == platform.DeploymentTypeDEDICATED {
 			deploymentHCL = fmt.Sprintf(`
 resource "astro_deployment" "deployment_%s" {
@@ -845,6 +851,7 @@ resource "astro_deployment" "deployment_%s" {
 	type = "%s"
 	workspace_id = "%s"
 	%s
+    %s
 }
 `,
 				deployment.Id,
@@ -866,6 +873,7 @@ resource "astro_deployment" "deployment_%s" {
 				stringValue((*string)(deploymentType)),
 				deployment.WorkspaceId,
 				workerQueuesString,
+				workloadIdentityString,
 			)
 		} else if *deploymentType == platform.DeploymentTypeSTANDARD {
 			deploymentHCL = fmt.Sprintf(`
@@ -889,6 +897,7 @@ resource "astro_deployment" "deployment_%s" {
 	type = "%s"
 	workspace_id = "%s"
 	%s
+    %s
 }
 `,
 				deployment.Id,
@@ -911,6 +920,7 @@ resource "astro_deployment" "deployment_%s" {
 				stringValue((*string)(deploymentType)),
 				deployment.WorkspaceId,
 				workerQueuesString,
+				workloadIdentityString,
 			)
 		} else {
 			log.Printf("Skipping deployment %s: unsupported deployment type %s", deployment.Id, stringValue((*string)(deploymentType)))

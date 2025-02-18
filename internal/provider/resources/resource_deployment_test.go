@@ -150,7 +150,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
-					Region:                      "us-east-1",
+					Region:                      "us-west-2",
 					CloudProvider:               "AWS",
 					Executor:                    "CELERY",
 					SchedulerSize:               string(platform.SchedulerMachineNameEXTRALARGE),
@@ -163,7 +163,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
-					Region:                      "us-east-1",
+					Region:                      "us-west-2",
 					CloudProvider:               "AWS",
 					Executor:                    "KUBERNETES",
 					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
@@ -172,7 +172,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(awsResourceVar, "name", awsDeploymentName),
 					resource.TestCheckResourceAttr(awsResourceVar, "description", utils.TestResourceDescription),
-					resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-1"),
+					resource.TestCheckResourceAttr(awsResourceVar, "region", "us-west-2"),
 					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
 					resource.TestCheckResourceAttr(awsResourceVar, "executor", "KUBERNETES"),
 					resource.TestCheckNoResourceAttr(awsResourceVar, "worker_queues"),
@@ -188,12 +188,13 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
-					Region:                      "us-east-1",
+					Region:                      "us-west-2",
 					CloudProvider:               "AWS",
 					Executor:                    "CELERY",
 					SchedulerSize:               string(platform.SchedulerMachineNameEXTRALARGE),
 					IncludeEnvironmentVariables: false,
 					WorkerQueuesStr:             workerQueuesStr(""),
+					DesiredWorkloadIdentity:     "arn:aws:iam::123456789:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0",
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(awsResourceVar, "description", utils.TestResourceDescription),
@@ -201,6 +202,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					resource.TestCheckResourceAttr(awsResourceVar, "worker_queues.0.name", "default"),
 					resource.TestCheckNoResourceAttr(awsResourceVar, "environment_variables.0.key"),
 					resource.TestCheckResourceAttr(awsResourceVar, "executor", "CELERY"),
+					resource.TestCheckResourceAttr(awsResourceVar, "desired_workload_identity", "arn:aws:iam::123456789:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0"),
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
 				),
@@ -241,7 +243,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
-					Region:                      "us-east-1",
+					Region:                      "us-west-2",
 					CloudProvider:               "AWS",
 					Executor:                    "CELERY",
 					SchedulerSize:               string(platform.SchedulerMachineNameMEDIUM),
@@ -260,7 +262,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
-					Region:                      "us-east-1",
+					Region:                      "us-west-2",
 					CloudProvider:               "AWS",
 					Executor:                    "KUBERNETES",
 					SchedulerSize:               string(platform.SchedulerMachineNameMEDIUM),
@@ -278,7 +280,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
-					Region:                      "us-east-1",
+					Region:                      "us-west-2",
 					CloudProvider:               "AWS",
 					Executor:                    "KUBERNETES",
 					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
@@ -297,7 +299,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
 					Description:                 utils.TestResourceDescription,
-					Region:                      "us-east-1",
+					Region:                      "us-west-2",
 					CloudProvider:               "AWS",
 					Executor:                    "KUBERNETES",
 					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
@@ -600,7 +602,7 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 				ResourceName:            scalingSpecResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips", "scaling_status.%", "scaling_status.hibernation_status.%", "scaling_status.hibernation_status.is_hibernating", "scaling_status.hibernation_status.reason"},
+				ImportStateVerifyIgnore: []string{"external_ips", "scaling_status.%", "scaling_status.hibernation_status.%", "scaling_status.hibernation_status.is_hibernating", "scaling_status.hibernation_status.reason", "image_version"},
 			},
 		},
 	})
@@ -612,7 +614,7 @@ func TestAcc_ResourceDeploymentStandardRemovedOutsideOfTerraform(t *testing.T) {
 	depInput := standardDeploymentInput{
 		Name:                        standardDeploymentName,
 		Description:                 utils.TestResourceDescription,
-		Region:                      "us-east-1",
+		Region:                      "us-west-2",
 		CloudProvider:               "AWS",
 		Executor:                    "KUBERNETES",
 		IncludeEnvironmentVariables: true,
@@ -722,6 +724,7 @@ type hybridDeploymentInput struct {
 	SchedulerAu                 int
 	NodePoolId                  string
 	DuplicateWorkerQueues       bool
+	DesiredWorkloadIdentity     string
 }
 
 func hybridDeployment(input hybridDeploymentInput) string {
@@ -791,6 +794,7 @@ type standardDeploymentInput struct {
 	IsDevelopmentMode           bool
 	ScalingSpec                 string
 	WorkerQueuesStr             string
+	DesiredWorkloadIdentity     string
 }
 
 func standardDeployment(input standardDeploymentInput) string {
@@ -815,6 +819,10 @@ func standardDeployment(input standardDeploymentInput) string {
 		} else {
 			scalingSpecStr = input.ScalingSpec
 		}
+	}
+	desiredWorkloadIdentityStr := ""
+	if input.DesiredWorkloadIdentity != "" {
+		desiredWorkloadIdentityStr = fmt.Sprintf(`desired_workload_identity      = "%s"`, input.DesiredWorkloadIdentity)
 	}
 	return fmt.Sprintf(`
 resource "astro_workspace" "%v_workspace" {
@@ -844,10 +852,11 @@ resource "astro_deployment" "%v" {
 	%v
 	%v
     %v
+    %v
 }
 `,
 		input.Name, input.Name, utils.TestResourceDescription, input.Name, input.Name, input.Description, input.Region, input.CloudProvider, input.Executor, input.IsDevelopmentMode, input.SchedulerSize, input.Name,
-		envVarsStr(input.IncludeEnvironmentVariables), input.WorkerQueuesStr, scalingSpecStr)
+		envVarsStr(input.IncludeEnvironmentVariables), input.WorkerQueuesStr, scalingSpecStr, desiredWorkloadIdentityStr)
 }
 
 func standardDeploymentWithVariableName(input standardDeploymentInput) string {

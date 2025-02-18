@@ -49,6 +49,7 @@ type DeploymentResource struct {
 	DesiredDagTarballVersion    types.String `tfsdk:"desired_dag_tarball_version"`
 	IsCicdEnforced              types.Bool   `tfsdk:"is_cicd_enforced"`
 	IsDagDeployEnabled          types.Bool   `tfsdk:"is_dag_deploy_enabled"`
+	DesiredWorkloadIdentity     types.String `tfsdk:"desired_workload_identity"`
 	WorkloadIdentity            types.String `tfsdk:"workload_identity"`
 	ExternalIps                 types.Set    `tfsdk:"external_ips"`
 	OidcIssuerUrl               types.String `tfsdk:"oidc_issuer_url"`

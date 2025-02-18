@@ -195,6 +195,10 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
+		"desired_workload_identity": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment's desired workload identity. The Terraform provider will use this provided workload identity to create the Deployment. If it is not provided the workload identity will be assigned automatically.",
+			Optional:            true,
+		},
 		"workload_identity": resourceSchema.StringAttribute{
 			MarkdownDescription: "Deployment workload identity. This value can be changed via the Astro API if applicable.",
 			Computed:            true,
