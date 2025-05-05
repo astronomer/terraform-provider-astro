@@ -18,6 +18,8 @@ import (
 // WaitForStateContext will keep polling until the target status is reached, the timeout is reached or an err is returned
 func ClusterResourceRefreshFunc(ctx context.Context, platformClient *platform.ClientWithResponses, organizationId string, clusterId string) retry.StateRefreshFunc {
 	return func() (any, string, error) {
+		var cluster *platform.GetClusterResponse
+
 		cluster, err := platformClient.GetClusterWithResponse(ctx, organizationId, clusterId)
 		if err != nil {
 			tflog.Error(ctx, "failed to get cluster while polling for cluster 'CREATED' status", map[string]interface{}{"error": err})
