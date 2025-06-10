@@ -22,7 +22,16 @@ jobs:
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
         with:
           go-version-file: 'go.mod'
-          cache: true
+          cache: false
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ env.GOMODCACHE }}
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-mod-
       - run: go mod download
       - name: Get version
         id: get_version
@@ -55,7 +64,16 @@ jobs:
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
         with:
           go-version-file: 'go.mod'
-          cache: true
+          cache: false
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ env.GOMODCACHE }}
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-mod-
       - run: go fmt ./import/import_script.go
       - run: go vet ./import/import_script.go
       - run: make validate-fmt
