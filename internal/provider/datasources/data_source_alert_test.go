@@ -33,7 +33,7 @@ func TestAcc_DataSource_Alert(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceVar, "deployment_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "severity"),
 					resource.TestCheckResourceAttrSet(resourceVar, "type"),
-					resource.TestCheckResourceAttrSet(resourceVar, "rules.properties"),
+					resource.TestCheckResourceAttrWith(resourceVar, "rules.properties.%", CheckAttributeLengthIsNotEmpty),
 					resource.TestCheckResourceAttrWith(resourceVar, "rules.pattern_matches.#", CheckAttributeLengthIsNotEmpty),
 					resource.TestCheckResourceAttrSet(resourceVar, "rules.pattern_matches.0.entity_type"),
 					resource.TestCheckResourceAttrSet(resourceVar, "rules.pattern_matches.0.operator_type"),
