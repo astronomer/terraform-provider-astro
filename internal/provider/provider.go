@@ -149,7 +149,7 @@ func (p *AstroProvider) DataSources(ctx context.Context) []func() datasource.Dat
 		datasources.NewUsersDataSource,
 		datasources.NewApiTokenDataSource,
 		datasources.NewApiTokensDataSource,
-		datasources.NewAlertDataSources,
+		datasources.NewAlertDataSource,
 	}
 }
 

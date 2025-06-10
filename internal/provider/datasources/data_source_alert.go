@@ -18,7 +18,7 @@ import (
 var _ datasource.DataSource = &alertDataSource{}
 var _ datasource.DataSourceWithConfigure = &alertDataSource{}
 
-func NewAlertDataSources() datasource.DataSource {
+func NewAlertDataSource() datasource.DataSource {
 	return &alertDataSource{}
 }
 
