@@ -23,8 +23,7 @@ const (
 
 // Defines values for AlertEntityType.
 const (
-	AlertEntityTypeDEPLOYMENT   AlertEntityType = "DEPLOYMENT"
-	AlertEntityTypeORGANIZATION AlertEntityType = "ORGANIZATION"
+	AlertEntityTypeDEPLOYMENT AlertEntityType = "DEPLOYMENT"
 )
 
 // Defines values for AlertSeverity.
@@ -972,9 +971,7 @@ const (
 
 // Defines values for ListAlertsParamsEntityType.
 const (
-	ListAlertsParamsEntityTypeDEPLOYMENT   ListAlertsParamsEntityType = "DEPLOYMENT"
-	ListAlertsParamsEntityTypeORGANIZATION ListAlertsParamsEntityType = "ORGANIZATION"
-	ListAlertsParamsEntityTypeWORKSPACE    ListAlertsParamsEntityType = "WORKSPACE"
+	ListAlertsParamsEntityTypeDEPLOYMENT ListAlertsParamsEntityType = "DEPLOYMENT"
 )
 
 // Defines values for ListAlertsParamsSorts.
@@ -1105,7 +1102,7 @@ const (
 // Alert defines model for Alert.
 type Alert struct {
 	// CreatedAt The time when the alert was created in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
-	CreatedAt string              `json:"createdAt"`
+	CreatedAt time.Time           `json:"createdAt"`
 	CreatedBy BasicSubjectProfile `json:"createdBy"`
 
 	// DeploymentId The ID of the deployment the alert is associated with.
@@ -1140,7 +1137,7 @@ type Alert struct {
 	Type AlertType `json:"type"`
 
 	// UpdatedAt The time when the alert was last updated in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
-	UpdatedAt string              `json:"updatedAt"`
+	UpdatedAt time.Time           `json:"updatedAt"`
 	UpdatedBy BasicSubjectProfile `json:"updatedBy"`
 
 	// WorkspaceId The ID of the workspace the alert is associated with.

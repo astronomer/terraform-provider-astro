@@ -72,8 +72,8 @@ func (data *Alert) ReadFromResponse(ctx context.Context, Alert *platform.Alert) 
 	}
 
 	data.Severity = types.StringValue(string(Alert.Severity))
-	data.CreatedAt = types.StringValue(Alert.CreatedAt)
-	data.UpdatedAt = types.StringValue(Alert.UpdatedAt)
+	data.CreatedAt = types.StringValue(Alert.CreatedAt.String())
+	data.UpdatedAt = types.StringValue(Alert.UpdatedAt.String())
 	data.CreatedBy, diags = SubjectProfileTypesObject(ctx, Alert.CreatedBy)
 	if diags.HasError() {
 		return diags
