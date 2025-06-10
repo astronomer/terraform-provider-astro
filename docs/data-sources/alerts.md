@@ -32,23 +32,24 @@ Alerts data source
 
 Required:
 
-- `id` (String) API Token identifier
+- `id` (String) Alert identifier
 
 Read-Only:
 
-- `created_at` (String) API Token creation timestamp
-- `created_by` (Attributes) API Token creator (see [below for nested schema](#nestedatt--alerts--created_by))
-- `description` (String) API Token description
-- `end_at` (String) time when the API token will expire in UTC
-- `expiry_period_in_days` (Number) API Token expiry period in days
-- `last_used_at` (String) API Token last used timestamp
-- `name` (String) API Token name
-- `roles` (Attributes Set) The roles assigned to the API Token (see [below for nested schema](#nestedatt--alerts--roles))
-- `short_token` (String) API Token short token
-- `start_at` (String) time when the API token will become valid in UTC
-- `type` (String) API Token type
-- `updated_at` (String) API Token last updated timestamp
-- `updated_by` (Attributes) API Token updater (see [below for nested schema](#nestedatt--alerts--updated_by))
+- `created_at` (String) Alert creation timestamp
+- `created_by` (Attributes) Alert creator (see [below for nested schema](#nestedatt--alerts--created_by))
+- `deployment_id` (String) Deployment identifier associated with the alert
+- `entity_id` (String) Entity identifier associated with the alert
+- `entity_name` (String) Name of the entity associated with the alert
+- `entity_type` (String) Type of entity associated with the alert (e.g., 'DEPLOYMENT', 'ORGANIZATION')
+- `name` (String) Alert name
+- `organization_id` (String) Organization identifier associated with the alert
+- `rules` (Attributes) Alert rules defining the conditions for triggering the alert (see [below for nested schema](#nestedatt--alerts--rules))
+- `severity` (String) Severity level of the alert (e.g., 'INFO', 'WARNING', 'CRITICAL')
+- `type` (String) Type of alert (e.g., 'DAG_SUCCESS', 'DAG_FAILURE')
+- `updated_at` (String) Alert last updated timestamp
+- `updated_by` (Attributes) Alert updater (see [below for nested schema](#nestedatt--alerts--updated_by))
+- `workspace_id` (String) Workspace identifier associated with the alert
 
 <a id="nestedatt--alerts--created_by"></a>
 ### Nested Schema for `alerts.created_by`
@@ -63,14 +64,23 @@ Read-Only:
 - `username` (String)
 
 
-<a id="nestedatt--alerts--roles"></a>
-### Nested Schema for `alerts.roles`
+<a id="nestedatt--alerts--rules"></a>
+### Nested Schema for `alerts.rules`
 
 Read-Only:
 
-- `entity_id` (String) The ID of the entity to assign the role to
-- `entity_type` (String) The type of entity to assign the role to
-- `role` (String) The role to assign to the entity
+- `pattern_matches` (Attributes List) The alert's pattern matches to match against (see [below for nested schema](#nestedatt--alerts--rules--pattern_matches))
+- `properties` (Map of String) The alert's properties used to define the alert
+
+<a id="nestedatt--alerts--rules--pattern_matches"></a>
+### Nested Schema for `alerts.rules.pattern_matches`
+
+Read-Only:
+
+- `entity_type` (String) The type of entity to match against
+- `operator_type` (String) The type of operator to use for the pattern match
+- `values` (List of String) The values to match against
+
 
 
 <a id="nestedatt--alerts--updated_by"></a>

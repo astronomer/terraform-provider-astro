@@ -39,7 +39,7 @@ func AlertsDataSourceSchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"alerts": schema.SetNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
-				Attributes: ApiTokenDataSourceSchemaAttributes(),
+				Attributes: AlertDataSourceSchemaAttributes(),
 			},
 			Computed: true,
 		},
