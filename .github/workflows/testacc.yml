@@ -27,7 +27,16 @@ jobs:
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
         with:
           go-version-file: 'go.mod'
-          cache: true
+          cache: false
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ env.GOMODCACHE }}
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-mod-
       - run: go mod download
       - run: go build -v .
 
@@ -48,7 +57,16 @@ jobs:
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
         with:
           go-version-file: 'go.mod'
-          cache: true
+          cache: false
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ env.GOMODCACHE }}
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-mod-
       - uses: hashicorp/setup-terraform@651471c36a6092792c552e8b1bef71e592b462d8 # v3.1.1
         with:
           terraform_version: ${{ matrix.terraform }}
@@ -124,7 +142,16 @@ jobs:
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
         with:
           go-version-file: 'go.mod'
-          cache: true
+          cache: false
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ env.GOMODCACHE }}
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-mod-
       - uses: hashicorp/setup-terraform@651471c36a6092792c552e8b1bef71e592b462d8 # v3.1.1
         with:
           terraform_version: ${{ matrix.terraform }}
@@ -176,7 +203,16 @@ jobs:
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
         with:
           go-version-file: 'go.mod'
-          cache: true
+          cache: false
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ env.GOMODCACHE }}
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-mod-
       - uses: hashicorp/setup-terraform@651471c36a6092792c552e8b1bef71e592b462d8 # v3.1.1
         with:
           terraform_version: ${{ matrix.terraform }}
