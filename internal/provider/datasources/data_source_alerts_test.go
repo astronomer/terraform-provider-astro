@@ -11,6 +11,7 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/samber/lo"
 )
 
 func TestAcc_DataSourceAlerts(t *testing.T) {
@@ -71,10 +72,9 @@ data astro_alerts "%v" {}`, tfVarName)
 }
 
 func alertsFilterWorkspaceIds(tfVarName string, workspaceIds []string) string {
-	var quoted []string
-	for _, id := range workspaceIds {
-		quoted = append(quoted, fmt.Sprintf("%q", id))
-	}
+	quoted := lo.Map(workspaceIds, func(id string, _ int) string {
+		return fmt.Sprintf("%q", id)
+	})
 	return fmt.Sprintf(`
 data astro_alerts "%v" {
 	workspace_ids = [%s]
@@ -82,10 +82,9 @@ data astro_alerts "%v" {
 }
 
 func alertsFilterDeploymentIds(tfVarName string, deploymentIds []string) string {
-	var quoted []string
-	for _, id := range deploymentIds {
-		quoted = append(quoted, fmt.Sprintf("%q", id))
-	}
+	quoted := lo.Map(deploymentIds, func(id string, _ int) string {
+		return fmt.Sprintf("%q", id)
+	})
 	return fmt.Sprintf(`
 data astro_alerts "%v" {
 	deployment_ids = [%s]
@@ -93,10 +92,9 @@ data astro_alerts "%v" {
 }
 
 func alertsFilterAlertIds(tfVarName string, alertIds []string) string {
-	var quoted []string
-	for _, id := range alertIds {
-		quoted = append(quoted, fmt.Sprintf("%q", id))
-	}
+	quoted := lo.Map(alertIds, func(id string, _ int) string {
+		return fmt.Sprintf("%q", id)
+	})
 	return fmt.Sprintf(`
 data astro_alerts "%v" {
 	alert_ids = [%s]
@@ -104,10 +102,9 @@ data astro_alerts "%v" {
 }
 
 func alertsFilterAlertTypes(tfVarName string, alertTypes []string) string {
-	var quoted []string
-	for _, t := range alertTypes {
-		quoted = append(quoted, fmt.Sprintf("%q", t))
-	}
+	quoted := lo.Map(alertTypes, func(t string, _ int) string {
+		return fmt.Sprintf("%q", t)
+	})
 	return fmt.Sprintf(`
 data astro_alerts "%v" {
 	alert_types = [%s]
