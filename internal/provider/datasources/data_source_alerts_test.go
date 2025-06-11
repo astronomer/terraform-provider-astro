@@ -131,7 +131,7 @@ func checkAlerts(tfVarName string) resource.TestCheckFunc {
 			return fmt.Errorf("expected alerts to be greater or equal to 1, got %s", instanceState.Attributes["alerts.#"])
 		}
 
-		// Check the first api_token
+		// Check the first alert
 		alertsIdx := 0
 
 		id := fmt.Sprintf("alerts.%d.id", alertsIdx)
