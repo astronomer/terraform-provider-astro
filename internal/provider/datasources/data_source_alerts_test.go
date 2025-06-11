@@ -153,13 +153,13 @@ func checkAlerts(tfVarName string) resource.TestCheckFunc {
 		if instanceState.Attributes[alertType] == "" {
 			return fmt.Errorf("expected 'type' to be set")
 		}
-		rulesProperties := fmt.Sprintf("alerts.%d.rules.properties.%d", alertsIdx, 0)
-		if instanceState.Attributes[rulesProperties] == "" {
-			return fmt.Errorf("expected 'rules.properties' to be set")
+		propCountKey := fmt.Sprintf("alerts.%d.rules.properties.%%", alertsIdx)
+		if instanceState.Attributes[propCountKey] == "" {
+			return fmt.Errorf("expected 'rules.properties' to have at least one entry")
 		}
-		rulesPatternMatches := fmt.Sprintf("alerts.%d.rules.pattern_matches", alertsIdx)
-		if instanceState.Attributes[rulesPatternMatches] == "" {
-			return fmt.Errorf("expected 'rules.pattern_matches' to be set")
+		patternCountKey := fmt.Sprintf("alerts.%d.rules.pattern_matches.#", alertsIdx)
+		if instanceState.Attributes[patternCountKey] == "" {
+			return fmt.Errorf("expected 'rules.pattern_matches' to have at least one entry")
 		}
 		createdAt := fmt.Sprintf("alerts.%d.created_at", alertsIdx)
 		if instanceState.Attributes[createdAt] == "" {
