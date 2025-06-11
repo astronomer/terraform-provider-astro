@@ -3,6 +3,7 @@ package datasources_test
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
@@ -70,31 +71,47 @@ data astro_alerts "%v" {}`, tfVarName)
 }
 
 func alertsFilterWorkspaceIds(tfVarName string, workspaceIds []string) string {
+	var quoted []string
+	for _, id := range workspaceIds {
+		quoted = append(quoted, fmt.Sprintf("%q", id))
+	}
 	return fmt.Sprintf(`
 data astro_alerts "%v" {
-	workspace_ids = %v
-}`, tfVarName, workspaceIds)
+	workspace_ids = [%s]
+}`, tfVarName, strings.Join(quoted, ","))
 }
 
 func alertsFilterDeploymentIds(tfVarName string, deploymentIds []string) string {
+	var quoted []string
+	for _, id := range deploymentIds {
+		quoted = append(quoted, fmt.Sprintf("%q", id))
+	}
 	return fmt.Sprintf(`
 data astro_alerts "%v" {
-	deployment_ids = %v
-}`, tfVarName, deploymentIds)
+	deployment_ids = [%s]
+}`, tfVarName, strings.Join(quoted, ","))
 }
 
 func alertsFilterAlertIds(tfVarName string, alertIds []string) string {
+	var quoted []string
+	for _, id := range alertIds {
+		quoted = append(quoted, fmt.Sprintf("%q", id))
+	}
 	return fmt.Sprintf(`
 data astro_alerts "%v" {
-	alert_ids = %v
-}`, tfVarName, alertIds)
+	alert_ids = [%s]
+}`, tfVarName, strings.Join(quoted, ","))
 }
 
 func alertsFilterAlertTypes(tfVarName string, alertTypes []string) string {
+	var quoted []string
+	for _, t := range alertTypes {
+		quoted = append(quoted, fmt.Sprintf("%q", t))
+	}
 	return fmt.Sprintf(`
 data astro_alerts "%v" {
-	alert_types = %v
-}`, tfVarName, alertTypes)
+	alert_types = [%s]
+}`, tfVarName, strings.Join(quoted, ","))
 }
 
 func alertsFilterEntityType(tfVarName string, entityType string) string {
