@@ -10,20 +10,14 @@ import (
 
 // NotificationChannelDataSource describes the data source data model.
 type NotificationChannelDataSource struct {
-	Id                 types.String `tfsdk:"id"`
-	Name               types.String `tfsdk:"name"`
-	Description        types.String `tfsdk:"description"`
-	ShortToken         types.String `tfsdk:"short_token"`
-	Type               types.String `tfsdk:"type"`
-	StartAt            types.String `tfsdk:"start_at"`
-	EndAt              types.String `tfsdk:"end_at"`
-	CreatedAt          types.String `tfsdk:"created_at"`
-	UpdatedAt          types.String `tfsdk:"updated_at"`
-	CreatedBy          types.Object `tfsdk:"created_by"`
-	UpdatedBy          types.Object `tfsdk:"updated_by"`
-	ExpiryPeriodInDays types.Int64  `tfsdk:"expiry_period_in_days"`
-	LastUsedAt         types.String `tfsdk:"last_used_at"`
-	Roles              types.Set    `tfsdk:"roles"`
+	Id          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Description types.String `tfsdk:"description"`
+	Type        types.String `tfsdk:"type"`
+	CreatedAt   types.String `tfsdk:"created_at"`
+	UpdatedAt   types.String `tfsdk:"updated_at"`
+	CreatedBy   types.Object `tfsdk:"created_by"`
+	UpdatedBy   types.Object `tfsdk:"updated_by"`
 }
 
 func (data *NotificationChannelDataSource) ReadFromResponse(ctx context.Context, notificationChannel *platform.NotificationChannel) diag.Diagnostics {
