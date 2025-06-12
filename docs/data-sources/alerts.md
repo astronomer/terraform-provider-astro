@@ -70,7 +70,7 @@ Read-Only:
 - `deployment_id` (String) Deployment identifier associated with the alert
 - `entity_id` (String) Entity identifier associated with the alert
 - `entity_name` (String) Name of the entity associated with the alert
-- `entity_type` (String) Type of entity associated with the alert (e.g., 'DEPLOYMENT', 'ORGANIZATION')
+- `entity_type` (String) Type of entity associated with the alert (e.g., 'DEPLOYMENT')
 - `name` (String) Alert name
 - `organization_id` (String) Organization identifier associated with the alert
 - `rules` (Attributes) Alert rules defining the conditions for triggering the alert (see [below for nested schema](#nestedatt--alerts--rules))

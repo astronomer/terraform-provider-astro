@@ -49,7 +49,7 @@ func AlertDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 			Computed:            true,
 		},
 		"entity_type": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Type of entity associated with the alert (e.g., 'DEPLOYMENT', 'ORGANIZATION')",
+			MarkdownDescription: "Type of entity associated with the alert (e.g., 'DEPLOYMENT')",
 			Computed:            true,
 		},
 		"entity_name": datasourceSchema.StringAttribute{
