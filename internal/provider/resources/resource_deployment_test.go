@@ -602,7 +602,7 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 				ResourceName:            scalingSpecResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips", "scaling_status.%", "scaling_status.hibernation_status.%", "scaling_status.hibernation_status.is_hibernating", "scaling_status.hibernation_status.reason", "image_version"},
+				ImportStateVerifyIgnore: []string{"external_ips", "scaling_status.%", "scaling_status.hibernation_status.%", "scaling_status.hibernation_status.is_hibernating", "scaling_status.hibernation_status.reason", "scaling_status.hibernation_status.next_event_at", "scaling_status.hibernation_status.next_event_type", "image_version"},
 			},
 		},
 	})

@@ -21,6 +21,52 @@ const (
 	JWTScopes = "JWT.Scopes"
 )
 
+// Defines values for AlertEntityType.
+const (
+	AlertEntityTypeDEPLOYMENT   AlertEntityType = "DEPLOYMENT"
+	AlertEntityTypeORGANIZATION AlertEntityType = "ORGANIZATION"
+)
+
+// Defines values for AlertSeverity.
+const (
+	AlertSeverityCRITICAL AlertSeverity = "CRITICAL"
+	AlertSeverityINFO     AlertSeverity = "INFO"
+	AlertSeverityWARNING  AlertSeverity = "WARNING"
+)
+
+// Defines values for AlertType.
+const (
+	AlertTypeAIRFLOWDBSTORAGEUNUSUALLYHIGH AlertType = "AIRFLOW_DB_STORAGE_UNUSUALLY_HIGH"
+	AlertTypeDAGDURATION                   AlertType = "DAG_DURATION"
+	AlertTypeDAGFAILURE                    AlertType = "DAG_FAILURE"
+	AlertTypeDAGSUCCESS                    AlertType = "DAG_SUCCESS"
+	AlertTypeDAGTIMELINESS                 AlertType = "DAG_TIMELINESS"
+	AlertTypeDATAPRODUCTPROACTIVEFAILURE   AlertType = "DATA_PRODUCT_PROACTIVE_FAILURE"
+	AlertTypeDATAPRODUCTPROACTIVESLA       AlertType = "DATA_PRODUCT_PROACTIVE_SLA"
+	AlertTypeDATAPRODUCTSLA                AlertType = "DATA_PRODUCT_SLA"
+	AlertTypeDEPRECATEDRUNTIMEVERSION      AlertType = "DEPRECATED_RUNTIME_VERSION"
+	AlertTypeJOBSCHEDULINGDISABLED         AlertType = "JOB_SCHEDULING_DISABLED"
+	AlertTypeTASKDURATION                  AlertType = "TASK_DURATION"
+	AlertTypeTASKFAILURE                   AlertType = "TASK_FAILURE"
+	AlertTypeWORKERQUEUEATCAPACITY         AlertType = "WORKER_QUEUE_AT_CAPACITY"
+)
+
+// Defines values for AlertNotificationChannelEntityType.
+const (
+	AlertNotificationChannelEntityTypeDEPLOYMENT   AlertNotificationChannelEntityType = "DEPLOYMENT"
+	AlertNotificationChannelEntityTypeORGANIZATION AlertNotificationChannelEntityType = "ORGANIZATION"
+	AlertNotificationChannelEntityTypeWORKSPACE    AlertNotificationChannelEntityType = "WORKSPACE"
+)
+
+// Defines values for AlertNotificationChannelType.
+const (
+	AlertNotificationChannelTypeDAGTRIGGER AlertNotificationChannelType = "DAG_TRIGGER"
+	AlertNotificationChannelTypeEMAIL      AlertNotificationChannelType = "EMAIL"
+	AlertNotificationChannelTypeOPSGENIE   AlertNotificationChannelType = "OPSGENIE"
+	AlertNotificationChannelTypePAGERDUTY  AlertNotificationChannelType = "PAGERDUTY"
+	AlertNotificationChannelTypeSLACK      AlertNotificationChannelType = "SLACK"
+)
+
 // Defines values for BasicSubjectProfileSubjectType.
 const (
 	SERVICEKEY BasicSubjectProfileSubjectType = "SERVICEKEY"
@@ -91,8 +137,113 @@ const (
 	CreateAzureClusterRequestTypeHYBRID    CreateAzureClusterRequestType = "HYBRID"
 )
 
+// Defines values for CreateDagDurationAlertRequestEntityType.
+const (
+	CreateDagDurationAlertRequestEntityTypeDEPLOYMENT CreateDagDurationAlertRequestEntityType = "DEPLOYMENT"
+)
+
+// Defines values for CreateDagDurationAlertRequestSeverity.
+const (
+	CreateDagDurationAlertRequestSeverityCRITICAL CreateDagDurationAlertRequestSeverity = "CRITICAL"
+	CreateDagDurationAlertRequestSeverityINFO     CreateDagDurationAlertRequestSeverity = "INFO"
+	CreateDagDurationAlertRequestSeverityWARNING  CreateDagDurationAlertRequestSeverity = "WARNING"
+)
+
+// Defines values for CreateDagDurationAlertRequestType.
+const (
+	CreateDagDurationAlertRequestTypeDAGDURATION   CreateDagDurationAlertRequestType = "DAG_DURATION"
+	CreateDagDurationAlertRequestTypeDAGFAILURE    CreateDagDurationAlertRequestType = "DAG_FAILURE"
+	CreateDagDurationAlertRequestTypeDAGSUCCESS    CreateDagDurationAlertRequestType = "DAG_SUCCESS"
+	CreateDagDurationAlertRequestTypeDAGTIMELINESS CreateDagDurationAlertRequestType = "DAG_TIMELINESS"
+	CreateDagDurationAlertRequestTypeTASKDURATION  CreateDagDurationAlertRequestType = "TASK_DURATION"
+	CreateDagDurationAlertRequestTypeTASKFAILURE   CreateDagDurationAlertRequestType = "TASK_FAILURE"
+)
+
+// Defines values for CreateDagFailureAlertRequestEntityType.
+const (
+	CreateDagFailureAlertRequestEntityTypeDEPLOYMENT CreateDagFailureAlertRequestEntityType = "DEPLOYMENT"
+)
+
+// Defines values for CreateDagFailureAlertRequestSeverity.
+const (
+	CreateDagFailureAlertRequestSeverityCRITICAL CreateDagFailureAlertRequestSeverity = "CRITICAL"
+	CreateDagFailureAlertRequestSeverityINFO     CreateDagFailureAlertRequestSeverity = "INFO"
+	CreateDagFailureAlertRequestSeverityWARNING  CreateDagFailureAlertRequestSeverity = "WARNING"
+)
+
+// Defines values for CreateDagFailureAlertRequestType.
+const (
+	CreateDagFailureAlertRequestTypeDAGDURATION   CreateDagFailureAlertRequestType = "DAG_DURATION"
+	CreateDagFailureAlertRequestTypeDAGFAILURE    CreateDagFailureAlertRequestType = "DAG_FAILURE"
+	CreateDagFailureAlertRequestTypeDAGSUCCESS    CreateDagFailureAlertRequestType = "DAG_SUCCESS"
+	CreateDagFailureAlertRequestTypeDAGTIMELINESS CreateDagFailureAlertRequestType = "DAG_TIMELINESS"
+	CreateDagFailureAlertRequestTypeTASKDURATION  CreateDagFailureAlertRequestType = "TASK_DURATION"
+	CreateDagFailureAlertRequestTypeTASKFAILURE   CreateDagFailureAlertRequestType = "TASK_FAILURE"
+)
+
+// Defines values for CreateDagSuccessAlertRequestEntityType.
+const (
+	CreateDagSuccessAlertRequestEntityTypeDEPLOYMENT CreateDagSuccessAlertRequestEntityType = "DEPLOYMENT"
+)
+
+// Defines values for CreateDagSuccessAlertRequestSeverity.
+const (
+	CreateDagSuccessAlertRequestSeverityCRITICAL CreateDagSuccessAlertRequestSeverity = "CRITICAL"
+	CreateDagSuccessAlertRequestSeverityINFO     CreateDagSuccessAlertRequestSeverity = "INFO"
+	CreateDagSuccessAlertRequestSeverityWARNING  CreateDagSuccessAlertRequestSeverity = "WARNING"
+)
+
+// Defines values for CreateDagSuccessAlertRequestType.
+const (
+	CreateDagSuccessAlertRequestTypeDAGDURATION   CreateDagSuccessAlertRequestType = "DAG_DURATION"
+	CreateDagSuccessAlertRequestTypeDAGFAILURE    CreateDagSuccessAlertRequestType = "DAG_FAILURE"
+	CreateDagSuccessAlertRequestTypeDAGSUCCESS    CreateDagSuccessAlertRequestType = "DAG_SUCCESS"
+	CreateDagSuccessAlertRequestTypeDAGTIMELINESS CreateDagSuccessAlertRequestType = "DAG_TIMELINESS"
+	CreateDagSuccessAlertRequestTypeTASKDURATION  CreateDagSuccessAlertRequestType = "TASK_DURATION"
+	CreateDagSuccessAlertRequestTypeTASKFAILURE   CreateDagSuccessAlertRequestType = "TASK_FAILURE"
+)
+
+// Defines values for CreateDagTimelinessAlertRequestEntityType.
+const (
+	CreateDagTimelinessAlertRequestEntityTypeDEPLOYMENT CreateDagTimelinessAlertRequestEntityType = "DEPLOYMENT"
+)
+
+// Defines values for CreateDagTimelinessAlertRequestSeverity.
+const (
+	CreateDagTimelinessAlertRequestSeverityCRITICAL CreateDagTimelinessAlertRequestSeverity = "CRITICAL"
+	CreateDagTimelinessAlertRequestSeverityINFO     CreateDagTimelinessAlertRequestSeverity = "INFO"
+	CreateDagTimelinessAlertRequestSeverityWARNING  CreateDagTimelinessAlertRequestSeverity = "WARNING"
+)
+
+// Defines values for CreateDagTimelinessAlertRequestType.
+const (
+	CreateDagTimelinessAlertRequestTypeDAGDURATION   CreateDagTimelinessAlertRequestType = "DAG_DURATION"
+	CreateDagTimelinessAlertRequestTypeDAGFAILURE    CreateDagTimelinessAlertRequestType = "DAG_FAILURE"
+	CreateDagTimelinessAlertRequestTypeDAGSUCCESS    CreateDagTimelinessAlertRequestType = "DAG_SUCCESS"
+	CreateDagTimelinessAlertRequestTypeDAGTIMELINESS CreateDagTimelinessAlertRequestType = "DAG_TIMELINESS"
+	CreateDagTimelinessAlertRequestTypeTASKDURATION  CreateDagTimelinessAlertRequestType = "TASK_DURATION"
+	CreateDagTimelinessAlertRequestTypeTASKFAILURE   CreateDagTimelinessAlertRequestType = "TASK_FAILURE"
+)
+
+// Defines values for CreateDagTriggerNotificationChannelRequestEntityType.
+const (
+	CreateDagTriggerNotificationChannelRequestEntityTypeDEPLOYMENT   CreateDagTriggerNotificationChannelRequestEntityType = "DEPLOYMENT"
+	CreateDagTriggerNotificationChannelRequestEntityTypeORGANIZATION CreateDagTriggerNotificationChannelRequestEntityType = "ORGANIZATION"
+	CreateDagTriggerNotificationChannelRequestEntityTypeWORKSPACE    CreateDagTriggerNotificationChannelRequestEntityType = "WORKSPACE"
+)
+
+// Defines values for CreateDagTriggerNotificationChannelRequestType.
+const (
+	CreateDagTriggerNotificationChannelRequestTypeDAGTRIGGER CreateDagTriggerNotificationChannelRequestType = "DAG_TRIGGER"
+	CreateDagTriggerNotificationChannelRequestTypeEMAIL      CreateDagTriggerNotificationChannelRequestType = "EMAIL"
+	CreateDagTriggerNotificationChannelRequestTypeOPSGENIE   CreateDagTriggerNotificationChannelRequestType = "OPSGENIE"
+	CreateDagTriggerNotificationChannelRequestTypePAGERDUTY  CreateDagTriggerNotificationChannelRequestType = "PAGERDUTY"
+	CreateDagTriggerNotificationChannelRequestTypeSLACK      CreateDagTriggerNotificationChannelRequestType = "SLACK"
+)
+
 // Defines values for CreateDedicatedDeploymentRequestExecutor.
 const (
+	CreateDedicatedDeploymentRequestExecutorASTRO      CreateDedicatedDeploymentRequestExecutor = "ASTRO"
 	CreateDedicatedDeploymentRequestExecutorCELERY     CreateDedicatedDeploymentRequestExecutor = "CELERY"
 	CreateDedicatedDeploymentRequestExecutorKUBERNETES CreateDedicatedDeploymentRequestExecutor = "KUBERNETES"
 )
@@ -112,14 +263,42 @@ const (
 	CreateDedicatedDeploymentRequestTypeSTANDARD  CreateDedicatedDeploymentRequestType = "STANDARD"
 )
 
+// Defines values for CreateEmailNotificationChannelRequestEntityType.
+const (
+	CreateEmailNotificationChannelRequestEntityTypeDEPLOYMENT   CreateEmailNotificationChannelRequestEntityType = "DEPLOYMENT"
+	CreateEmailNotificationChannelRequestEntityTypeORGANIZATION CreateEmailNotificationChannelRequestEntityType = "ORGANIZATION"
+	CreateEmailNotificationChannelRequestEntityTypeWORKSPACE    CreateEmailNotificationChannelRequestEntityType = "WORKSPACE"
+)
+
+// Defines values for CreateEmailNotificationChannelRequestType.
+const (
+	CreateEmailNotificationChannelRequestTypeDAGTRIGGER CreateEmailNotificationChannelRequestType = "DAG_TRIGGER"
+	CreateEmailNotificationChannelRequestTypeEMAIL      CreateEmailNotificationChannelRequestType = "EMAIL"
+	CreateEmailNotificationChannelRequestTypeOPSGENIE   CreateEmailNotificationChannelRequestType = "OPSGENIE"
+	CreateEmailNotificationChannelRequestTypePAGERDUTY  CreateEmailNotificationChannelRequestType = "PAGERDUTY"
+	CreateEmailNotificationChannelRequestTypeSLACK      CreateEmailNotificationChannelRequestType = "SLACK"
+)
+
 // Defines values for CreateEnvironmentObjectLinkRequestScope.
 const (
 	CreateEnvironmentObjectLinkRequestScopeDEPLOYMENT CreateEnvironmentObjectLinkRequestScope = "DEPLOYMENT"
 )
 
+// Defines values for CreateEnvironmentObjectMetricsExportOverridesRequestAuthType.
+const (
+	CreateEnvironmentObjectMetricsExportOverridesRequestAuthTypeAUTHTOKEN CreateEnvironmentObjectMetricsExportOverridesRequestAuthType = "AUTH_TOKEN"
+	CreateEnvironmentObjectMetricsExportOverridesRequestAuthTypeBASIC     CreateEnvironmentObjectMetricsExportOverridesRequestAuthType = "BASIC"
+)
+
 // Defines values for CreateEnvironmentObjectMetricsExportOverridesRequestExporterType.
 const (
 	CreateEnvironmentObjectMetricsExportOverridesRequestExporterTypePROMETHEUS CreateEnvironmentObjectMetricsExportOverridesRequestExporterType = "PROMETHEUS"
+)
+
+// Defines values for CreateEnvironmentObjectMetricsExportRequestAuthType.
+const (
+	CreateEnvironmentObjectMetricsExportRequestAuthTypeAUTHTOKEN CreateEnvironmentObjectMetricsExportRequestAuthType = "AUTH_TOKEN"
+	CreateEnvironmentObjectMetricsExportRequestAuthTypeBASIC     CreateEnvironmentObjectMetricsExportRequestAuthType = "BASIC"
 )
 
 // Defines values for CreateEnvironmentObjectMetricsExportRequestExporterType.
@@ -166,6 +345,54 @@ const (
 	CreateHybridDeploymentRequestTypeSTANDARD  CreateHybridDeploymentRequestType = "STANDARD"
 )
 
+// Defines values for CreateOpsgenieNotificationChannelRequestEntityType.
+const (
+	CreateOpsgenieNotificationChannelRequestEntityTypeDEPLOYMENT   CreateOpsgenieNotificationChannelRequestEntityType = "DEPLOYMENT"
+	CreateOpsgenieNotificationChannelRequestEntityTypeORGANIZATION CreateOpsgenieNotificationChannelRequestEntityType = "ORGANIZATION"
+	CreateOpsgenieNotificationChannelRequestEntityTypeWORKSPACE    CreateOpsgenieNotificationChannelRequestEntityType = "WORKSPACE"
+)
+
+// Defines values for CreateOpsgenieNotificationChannelRequestType.
+const (
+	CreateOpsgenieNotificationChannelRequestTypeDAGTRIGGER CreateOpsgenieNotificationChannelRequestType = "DAG_TRIGGER"
+	CreateOpsgenieNotificationChannelRequestTypeEMAIL      CreateOpsgenieNotificationChannelRequestType = "EMAIL"
+	CreateOpsgenieNotificationChannelRequestTypeOPSGENIE   CreateOpsgenieNotificationChannelRequestType = "OPSGENIE"
+	CreateOpsgenieNotificationChannelRequestTypePAGERDUTY  CreateOpsgenieNotificationChannelRequestType = "PAGERDUTY"
+	CreateOpsgenieNotificationChannelRequestTypeSLACK      CreateOpsgenieNotificationChannelRequestType = "SLACK"
+)
+
+// Defines values for CreatePagerDutyNotificationChannelRequestEntityType.
+const (
+	CreatePagerDutyNotificationChannelRequestEntityTypeDEPLOYMENT   CreatePagerDutyNotificationChannelRequestEntityType = "DEPLOYMENT"
+	CreatePagerDutyNotificationChannelRequestEntityTypeORGANIZATION CreatePagerDutyNotificationChannelRequestEntityType = "ORGANIZATION"
+	CreatePagerDutyNotificationChannelRequestEntityTypeWORKSPACE    CreatePagerDutyNotificationChannelRequestEntityType = "WORKSPACE"
+)
+
+// Defines values for CreatePagerDutyNotificationChannelRequestType.
+const (
+	CreatePagerDutyNotificationChannelRequestTypeDAGTRIGGER CreatePagerDutyNotificationChannelRequestType = "DAG_TRIGGER"
+	CreatePagerDutyNotificationChannelRequestTypeEMAIL      CreatePagerDutyNotificationChannelRequestType = "EMAIL"
+	CreatePagerDutyNotificationChannelRequestTypeOPSGENIE   CreatePagerDutyNotificationChannelRequestType = "OPSGENIE"
+	CreatePagerDutyNotificationChannelRequestTypePAGERDUTY  CreatePagerDutyNotificationChannelRequestType = "PAGERDUTY"
+	CreatePagerDutyNotificationChannelRequestTypeSLACK      CreatePagerDutyNotificationChannelRequestType = "SLACK"
+)
+
+// Defines values for CreateSlackNotificationChannelRequestEntityType.
+const (
+	CreateSlackNotificationChannelRequestEntityTypeDEPLOYMENT   CreateSlackNotificationChannelRequestEntityType = "DEPLOYMENT"
+	CreateSlackNotificationChannelRequestEntityTypeORGANIZATION CreateSlackNotificationChannelRequestEntityType = "ORGANIZATION"
+	CreateSlackNotificationChannelRequestEntityTypeWORKSPACE    CreateSlackNotificationChannelRequestEntityType = "WORKSPACE"
+)
+
+// Defines values for CreateSlackNotificationChannelRequestType.
+const (
+	CreateSlackNotificationChannelRequestTypeDAGTRIGGER CreateSlackNotificationChannelRequestType = "DAG_TRIGGER"
+	CreateSlackNotificationChannelRequestTypeEMAIL      CreateSlackNotificationChannelRequestType = "EMAIL"
+	CreateSlackNotificationChannelRequestTypeOPSGENIE   CreateSlackNotificationChannelRequestType = "OPSGENIE"
+	CreateSlackNotificationChannelRequestTypePAGERDUTY  CreateSlackNotificationChannelRequestType = "PAGERDUTY"
+	CreateSlackNotificationChannelRequestTypeSLACK      CreateSlackNotificationChannelRequestType = "SLACK"
+)
+
 // Defines values for CreateStandardDeploymentRequestCloudProvider.
 const (
 	CreateStandardDeploymentRequestCloudProviderAWS   CreateStandardDeploymentRequestCloudProvider = "AWS"
@@ -175,6 +402,7 @@ const (
 
 // Defines values for CreateStandardDeploymentRequestExecutor.
 const (
+	CreateStandardDeploymentRequestExecutorASTRO      CreateStandardDeploymentRequestExecutor = "ASTRO"
 	CreateStandardDeploymentRequestExecutorCELERY     CreateStandardDeploymentRequestExecutor = "CELERY"
 	CreateStandardDeploymentRequestExecutorKUBERNETES CreateStandardDeploymentRequestExecutor = "KUBERNETES"
 )
@@ -194,6 +422,50 @@ const (
 	CreateStandardDeploymentRequestTypeSTANDARD  CreateStandardDeploymentRequestType = "STANDARD"
 )
 
+// Defines values for CreateTaskDurationAlertRequestEntityType.
+const (
+	CreateTaskDurationAlertRequestEntityTypeDEPLOYMENT CreateTaskDurationAlertRequestEntityType = "DEPLOYMENT"
+)
+
+// Defines values for CreateTaskDurationAlertRequestSeverity.
+const (
+	CreateTaskDurationAlertRequestSeverityCRITICAL CreateTaskDurationAlertRequestSeverity = "CRITICAL"
+	CreateTaskDurationAlertRequestSeverityINFO     CreateTaskDurationAlertRequestSeverity = "INFO"
+	CreateTaskDurationAlertRequestSeverityWARNING  CreateTaskDurationAlertRequestSeverity = "WARNING"
+)
+
+// Defines values for CreateTaskDurationAlertRequestType.
+const (
+	CreateTaskDurationAlertRequestTypeDAGDURATION   CreateTaskDurationAlertRequestType = "DAG_DURATION"
+	CreateTaskDurationAlertRequestTypeDAGFAILURE    CreateTaskDurationAlertRequestType = "DAG_FAILURE"
+	CreateTaskDurationAlertRequestTypeDAGSUCCESS    CreateTaskDurationAlertRequestType = "DAG_SUCCESS"
+	CreateTaskDurationAlertRequestTypeDAGTIMELINESS CreateTaskDurationAlertRequestType = "DAG_TIMELINESS"
+	CreateTaskDurationAlertRequestTypeTASKDURATION  CreateTaskDurationAlertRequestType = "TASK_DURATION"
+	CreateTaskDurationAlertRequestTypeTASKFAILURE   CreateTaskDurationAlertRequestType = "TASK_FAILURE"
+)
+
+// Defines values for CreateTaskFailureAlertRequestEntityType.
+const (
+	CreateTaskFailureAlertRequestEntityTypeDEPLOYMENT CreateTaskFailureAlertRequestEntityType = "DEPLOYMENT"
+)
+
+// Defines values for CreateTaskFailureAlertRequestSeverity.
+const (
+	CreateTaskFailureAlertRequestSeverityCRITICAL CreateTaskFailureAlertRequestSeverity = "CRITICAL"
+	CreateTaskFailureAlertRequestSeverityINFO     CreateTaskFailureAlertRequestSeverity = "INFO"
+	CreateTaskFailureAlertRequestSeverityWARNING  CreateTaskFailureAlertRequestSeverity = "WARNING"
+)
+
+// Defines values for CreateTaskFailureAlertRequestType.
+const (
+	CreateTaskFailureAlertRequestTypeDAGDURATION   CreateTaskFailureAlertRequestType = "DAG_DURATION"
+	CreateTaskFailureAlertRequestTypeDAGFAILURE    CreateTaskFailureAlertRequestType = "DAG_FAILURE"
+	CreateTaskFailureAlertRequestTypeDAGSUCCESS    CreateTaskFailureAlertRequestType = "DAG_SUCCESS"
+	CreateTaskFailureAlertRequestTypeDAGTIMELINESS CreateTaskFailureAlertRequestType = "DAG_TIMELINESS"
+	CreateTaskFailureAlertRequestTypeTASKDURATION  CreateTaskFailureAlertRequestType = "TASK_DURATION"
+	CreateTaskFailureAlertRequestTypeTASKFAILURE   CreateTaskFailureAlertRequestType = "TASK_FAILURE"
+)
+
 // Defines values for DeploymentCloudProvider.
 const (
 	DeploymentCloudProviderAWS   DeploymentCloudProvider = "AWS"
@@ -203,6 +475,7 @@ const (
 
 // Defines values for DeploymentExecutor.
 const (
+	DeploymentExecutorASTRO      DeploymentExecutor = "ASTRO"
 	DeploymentExecutorCELERY     DeploymentExecutor = "CELERY"
 	DeploymentExecutorKUBERNETES DeploymentExecutor = "KUBERNETES"
 )
@@ -267,9 +540,21 @@ const (
 	EnvironmentObjectLinkScopeDEPLOYMENT EnvironmentObjectLinkScope = "DEPLOYMENT"
 )
 
+// Defines values for EnvironmentObjectMetricsExportAuthType.
+const (
+	EnvironmentObjectMetricsExportAuthTypeAUTHTOKEN EnvironmentObjectMetricsExportAuthType = "AUTH_TOKEN"
+	EnvironmentObjectMetricsExportAuthTypeBASIC     EnvironmentObjectMetricsExportAuthType = "BASIC"
+)
+
 // Defines values for EnvironmentObjectMetricsExportExporterType.
 const (
 	EnvironmentObjectMetricsExportExporterTypePROMETHEUS EnvironmentObjectMetricsExportExporterType = "PROMETHEUS"
+)
+
+// Defines values for EnvironmentObjectMetricsExportOverridesAuthType.
+const (
+	EnvironmentObjectMetricsExportOverridesAuthTypeAUTHTOKEN EnvironmentObjectMetricsExportOverridesAuthType = "AUTH_TOKEN"
+	EnvironmentObjectMetricsExportOverridesAuthTypeBASIC     EnvironmentObjectMetricsExportOverridesAuthType = "BASIC"
 )
 
 // Defines values for EnvironmentObjectMetricsExportOverridesExporterType.
@@ -312,18 +597,61 @@ const (
 
 // Defines values for OrganizationStatus.
 const (
-	ACTIVE    OrganizationStatus = "ACTIVE"
-	INACTIVE  OrganizationStatus = "INACTIVE"
-	SUSPENDED OrganizationStatus = "SUSPENDED"
+	OrganizationStatusACTIVE    OrganizationStatus = "ACTIVE"
+	OrganizationStatusINACTIVE  OrganizationStatus = "INACTIVE"
+	OrganizationStatusSUSPENDED OrganizationStatus = "SUSPENDED"
 )
 
 // Defines values for OrganizationSupportPlan.
 const (
 	OrganizationSupportPlanBASIC            OrganizationSupportPlan = "BASIC"
+	OrganizationSupportPlanBASICPAYGO       OrganizationSupportPlan = "BASIC_PAYGO"
+	OrganizationSupportPlanBUSINESS         OrganizationSupportPlan = "BUSINESS"
 	OrganizationSupportPlanBUSINESSCRITICAL OrganizationSupportPlan = "BUSINESS_CRITICAL"
+	OrganizationSupportPlanBUSINESSV2       OrganizationSupportPlan = "BUSINESS_V2"
+	OrganizationSupportPlanDEVELOPER        OrganizationSupportPlan = "DEVELOPER"
+	OrganizationSupportPlanDEVELOPERPAYGO   OrganizationSupportPlan = "DEVELOPER_PAYGO"
+	OrganizationSupportPlanENTERPRISE       OrganizationSupportPlan = "ENTERPRISE"
+	OrganizationSupportPlanENTERPRISEV2     OrganizationSupportPlan = "ENTERPRISE_V2"
+	OrganizationSupportPlanINACTIVE         OrganizationSupportPlan = "INACTIVE"
+	OrganizationSupportPlanINTERNAL         OrganizationSupportPlan = "INTERNAL"
+	OrganizationSupportPlanPOV              OrganizationSupportPlan = "POV"
 	OrganizationSupportPlanPREMIUM          OrganizationSupportPlan = "PREMIUM"
 	OrganizationSupportPlanSTANDARD         OrganizationSupportPlan = "STANDARD"
+	OrganizationSupportPlanTEAM             OrganizationSupportPlan = "TEAM"
+	OrganizationSupportPlanTEAMPAYGO        OrganizationSupportPlan = "TEAM_PAYGO"
+	OrganizationSupportPlanTEAMV2           OrganizationSupportPlan = "TEAM_V2"
 	OrganizationSupportPlanTRIAL            OrganizationSupportPlan = "TRIAL"
+	OrganizationSupportPlanTRIALV2          OrganizationSupportPlan = "TRIAL_V2"
+)
+
+// Defines values for OrganizationProductPlanAstronomerProduct.
+const (
+	ASTROOBSERVE OrganizationProductPlanAstronomerProduct = "ASTRO OBSERVE"
+)
+
+// Defines values for PatternMatchEntityType.
+const (
+	DAGIDTASKID PatternMatchEntityType = "DAG_ID TASK_ID"
+)
+
+// Defines values for PatternMatchOperatorType.
+const (
+	ISISNOTINCLUDESEXCLUDES PatternMatchOperatorType = "IS IS_NOT INCLUDES EXCLUDES"
+)
+
+// Defines values for PatternMatchRequestEntityType.
+const (
+	DAGID  PatternMatchRequestEntityType = "DAG_ID"
+	TASKID PatternMatchRequestEntityType = "TASK_ID"
+)
+
+// Defines values for PatternMatchRequestOperatorType.
+const (
+	EXCLUDES PatternMatchRequestOperatorType = "EXCLUDES"
+	INCLUDES PatternMatchRequestOperatorType = "INCLUDES"
+	IS       PatternMatchRequestOperatorType = "IS"
+	ISNOT    PatternMatchRequestOperatorType = "IS_NOT"
 )
 
 // Defines values for SchedulerMachineName.
@@ -334,6 +662,83 @@ const (
 	SchedulerMachineNameSMALL      SchedulerMachineName = "SMALL"
 )
 
+// Defines values for UpdateDagDurationAlertRequestSeverity.
+const (
+	UpdateDagDurationAlertRequestSeverityCRITICAL UpdateDagDurationAlertRequestSeverity = "CRITICAL"
+	UpdateDagDurationAlertRequestSeverityINFO     UpdateDagDurationAlertRequestSeverity = "INFO"
+	UpdateDagDurationAlertRequestSeverityWARNING  UpdateDagDurationAlertRequestSeverity = "WARNING"
+)
+
+// Defines values for UpdateDagDurationAlertRequestType.
+const (
+	UpdateDagDurationAlertRequestTypeDAGDURATION   UpdateDagDurationAlertRequestType = "DAG_DURATION"
+	UpdateDagDurationAlertRequestTypeDAGFAILURE    UpdateDagDurationAlertRequestType = "DAG_FAILURE"
+	UpdateDagDurationAlertRequestTypeDAGSUCCESS    UpdateDagDurationAlertRequestType = "DAG_SUCCESS"
+	UpdateDagDurationAlertRequestTypeDAGTIMELINESS UpdateDagDurationAlertRequestType = "DAG_TIMELINESS"
+	UpdateDagDurationAlertRequestTypeTASKDURATION  UpdateDagDurationAlertRequestType = "TASK_DURATION"
+	UpdateDagDurationAlertRequestTypeTASKFAILURE   UpdateDagDurationAlertRequestType = "TASK_FAILURE"
+)
+
+// Defines values for UpdateDagFailureAlertRequestSeverity.
+const (
+	UpdateDagFailureAlertRequestSeverityCRITICAL UpdateDagFailureAlertRequestSeverity = "CRITICAL"
+	UpdateDagFailureAlertRequestSeverityINFO     UpdateDagFailureAlertRequestSeverity = "INFO"
+	UpdateDagFailureAlertRequestSeverityWARNING  UpdateDagFailureAlertRequestSeverity = "WARNING"
+)
+
+// Defines values for UpdateDagFailureAlertRequestType.
+const (
+	UpdateDagFailureAlertRequestTypeDAGDURATION   UpdateDagFailureAlertRequestType = "DAG_DURATION"
+	UpdateDagFailureAlertRequestTypeDAGFAILURE    UpdateDagFailureAlertRequestType = "DAG_FAILURE"
+	UpdateDagFailureAlertRequestTypeDAGSUCCESS    UpdateDagFailureAlertRequestType = "DAG_SUCCESS"
+	UpdateDagFailureAlertRequestTypeDAGTIMELINESS UpdateDagFailureAlertRequestType = "DAG_TIMELINESS"
+	UpdateDagFailureAlertRequestTypeTASKDURATION  UpdateDagFailureAlertRequestType = "TASK_DURATION"
+	UpdateDagFailureAlertRequestTypeTASKFAILURE   UpdateDagFailureAlertRequestType = "TASK_FAILURE"
+)
+
+// Defines values for UpdateDagSuccessAlertRequestSeverity.
+const (
+	UpdateDagSuccessAlertRequestSeverityCRITICAL UpdateDagSuccessAlertRequestSeverity = "CRITICAL"
+	UpdateDagSuccessAlertRequestSeverityINFO     UpdateDagSuccessAlertRequestSeverity = "INFO"
+	UpdateDagSuccessAlertRequestSeverityWARNING  UpdateDagSuccessAlertRequestSeverity = "WARNING"
+)
+
+// Defines values for UpdateDagSuccessAlertRequestType.
+const (
+	UpdateDagSuccessAlertRequestTypeDAGDURATION   UpdateDagSuccessAlertRequestType = "DAG_DURATION"
+	UpdateDagSuccessAlertRequestTypeDAGFAILURE    UpdateDagSuccessAlertRequestType = "DAG_FAILURE"
+	UpdateDagSuccessAlertRequestTypeDAGSUCCESS    UpdateDagSuccessAlertRequestType = "DAG_SUCCESS"
+	UpdateDagSuccessAlertRequestTypeDAGTIMELINESS UpdateDagSuccessAlertRequestType = "DAG_TIMELINESS"
+	UpdateDagSuccessAlertRequestTypeTASKDURATION  UpdateDagSuccessAlertRequestType = "TASK_DURATION"
+	UpdateDagSuccessAlertRequestTypeTASKFAILURE   UpdateDagSuccessAlertRequestType = "TASK_FAILURE"
+)
+
+// Defines values for UpdateDagTimelinessAlertRequestSeverity.
+const (
+	UpdateDagTimelinessAlertRequestSeverityCRITICAL UpdateDagTimelinessAlertRequestSeverity = "CRITICAL"
+	UpdateDagTimelinessAlertRequestSeverityINFO     UpdateDagTimelinessAlertRequestSeverity = "INFO"
+	UpdateDagTimelinessAlertRequestSeverityWARNING  UpdateDagTimelinessAlertRequestSeverity = "WARNING"
+)
+
+// Defines values for UpdateDagTimelinessAlertRequestType.
+const (
+	UpdateDagTimelinessAlertRequestTypeDAGDURATION   UpdateDagTimelinessAlertRequestType = "DAG_DURATION"
+	UpdateDagTimelinessAlertRequestTypeDAGFAILURE    UpdateDagTimelinessAlertRequestType = "DAG_FAILURE"
+	UpdateDagTimelinessAlertRequestTypeDAGSUCCESS    UpdateDagTimelinessAlertRequestType = "DAG_SUCCESS"
+	UpdateDagTimelinessAlertRequestTypeDAGTIMELINESS UpdateDagTimelinessAlertRequestType = "DAG_TIMELINESS"
+	UpdateDagTimelinessAlertRequestTypeTASKDURATION  UpdateDagTimelinessAlertRequestType = "TASK_DURATION"
+	UpdateDagTimelinessAlertRequestTypeTASKFAILURE   UpdateDagTimelinessAlertRequestType = "TASK_FAILURE"
+)
+
+// Defines values for UpdateDagTriggerNotificationChannelRequestType.
+const (
+	UpdateDagTriggerNotificationChannelRequestTypeDAGTRIGGER UpdateDagTriggerNotificationChannelRequestType = "DAG_TRIGGER"
+	UpdateDagTriggerNotificationChannelRequestTypeEMAIL      UpdateDagTriggerNotificationChannelRequestType = "EMAIL"
+	UpdateDagTriggerNotificationChannelRequestTypeOPSGENIE   UpdateDagTriggerNotificationChannelRequestType = "OPSGENIE"
+	UpdateDagTriggerNotificationChannelRequestTypePAGERDUTY  UpdateDagTriggerNotificationChannelRequestType = "PAGERDUTY"
+	UpdateDagTriggerNotificationChannelRequestTypeSLACK      UpdateDagTriggerNotificationChannelRequestType = "SLACK"
+)
+
 // Defines values for UpdateDedicatedClusterRequestClusterType.
 const (
 	UpdateDedicatedClusterRequestClusterTypeDEDICATED UpdateDedicatedClusterRequestClusterType = "DEDICATED"
@@ -341,6 +746,7 @@ const (
 
 // Defines values for UpdateDedicatedDeploymentRequestExecutor.
 const (
+	UpdateDedicatedDeploymentRequestExecutorASTRO      UpdateDedicatedDeploymentRequestExecutor = "ASTRO"
 	UpdateDedicatedDeploymentRequestExecutorCELERY     UpdateDedicatedDeploymentRequestExecutor = "CELERY"
 	UpdateDedicatedDeploymentRequestExecutorKUBERNETES UpdateDedicatedDeploymentRequestExecutor = "KUBERNETES"
 )
@@ -360,14 +766,35 @@ const (
 	UpdateDedicatedDeploymentRequestTypeSTANDARD  UpdateDedicatedDeploymentRequestType = "STANDARD"
 )
 
+// Defines values for UpdateEmailNotificationChannelRequestType.
+const (
+	UpdateEmailNotificationChannelRequestTypeDAGTRIGGER UpdateEmailNotificationChannelRequestType = "DAG_TRIGGER"
+	UpdateEmailNotificationChannelRequestTypeEMAIL      UpdateEmailNotificationChannelRequestType = "EMAIL"
+	UpdateEmailNotificationChannelRequestTypeOPSGENIE   UpdateEmailNotificationChannelRequestType = "OPSGENIE"
+	UpdateEmailNotificationChannelRequestTypePAGERDUTY  UpdateEmailNotificationChannelRequestType = "PAGERDUTY"
+	UpdateEmailNotificationChannelRequestTypeSLACK      UpdateEmailNotificationChannelRequestType = "SLACK"
+)
+
 // Defines values for UpdateEnvironmentObjectLinkRequestScope.
 const (
 	UpdateEnvironmentObjectLinkRequestScopeDEPLOYMENT UpdateEnvironmentObjectLinkRequestScope = "DEPLOYMENT"
 )
 
+// Defines values for UpdateEnvironmentObjectMetricsExportOverridesRequestAuthType.
+const (
+	UpdateEnvironmentObjectMetricsExportOverridesRequestAuthTypeAUTHTOKEN UpdateEnvironmentObjectMetricsExportOverridesRequestAuthType = "AUTH_TOKEN"
+	UpdateEnvironmentObjectMetricsExportOverridesRequestAuthTypeBASIC     UpdateEnvironmentObjectMetricsExportOverridesRequestAuthType = "BASIC"
+)
+
 // Defines values for UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType.
 const (
 	UpdateEnvironmentObjectMetricsExportOverridesRequestExporterTypePROMETHEUS UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType = "PROMETHEUS"
+)
+
+// Defines values for UpdateEnvironmentObjectMetricsExportRequestAuthType.
+const (
+	UpdateEnvironmentObjectMetricsExportRequestAuthTypeAUTHTOKEN UpdateEnvironmentObjectMetricsExportRequestAuthType = "AUTH_TOKEN"
+	UpdateEnvironmentObjectMetricsExportRequestAuthTypeBASIC     UpdateEnvironmentObjectMetricsExportRequestAuthType = "BASIC"
 )
 
 // Defines values for UpdateEnvironmentObjectMetricsExportRequestExporterType.
@@ -393,8 +820,36 @@ const (
 	UpdateHybridDeploymentRequestTypeSTANDARD  UpdateHybridDeploymentRequestType = "STANDARD"
 )
 
+// Defines values for UpdateOpsgenieNotificationChannelRequestType.
+const (
+	UpdateOpsgenieNotificationChannelRequestTypeDAGTRIGGER UpdateOpsgenieNotificationChannelRequestType = "DAG_TRIGGER"
+	UpdateOpsgenieNotificationChannelRequestTypeEMAIL      UpdateOpsgenieNotificationChannelRequestType = "EMAIL"
+	UpdateOpsgenieNotificationChannelRequestTypeOPSGENIE   UpdateOpsgenieNotificationChannelRequestType = "OPSGENIE"
+	UpdateOpsgenieNotificationChannelRequestTypePAGERDUTY  UpdateOpsgenieNotificationChannelRequestType = "PAGERDUTY"
+	UpdateOpsgenieNotificationChannelRequestTypeSLACK      UpdateOpsgenieNotificationChannelRequestType = "SLACK"
+)
+
+// Defines values for UpdatePagerDutyNotificationChannelRequestType.
+const (
+	UpdatePagerDutyNotificationChannelRequestTypeDAGTRIGGER UpdatePagerDutyNotificationChannelRequestType = "DAG_TRIGGER"
+	UpdatePagerDutyNotificationChannelRequestTypeEMAIL      UpdatePagerDutyNotificationChannelRequestType = "EMAIL"
+	UpdatePagerDutyNotificationChannelRequestTypeOPSGENIE   UpdatePagerDutyNotificationChannelRequestType = "OPSGENIE"
+	UpdatePagerDutyNotificationChannelRequestTypePAGERDUTY  UpdatePagerDutyNotificationChannelRequestType = "PAGERDUTY"
+	UpdatePagerDutyNotificationChannelRequestTypeSLACK      UpdatePagerDutyNotificationChannelRequestType = "SLACK"
+)
+
+// Defines values for UpdateSlackNotificationChannelRequestType.
+const (
+	UpdateSlackNotificationChannelRequestTypeDAGTRIGGER UpdateSlackNotificationChannelRequestType = "DAG_TRIGGER"
+	UpdateSlackNotificationChannelRequestTypeEMAIL      UpdateSlackNotificationChannelRequestType = "EMAIL"
+	UpdateSlackNotificationChannelRequestTypeOPSGENIE   UpdateSlackNotificationChannelRequestType = "OPSGENIE"
+	UpdateSlackNotificationChannelRequestTypePAGERDUTY  UpdateSlackNotificationChannelRequestType = "PAGERDUTY"
+	UpdateSlackNotificationChannelRequestTypeSLACK      UpdateSlackNotificationChannelRequestType = "SLACK"
+)
+
 // Defines values for UpdateStandardDeploymentRequestExecutor.
 const (
+	UpdateStandardDeploymentRequestExecutorASTRO      UpdateStandardDeploymentRequestExecutor = "ASTRO"
 	UpdateStandardDeploymentRequestExecutorCELERY     UpdateStandardDeploymentRequestExecutor = "CELERY"
 	UpdateStandardDeploymentRequestExecutorKUBERNETES UpdateStandardDeploymentRequestExecutor = "KUBERNETES"
 )
@@ -412,6 +867,40 @@ const (
 	UpdateStandardDeploymentRequestTypeDEDICATED UpdateStandardDeploymentRequestType = "DEDICATED"
 	UpdateStandardDeploymentRequestTypeHYBRID    UpdateStandardDeploymentRequestType = "HYBRID"
 	UpdateStandardDeploymentRequestTypeSTANDARD  UpdateStandardDeploymentRequestType = "STANDARD"
+)
+
+// Defines values for UpdateTaskDurationAlertRequestSeverity.
+const (
+	UpdateTaskDurationAlertRequestSeverityCRITICAL UpdateTaskDurationAlertRequestSeverity = "CRITICAL"
+	UpdateTaskDurationAlertRequestSeverityINFO     UpdateTaskDurationAlertRequestSeverity = "INFO"
+	UpdateTaskDurationAlertRequestSeverityWARNING  UpdateTaskDurationAlertRequestSeverity = "WARNING"
+)
+
+// Defines values for UpdateTaskDurationAlertRequestType.
+const (
+	UpdateTaskDurationAlertRequestTypeDAGDURATION   UpdateTaskDurationAlertRequestType = "DAG_DURATION"
+	UpdateTaskDurationAlertRequestTypeDAGFAILURE    UpdateTaskDurationAlertRequestType = "DAG_FAILURE"
+	UpdateTaskDurationAlertRequestTypeDAGSUCCESS    UpdateTaskDurationAlertRequestType = "DAG_SUCCESS"
+	UpdateTaskDurationAlertRequestTypeDAGTIMELINESS UpdateTaskDurationAlertRequestType = "DAG_TIMELINESS"
+	UpdateTaskDurationAlertRequestTypeTASKDURATION  UpdateTaskDurationAlertRequestType = "TASK_DURATION"
+	UpdateTaskDurationAlertRequestTypeTASKFAILURE   UpdateTaskDurationAlertRequestType = "TASK_FAILURE"
+)
+
+// Defines values for UpdateTaskFailureAlertRequestSeverity.
+const (
+	CRITICAL UpdateTaskFailureAlertRequestSeverity = "CRITICAL"
+	INFO     UpdateTaskFailureAlertRequestSeverity = "INFO"
+	WARNING  UpdateTaskFailureAlertRequestSeverity = "WARNING"
+)
+
+// Defines values for UpdateTaskFailureAlertRequestType.
+const (
+	UpdateTaskFailureAlertRequestTypeDAGDURATION   UpdateTaskFailureAlertRequestType = "DAG_DURATION"
+	UpdateTaskFailureAlertRequestTypeDAGFAILURE    UpdateTaskFailureAlertRequestType = "DAG_FAILURE"
+	UpdateTaskFailureAlertRequestTypeDAGSUCCESS    UpdateTaskFailureAlertRequestType = "DAG_SUCCESS"
+	UpdateTaskFailureAlertRequestTypeDAGTIMELINESS UpdateTaskFailureAlertRequestType = "DAG_TIMELINESS"
+	UpdateTaskFailureAlertRequestTypeTASKDURATION  UpdateTaskFailureAlertRequestType = "TASK_DURATION"
+	UpdateTaskFailureAlertRequestTypeTASKFAILURE   UpdateTaskFailureAlertRequestType = "TASK_FAILURE"
 )
 
 // Defines values for WorkerMachineName.
@@ -445,6 +934,21 @@ const (
 	ListOrganizationsParamsSupportPlanTRIAL            ListOrganizationsParamsSupportPlan = "TRIAL"
 )
 
+// Defines values for ListOrganizationsParamsProductPlan.
+const (
+	ListOrganizationsParamsProductPlanBASIC            ListOrganizationsParamsProductPlan = "BASIC"
+	ListOrganizationsParamsProductPlanBUSINESSCRITICAL ListOrganizationsParamsProductPlan = "BUSINESS_CRITICAL"
+	ListOrganizationsParamsProductPlanPREMIUM          ListOrganizationsParamsProductPlan = "PREMIUM"
+	ListOrganizationsParamsProductPlanSTANDARD         ListOrganizationsParamsProductPlan = "STANDARD"
+	ListOrganizationsParamsProductPlanTRIAL            ListOrganizationsParamsProductPlan = "TRIAL"
+)
+
+// Defines values for ListOrganizationsParamsAstronomerProduct.
+const (
+	ListOrganizationsParamsAstronomerProductASTRO   ListOrganizationsParamsAstronomerProduct = "ASTRO"
+	ListOrganizationsParamsAstronomerProductOBSERVE ListOrganizationsParamsAstronomerProduct = "OBSERVE"
+)
+
 // Defines values for ListOrganizationsParamsProduct.
 const (
 	ListOrganizationsParamsProductHOSTED ListOrganizationsParamsProduct = "HOSTED"
@@ -461,6 +965,33 @@ const (
 	ListOrganizationsParamsSortsUpdatedAtDesc ListOrganizationsParamsSorts = "updatedAt:desc"
 )
 
+// Defines values for ListAlertsParamsAlertTypes.
+const (
+	ListAlertsParamsAlertTypesDAGDURATION   ListAlertsParamsAlertTypes = "DAG_DURATION"
+	ListAlertsParamsAlertTypesDAGFAILURE    ListAlertsParamsAlertTypes = "DAG_FAILURE"
+	ListAlertsParamsAlertTypesDAGSUCCESS    ListAlertsParamsAlertTypes = "DAG_SUCCESS"
+	ListAlertsParamsAlertTypesDAGTIMELINESS ListAlertsParamsAlertTypes = "DAG_TIMELINESS"
+	ListAlertsParamsAlertTypesTASKDURATION  ListAlertsParamsAlertTypes = "TASK_DURATION"
+	ListAlertsParamsAlertTypesTASKFAILURE   ListAlertsParamsAlertTypes = "TASK_FAILURE"
+)
+
+// Defines values for ListAlertsParamsEntityType.
+const (
+	ListAlertsParamsEntityTypeDEPLOYMENT   ListAlertsParamsEntityType = "DEPLOYMENT"
+	ListAlertsParamsEntityTypeORGANIZATION ListAlertsParamsEntityType = "ORGANIZATION"
+	ListAlertsParamsEntityTypeWORKSPACE    ListAlertsParamsEntityType = "WORKSPACE"
+)
+
+// Defines values for ListAlertsParamsSorts.
+const (
+	ListAlertsParamsSortsCreatedAtAsc  ListAlertsParamsSorts = "createdAt:asc"
+	ListAlertsParamsSortsCreatedAtDesc ListAlertsParamsSorts = "createdAt:desc"
+	ListAlertsParamsSortsNameAsc       ListAlertsParamsSorts = "name:asc"
+	ListAlertsParamsSortsNameDesc      ListAlertsParamsSorts = "name:desc"
+	ListAlertsParamsSortsUpdatedAtAsc  ListAlertsParamsSorts = "updatedAt:asc"
+	ListAlertsParamsSortsUpdatedAtDesc ListAlertsParamsSorts = "updatedAt:desc"
+)
+
 // Defines values for GetClusterOptionsParamsProvider.
 const (
 	GetClusterOptionsParamsProviderAWS   GetClusterOptionsParamsProvider = "AWS"
@@ -470,8 +1001,8 @@ const (
 
 // Defines values for GetClusterOptionsParamsType.
 const (
-	DEDICATED GetClusterOptionsParamsType = "DEDICATED"
-	HYBRID    GetClusterOptionsParamsType = "HYBRID"
+	GetClusterOptionsParamsTypeDEDICATED GetClusterOptionsParamsType = "DEDICATED"
+	GetClusterOptionsParamsTypeHYBRID    GetClusterOptionsParamsType = "HYBRID"
 )
 
 // Defines values for ListClustersParamsProvider.
@@ -493,15 +1024,16 @@ const (
 
 // Defines values for GetDeploymentOptionsParamsDeploymentType.
 const (
-	GetDeploymentOptionsParamsDeploymentTypeDEDICATED GetDeploymentOptionsParamsDeploymentType = "DEDICATED"
-	GetDeploymentOptionsParamsDeploymentTypeHYBRID    GetDeploymentOptionsParamsDeploymentType = "HYBRID"
-	GetDeploymentOptionsParamsDeploymentTypeSTANDARD  GetDeploymentOptionsParamsDeploymentType = "STANDARD"
+	DEDICATED GetDeploymentOptionsParamsDeploymentType = "DEDICATED"
+	HYBRID    GetDeploymentOptionsParamsDeploymentType = "HYBRID"
+	STANDARD  GetDeploymentOptionsParamsDeploymentType = "STANDARD"
 )
 
 // Defines values for GetDeploymentOptionsParamsExecutor.
 const (
-	GetDeploymentOptionsParamsExecutorCELERY     GetDeploymentOptionsParamsExecutor = "CELERY"
-	GetDeploymentOptionsParamsExecutorKUBERNETES GetDeploymentOptionsParamsExecutor = "KUBERNETES"
+	ASTRO      GetDeploymentOptionsParamsExecutor = "ASTRO"
+	CELERY     GetDeploymentOptionsParamsExecutor = "CELERY"
+	KUBERNETES GetDeploymentOptionsParamsExecutor = "KUBERNETES"
 )
 
 // Defines values for GetDeploymentOptionsParamsCloudProvider.
@@ -540,6 +1072,32 @@ const (
 	METRICSEXPORT   ListEnvironmentObjectsParamsObjectType = "METRICS_EXPORT"
 )
 
+// Defines values for ListNotificationChannelsParamsChannelTypes.
+const (
+	ListNotificationChannelsParamsChannelTypesDAGTRIGGER ListNotificationChannelsParamsChannelTypes = "DAG_TRIGGER"
+	ListNotificationChannelsParamsChannelTypesEMAIL      ListNotificationChannelsParamsChannelTypes = "EMAIL"
+	ListNotificationChannelsParamsChannelTypesOPSGENIE   ListNotificationChannelsParamsChannelTypes = "OPSGENIE"
+	ListNotificationChannelsParamsChannelTypesPAGERDUTY  ListNotificationChannelsParamsChannelTypes = "PAGERDUTY"
+	ListNotificationChannelsParamsChannelTypesSLACK      ListNotificationChannelsParamsChannelTypes = "SLACK"
+)
+
+// Defines values for ListNotificationChannelsParamsEntityType.
+const (
+	DEPLOYMENT   ListNotificationChannelsParamsEntityType = "DEPLOYMENT"
+	ORGANIZATION ListNotificationChannelsParamsEntityType = "ORGANIZATION"
+	WORKSPACE    ListNotificationChannelsParamsEntityType = "WORKSPACE"
+)
+
+// Defines values for ListNotificationChannelsParamsSorts.
+const (
+	ListNotificationChannelsParamsSortsCreatedAtAsc  ListNotificationChannelsParamsSorts = "createdAt:asc"
+	ListNotificationChannelsParamsSortsCreatedAtDesc ListNotificationChannelsParamsSorts = "createdAt:desc"
+	ListNotificationChannelsParamsSortsNameAsc       ListNotificationChannelsParamsSorts = "name:asc"
+	ListNotificationChannelsParamsSortsNameDesc      ListNotificationChannelsParamsSorts = "name:desc"
+	ListNotificationChannelsParamsSortsUpdatedAtAsc  ListNotificationChannelsParamsSorts = "updatedAt:asc"
+	ListNotificationChannelsParamsSortsUpdatedAtDesc ListNotificationChannelsParamsSorts = "updatedAt:desc"
+)
+
 // Defines values for ListWorkspacesParamsSorts.
 const (
 	CreatedAtAsc  ListWorkspacesParamsSorts = "createdAt:asc"
@@ -549,6 +1107,126 @@ const (
 	UpdatedAtAsc  ListWorkspacesParamsSorts = "updatedAt:asc"
 	UpdatedAtDesc ListWorkspacesParamsSorts = "updatedAt:desc"
 )
+
+// Alert defines model for Alert.
+type Alert struct {
+	// CreatedAt The time when the alert was created in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
+	CreatedAt time.Time           `json:"createdAt"`
+	CreatedBy BasicSubjectProfile `json:"createdBy"`
+
+	// DeploymentId The ID of the deployment the alert is associated with.
+	DeploymentId *string `json:"deploymentId,omitempty"`
+
+	// EntityId The ID of the entity the alert is associated with.
+	EntityId string `json:"entityId"`
+
+	// EntityName The name of the entity the alert is associated with.
+	EntityName *string `json:"entityName,omitempty"`
+
+	// EntityType The type of entity the alert is associated with.
+	EntityType AlertEntityType `json:"entityType"`
+
+	// Id The alert's ID.
+	Id string `json:"id"`
+
+	// Name The alert's name.
+	Name string `json:"name"`
+
+	// NotificationChannels The notification channels to send alerts to.
+	NotificationChannels *[]AlertNotificationChannel `json:"notificationChannels,omitempty"`
+
+	// OrganizationId The ID of the organization the alert is associated with.
+	OrganizationId string     `json:"organizationId"`
+	Rules          AlertRules `json:"rules"`
+
+	// Severity The alert's severity.
+	Severity AlertSeverity `json:"severity"`
+
+	// Type The alert's type.
+	Type AlertType `json:"type"`
+
+	// UpdatedAt The time when the alert was last updated in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
+	UpdatedAt time.Time           `json:"updatedAt"`
+	UpdatedBy BasicSubjectProfile `json:"updatedBy"`
+
+	// WorkspaceId The ID of the workspace the alert is associated with.
+	WorkspaceId *string `json:"workspaceId,omitempty"`
+}
+
+// AlertEntityType The type of entity the alert is associated with.
+type AlertEntityType string
+
+// AlertSeverity The alert's severity.
+type AlertSeverity string
+
+// AlertType The alert's type.
+type AlertType string
+
+// AlertNotificationChannel defines model for AlertNotificationChannel.
+type AlertNotificationChannel struct {
+	// CreatedAt The time when the notification channel was created in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
+	CreatedAt string `json:"createdAt"`
+
+	// Definition The definition of the notification.
+	Definition interface{} `json:"definition"`
+
+	// DeploymentId The ID of the deployment the notification channel is associated with.
+	DeploymentId *string `json:"deploymentId,omitempty"`
+
+	// EntityId The ID of the entity the notification channel is associated with.
+	EntityId string `json:"entityId"`
+
+	// EntityType The type of entity the notification channel is associated with.
+	EntityType AlertNotificationChannelEntityType `json:"entityType"`
+
+	// Id The ID of the notification channel.
+	Id string `json:"id"`
+
+	// Name The name of the notification channel.
+	Name string `json:"name"`
+
+	// OrganizationId The ID of the organization the notification channel is associated with.
+	OrganizationId string `json:"organizationId"`
+
+	// Type The type of the notification channel.
+	Type AlertNotificationChannelType `json:"type"`
+
+	// UpdatedAt The time when the notification channel was last updated in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
+	UpdatedAt string `json:"updatedAt"`
+
+	// WorkspaceId The ID of the workspace the notification channel is associated with.
+	WorkspaceId *string `json:"workspaceId,omitempty"`
+}
+
+// AlertNotificationChannelEntityType The type of entity the notification channel is associated with.
+type AlertNotificationChannelEntityType string
+
+// AlertNotificationChannelType The type of the notification channel.
+type AlertNotificationChannelType string
+
+// AlertRules defines model for AlertRules.
+type AlertRules struct {
+	// PatternMatches The alert's pattern matches to match against.
+	PatternMatches *[]PatternMatch `json:"patternMatches,omitempty"`
+
+	// Properties The alert's properties used to define the alert.
+	Properties interface{} `json:"properties"`
+}
+
+// AlertsPaginated defines model for AlertsPaginated.
+type AlertsPaginated struct {
+	// Alerts The list of alerts.
+	Alerts []Alert `json:"alerts"`
+
+	// Limit The limit for pagination.
+	Limit int `json:"limit"`
+
+	// Offset The offset for pagination.
+	Offset int `json:"offset"`
+
+	// TotalCount The total count of alerts.
+	TotalCount int `json:"totalCount"`
+}
 
 // BasicSubjectProfile defines model for BasicSubjectProfile.
 type BasicSubjectProfile struct {
@@ -808,6 +1486,11 @@ type ConnectionAuthTypeParameter struct {
 	IsSecret bool `json:"isSecret"`
 }
 
+// CreateAlertRequest defines model for CreateAlertRequest.
+type CreateAlertRequest struct {
+	union json.RawMessage
+}
+
 // CreateAwsClusterRequest defines model for CreateAwsClusterRequest.
 type CreateAwsClusterRequest struct {
 	// CloudProvider The cluster's cloud provider.
@@ -894,6 +1577,220 @@ type CreateClusterRequest struct {
 	union json.RawMessage
 }
 
+// CreateDagDurationAlertProperties defines model for CreateDagDurationAlertProperties.
+type CreateDagDurationAlertProperties struct {
+	// DagDurationSeconds The duration of the DAG in seconds.
+	DagDurationSeconds int `json:"dagDurationSeconds"`
+
+	// DeploymentId The ID of the deployment to which the alert is scoped.
+	DeploymentId string `json:"deploymentId"`
+}
+
+// CreateDagDurationAlertRequest defines model for CreateDagDurationAlertRequest.
+type CreateDagDurationAlertRequest struct {
+	// EntityId The entity ID the alert is associated with.
+	EntityId string `json:"entityId"`
+
+	// EntityType The ID of the Deployment to which the alert is scoped.
+	EntityType CreateDagDurationAlertRequestEntityType `json:"entityType"`
+
+	// Name The alert's name.
+	Name string `json:"name"`
+
+	// NotificationChannelIds The notification channels to send alerts to.
+	NotificationChannelIds []string                    `json:"notificationChannelIds"`
+	Rules                  CreateDagDurationAlertRules `json:"rules"`
+
+	// Severity The alert's severity.
+	Severity CreateDagDurationAlertRequestSeverity `json:"severity"`
+
+	// Type The alert's type.
+	Type CreateDagDurationAlertRequestType `json:"type"`
+}
+
+// CreateDagDurationAlertRequestEntityType The ID of the Deployment to which the alert is scoped.
+type CreateDagDurationAlertRequestEntityType string
+
+// CreateDagDurationAlertRequestSeverity The alert's severity.
+type CreateDagDurationAlertRequestSeverity string
+
+// CreateDagDurationAlertRequestType The alert's type.
+type CreateDagDurationAlertRequestType string
+
+// CreateDagDurationAlertRules defines model for CreateDagDurationAlertRules.
+type CreateDagDurationAlertRules struct {
+	// PatternMatches The alert's pattern matches to match against.
+	PatternMatches []PatternMatchRequest            `json:"patternMatches"`
+	Properties     CreateDagDurationAlertProperties `json:"properties"`
+}
+
+// CreateDagFailureAlertProperties defines model for CreateDagFailureAlertProperties.
+type CreateDagFailureAlertProperties struct {
+	// DeploymentId The ID of the deployment to which the alert is scoped.
+	DeploymentId string `json:"deploymentId"`
+}
+
+// CreateDagFailureAlertRequest defines model for CreateDagFailureAlertRequest.
+type CreateDagFailureAlertRequest struct {
+	// EntityId The entity ID the alert is associated with.
+	EntityId string `json:"entityId"`
+
+	// EntityType The ID of the Deployment to which the alert is scoped.
+	EntityType CreateDagFailureAlertRequestEntityType `json:"entityType"`
+
+	// Name The alert's name.
+	Name string `json:"name"`
+
+	// NotificationChannelIds The notification channels to send alerts to.
+	NotificationChannelIds []string                   `json:"notificationChannelIds"`
+	Rules                  CreateDagFailureAlertRules `json:"rules"`
+
+	// Severity The alert's severity.
+	Severity CreateDagFailureAlertRequestSeverity `json:"severity"`
+
+	// Type The alert's type.
+	Type CreateDagFailureAlertRequestType `json:"type"`
+}
+
+// CreateDagFailureAlertRequestEntityType The ID of the Deployment to which the alert is scoped.
+type CreateDagFailureAlertRequestEntityType string
+
+// CreateDagFailureAlertRequestSeverity The alert's severity.
+type CreateDagFailureAlertRequestSeverity string
+
+// CreateDagFailureAlertRequestType The alert's type.
+type CreateDagFailureAlertRequestType string
+
+// CreateDagFailureAlertRules defines model for CreateDagFailureAlertRules.
+type CreateDagFailureAlertRules struct {
+	// PatternMatches The alert's pattern matches to match against.
+	PatternMatches []PatternMatchRequest           `json:"patternMatches"`
+	Properties     CreateDagFailureAlertProperties `json:"properties"`
+}
+
+// CreateDagSuccessAlertProperties defines model for CreateDagSuccessAlertProperties.
+type CreateDagSuccessAlertProperties struct {
+	// DeploymentId The ID of the deployment to which the alert is scoped.
+	DeploymentId string `json:"deploymentId"`
+}
+
+// CreateDagSuccessAlertRequest defines model for CreateDagSuccessAlertRequest.
+type CreateDagSuccessAlertRequest struct {
+	// EntityId The entity ID the alert is associated with.
+	EntityId string `json:"entityId"`
+
+	// EntityType The ID of the Deployment to which the alert is scoped.
+	EntityType CreateDagSuccessAlertRequestEntityType `json:"entityType"`
+
+	// Name The alert's name.
+	Name string `json:"name"`
+
+	// NotificationChannelIds The notification channels to send alerts to.
+	NotificationChannelIds []string                   `json:"notificationChannelIds"`
+	Rules                  CreateDagSuccessAlertRules `json:"rules"`
+
+	// Severity The alert's severity.
+	Severity CreateDagSuccessAlertRequestSeverity `json:"severity"`
+
+	// Type The alert's type.
+	Type CreateDagSuccessAlertRequestType `json:"type"`
+}
+
+// CreateDagSuccessAlertRequestEntityType The ID of the Deployment to which the alert is scoped.
+type CreateDagSuccessAlertRequestEntityType string
+
+// CreateDagSuccessAlertRequestSeverity The alert's severity.
+type CreateDagSuccessAlertRequestSeverity string
+
+// CreateDagSuccessAlertRequestType The alert's type.
+type CreateDagSuccessAlertRequestType string
+
+// CreateDagSuccessAlertRules defines model for CreateDagSuccessAlertRules.
+type CreateDagSuccessAlertRules struct {
+	// PatternMatches The alert's pattern matches to match against.
+	PatternMatches []PatternMatchRequest           `json:"patternMatches"`
+	Properties     CreateDagSuccessAlertProperties `json:"properties"`
+}
+
+// CreateDagTimelinessAlertProperties defines model for CreateDagTimelinessAlertProperties.
+type CreateDagTimelinessAlertProperties struct {
+	// DagDeadline The deadline for the DAG in HH:MM 24-hour format, in UTC time.
+	DagDeadline string `json:"dagDeadline"`
+
+	// DaysOfWeek The days of the week for the alert.
+	DaysOfWeek []string `json:"daysOfWeek"`
+
+	// DeploymentId The ID of the deployment to which the alert is scoped.
+	DeploymentId string `json:"deploymentId"`
+
+	// LookBackPeriodSeconds The look-back period in seconds.
+	LookBackPeriodSeconds int `json:"lookBackPeriodSeconds"`
+}
+
+// CreateDagTimelinessAlertRequest defines model for CreateDagTimelinessAlertRequest.
+type CreateDagTimelinessAlertRequest struct {
+	// EntityId The entity ID the alert is associated with.
+	EntityId string `json:"entityId"`
+
+	// EntityType The ID of the Deployment to which the alert is scoped.
+	EntityType CreateDagTimelinessAlertRequestEntityType `json:"entityType"`
+
+	// Name The alert's name.
+	Name string `json:"name"`
+
+	// NotificationChannelIds The notification channels to send alerts to.
+	NotificationChannelIds []string                      `json:"notificationChannelIds"`
+	Rules                  CreateDagTimelinessAlertRules `json:"rules"`
+
+	// Severity The alert's severity.
+	Severity CreateDagTimelinessAlertRequestSeverity `json:"severity"`
+
+	// Type The alert's type.
+	Type CreateDagTimelinessAlertRequestType `json:"type"`
+}
+
+// CreateDagTimelinessAlertRequestEntityType The ID of the Deployment to which the alert is scoped.
+type CreateDagTimelinessAlertRequestEntityType string
+
+// CreateDagTimelinessAlertRequestSeverity The alert's severity.
+type CreateDagTimelinessAlertRequestSeverity string
+
+// CreateDagTimelinessAlertRequestType The alert's type.
+type CreateDagTimelinessAlertRequestType string
+
+// CreateDagTimelinessAlertRules defines model for CreateDagTimelinessAlertRules.
+type CreateDagTimelinessAlertRules struct {
+	// PatternMatches The alert's pattern matches to match against.
+	PatternMatches []PatternMatchRequest              `json:"patternMatches"`
+	Properties     CreateDagTimelinessAlertProperties `json:"properties"`
+}
+
+// CreateDagTriggerNotificationChannelRequest defines model for CreateDagTriggerNotificationChannelRequest.
+type CreateDagTriggerNotificationChannelRequest struct {
+	Definition DagTriggerNotificationChannelDefinition `json:"definition"`
+
+	// EntityId The entity ID the notification channel is scoped to.
+	EntityId string `json:"entityId"`
+
+	// EntityType The type of entity the notification channel is scoped to.
+	EntityType CreateDagTriggerNotificationChannelRequestEntityType `json:"entityType"`
+
+	// IsShared When entity type is scoped to ORGANIZATION or WORKSPACE, this determines if child entities can access this notification channel.
+	IsShared *bool `json:"isShared,omitempty"`
+
+	// Name The notification channel's name.
+	Name string `json:"name"`
+
+	// Type The notification channel's type.
+	Type CreateDagTriggerNotificationChannelRequestType `json:"type"`
+}
+
+// CreateDagTriggerNotificationChannelRequestEntityType The type of entity the notification channel is scoped to.
+type CreateDagTriggerNotificationChannelRequestEntityType string
+
+// CreateDagTriggerNotificationChannelRequestType The notification channel's type.
+type CreateDagTriggerNotificationChannelRequestType string
+
 // CreateDedicatedDeploymentRequest defines model for CreateDedicatedDeploymentRequest.
 type CreateDedicatedDeploymentRequest struct {
 	// AstroRuntimeVersion Deployment's Astro Runtime version.
@@ -942,13 +1839,13 @@ type CreateDedicatedDeploymentRequest struct {
 	ResourceQuotaMemory string                        `json:"resourceQuotaMemory"`
 	ScalingSpec         *DeploymentScalingSpecRequest `json:"scalingSpec,omitempty"`
 
-	// SchedulerSize The size of the scheduler pod.
+	// SchedulerSize The size of the scheduler Pod.
 	SchedulerSize CreateDedicatedDeploymentRequestSchedulerSize `json:"schedulerSize"`
 
 	// Type The type of the Deployment.
 	Type CreateDedicatedDeploymentRequestType `json:"type"`
 
-	// WorkerQueues The list of worker queues configured for the Deployment. Applies only when `Executor` is `CELERY`. At least 1 worker queue is needed. All Deployments need at least 1 worker queue called `default`.
+	// WorkerQueues The list of worker queues configured for the Deployment. Applies only when `Executor` is `CELERY` or `ASTRO`. All such Deployments need at least 1 worker queue called `default`.
 	WorkerQueues *[]WorkerQueueRequest `json:"workerQueues,omitempty"`
 
 	// WorkloadIdentity The Deployment's workload identity.
@@ -961,7 +1858,7 @@ type CreateDedicatedDeploymentRequest struct {
 // CreateDedicatedDeploymentRequestExecutor The Deployment's executor type.
 type CreateDedicatedDeploymentRequestExecutor string
 
-// CreateDedicatedDeploymentRequestSchedulerSize The size of the scheduler pod.
+// CreateDedicatedDeploymentRequestSchedulerSize The size of the scheduler Pod.
 type CreateDedicatedDeploymentRequestSchedulerSize string
 
 // CreateDedicatedDeploymentRequestType The type of the Deployment.
@@ -971,6 +1868,32 @@ type CreateDedicatedDeploymentRequestType string
 type CreateDeploymentRequest struct {
 	union json.RawMessage
 }
+
+// CreateEmailNotificationChannelRequest defines model for CreateEmailNotificationChannelRequest.
+type CreateEmailNotificationChannelRequest struct {
+	Definition EmailNotificationChannelDefinition `json:"definition"`
+
+	// EntityId The entity ID the notification channel is scoped to.
+	EntityId string `json:"entityId"`
+
+	// EntityType The type of entity the notification channel is scoped to.
+	EntityType CreateEmailNotificationChannelRequestEntityType `json:"entityType"`
+
+	// IsShared When entity type is scoped to ORGANIZATION or WORKSPACE, this determines if child entities can access this notification channel.
+	IsShared *bool `json:"isShared,omitempty"`
+
+	// Name The notification channel's name.
+	Name string `json:"name"`
+
+	// Type The notification channel's type.
+	Type CreateEmailNotificationChannelRequestType `json:"type"`
+}
+
+// CreateEmailNotificationChannelRequestEntityType The type of entity the notification channel is scoped to.
+type CreateEmailNotificationChannelRequestEntityType string
+
+// CreateEmailNotificationChannelRequestType The notification channel's type.
+type CreateEmailNotificationChannelRequestType string
 
 // CreateEnvironmentObject defines model for CreateEnvironmentObject.
 type CreateEnvironmentObject struct {
@@ -1060,6 +1983,9 @@ type CreateEnvironmentObjectLinkRequestScope string
 
 // CreateEnvironmentObjectMetricsExportOverridesRequest defines model for CreateEnvironmentObjectMetricsExportOverridesRequest.
 type CreateEnvironmentObjectMetricsExportOverridesRequest struct {
+	// AuthType The type of authentication to use when connecting to the remote endpoint
+	AuthType *CreateEnvironmentObjectMetricsExportOverridesRequestAuthType `json:"authType,omitempty"`
+
 	// BasicToken The bearer token to connect to the remote endpoint
 	BasicToken *string `json:"basicToken,omitempty"`
 
@@ -1082,11 +2008,17 @@ type CreateEnvironmentObjectMetricsExportOverridesRequest struct {
 	Username *string `json:"username,omitempty"`
 }
 
+// CreateEnvironmentObjectMetricsExportOverridesRequestAuthType The type of authentication to use when connecting to the remote endpoint
+type CreateEnvironmentObjectMetricsExportOverridesRequestAuthType string
+
 // CreateEnvironmentObjectMetricsExportOverridesRequestExporterType The type of exporter
 type CreateEnvironmentObjectMetricsExportOverridesRequestExporterType string
 
 // CreateEnvironmentObjectMetricsExportRequest defines model for CreateEnvironmentObjectMetricsExportRequest.
 type CreateEnvironmentObjectMetricsExportRequest struct {
+	// AuthType The type of authentication to use when connecting to the remote endpoint
+	AuthType *CreateEnvironmentObjectMetricsExportRequestAuthType `json:"authType,omitempty"`
+
 	// BasicToken The bearer token to connect to the remote endpoint
 	BasicToken *string `json:"basicToken,omitempty"`
 
@@ -1108,6 +2040,9 @@ type CreateEnvironmentObjectMetricsExportRequest struct {
 	// Username The username to connect to the remote endpoint
 	Username *string `json:"username,omitempty"`
 }
+
+// CreateEnvironmentObjectMetricsExportRequestAuthType The type of authentication to use when connecting to the remote endpoint
+type CreateEnvironmentObjectMetricsExportRequestAuthType string
 
 // CreateEnvironmentObjectMetricsExportRequestExporterType The type of exporter
 type CreateEnvironmentObjectMetricsExportRequestExporterType string
@@ -1268,6 +2203,89 @@ type CreateNodePoolRequest struct {
 	NodeInstanceType string `json:"nodeInstanceType"`
 }
 
+// CreateNotificationChannelRequest defines model for CreateNotificationChannelRequest.
+type CreateNotificationChannelRequest struct {
+	union json.RawMessage
+}
+
+// CreateOpsgenieNotificationChannelRequest defines model for CreateOpsgenieNotificationChannelRequest.
+type CreateOpsgenieNotificationChannelRequest struct {
+	Definition OpsgenieNotificationChannelDefinition `json:"definition"`
+
+	// EntityId The entity ID the notification channel is scoped to.
+	EntityId string `json:"entityId"`
+
+	// EntityType The type of entity the notification channel is scoped to.
+	EntityType CreateOpsgenieNotificationChannelRequestEntityType `json:"entityType"`
+
+	// IsShared When entity type is scoped to ORGANIZATION or WORKSPACE, this determines if child entities can access this notification channel.
+	IsShared *bool `json:"isShared,omitempty"`
+
+	// Name The notification channel's name.
+	Name string `json:"name"`
+
+	// Type The notification channel's type.
+	Type CreateOpsgenieNotificationChannelRequestType `json:"type"`
+}
+
+// CreateOpsgenieNotificationChannelRequestEntityType The type of entity the notification channel is scoped to.
+type CreateOpsgenieNotificationChannelRequestEntityType string
+
+// CreateOpsgenieNotificationChannelRequestType The notification channel's type.
+type CreateOpsgenieNotificationChannelRequestType string
+
+// CreatePagerDutyNotificationChannelRequest defines model for CreatePagerDutyNotificationChannelRequest.
+type CreatePagerDutyNotificationChannelRequest struct {
+	Definition PagerDutyNotificationChannelDefinition `json:"definition"`
+
+	// EntityId The entity ID the notification channel is scoped to.
+	EntityId string `json:"entityId"`
+
+	// EntityType The type of entity the notification channel is scoped to.
+	EntityType CreatePagerDutyNotificationChannelRequestEntityType `json:"entityType"`
+
+	// IsShared When entity type is scoped to ORGANIZATION or WORKSPACE, this determines if child entities can access this notification channel.
+	IsShared *bool `json:"isShared,omitempty"`
+
+	// Name The notification channel's name.
+	Name string `json:"name"`
+
+	// Type The notification channel's type.
+	Type CreatePagerDutyNotificationChannelRequestType `json:"type"`
+}
+
+// CreatePagerDutyNotificationChannelRequestEntityType The type of entity the notification channel is scoped to.
+type CreatePagerDutyNotificationChannelRequestEntityType string
+
+// CreatePagerDutyNotificationChannelRequestType The notification channel's type.
+type CreatePagerDutyNotificationChannelRequestType string
+
+// CreateSlackNotificationChannelRequest defines model for CreateSlackNotificationChannelRequest.
+type CreateSlackNotificationChannelRequest struct {
+	Definition SlackNotificationChannelDefinition `json:"definition"`
+
+	// EntityId The entity ID the notification channel is scoped to.
+	EntityId string `json:"entityId"`
+
+	// EntityType The type of entity the notification channel is scoped to.
+	EntityType CreateSlackNotificationChannelRequestEntityType `json:"entityType"`
+
+	// IsShared When entity type is scoped to ORGANIZATION or WORKSPACE, this determines if child entities can access this notification channel.
+	IsShared *bool `json:"isShared,omitempty"`
+
+	// Name The notification channel's name.
+	Name string `json:"name"`
+
+	// Type The notification channel's type.
+	Type CreateSlackNotificationChannelRequestType `json:"type"`
+}
+
+// CreateSlackNotificationChannelRequestEntityType The type of entity the notification channel is scoped to.
+type CreateSlackNotificationChannelRequestEntityType string
+
+// CreateSlackNotificationChannelRequestType The notification channel's type.
+type CreateSlackNotificationChannelRequestType string
+
 // CreateStandardDeploymentRequest defines model for CreateStandardDeploymentRequest.
 type CreateStandardDeploymentRequest struct {
 	// AstroRuntimeVersion Deployment's Astro Runtime version.
@@ -1322,7 +2340,7 @@ type CreateStandardDeploymentRequest struct {
 	ResourceQuotaMemory string                        `json:"resourceQuotaMemory"`
 	ScalingSpec         *DeploymentScalingSpecRequest `json:"scalingSpec,omitempty"`
 
-	// SchedulerSize The size of the scheduler pod.
+	// SchedulerSize The size of the scheduler Pod.
 	SchedulerSize CreateStandardDeploymentRequestSchedulerSize `json:"schedulerSize"`
 
 	// Type The type of the Deployment.
@@ -1344,11 +2362,102 @@ type CreateStandardDeploymentRequestCloudProvider string
 // CreateStandardDeploymentRequestExecutor The Deployment's executor type.
 type CreateStandardDeploymentRequestExecutor string
 
-// CreateStandardDeploymentRequestSchedulerSize The size of the scheduler pod.
+// CreateStandardDeploymentRequestSchedulerSize The size of the scheduler Pod.
 type CreateStandardDeploymentRequestSchedulerSize string
 
 // CreateStandardDeploymentRequestType The type of the Deployment.
 type CreateStandardDeploymentRequestType string
+
+// CreateTaskDurationAlertProperties defines model for CreateTaskDurationAlertProperties.
+type CreateTaskDurationAlertProperties struct {
+	// DeploymentId The ID of the deployment to which the alert is scoped.
+	DeploymentId string `json:"deploymentId"`
+
+	// TaskDurationSeconds The duration of the Task in seconds.
+	TaskDurationSeconds int `json:"taskDurationSeconds"`
+}
+
+// CreateTaskDurationAlertRequest defines model for CreateTaskDurationAlertRequest.
+type CreateTaskDurationAlertRequest struct {
+	// EntityId The entity ID the alert is associated with.
+	EntityId string `json:"entityId"`
+
+	// EntityType The ID of the Deployment to which the alert is scoped.
+	EntityType CreateTaskDurationAlertRequestEntityType `json:"entityType"`
+
+	// Name The alert's name.
+	Name string `json:"name"`
+
+	// NotificationChannelIds The notification channels to send alerts to.
+	NotificationChannelIds []string                     `json:"notificationChannelIds"`
+	Rules                  CreateTaskDurationAlertRules `json:"rules"`
+
+	// Severity The alert's severity.
+	Severity CreateTaskDurationAlertRequestSeverity `json:"severity"`
+
+	// Type The alert's type.
+	Type CreateTaskDurationAlertRequestType `json:"type"`
+}
+
+// CreateTaskDurationAlertRequestEntityType The ID of the Deployment to which the alert is scoped.
+type CreateTaskDurationAlertRequestEntityType string
+
+// CreateTaskDurationAlertRequestSeverity The alert's severity.
+type CreateTaskDurationAlertRequestSeverity string
+
+// CreateTaskDurationAlertRequestType The alert's type.
+type CreateTaskDurationAlertRequestType string
+
+// CreateTaskDurationAlertRules defines model for CreateTaskDurationAlertRules.
+type CreateTaskDurationAlertRules struct {
+	// PatternMatches The alert's pattern matches to match against.
+	PatternMatches []PatternMatchRequest             `json:"patternMatches"`
+	Properties     CreateTaskDurationAlertProperties `json:"properties"`
+}
+
+// CreateTaskFailureAlertProperties defines model for CreateTaskFailureAlertProperties.
+type CreateTaskFailureAlertProperties struct {
+	// DeploymentId The ID of the deployment to which the alert is scoped.
+	DeploymentId string `json:"deploymentId"`
+}
+
+// CreateTaskFailureAlertRequest defines model for CreateTaskFailureAlertRequest.
+type CreateTaskFailureAlertRequest struct {
+	// EntityId The entity ID the alert is associated with.
+	EntityId string `json:"entityId"`
+
+	// EntityType The ID of the Deployment to which the alert is scoped.
+	EntityType CreateTaskFailureAlertRequestEntityType `json:"entityType"`
+
+	// Name The alert's name.
+	Name string `json:"name"`
+
+	// NotificationChannelIds The notification channels to send alerts to.
+	NotificationChannelIds []string                    `json:"notificationChannelIds"`
+	Rules                  CreateTaskFailureAlertRules `json:"rules"`
+
+	// Severity The alert's severity.
+	Severity CreateTaskFailureAlertRequestSeverity `json:"severity"`
+
+	// Type The alert's type.
+	Type CreateTaskFailureAlertRequestType `json:"type"`
+}
+
+// CreateTaskFailureAlertRequestEntityType The ID of the Deployment to which the alert is scoped.
+type CreateTaskFailureAlertRequestEntityType string
+
+// CreateTaskFailureAlertRequestSeverity The alert's severity.
+type CreateTaskFailureAlertRequestSeverity string
+
+// CreateTaskFailureAlertRequestType The alert's type.
+type CreateTaskFailureAlertRequestType string
+
+// CreateTaskFailureAlertRules defines model for CreateTaskFailureAlertRules.
+type CreateTaskFailureAlertRules struct {
+	// PatternMatches The alert's pattern matches to match against.
+	PatternMatches []PatternMatchRequest            `json:"patternMatches"`
+	Properties     CreateTaskFailureAlertProperties `json:"properties"`
+}
 
 // CreateWorkspaceRequest defines model for CreateWorkspaceRequest.
 type CreateWorkspaceRequest struct {
@@ -1360,6 +2469,18 @@ type CreateWorkspaceRequest struct {
 
 	// Name The Workspace's name.
 	Name string `json:"name"`
+}
+
+// DagTriggerNotificationChannelDefinition defines model for DagTriggerNotificationChannelDefinition.
+type DagTriggerNotificationChannelDefinition struct {
+	// DagId The DAG ID.
+	DagId string `json:"dagId"`
+
+	// DeploymentApiToken The Deployment API token.
+	DeploymentApiToken string `json:"deploymentApiToken"`
+
+	// DeploymentId The DAG's deployment ID.
+	DeploymentId string `json:"deploymentId"`
 }
 
 // Deployment defines model for Deployment.
@@ -1693,6 +2814,12 @@ type DeploymentsPaginated struct {
 	TotalCount int `json:"totalCount"`
 }
 
+// EmailNotificationChannelDefinition defines model for EmailNotificationChannelDefinition.
+type EmailNotificationChannelDefinition struct {
+	// Recipients The email addresses of the recipients.
+	Recipients []string `json:"recipients"`
+}
+
 // EnvironmentObject defines model for EnvironmentObject.
 type EnvironmentObject struct {
 	AirflowVariable *EnvironmentObjectAirflowVariable `json:"airflowVariable,omitempty"`
@@ -1842,6 +2969,9 @@ type EnvironmentObjectLinkScope string
 
 // EnvironmentObjectMetricsExport defines model for EnvironmentObjectMetricsExport.
 type EnvironmentObjectMetricsExport struct {
+	// AuthType The type of authentication to use when connecting to the remote endpoint
+	AuthType *EnvironmentObjectMetricsExportAuthType `json:"authType,omitempty"`
+
 	// BasicToken The bearer token to connect to the remote endpoint
 	BasicToken *string `json:"basicToken,omitempty"`
 
@@ -1864,11 +2994,17 @@ type EnvironmentObjectMetricsExport struct {
 	Username *string `json:"username,omitempty"`
 }
 
+// EnvironmentObjectMetricsExportAuthType The type of authentication to use when connecting to the remote endpoint
+type EnvironmentObjectMetricsExportAuthType string
+
 // EnvironmentObjectMetricsExportExporterType The type of exporter
 type EnvironmentObjectMetricsExportExporterType string
 
 // EnvironmentObjectMetricsExportOverrides defines model for EnvironmentObjectMetricsExportOverrides.
 type EnvironmentObjectMetricsExportOverrides struct {
+	// AuthType The type of authentication to use when connecting to the remote endpoint
+	AuthType *EnvironmentObjectMetricsExportOverridesAuthType `json:"authType,omitempty"`
+
 	// BasicToken The bearer token to connect to the remote endpoint
 	BasicToken *string `json:"basicToken,omitempty"`
 
@@ -1890,6 +3026,9 @@ type EnvironmentObjectMetricsExportOverrides struct {
 	// Username The username to connect to the remote endpoint
 	Username *string `json:"username,omitempty"`
 }
+
+// EnvironmentObjectMetricsExportOverridesAuthType The type of authentication to use when connecting to the remote endpoint
+type EnvironmentObjectMetricsExportOverridesAuthType string
 
 // EnvironmentObjectMetricsExportOverridesExporterType The type of exporter
 type EnvironmentObjectMetricsExportOverridesExporterType string
@@ -2030,6 +3169,71 @@ type NodePool struct {
 // NodePoolCloudProvider The name of the cloud provider.
 type NodePoolCloudProvider string
 
+// NotificationChannel defines model for NotificationChannel.
+type NotificationChannel struct {
+	// CreatedAt The time when the alert was created in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
+	CreatedAt string              `json:"createdAt"`
+	CreatedBy BasicSubjectProfile `json:"createdBy"`
+
+	// Definition The notification channel's definition.
+	Definition interface{} `json:"definition"`
+
+	// DeploymentId The deployment ID the notification channel is scoped to.
+	DeploymentId *string `json:"deploymentId,omitempty"`
+
+	// EntityId The entity ID the notification channel is scoped to.
+	EntityId string `json:"entityId"`
+
+	// EntityName The name of the entity the notification channel is scoped to.
+	EntityName *string `json:"entityName,omitempty"`
+
+	// EntityType The type of entity the notification channel is scoped to.
+	EntityType string `json:"entityType"`
+
+	// Id The notification channel's ID.
+	Id string `json:"id"`
+
+	// IsShared When entity type is scoped to ORGANIZATION or WORKSPACE, this determines if child entities can access this notification channel.
+	IsShared bool `json:"isShared"`
+
+	// Name The notification channel's name.
+	Name string `json:"name"`
+
+	// OrganizationId The organization ID the notification channel is scoped to.
+	OrganizationId string `json:"organizationId"`
+
+	// Type The notification channel's type.
+	Type string `json:"type"`
+
+	// UpdatedAt The time when the alert was updated in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
+	UpdatedAt string              `json:"updatedAt"`
+	UpdatedBy BasicSubjectProfile `json:"updatedBy"`
+
+	// WorkspaceId The workspace ID the notification channel is scoped to.
+	WorkspaceId *string `json:"workspaceId,omitempty"`
+}
+
+// NotificationChannelsPaginated defines model for NotificationChannelsPaginated.
+type NotificationChannelsPaginated struct {
+	// Limit The maximum number of notification channels to return.
+	Limit int `json:"limit"`
+
+	// NotificationChannels The notification channels.
+	NotificationChannels []NotificationChannel `json:"notificationChannels"`
+
+	// Offset The offset of the first notification channel in the list.
+	Offset int `json:"offset"`
+
+	// TotalCount The total number of notification channels.
+	TotalCount int `json:"totalCount"`
+}
+
+// OpsgenieNotificationChannelDefinition defines model for OpsgenieNotificationChannelDefinition.
+type OpsgenieNotificationChannelDefinition struct {
+	// ApiKey The Opsgenie API key.
+	ApiKey string `json:"apiKey"`
+}
+
 // Organization defines model for Organization.
 type Organization struct {
 	// BillingEmail The Organization's billing email.
@@ -2055,7 +3259,8 @@ type Organization struct {
 	PaymentMethod *OrganizationPaymentMethod `json:"paymentMethod,omitempty"`
 
 	// Product The Organization's product type.
-	Product *OrganizationProduct `json:"product,omitempty"`
+	Product      *OrganizationProduct       `json:"product,omitempty"`
+	ProductPlans *[]OrganizationProductPlan `json:"productPlans,omitempty"`
 
 	// Status The Organization's status.
 	Status *OrganizationStatus `json:"status,omitempty"`
@@ -2083,6 +3288,17 @@ type OrganizationStatus string
 // OrganizationSupportPlan The Organization's support plan.
 type OrganizationSupportPlan string
 
+// OrganizationProductPlan defines model for OrganizationProductPlan.
+type OrganizationProductPlan struct {
+	AstronomerProduct OrganizationProductPlanAstronomerProduct `json:"astronomerProduct"`
+	OrganizationId    string                                   `json:"organizationId"`
+	ProductPlanId     string                                   `json:"productPlanId"`
+	ProductPlanName   string                                   `json:"productPlanName"`
+}
+
+// OrganizationProductPlanAstronomerProduct defines model for OrganizationProductPlan.AstronomerProduct.
+type OrganizationProductPlanAstronomerProduct string
+
 // OrganizationsPaginated defines model for OrganizationsPaginated.
 type OrganizationsPaginated struct {
 	// Limit The maximum number of Organizations in the page.
@@ -2106,6 +3322,48 @@ type OverrideDeploymentHibernationBody struct {
 	// OverrideUntil The end of the override time in UTC, formatted as 'YYYY-MM-DDTHH:MM:SSZ'. If this value isn't specified, the override persists until you end it through the Astro UI or another API call.
 	OverrideUntil *time.Time `json:"overrideUntil,omitempty"`
 }
+
+// PagerDutyNotificationChannelDefinition defines model for PagerDutyNotificationChannelDefinition.
+type PagerDutyNotificationChannelDefinition struct {
+	// IntegrationKey The Pager Duty integration key.
+	IntegrationKey string `json:"integrationKey"`
+}
+
+// PatternMatch defines model for PatternMatch.
+type PatternMatch struct {
+	// EntityType The type of entity to match against.
+	EntityType PatternMatchEntityType `json:"entityType"`
+
+	// OperatorType The type of operator to use for the pattern match.
+	OperatorType PatternMatchOperatorType `json:"operatorType"`
+
+	// Values The values to match against.
+	Values []string `json:"values"`
+}
+
+// PatternMatchEntityType The type of entity to match against.
+type PatternMatchEntityType string
+
+// PatternMatchOperatorType The type of operator to use for the pattern match.
+type PatternMatchOperatorType string
+
+// PatternMatchRequest defines model for PatternMatchRequest.
+type PatternMatchRequest struct {
+	// EntityType The type of entity to match against.
+	EntityType PatternMatchRequestEntityType `json:"entityType"`
+
+	// OperatorType The type of operator to use for the pattern match.
+	OperatorType PatternMatchRequestOperatorType `json:"operatorType"`
+
+	// Values The values to match against.
+	Values []string `json:"values"`
+}
+
+// PatternMatchRequestEntityType The type of entity to match against.
+type PatternMatchRequestEntityType string
+
+// PatternMatchRequestOperatorType The type of operator to use for the pattern match.
+type PatternMatchRequestOperatorType string
 
 // ProviderInstanceType defines model for ProviderInstanceType.
 type ProviderInstanceType struct {
@@ -2198,10 +3456,170 @@ type SchedulerMachine struct {
 // SchedulerMachineName The machine's name.
 type SchedulerMachineName string
 
+// SlackNotificationChannelDefinition defines model for SlackNotificationChannelDefinition.
+type SlackNotificationChannelDefinition struct {
+	// WebhookUrl The Slack webhook URL.
+	WebhookUrl string `json:"webhookUrl"`
+}
+
+// UpdateAlertRequest defines model for UpdateAlertRequest.
+type UpdateAlertRequest struct {
+	union json.RawMessage
+}
+
 // UpdateClusterRequest defines model for UpdateClusterRequest.
 type UpdateClusterRequest struct {
 	union json.RawMessage
 }
+
+// UpdateDagDurationAlertProperties defines model for UpdateDagDurationAlertProperties.
+type UpdateDagDurationAlertProperties struct {
+	// DagDurationSeconds The duration of the DAG in seconds.
+	DagDurationSeconds *int `json:"dagDurationSeconds,omitempty"`
+}
+
+// UpdateDagDurationAlertRequest defines model for UpdateDagDurationAlertRequest.
+type UpdateDagDurationAlertRequest struct {
+	// Name The alert's name.
+	Name *string `json:"name,omitempty"`
+
+	// NotificationChannelIds The notification channels to send alerts to.
+	NotificationChannelIds *[]string                    `json:"notificationChannelIds,omitempty"`
+	Rules                  *UpdateDagDurationAlertRules `json:"rules,omitempty"`
+
+	// Severity The alert's severity.
+	Severity *UpdateDagDurationAlertRequestSeverity `json:"severity,omitempty"`
+
+	// Type The alert's type.
+	Type *UpdateDagDurationAlertRequestType `json:"type,omitempty"`
+}
+
+// UpdateDagDurationAlertRequestSeverity The alert's severity.
+type UpdateDagDurationAlertRequestSeverity string
+
+// UpdateDagDurationAlertRequestType The alert's type.
+type UpdateDagDurationAlertRequestType string
+
+// UpdateDagDurationAlertRules defines model for UpdateDagDurationAlertRules.
+type UpdateDagDurationAlertRules struct {
+	// PatternMatches The alert's pattern matches to match against.
+	PatternMatches *[]PatternMatchRequest            `json:"patternMatches,omitempty"`
+	Properties     *UpdateDagDurationAlertProperties `json:"properties,omitempty"`
+}
+
+// UpdateDagFailureAlertRequest defines model for UpdateDagFailureAlertRequest.
+type UpdateDagFailureAlertRequest struct {
+	// Name The alert's name.
+	Name *string `json:"name,omitempty"`
+
+	// NotificationChannelIds The notification channels to send alerts to.
+	NotificationChannelIds *[]string                   `json:"notificationChannelIds,omitempty"`
+	Rules                  *UpdateDagFailureAlertRules `json:"rules,omitempty"`
+
+	// Severity The alert's severity.
+	Severity *UpdateDagFailureAlertRequestSeverity `json:"severity,omitempty"`
+
+	// Type The alert's type.
+	Type *UpdateDagFailureAlertRequestType `json:"type,omitempty"`
+}
+
+// UpdateDagFailureAlertRequestSeverity The alert's severity.
+type UpdateDagFailureAlertRequestSeverity string
+
+// UpdateDagFailureAlertRequestType The alert's type.
+type UpdateDagFailureAlertRequestType string
+
+// UpdateDagFailureAlertRules defines model for UpdateDagFailureAlertRules.
+type UpdateDagFailureAlertRules struct {
+	// PatternMatches The alert's pattern matches to match against.
+	PatternMatches *[]PatternMatchRequest `json:"patternMatches,omitempty"`
+}
+
+// UpdateDagSuccessAlertRequest defines model for UpdateDagSuccessAlertRequest.
+type UpdateDagSuccessAlertRequest struct {
+	// Name The alert's name.
+	Name *string `json:"name,omitempty"`
+
+	// NotificationChannelIds The notification channels to send alerts to.
+	NotificationChannelIds *[]string                   `json:"notificationChannelIds,omitempty"`
+	Rules                  *UpdateDagSuccessAlertRules `json:"rules,omitempty"`
+
+	// Severity The alert's severity.
+	Severity *UpdateDagSuccessAlertRequestSeverity `json:"severity,omitempty"`
+
+	// Type The alert's type.
+	Type *UpdateDagSuccessAlertRequestType `json:"type,omitempty"`
+}
+
+// UpdateDagSuccessAlertRequestSeverity The alert's severity.
+type UpdateDagSuccessAlertRequestSeverity string
+
+// UpdateDagSuccessAlertRequestType The alert's type.
+type UpdateDagSuccessAlertRequestType string
+
+// UpdateDagSuccessAlertRules defines model for UpdateDagSuccessAlertRules.
+type UpdateDagSuccessAlertRules struct {
+	// PatternMatches The alert's pattern matches to match against.
+	PatternMatches *[]PatternMatchRequest `json:"patternMatches,omitempty"`
+}
+
+// UpdateDagTimelinessAlertProperties defines model for UpdateDagTimelinessAlertProperties.
+type UpdateDagTimelinessAlertProperties struct {
+	// DagDeadline The deadline for the DAG in HH:MM 24-hour format, in UTC time.
+	DagDeadline *string `json:"dagDeadline,omitempty"`
+
+	// DaysOfWeek The days of the week for the alert.
+	DaysOfWeek *[]string `json:"daysOfWeek,omitempty"`
+
+	// LookBackPeriodSeconds The look-back period in seconds.
+	LookBackPeriodSeconds *int `json:"lookBackPeriodSeconds,omitempty"`
+}
+
+// UpdateDagTimelinessAlertRequest defines model for UpdateDagTimelinessAlertRequest.
+type UpdateDagTimelinessAlertRequest struct {
+	// Name The alert's name.
+	Name *string `json:"name,omitempty"`
+
+	// NotificationChannelIds The notification channels to send alerts to.
+	NotificationChannelIds *[]string                      `json:"notificationChannelIds,omitempty"`
+	Rules                  *UpdateDagTimelinessAlertRules `json:"rules,omitempty"`
+
+	// Severity The alert's severity.
+	Severity *UpdateDagTimelinessAlertRequestSeverity `json:"severity,omitempty"`
+
+	// Type The alert's type.
+	Type *UpdateDagTimelinessAlertRequestType `json:"type,omitempty"`
+}
+
+// UpdateDagTimelinessAlertRequestSeverity The alert's severity.
+type UpdateDagTimelinessAlertRequestSeverity string
+
+// UpdateDagTimelinessAlertRequestType The alert's type.
+type UpdateDagTimelinessAlertRequestType string
+
+// UpdateDagTimelinessAlertRules defines model for UpdateDagTimelinessAlertRules.
+type UpdateDagTimelinessAlertRules struct {
+	// PatternMatches The alert's pattern matches to match against.
+	PatternMatches *[]PatternMatchRequest              `json:"patternMatches,omitempty"`
+	Properties     *UpdateDagTimelinessAlertProperties `json:"properties,omitempty"`
+}
+
+// UpdateDagTriggerNotificationChannelRequest defines model for UpdateDagTriggerNotificationChannelRequest.
+type UpdateDagTriggerNotificationChannelRequest struct {
+	Definition *DagTriggerNotificationChannelDefinition `json:"definition,omitempty"`
+
+	// IsShared When entity type is scoped to ORGANIZATION or WORKSPACE, this determines if child entities can access this notification channel.
+	IsShared *bool `json:"isShared,omitempty"`
+
+	// Name The notification channel's name.
+	Name *string `json:"name,omitempty"`
+
+	// Type The notification channel's type.
+	Type *UpdateDagTriggerNotificationChannelRequestType `json:"type,omitempty"`
+}
+
+// UpdateDagTriggerNotificationChannelRequestType The notification channel's type.
+type UpdateDagTriggerNotificationChannelRequestType string
 
 // UpdateDedicatedClusterRequest defines model for UpdateDedicatedClusterRequest.
 type UpdateDedicatedClusterRequest struct {
@@ -2269,13 +3687,13 @@ type UpdateDedicatedDeploymentRequest struct {
 	ResourceQuotaMemory string                        `json:"resourceQuotaMemory"`
 	ScalingSpec         *DeploymentScalingSpecRequest `json:"scalingSpec,omitempty"`
 
-	// SchedulerSize The size of the scheduler pod.
+	// SchedulerSize The size of the scheduler Pod.
 	SchedulerSize UpdateDedicatedDeploymentRequestSchedulerSize `json:"schedulerSize"`
 
 	// Type The type of the Deployment.
 	Type UpdateDedicatedDeploymentRequestType `json:"type"`
 
-	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY`. All Deployments need at least 1 worker queue called `default`.
+	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY` or `ASTRO`. All such Deployments need at least 1 worker queue called `default`.
 	WorkerQueues *[]WorkerQueueRequest `json:"workerQueues,omitempty"`
 
 	// WorkloadIdentity The Deployment's workload identity.
@@ -2288,7 +3706,7 @@ type UpdateDedicatedDeploymentRequest struct {
 // UpdateDedicatedDeploymentRequestExecutor The executor Deployment's executor.
 type UpdateDedicatedDeploymentRequestExecutor string
 
-// UpdateDedicatedDeploymentRequestSchedulerSize The size of the scheduler pod.
+// UpdateDedicatedDeploymentRequestSchedulerSize The size of the scheduler Pod.
 type UpdateDedicatedDeploymentRequestSchedulerSize string
 
 // UpdateDedicatedDeploymentRequestType The type of the Deployment.
@@ -2298,6 +3716,23 @@ type UpdateDedicatedDeploymentRequestType string
 type UpdateDeploymentRequest struct {
 	union json.RawMessage
 }
+
+// UpdateEmailNotificationChannelRequest defines model for UpdateEmailNotificationChannelRequest.
+type UpdateEmailNotificationChannelRequest struct {
+	Definition *EmailNotificationChannelDefinition `json:"definition,omitempty"`
+
+	// IsShared When entity type is scoped to ORGANIZATION or WORKSPACE, this determines if child entities can access this notification channel.
+	IsShared *bool `json:"isShared,omitempty"`
+
+	// Name The notification channel's name.
+	Name *string `json:"name,omitempty"`
+
+	// Type The notification channel's type.
+	Type *UpdateEmailNotificationChannelRequestType `json:"type,omitempty"`
+}
+
+// UpdateEmailNotificationChannelRequestType The notification channel's type.
+type UpdateEmailNotificationChannelRequestType string
 
 // UpdateEnvironmentObjectAirflowVariableOverridesRequest defines model for UpdateEnvironmentObjectAirflowVariableOverridesRequest.
 type UpdateEnvironmentObjectAirflowVariableOverridesRequest struct {
@@ -2378,6 +3813,9 @@ type UpdateEnvironmentObjectLinkRequestScope string
 
 // UpdateEnvironmentObjectMetricsExportOverridesRequest defines model for UpdateEnvironmentObjectMetricsExportOverridesRequest.
 type UpdateEnvironmentObjectMetricsExportOverridesRequest struct {
+	// AuthType The type of authentication to use when connecting to the remote endpoint
+	AuthType *UpdateEnvironmentObjectMetricsExportOverridesRequestAuthType `json:"authType,omitempty"`
+
 	// BasicToken The bearer token to connect to the remote endpoint
 	BasicToken *string `json:"basicToken,omitempty"`
 
@@ -2400,11 +3838,17 @@ type UpdateEnvironmentObjectMetricsExportOverridesRequest struct {
 	Username *string `json:"username,omitempty"`
 }
 
+// UpdateEnvironmentObjectMetricsExportOverridesRequestAuthType The type of authentication to use when connecting to the remote endpoint
+type UpdateEnvironmentObjectMetricsExportOverridesRequestAuthType string
+
 // UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType The type of exporter
 type UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType string
 
 // UpdateEnvironmentObjectMetricsExportRequest defines model for UpdateEnvironmentObjectMetricsExportRequest.
 type UpdateEnvironmentObjectMetricsExportRequest struct {
+	// AuthType The type of authentication to use when connecting to the remote endpoint
+	AuthType *UpdateEnvironmentObjectMetricsExportRequestAuthType `json:"authType,omitempty"`
+
 	// BasicToken The bearer token to connect to the remote endpoint
 	BasicToken *string `json:"basicToken,omitempty"`
 
@@ -2426,6 +3870,9 @@ type UpdateEnvironmentObjectMetricsExportRequest struct {
 	// Username The username to connect to the remote endpoint
 	Username *string `json:"username,omitempty"`
 }
+
+// UpdateEnvironmentObjectMetricsExportRequestAuthType The type of authentication to use when connecting to the remote endpoint
+type UpdateEnvironmentObjectMetricsExportRequestAuthType string
 
 // UpdateEnvironmentObjectMetricsExportRequestExporterType The type of exporter
 type UpdateEnvironmentObjectMetricsExportRequestExporterType string
@@ -2529,6 +3976,28 @@ type UpdateNodePoolRequest struct {
 	NodeInstanceType string `json:"nodeInstanceType"`
 }
 
+// UpdateNotificationChannelRequest defines model for UpdateNotificationChannelRequest.
+type UpdateNotificationChannelRequest struct {
+	union json.RawMessage
+}
+
+// UpdateOpsgenieNotificationChannelRequest defines model for UpdateOpsgenieNotificationChannelRequest.
+type UpdateOpsgenieNotificationChannelRequest struct {
+	Definition *OpsgenieNotificationChannelDefinition `json:"definition,omitempty"`
+
+	// IsShared When entity type is scoped to ORGANIZATION or WORKSPACE, this determines if child entities can access this notification channel.
+	IsShared *bool `json:"isShared,omitempty"`
+
+	// Name The notification channel's name.
+	Name *string `json:"name,omitempty"`
+
+	// Type The notification channel's type.
+	Type *UpdateOpsgenieNotificationChannelRequestType `json:"type,omitempty"`
+}
+
+// UpdateOpsgenieNotificationChannelRequestType The notification channel's type.
+type UpdateOpsgenieNotificationChannelRequestType string
+
 // UpdateOrganizationRequest defines model for UpdateOrganizationRequest.
 type UpdateOrganizationRequest struct {
 	// BillingEmail The Organization's billing email.
@@ -2540,6 +4009,40 @@ type UpdateOrganizationRequest struct {
 	// Name The name of the Organization.
 	Name string `json:"name"`
 }
+
+// UpdatePagerDutyNotificationChannelRequest defines model for UpdatePagerDutyNotificationChannelRequest.
+type UpdatePagerDutyNotificationChannelRequest struct {
+	Definition *PagerDutyNotificationChannelDefinition `json:"definition,omitempty"`
+
+	// IsShared When entity type is scoped to ORGANIZATION or WORKSPACE, this determines if child entities can access this notification channel.
+	IsShared *bool `json:"isShared,omitempty"`
+
+	// Name The notification channel's name.
+	Name *string `json:"name,omitempty"`
+
+	// Type The notification channel's type.
+	Type *UpdatePagerDutyNotificationChannelRequestType `json:"type,omitempty"`
+}
+
+// UpdatePagerDutyNotificationChannelRequestType The notification channel's type.
+type UpdatePagerDutyNotificationChannelRequestType string
+
+// UpdateSlackNotificationChannelRequest defines model for UpdateSlackNotificationChannelRequest.
+type UpdateSlackNotificationChannelRequest struct {
+	Definition *SlackNotificationChannelDefinition `json:"definition,omitempty"`
+
+	// IsShared When entity type is scoped to ORGANIZATION or WORKSPACE, this determines if child entities can access this notification channel.
+	IsShared *bool `json:"isShared,omitempty"`
+
+	// Name The notification channel's name.
+	Name *string `json:"name,omitempty"`
+
+	// Type The notification channel's type.
+	Type *UpdateSlackNotificationChannelRequestType `json:"type,omitempty"`
+}
+
+// UpdateSlackNotificationChannelRequestType The notification channel's type.
+type UpdateSlackNotificationChannelRequestType string
 
 // UpdateStandardDeploymentRequest defines model for UpdateStandardDeploymentRequest.
 type UpdateStandardDeploymentRequest struct {
@@ -2583,13 +4086,13 @@ type UpdateStandardDeploymentRequest struct {
 	ResourceQuotaMemory string                        `json:"resourceQuotaMemory"`
 	ScalingSpec         *DeploymentScalingSpecRequest `json:"scalingSpec,omitempty"`
 
-	// SchedulerSize The size of the scheduler pod.
+	// SchedulerSize The size of the scheduler Pod.
 	SchedulerSize UpdateStandardDeploymentRequestSchedulerSize `json:"schedulerSize"`
 
 	// Type The type of the Deployment.
 	Type UpdateStandardDeploymentRequestType `json:"type"`
 
-	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY`. All Deployments need at least 1 worker queue called `default`.
+	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY` or `ASTRO`. All such Deployments need at least 1 worker queue called `default`.
 	WorkerQueues *[]WorkerQueueRequest `json:"workerQueues,omitempty"`
 
 	// WorkloadIdentity The Deployment's workload identity.
@@ -2602,11 +4105,74 @@ type UpdateStandardDeploymentRequest struct {
 // UpdateStandardDeploymentRequestExecutor The executor Deployment's executor.
 type UpdateStandardDeploymentRequestExecutor string
 
-// UpdateStandardDeploymentRequestSchedulerSize The size of the scheduler pod.
+// UpdateStandardDeploymentRequestSchedulerSize The size of the scheduler Pod.
 type UpdateStandardDeploymentRequestSchedulerSize string
 
 // UpdateStandardDeploymentRequestType The type of the Deployment.
 type UpdateStandardDeploymentRequestType string
+
+// UpdateTaskDurationAlertProperties defines model for UpdateTaskDurationAlertProperties.
+type UpdateTaskDurationAlertProperties struct {
+	// TaskDurationSeconds The duration of the Task in seconds.
+	TaskDurationSeconds *int `json:"taskDurationSeconds,omitempty"`
+}
+
+// UpdateTaskDurationAlertRequest defines model for UpdateTaskDurationAlertRequest.
+type UpdateTaskDurationAlertRequest struct {
+	// Name The alert's name.
+	Name *string `json:"name,omitempty"`
+
+	// NotificationChannelIds The notification channels to send alerts to.
+	NotificationChannelIds *[]string                     `json:"notificationChannelIds,omitempty"`
+	Rules                  *UpdateTaskDurationAlertRules `json:"rules,omitempty"`
+
+	// Severity The alert's severity.
+	Severity *UpdateTaskDurationAlertRequestSeverity `json:"severity,omitempty"`
+
+	// Type The alert's type.
+	Type *UpdateTaskDurationAlertRequestType `json:"type,omitempty"`
+}
+
+// UpdateTaskDurationAlertRequestSeverity The alert's severity.
+type UpdateTaskDurationAlertRequestSeverity string
+
+// UpdateTaskDurationAlertRequestType The alert's type.
+type UpdateTaskDurationAlertRequestType string
+
+// UpdateTaskDurationAlertRules defines model for UpdateTaskDurationAlertRules.
+type UpdateTaskDurationAlertRules struct {
+	// PatternMatches The alert's pattern matches to match against.
+	PatternMatches *[]PatternMatchRequest             `json:"patternMatches,omitempty"`
+	Properties     *UpdateTaskDurationAlertProperties `json:"properties,omitempty"`
+}
+
+// UpdateTaskFailureAlertRequest defines model for UpdateTaskFailureAlertRequest.
+type UpdateTaskFailureAlertRequest struct {
+	// Name The alert's name.
+	Name *string `json:"name,omitempty"`
+
+	// NotificationChannelIds The notification channels to send alerts to.
+	NotificationChannelIds *[]string                    `json:"notificationChannelIds,omitempty"`
+	Rules                  *UpdateTaskFailureAlertRules `json:"rules,omitempty"`
+
+	// Severity The alert's severity.
+	Severity *UpdateTaskFailureAlertRequestSeverity `json:"severity,omitempty"`
+
+	// Type The alert's type.
+	Type *UpdateTaskFailureAlertRequestType `json:"type,omitempty"`
+}
+
+// UpdateTaskFailureAlertRequestSeverity The alert's severity.
+type UpdateTaskFailureAlertRequestSeverity string
+
+// UpdateTaskFailureAlertRequestType The alert's type.
+type UpdateTaskFailureAlertRequestType string
+
+// UpdateTaskFailureAlertRules defines model for UpdateTaskFailureAlertRules.
+type UpdateTaskFailureAlertRules struct {
+	// PatternMatches The alert's pattern matches to match against.
+	PatternMatches *[]PatternMatchRequest `json:"patternMatches,omitempty"`
+}
 
 // UpdateWorkspaceRequest defines model for UpdateWorkspaceRequest.
 type UpdateWorkspaceRequest struct {
@@ -2757,6 +4323,12 @@ type ListOrganizationsParams struct {
 	// SupportPlan Filters the Organization list by support plan.
 	SupportPlan *ListOrganizationsParamsSupportPlan `form:"supportPlan,omitempty" json:"supportPlan,omitempty"`
 
+	// ProductPlan Filters the Organization list by product plan.
+	ProductPlan *ListOrganizationsParamsProductPlan `form:"productPlan,omitempty" json:"productPlan,omitempty"`
+
+	// AstronomerProduct filter by astronomer product, should be one of ASTRO or OBSERVE
+	AstronomerProduct *ListOrganizationsParamsAstronomerProduct `form:"astronomerProduct,omitempty" json:"astronomerProduct,omitempty"`
+
 	// Product Filters the Organization list by product.
 	Product *ListOrganizationsParamsProduct `form:"product,omitempty" json:"product,omitempty"`
 
@@ -2773,6 +4345,12 @@ type ListOrganizationsParams struct {
 // ListOrganizationsParamsSupportPlan defines parameters for ListOrganizations.
 type ListOrganizationsParamsSupportPlan string
 
+// ListOrganizationsParamsProductPlan defines parameters for ListOrganizations.
+type ListOrganizationsParamsProductPlan string
+
+// ListOrganizationsParamsAstronomerProduct defines parameters for ListOrganizations.
+type ListOrganizationsParamsAstronomerProduct string
+
 // ListOrganizationsParamsProduct defines parameters for ListOrganizations.
 type ListOrganizationsParamsProduct string
 
@@ -2784,6 +4362,42 @@ type GetOrganizationParams struct {
 	// IsLookUpOnly Whether to show only Organization metadata.
 	IsLookUpOnly *bool `form:"isLookUpOnly,omitempty" json:"isLookUpOnly,omitempty"`
 }
+
+// ListAlertsParams defines parameters for ListAlerts.
+type ListAlertsParams struct {
+	// AlertIds A list of IDs for specific alerts to list. The API returns details for all alerts which have been specified in this list.
+	AlertIds *[]string `form:"alertIds,omitempty" json:"alertIds,omitempty"`
+
+	// DeploymentIds A list of deployment IDs the alerts belong to. The API returns details for all alerts belonging only to the specified Deployments.
+	DeploymentIds *[]string `form:"deploymentIds,omitempty" json:"deploymentIds,omitempty"`
+
+	// WorkspaceIds A list of workspace IDs the alerts belong to. The API returns details for all alerts belonging only to the specified Workspaces.
+	WorkspaceIds *[]string `form:"workspaceIds,omitempty" json:"workspaceIds,omitempty"`
+
+	// AlertTypes A list of types for specific alerts to filter by. The API returns details for all alerts belonging only to the specified alert types.
+	AlertTypes *[]ListAlertsParamsAlertTypes `form:"alertTypes,omitempty" json:"alertTypes,omitempty"`
+
+	// EntityType The type of the entity the alerts belong to.
+	EntityType *ListAlertsParamsEntityType `form:"entityType,omitempty" json:"entityType,omitempty"`
+
+	// Offset The number of results to skip before returning values.
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Limit The maximum number of results to return.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Sorts A list of field names to sort by, and whether to show results as ascending or descending. Formatted as `<fieldName>:asc` or `<fieldName>:desc`.
+	Sorts *[]ListAlertsParamsSorts `form:"sorts,omitempty" json:"sorts,omitempty"`
+}
+
+// ListAlertsParamsAlertTypes defines parameters for ListAlerts.
+type ListAlertsParamsAlertTypes string
+
+// ListAlertsParamsEntityType defines parameters for ListAlerts.
+type ListAlertsParamsEntityType string
+
+// ListAlertsParamsSorts defines parameters for ListAlerts.
+type ListAlertsParamsSorts string
 
 // GetOrganizationAuditLogsParams defines parameters for GetOrganizationAuditLogs.
 type GetOrganizationAuditLogsParams struct {
@@ -2917,6 +4531,42 @@ type ListEnvironmentObjectsParamsSorts string
 // ListEnvironmentObjectsParamsObjectType defines parameters for ListEnvironmentObjects.
 type ListEnvironmentObjectsParamsObjectType string
 
+// ListNotificationChannelsParams defines parameters for ListNotificationChannels.
+type ListNotificationChannelsParams struct {
+	// NotificationChannelIds A list of IDs of specific Notification Channels to list. The API will list information only for Notification Channels which have been specified in this list.
+	NotificationChannelIds *[]string `form:"notificationChannelIds,omitempty" json:"notificationChannelIds,omitempty"`
+
+	// DeploymentIds A list of Deployment IDs to filter by, not allowed if Workspace IDs are provided. Returns Notification Channels scoped to these Deployments, plus any shared Organization or Workspace Notification Channels accessible to them.
+	DeploymentIds *[]string `form:"deploymentIds,omitempty" json:"deploymentIds,omitempty"`
+
+	// WorkspaceIds A list of Workspace IDs to filter by, not allowed if Deployment IDs are provided. Returns Notification Channels scoped to these Workspaces, plus any shared Organization or Deployment Notification Channels accessible to them.
+	WorkspaceIds *[]string `form:"workspaceIds,omitempty" json:"workspaceIds,omitempty"`
+
+	// ChannelTypes A list of Notification Channel types to filter by.
+	ChannelTypes *[]ListNotificationChannelsParamsChannelTypes `form:"channelTypes,omitempty" json:"channelTypes,omitempty"`
+
+	// EntityType The type of entity the Notification Channels belong to.
+	EntityType *ListNotificationChannelsParamsEntityType `form:"entityType,omitempty" json:"entityType,omitempty"`
+
+	// Offset The number of results to skip before returning values.
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Limit The maximum number of results to return.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Sorts A list of field names to sort by, and whether to show results as ascending or descending. Formatted as `<fieldName>:asc` or `<fieldName>:desc`.
+	Sorts *[]ListNotificationChannelsParamsSorts `form:"sorts,omitempty" json:"sorts,omitempty"`
+}
+
+// ListNotificationChannelsParamsChannelTypes defines parameters for ListNotificationChannels.
+type ListNotificationChannelsParamsChannelTypes string
+
+// ListNotificationChannelsParamsEntityType defines parameters for ListNotificationChannels.
+type ListNotificationChannelsParamsEntityType string
+
+// ListNotificationChannelsParamsSorts defines parameters for ListNotificationChannels.
+type ListNotificationChannelsParamsSorts string
+
 // ListWorkspacesParams defines parameters for ListWorkspaces.
 type ListWorkspacesParams struct {
 	// WorkspaceIds A list of IDs for specific Workspaces to list. The API will list information only for Workspaces which have been specified in this list.
@@ -2940,6 +4590,12 @@ type ListWorkspacesParamsSorts string
 
 // UpdateOrganizationJSONRequestBody defines body for UpdateOrganization for application/json ContentType.
 type UpdateOrganizationJSONRequestBody = UpdateOrganizationRequest
+
+// CreateAlertJSONRequestBody defines body for CreateAlert for application/json ContentType.
+type CreateAlertJSONRequestBody = CreateAlertRequest
+
+// UpdateAlertJSONRequestBody defines body for UpdateAlert for application/json ContentType.
+type UpdateAlertJSONRequestBody = UpdateAlertRequest
 
 // CreateClusterJSONRequestBody defines body for CreateCluster for application/json ContentType.
 type CreateClusterJSONRequestBody = CreateClusterRequest
@@ -2965,11 +4621,183 @@ type UpdateEnvironmentObjectJSONRequestBody = UpdateEnvironmentObjectRequest
 // ExcludeLinkingEnvironmentObjectJSONRequestBody defines body for ExcludeLinkingEnvironmentObject for application/json ContentType.
 type ExcludeLinkingEnvironmentObjectJSONRequestBody = ExcludeLinkEnvironmentObjectRequest
 
+// CreateNotificationChannelJSONRequestBody defines body for CreateNotificationChannel for application/json ContentType.
+type CreateNotificationChannelJSONRequestBody = CreateNotificationChannelRequest
+
+// UpdateNotificationChannelJSONRequestBody defines body for UpdateNotificationChannel for application/json ContentType.
+type UpdateNotificationChannelJSONRequestBody = UpdateNotificationChannelRequest
+
 // CreateWorkspaceJSONRequestBody defines body for CreateWorkspace for application/json ContentType.
 type CreateWorkspaceJSONRequestBody = CreateWorkspaceRequest
 
 // UpdateWorkspaceJSONRequestBody defines body for UpdateWorkspace for application/json ContentType.
 type UpdateWorkspaceJSONRequestBody = UpdateWorkspaceRequest
+
+// AsCreateDagDurationAlertRequest returns the union data inside the CreateAlertRequest as a CreateDagDurationAlertRequest
+func (t CreateAlertRequest) AsCreateDagDurationAlertRequest() (CreateDagDurationAlertRequest, error) {
+	var body CreateDagDurationAlertRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateDagDurationAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateDagDurationAlertRequest
+func (t *CreateAlertRequest) FromCreateDagDurationAlertRequest(v CreateDagDurationAlertRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreateDagDurationAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateDagDurationAlertRequest
+func (t *CreateAlertRequest) MergeCreateDagDurationAlertRequest(v CreateDagDurationAlertRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreateDagFailureAlertRequest returns the union data inside the CreateAlertRequest as a CreateDagFailureAlertRequest
+func (t CreateAlertRequest) AsCreateDagFailureAlertRequest() (CreateDagFailureAlertRequest, error) {
+	var body CreateDagFailureAlertRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateDagFailureAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateDagFailureAlertRequest
+func (t *CreateAlertRequest) FromCreateDagFailureAlertRequest(v CreateDagFailureAlertRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreateDagFailureAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateDagFailureAlertRequest
+func (t *CreateAlertRequest) MergeCreateDagFailureAlertRequest(v CreateDagFailureAlertRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreateDagSuccessAlertRequest returns the union data inside the CreateAlertRequest as a CreateDagSuccessAlertRequest
+func (t CreateAlertRequest) AsCreateDagSuccessAlertRequest() (CreateDagSuccessAlertRequest, error) {
+	var body CreateDagSuccessAlertRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateDagSuccessAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateDagSuccessAlertRequest
+func (t *CreateAlertRequest) FromCreateDagSuccessAlertRequest(v CreateDagSuccessAlertRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreateDagSuccessAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateDagSuccessAlertRequest
+func (t *CreateAlertRequest) MergeCreateDagSuccessAlertRequest(v CreateDagSuccessAlertRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreateDagTimelinessAlertRequest returns the union data inside the CreateAlertRequest as a CreateDagTimelinessAlertRequest
+func (t CreateAlertRequest) AsCreateDagTimelinessAlertRequest() (CreateDagTimelinessAlertRequest, error) {
+	var body CreateDagTimelinessAlertRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateDagTimelinessAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateDagTimelinessAlertRequest
+func (t *CreateAlertRequest) FromCreateDagTimelinessAlertRequest(v CreateDagTimelinessAlertRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreateDagTimelinessAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateDagTimelinessAlertRequest
+func (t *CreateAlertRequest) MergeCreateDagTimelinessAlertRequest(v CreateDagTimelinessAlertRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreateTaskDurationAlertRequest returns the union data inside the CreateAlertRequest as a CreateTaskDurationAlertRequest
+func (t CreateAlertRequest) AsCreateTaskDurationAlertRequest() (CreateTaskDurationAlertRequest, error) {
+	var body CreateTaskDurationAlertRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateTaskDurationAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateTaskDurationAlertRequest
+func (t *CreateAlertRequest) FromCreateTaskDurationAlertRequest(v CreateTaskDurationAlertRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreateTaskDurationAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateTaskDurationAlertRequest
+func (t *CreateAlertRequest) MergeCreateTaskDurationAlertRequest(v CreateTaskDurationAlertRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreateTaskFailureAlertRequest returns the union data inside the CreateAlertRequest as a CreateTaskFailureAlertRequest
+func (t CreateAlertRequest) AsCreateTaskFailureAlertRequest() (CreateTaskFailureAlertRequest, error) {
+	var body CreateTaskFailureAlertRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateTaskFailureAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateTaskFailureAlertRequest
+func (t *CreateAlertRequest) FromCreateTaskFailureAlertRequest(v CreateTaskFailureAlertRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreateTaskFailureAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateTaskFailureAlertRequest
+func (t *CreateAlertRequest) MergeCreateTaskFailureAlertRequest(v CreateTaskFailureAlertRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t CreateAlertRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *CreateAlertRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
 
 // AsCreateAwsClusterRequest returns the union data inside the CreateClusterRequest as a CreateAwsClusterRequest
 func (t CreateClusterRequest) AsCreateAwsClusterRequest() (CreateAwsClusterRequest, error) {
@@ -3147,6 +4975,312 @@ func (t *CreateDeploymentRequest) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsCreateDagTriggerNotificationChannelRequest returns the union data inside the CreateNotificationChannelRequest as a CreateDagTriggerNotificationChannelRequest
+func (t CreateNotificationChannelRequest) AsCreateDagTriggerNotificationChannelRequest() (CreateDagTriggerNotificationChannelRequest, error) {
+	var body CreateDagTriggerNotificationChannelRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateDagTriggerNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreateDagTriggerNotificationChannelRequest
+func (t *CreateNotificationChannelRequest) FromCreateDagTriggerNotificationChannelRequest(v CreateDagTriggerNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreateDagTriggerNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateDagTriggerNotificationChannelRequest
+func (t *CreateNotificationChannelRequest) MergeCreateDagTriggerNotificationChannelRequest(v CreateDagTriggerNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreateEmailNotificationChannelRequest returns the union data inside the CreateNotificationChannelRequest as a CreateEmailNotificationChannelRequest
+func (t CreateNotificationChannelRequest) AsCreateEmailNotificationChannelRequest() (CreateEmailNotificationChannelRequest, error) {
+	var body CreateEmailNotificationChannelRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateEmailNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreateEmailNotificationChannelRequest
+func (t *CreateNotificationChannelRequest) FromCreateEmailNotificationChannelRequest(v CreateEmailNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreateEmailNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateEmailNotificationChannelRequest
+func (t *CreateNotificationChannelRequest) MergeCreateEmailNotificationChannelRequest(v CreateEmailNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreateOpsgenieNotificationChannelRequest returns the union data inside the CreateNotificationChannelRequest as a CreateOpsgenieNotificationChannelRequest
+func (t CreateNotificationChannelRequest) AsCreateOpsgenieNotificationChannelRequest() (CreateOpsgenieNotificationChannelRequest, error) {
+	var body CreateOpsgenieNotificationChannelRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateOpsgenieNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreateOpsgenieNotificationChannelRequest
+func (t *CreateNotificationChannelRequest) FromCreateOpsgenieNotificationChannelRequest(v CreateOpsgenieNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreateOpsgenieNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateOpsgenieNotificationChannelRequest
+func (t *CreateNotificationChannelRequest) MergeCreateOpsgenieNotificationChannelRequest(v CreateOpsgenieNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreatePagerDutyNotificationChannelRequest returns the union data inside the CreateNotificationChannelRequest as a CreatePagerDutyNotificationChannelRequest
+func (t CreateNotificationChannelRequest) AsCreatePagerDutyNotificationChannelRequest() (CreatePagerDutyNotificationChannelRequest, error) {
+	var body CreatePagerDutyNotificationChannelRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreatePagerDutyNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreatePagerDutyNotificationChannelRequest
+func (t *CreateNotificationChannelRequest) FromCreatePagerDutyNotificationChannelRequest(v CreatePagerDutyNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreatePagerDutyNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreatePagerDutyNotificationChannelRequest
+func (t *CreateNotificationChannelRequest) MergeCreatePagerDutyNotificationChannelRequest(v CreatePagerDutyNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreateSlackNotificationChannelRequest returns the union data inside the CreateNotificationChannelRequest as a CreateSlackNotificationChannelRequest
+func (t CreateNotificationChannelRequest) AsCreateSlackNotificationChannelRequest() (CreateSlackNotificationChannelRequest, error) {
+	var body CreateSlackNotificationChannelRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateSlackNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreateSlackNotificationChannelRequest
+func (t *CreateNotificationChannelRequest) FromCreateSlackNotificationChannelRequest(v CreateSlackNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreateSlackNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateSlackNotificationChannelRequest
+func (t *CreateNotificationChannelRequest) MergeCreateSlackNotificationChannelRequest(v CreateSlackNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t CreateNotificationChannelRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *CreateNotificationChannelRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateDagDurationAlertRequest returns the union data inside the UpdateAlertRequest as a UpdateDagDurationAlertRequest
+func (t UpdateAlertRequest) AsUpdateDagDurationAlertRequest() (UpdateDagDurationAlertRequest, error) {
+	var body UpdateDagDurationAlertRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateDagDurationAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateDagDurationAlertRequest
+func (t *UpdateAlertRequest) FromUpdateDagDurationAlertRequest(v UpdateDagDurationAlertRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateDagDurationAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateDagDurationAlertRequest
+func (t *UpdateAlertRequest) MergeUpdateDagDurationAlertRequest(v UpdateDagDurationAlertRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateDagFailureAlertRequest returns the union data inside the UpdateAlertRequest as a UpdateDagFailureAlertRequest
+func (t UpdateAlertRequest) AsUpdateDagFailureAlertRequest() (UpdateDagFailureAlertRequest, error) {
+	var body UpdateDagFailureAlertRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateDagFailureAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateDagFailureAlertRequest
+func (t *UpdateAlertRequest) FromUpdateDagFailureAlertRequest(v UpdateDagFailureAlertRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateDagFailureAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateDagFailureAlertRequest
+func (t *UpdateAlertRequest) MergeUpdateDagFailureAlertRequest(v UpdateDagFailureAlertRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateDagSuccessAlertRequest returns the union data inside the UpdateAlertRequest as a UpdateDagSuccessAlertRequest
+func (t UpdateAlertRequest) AsUpdateDagSuccessAlertRequest() (UpdateDagSuccessAlertRequest, error) {
+	var body UpdateDagSuccessAlertRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateDagSuccessAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateDagSuccessAlertRequest
+func (t *UpdateAlertRequest) FromUpdateDagSuccessAlertRequest(v UpdateDagSuccessAlertRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateDagSuccessAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateDagSuccessAlertRequest
+func (t *UpdateAlertRequest) MergeUpdateDagSuccessAlertRequest(v UpdateDagSuccessAlertRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateDagTimelinessAlertRequest returns the union data inside the UpdateAlertRequest as a UpdateDagTimelinessAlertRequest
+func (t UpdateAlertRequest) AsUpdateDagTimelinessAlertRequest() (UpdateDagTimelinessAlertRequest, error) {
+	var body UpdateDagTimelinessAlertRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateDagTimelinessAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateDagTimelinessAlertRequest
+func (t *UpdateAlertRequest) FromUpdateDagTimelinessAlertRequest(v UpdateDagTimelinessAlertRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateDagTimelinessAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateDagTimelinessAlertRequest
+func (t *UpdateAlertRequest) MergeUpdateDagTimelinessAlertRequest(v UpdateDagTimelinessAlertRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateTaskDurationAlertRequest returns the union data inside the UpdateAlertRequest as a UpdateTaskDurationAlertRequest
+func (t UpdateAlertRequest) AsUpdateTaskDurationAlertRequest() (UpdateTaskDurationAlertRequest, error) {
+	var body UpdateTaskDurationAlertRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateTaskDurationAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateTaskDurationAlertRequest
+func (t *UpdateAlertRequest) FromUpdateTaskDurationAlertRequest(v UpdateTaskDurationAlertRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateTaskDurationAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateTaskDurationAlertRequest
+func (t *UpdateAlertRequest) MergeUpdateTaskDurationAlertRequest(v UpdateTaskDurationAlertRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateTaskFailureAlertRequest returns the union data inside the UpdateAlertRequest as a UpdateTaskFailureAlertRequest
+func (t UpdateAlertRequest) AsUpdateTaskFailureAlertRequest() (UpdateTaskFailureAlertRequest, error) {
+	var body UpdateTaskFailureAlertRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateTaskFailureAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateTaskFailureAlertRequest
+func (t *UpdateAlertRequest) FromUpdateTaskFailureAlertRequest(v UpdateTaskFailureAlertRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateTaskFailureAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateTaskFailureAlertRequest
+func (t *UpdateAlertRequest) MergeUpdateTaskFailureAlertRequest(v UpdateTaskFailureAlertRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateAlertRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateAlertRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // AsUpdateDedicatedClusterRequest returns the union data inside the UpdateClusterRequest as a UpdateDedicatedClusterRequest
 func (t UpdateClusterRequest) AsUpdateDedicatedClusterRequest() (UpdateDedicatedClusterRequest, error) {
 	var body UpdateDedicatedClusterRequest
@@ -3297,6 +5431,146 @@ func (t *UpdateDeploymentRequest) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsUpdateDagTriggerNotificationChannelRequest returns the union data inside the UpdateNotificationChannelRequest as a UpdateDagTriggerNotificationChannelRequest
+func (t UpdateNotificationChannelRequest) AsUpdateDagTriggerNotificationChannelRequest() (UpdateDagTriggerNotificationChannelRequest, error) {
+	var body UpdateDagTriggerNotificationChannelRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateDagTriggerNotificationChannelRequest overwrites any union data inside the UpdateNotificationChannelRequest as the provided UpdateDagTriggerNotificationChannelRequest
+func (t *UpdateNotificationChannelRequest) FromUpdateDagTriggerNotificationChannelRequest(v UpdateDagTriggerNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateDagTriggerNotificationChannelRequest performs a merge with any union data inside the UpdateNotificationChannelRequest, using the provided UpdateDagTriggerNotificationChannelRequest
+func (t *UpdateNotificationChannelRequest) MergeUpdateDagTriggerNotificationChannelRequest(v UpdateDagTriggerNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateEmailNotificationChannelRequest returns the union data inside the UpdateNotificationChannelRequest as a UpdateEmailNotificationChannelRequest
+func (t UpdateNotificationChannelRequest) AsUpdateEmailNotificationChannelRequest() (UpdateEmailNotificationChannelRequest, error) {
+	var body UpdateEmailNotificationChannelRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateEmailNotificationChannelRequest overwrites any union data inside the UpdateNotificationChannelRequest as the provided UpdateEmailNotificationChannelRequest
+func (t *UpdateNotificationChannelRequest) FromUpdateEmailNotificationChannelRequest(v UpdateEmailNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateEmailNotificationChannelRequest performs a merge with any union data inside the UpdateNotificationChannelRequest, using the provided UpdateEmailNotificationChannelRequest
+func (t *UpdateNotificationChannelRequest) MergeUpdateEmailNotificationChannelRequest(v UpdateEmailNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateOpsgenieNotificationChannelRequest returns the union data inside the UpdateNotificationChannelRequest as a UpdateOpsgenieNotificationChannelRequest
+func (t UpdateNotificationChannelRequest) AsUpdateOpsgenieNotificationChannelRequest() (UpdateOpsgenieNotificationChannelRequest, error) {
+	var body UpdateOpsgenieNotificationChannelRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateOpsgenieNotificationChannelRequest overwrites any union data inside the UpdateNotificationChannelRequest as the provided UpdateOpsgenieNotificationChannelRequest
+func (t *UpdateNotificationChannelRequest) FromUpdateOpsgenieNotificationChannelRequest(v UpdateOpsgenieNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateOpsgenieNotificationChannelRequest performs a merge with any union data inside the UpdateNotificationChannelRequest, using the provided UpdateOpsgenieNotificationChannelRequest
+func (t *UpdateNotificationChannelRequest) MergeUpdateOpsgenieNotificationChannelRequest(v UpdateOpsgenieNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdatePagerDutyNotificationChannelRequest returns the union data inside the UpdateNotificationChannelRequest as a UpdatePagerDutyNotificationChannelRequest
+func (t UpdateNotificationChannelRequest) AsUpdatePagerDutyNotificationChannelRequest() (UpdatePagerDutyNotificationChannelRequest, error) {
+	var body UpdatePagerDutyNotificationChannelRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdatePagerDutyNotificationChannelRequest overwrites any union data inside the UpdateNotificationChannelRequest as the provided UpdatePagerDutyNotificationChannelRequest
+func (t *UpdateNotificationChannelRequest) FromUpdatePagerDutyNotificationChannelRequest(v UpdatePagerDutyNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdatePagerDutyNotificationChannelRequest performs a merge with any union data inside the UpdateNotificationChannelRequest, using the provided UpdatePagerDutyNotificationChannelRequest
+func (t *UpdateNotificationChannelRequest) MergeUpdatePagerDutyNotificationChannelRequest(v UpdatePagerDutyNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateSlackNotificationChannelRequest returns the union data inside the UpdateNotificationChannelRequest as a UpdateSlackNotificationChannelRequest
+func (t UpdateNotificationChannelRequest) AsUpdateSlackNotificationChannelRequest() (UpdateSlackNotificationChannelRequest, error) {
+	var body UpdateSlackNotificationChannelRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateSlackNotificationChannelRequest overwrites any union data inside the UpdateNotificationChannelRequest as the provided UpdateSlackNotificationChannelRequest
+func (t *UpdateNotificationChannelRequest) FromUpdateSlackNotificationChannelRequest(v UpdateSlackNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateSlackNotificationChannelRequest performs a merge with any union data inside the UpdateNotificationChannelRequest, using the provided UpdateSlackNotificationChannelRequest
+func (t *UpdateNotificationChannelRequest) MergeUpdateSlackNotificationChannelRequest(v UpdateSlackNotificationChannelRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateNotificationChannelRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateNotificationChannelRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
 
@@ -3381,6 +5655,25 @@ type ClientInterface interface {
 
 	UpdateOrganization(ctx context.Context, organizationId string, body UpdateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListAlerts request
+	ListAlerts(ctx context.Context, organizationId string, params *ListAlertsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateAlertWithBody request with any body
+	CreateAlertWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateAlert(ctx context.Context, organizationId string, body CreateAlertJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteAlert request
+	DeleteAlert(ctx context.Context, organizationId string, alertId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAlert request
+	GetAlert(ctx context.Context, organizationId string, alertId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateAlertWithBody request with any body
+	UpdateAlertWithBody(ctx context.Context, organizationId string, alertId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateAlert(ctx context.Context, organizationId string, alertId string, body UpdateAlertJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetOrganizationAuditLogs request
 	GetOrganizationAuditLogs(ctx context.Context, organizationId string, params *GetOrganizationAuditLogsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3460,6 +5753,25 @@ type ClientInterface interface {
 
 	ExcludeLinkingEnvironmentObject(ctx context.Context, organizationId string, environmentObjectId string, body ExcludeLinkingEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListNotificationChannels request
+	ListNotificationChannels(ctx context.Context, organizationId string, params *ListNotificationChannelsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateNotificationChannelWithBody request with any body
+	CreateNotificationChannelWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateNotificationChannel(ctx context.Context, organizationId string, body CreateNotificationChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteNotificationChannel request
+	DeleteNotificationChannel(ctx context.Context, organizationId string, notificationChannelId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetNotificationChannel request
+	GetNotificationChannel(ctx context.Context, organizationId string, notificationChannelId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateNotificationChannelWithBody request with any body
+	UpdateNotificationChannelWithBody(ctx context.Context, organizationId string, notificationChannelId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateNotificationChannel(ctx context.Context, organizationId string, notificationChannelId string, body UpdateNotificationChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListWorkspaces request
 	ListWorkspaces(ctx context.Context, organizationId string, params *ListWorkspacesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3518,6 +5830,90 @@ func (c *Client) UpdateOrganizationWithBody(ctx context.Context, organizationId 
 
 func (c *Client) UpdateOrganization(ctx context.Context, organizationId string, body UpdateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateOrganizationRequest(c.Server, organizationId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListAlerts(ctx context.Context, organizationId string, params *ListAlertsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAlertsRequest(c.Server, organizationId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAlertWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAlertRequestWithBody(c.Server, organizationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAlert(ctx context.Context, organizationId string, body CreateAlertJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAlertRequest(c.Server, organizationId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteAlert(ctx context.Context, organizationId string, alertId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteAlertRequest(c.Server, organizationId, alertId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAlert(ctx context.Context, organizationId string, alertId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAlertRequest(c.Server, organizationId, alertId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAlertWithBody(ctx context.Context, organizationId string, alertId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAlertRequestWithBody(c.Server, organizationId, alertId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAlert(ctx context.Context, organizationId string, alertId string, body UpdateAlertJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAlertRequest(c.Server, organizationId, alertId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3876,6 +6272,90 @@ func (c *Client) ExcludeLinkingEnvironmentObject(ctx context.Context, organizati
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListNotificationChannels(ctx context.Context, organizationId string, params *ListNotificationChannelsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListNotificationChannelsRequest(c.Server, organizationId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateNotificationChannelWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateNotificationChannelRequestWithBody(c.Server, organizationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateNotificationChannel(ctx context.Context, organizationId string, body CreateNotificationChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateNotificationChannelRequest(c.Server, organizationId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteNotificationChannel(ctx context.Context, organizationId string, notificationChannelId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteNotificationChannelRequest(c.Server, organizationId, notificationChannelId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetNotificationChannel(ctx context.Context, organizationId string, notificationChannelId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetNotificationChannelRequest(c.Server, organizationId, notificationChannelId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateNotificationChannelWithBody(ctx context.Context, organizationId string, notificationChannelId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateNotificationChannelRequestWithBody(c.Server, organizationId, notificationChannelId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateNotificationChannel(ctx context.Context, organizationId string, notificationChannelId string, body UpdateNotificationChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateNotificationChannelRequest(c.Server, organizationId, notificationChannelId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListWorkspaces(ctx context.Context, organizationId string, params *ListWorkspacesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListWorkspacesRequest(c.Server, organizationId, params)
 	if err != nil {
@@ -3985,6 +6465,38 @@ func NewListOrganizationsRequest(server string, params *ListOrganizationsParams)
 		if params.SupportPlan != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "supportPlan", runtime.ParamLocationQuery, *params.SupportPlan); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ProductPlan != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "productPlan", runtime.ParamLocationQuery, *params.ProductPlan); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.AstronomerProduct != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "astronomerProduct", runtime.ParamLocationQuery, *params.AstronomerProduct); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -4157,6 +6669,357 @@ func NewUpdateOrganizationRequestWithBody(server string, organizationId string, 
 	}
 
 	operationPath := fmt.Sprintf("/organizations/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListAlertsRequest generates requests for ListAlerts
+func NewListAlertsRequest(server string, organizationId string, params *ListAlertsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/alerts", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.AlertIds != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "alertIds", runtime.ParamLocationQuery, *params.AlertIds); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.DeploymentIds != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "deploymentIds", runtime.ParamLocationQuery, *params.DeploymentIds); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.WorkspaceIds != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "workspaceIds", runtime.ParamLocationQuery, *params.WorkspaceIds); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.AlertTypes != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "alertTypes", runtime.ParamLocationQuery, *params.AlertTypes); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.EntityType != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "entityType", runtime.ParamLocationQuery, *params.EntityType); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Sorts != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sorts", runtime.ParamLocationQuery, *params.Sorts); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateAlertRequest calls the generic CreateAlert builder with application/json body
+func NewCreateAlertRequest(server string, organizationId string, body CreateAlertJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateAlertRequestWithBody(server, organizationId, "application/json", bodyReader)
+}
+
+// NewCreateAlertRequestWithBody generates requests for CreateAlert with any type of body
+func NewCreateAlertRequestWithBody(server string, organizationId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/alerts", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteAlertRequest generates requests for DeleteAlert
+func NewDeleteAlertRequest(server string, organizationId string, alertId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "alertId", runtime.ParamLocationPath, alertId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/alerts/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAlertRequest generates requests for GetAlert
+func NewGetAlertRequest(server string, organizationId string, alertId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "alertId", runtime.ParamLocationPath, alertId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/alerts/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateAlertRequest calls the generic UpdateAlert builder with application/json body
+func NewUpdateAlertRequest(server string, organizationId string, alertId string, body UpdateAlertJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateAlertRequestWithBody(server, organizationId, alertId, "application/json", bodyReader)
+}
+
+// NewUpdateAlertRequestWithBody generates requests for UpdateAlert with any type of body
+func NewUpdateAlertRequestWithBody(server string, organizationId string, alertId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "alertId", runtime.ParamLocationPath, alertId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/alerts/%s", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -5558,6 +8421,357 @@ func NewExcludeLinkingEnvironmentObjectRequestWithBody(server string, organizati
 	return req, nil
 }
 
+// NewListNotificationChannelsRequest generates requests for ListNotificationChannels
+func NewListNotificationChannelsRequest(server string, organizationId string, params *ListNotificationChannelsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/notification-channels", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.NotificationChannelIds != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "notificationChannelIds", runtime.ParamLocationQuery, *params.NotificationChannelIds); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.DeploymentIds != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "deploymentIds", runtime.ParamLocationQuery, *params.DeploymentIds); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.WorkspaceIds != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "workspaceIds", runtime.ParamLocationQuery, *params.WorkspaceIds); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ChannelTypes != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "channelTypes", runtime.ParamLocationQuery, *params.ChannelTypes); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.EntityType != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "entityType", runtime.ParamLocationQuery, *params.EntityType); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Sorts != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sorts", runtime.ParamLocationQuery, *params.Sorts); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateNotificationChannelRequest calls the generic CreateNotificationChannel builder with application/json body
+func NewCreateNotificationChannelRequest(server string, organizationId string, body CreateNotificationChannelJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateNotificationChannelRequestWithBody(server, organizationId, "application/json", bodyReader)
+}
+
+// NewCreateNotificationChannelRequestWithBody generates requests for CreateNotificationChannel with any type of body
+func NewCreateNotificationChannelRequestWithBody(server string, organizationId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/notification-channels", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteNotificationChannelRequest generates requests for DeleteNotificationChannel
+func NewDeleteNotificationChannelRequest(server string, organizationId string, notificationChannelId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "notificationChannelId", runtime.ParamLocationPath, notificationChannelId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/notification-channels/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetNotificationChannelRequest generates requests for GetNotificationChannel
+func NewGetNotificationChannelRequest(server string, organizationId string, notificationChannelId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "notificationChannelId", runtime.ParamLocationPath, notificationChannelId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/notification-channels/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateNotificationChannelRequest calls the generic UpdateNotificationChannel builder with application/json body
+func NewUpdateNotificationChannelRequest(server string, organizationId string, notificationChannelId string, body UpdateNotificationChannelJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateNotificationChannelRequestWithBody(server, organizationId, notificationChannelId, "application/json", bodyReader)
+}
+
+// NewUpdateNotificationChannelRequestWithBody generates requests for UpdateNotificationChannel with any type of body
+func NewUpdateNotificationChannelRequestWithBody(server string, organizationId string, notificationChannelId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "notificationChannelId", runtime.ParamLocationPath, notificationChannelId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/notification-channels/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListWorkspacesRequest generates requests for ListWorkspaces
 func NewListWorkspacesRequest(server string, organizationId string, params *ListWorkspacesParams) (*http.Request, error) {
 	var err error
@@ -5915,6 +9129,25 @@ type ClientWithResponsesInterface interface {
 
 	UpdateOrganizationWithResponse(ctx context.Context, organizationId string, body UpdateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOrganizationResponse, error)
 
+	// ListAlertsWithResponse request
+	ListAlertsWithResponse(ctx context.Context, organizationId string, params *ListAlertsParams, reqEditors ...RequestEditorFn) (*ListAlertsResponse, error)
+
+	// CreateAlertWithBodyWithResponse request with any body
+	CreateAlertWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAlertResponse, error)
+
+	CreateAlertWithResponse(ctx context.Context, organizationId string, body CreateAlertJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAlertResponse, error)
+
+	// DeleteAlertWithResponse request
+	DeleteAlertWithResponse(ctx context.Context, organizationId string, alertId string, reqEditors ...RequestEditorFn) (*DeleteAlertResponse, error)
+
+	// GetAlertWithResponse request
+	GetAlertWithResponse(ctx context.Context, organizationId string, alertId string, reqEditors ...RequestEditorFn) (*GetAlertResponse, error)
+
+	// UpdateAlertWithBodyWithResponse request with any body
+	UpdateAlertWithBodyWithResponse(ctx context.Context, organizationId string, alertId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAlertResponse, error)
+
+	UpdateAlertWithResponse(ctx context.Context, organizationId string, alertId string, body UpdateAlertJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAlertResponse, error)
+
 	// GetOrganizationAuditLogsWithResponse request
 	GetOrganizationAuditLogsWithResponse(ctx context.Context, organizationId string, params *GetOrganizationAuditLogsParams, reqEditors ...RequestEditorFn) (*GetOrganizationAuditLogsResponse, error)
 
@@ -5993,6 +9226,25 @@ type ClientWithResponsesInterface interface {
 	ExcludeLinkingEnvironmentObjectWithBodyWithResponse(ctx context.Context, organizationId string, environmentObjectId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ExcludeLinkingEnvironmentObjectResponse, error)
 
 	ExcludeLinkingEnvironmentObjectWithResponse(ctx context.Context, organizationId string, environmentObjectId string, body ExcludeLinkingEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*ExcludeLinkingEnvironmentObjectResponse, error)
+
+	// ListNotificationChannelsWithResponse request
+	ListNotificationChannelsWithResponse(ctx context.Context, organizationId string, params *ListNotificationChannelsParams, reqEditors ...RequestEditorFn) (*ListNotificationChannelsResponse, error)
+
+	// CreateNotificationChannelWithBodyWithResponse request with any body
+	CreateNotificationChannelWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateNotificationChannelResponse, error)
+
+	CreateNotificationChannelWithResponse(ctx context.Context, organizationId string, body CreateNotificationChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateNotificationChannelResponse, error)
+
+	// DeleteNotificationChannelWithResponse request
+	DeleteNotificationChannelWithResponse(ctx context.Context, organizationId string, notificationChannelId string, reqEditors ...RequestEditorFn) (*DeleteNotificationChannelResponse, error)
+
+	// GetNotificationChannelWithResponse request
+	GetNotificationChannelWithResponse(ctx context.Context, organizationId string, notificationChannelId string, reqEditors ...RequestEditorFn) (*GetNotificationChannelResponse, error)
+
+	// UpdateNotificationChannelWithBodyWithResponse request with any body
+	UpdateNotificationChannelWithBodyWithResponse(ctx context.Context, organizationId string, notificationChannelId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateNotificationChannelResponse, error)
+
+	UpdateNotificationChannelWithResponse(ctx context.Context, organizationId string, notificationChannelId string, body UpdateNotificationChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateNotificationChannelResponse, error)
 
 	// ListWorkspacesWithResponse request
 	ListWorkspacesWithResponse(ctx context.Context, organizationId string, params *ListWorkspacesParams, reqEditors ...RequestEditorFn) (*ListWorkspacesResponse, error)
@@ -6088,6 +9340,140 @@ func (r UpdateOrganizationResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateOrganizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListAlertsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AlertsPaginated
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAlertsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAlertsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateAlertResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Alert
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateAlertResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateAlertResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteAlertResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteAlertResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteAlertResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAlertResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Alert
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAlertResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAlertResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateAlertResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Alert
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateAlertResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateAlertResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -6646,6 +10032,140 @@ func (r ExcludeLinkingEnvironmentObjectResponse) StatusCode() int {
 	return 0
 }
 
+type ListNotificationChannelsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *NotificationChannelsPaginated
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ListNotificationChannelsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListNotificationChannelsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateNotificationChannelResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *NotificationChannel
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateNotificationChannelResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateNotificationChannelResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteNotificationChannelResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteNotificationChannelResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteNotificationChannelResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetNotificationChannelResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *NotificationChannel
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetNotificationChannelResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetNotificationChannelResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateNotificationChannelResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *NotificationChannel
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateNotificationChannelResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateNotificationChannelResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListWorkspacesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -6812,6 +10332,67 @@ func (c *ClientWithResponses) UpdateOrganizationWithResponse(ctx context.Context
 		return nil, err
 	}
 	return ParseUpdateOrganizationResponse(rsp)
+}
+
+// ListAlertsWithResponse request returning *ListAlertsResponse
+func (c *ClientWithResponses) ListAlertsWithResponse(ctx context.Context, organizationId string, params *ListAlertsParams, reqEditors ...RequestEditorFn) (*ListAlertsResponse, error) {
+	rsp, err := c.ListAlerts(ctx, organizationId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAlertsResponse(rsp)
+}
+
+// CreateAlertWithBodyWithResponse request with arbitrary body returning *CreateAlertResponse
+func (c *ClientWithResponses) CreateAlertWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAlertResponse, error) {
+	rsp, err := c.CreateAlertWithBody(ctx, organizationId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAlertResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateAlertWithResponse(ctx context.Context, organizationId string, body CreateAlertJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAlertResponse, error) {
+	rsp, err := c.CreateAlert(ctx, organizationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAlertResponse(rsp)
+}
+
+// DeleteAlertWithResponse request returning *DeleteAlertResponse
+func (c *ClientWithResponses) DeleteAlertWithResponse(ctx context.Context, organizationId string, alertId string, reqEditors ...RequestEditorFn) (*DeleteAlertResponse, error) {
+	rsp, err := c.DeleteAlert(ctx, organizationId, alertId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteAlertResponse(rsp)
+}
+
+// GetAlertWithResponse request returning *GetAlertResponse
+func (c *ClientWithResponses) GetAlertWithResponse(ctx context.Context, organizationId string, alertId string, reqEditors ...RequestEditorFn) (*GetAlertResponse, error) {
+	rsp, err := c.GetAlert(ctx, organizationId, alertId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAlertResponse(rsp)
+}
+
+// UpdateAlertWithBodyWithResponse request with arbitrary body returning *UpdateAlertResponse
+func (c *ClientWithResponses) UpdateAlertWithBodyWithResponse(ctx context.Context, organizationId string, alertId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAlertResponse, error) {
+	rsp, err := c.UpdateAlertWithBody(ctx, organizationId, alertId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAlertResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateAlertWithResponse(ctx context.Context, organizationId string, alertId string, body UpdateAlertJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAlertResponse, error) {
+	rsp, err := c.UpdateAlert(ctx, organizationId, alertId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAlertResponse(rsp)
 }
 
 // GetOrganizationAuditLogsWithResponse request returning *GetOrganizationAuditLogsResponse
@@ -7067,6 +10648,67 @@ func (c *ClientWithResponses) ExcludeLinkingEnvironmentObjectWithResponse(ctx co
 	return ParseExcludeLinkingEnvironmentObjectResponse(rsp)
 }
 
+// ListNotificationChannelsWithResponse request returning *ListNotificationChannelsResponse
+func (c *ClientWithResponses) ListNotificationChannelsWithResponse(ctx context.Context, organizationId string, params *ListNotificationChannelsParams, reqEditors ...RequestEditorFn) (*ListNotificationChannelsResponse, error) {
+	rsp, err := c.ListNotificationChannels(ctx, organizationId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListNotificationChannelsResponse(rsp)
+}
+
+// CreateNotificationChannelWithBodyWithResponse request with arbitrary body returning *CreateNotificationChannelResponse
+func (c *ClientWithResponses) CreateNotificationChannelWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateNotificationChannelResponse, error) {
+	rsp, err := c.CreateNotificationChannelWithBody(ctx, organizationId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateNotificationChannelResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateNotificationChannelWithResponse(ctx context.Context, organizationId string, body CreateNotificationChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateNotificationChannelResponse, error) {
+	rsp, err := c.CreateNotificationChannel(ctx, organizationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateNotificationChannelResponse(rsp)
+}
+
+// DeleteNotificationChannelWithResponse request returning *DeleteNotificationChannelResponse
+func (c *ClientWithResponses) DeleteNotificationChannelWithResponse(ctx context.Context, organizationId string, notificationChannelId string, reqEditors ...RequestEditorFn) (*DeleteNotificationChannelResponse, error) {
+	rsp, err := c.DeleteNotificationChannel(ctx, organizationId, notificationChannelId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteNotificationChannelResponse(rsp)
+}
+
+// GetNotificationChannelWithResponse request returning *GetNotificationChannelResponse
+func (c *ClientWithResponses) GetNotificationChannelWithResponse(ctx context.Context, organizationId string, notificationChannelId string, reqEditors ...RequestEditorFn) (*GetNotificationChannelResponse, error) {
+	rsp, err := c.GetNotificationChannel(ctx, organizationId, notificationChannelId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetNotificationChannelResponse(rsp)
+}
+
+// UpdateNotificationChannelWithBodyWithResponse request with arbitrary body returning *UpdateNotificationChannelResponse
+func (c *ClientWithResponses) UpdateNotificationChannelWithBodyWithResponse(ctx context.Context, organizationId string, notificationChannelId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateNotificationChannelResponse, error) {
+	rsp, err := c.UpdateNotificationChannelWithBody(ctx, organizationId, notificationChannelId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateNotificationChannelResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateNotificationChannelWithResponse(ctx context.Context, organizationId string, notificationChannelId string, body UpdateNotificationChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateNotificationChannelResponse, error) {
+	rsp, err := c.UpdateNotificationChannel(ctx, organizationId, notificationChannelId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateNotificationChannelResponse(rsp)
+}
+
 // ListWorkspacesWithResponse request returning *ListWorkspacesResponse
 func (c *ClientWithResponses) ListWorkspacesWithResponse(ctx context.Context, organizationId string, params *ListWorkspacesParams, reqEditors ...RequestEditorFn) (*ListWorkspacesResponse, error) {
 	rsp, err := c.ListWorkspaces(ctx, organizationId, params, reqEditors...)
@@ -7259,6 +10901,304 @@ func ParseUpdateOrganizationResponse(rsp *http.Response) (*UpdateOrganizationRes
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Organization
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListAlertsResponse parses an HTTP response from a ListAlertsWithResponse call
+func ParseListAlertsResponse(rsp *http.Response) (*ListAlertsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAlertsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AlertsPaginated
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateAlertResponse parses an HTTP response from a CreateAlertWithResponse call
+func ParseCreateAlertResponse(rsp *http.Response) (*CreateAlertResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateAlertResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Alert
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteAlertResponse parses an HTTP response from a DeleteAlertWithResponse call
+func ParseDeleteAlertResponse(rsp *http.Response) (*DeleteAlertResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteAlertResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAlertResponse parses an HTTP response from a GetAlertWithResponse call
+func ParseGetAlertResponse(rsp *http.Response) (*GetAlertResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAlertResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Alert
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateAlertResponse parses an HTTP response from a UpdateAlertWithResponse call
+func ParseUpdateAlertResponse(rsp *http.Response) (*UpdateAlertResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateAlertResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Alert
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -8464,6 +12404,304 @@ func ParseExcludeLinkingEnvironmentObjectResponse(rsp *http.Response) (*ExcludeL
 			return nil, err
 		}
 		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListNotificationChannelsResponse parses an HTTP response from a ListNotificationChannelsWithResponse call
+func ParseListNotificationChannelsResponse(rsp *http.Response) (*ListNotificationChannelsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListNotificationChannelsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest NotificationChannelsPaginated
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateNotificationChannelResponse parses an HTTP response from a CreateNotificationChannelWithResponse call
+func ParseCreateNotificationChannelResponse(rsp *http.Response) (*CreateNotificationChannelResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateNotificationChannelResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest NotificationChannel
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteNotificationChannelResponse parses an HTTP response from a DeleteNotificationChannelWithResponse call
+func ParseDeleteNotificationChannelResponse(rsp *http.Response) (*DeleteNotificationChannelResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteNotificationChannelResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetNotificationChannelResponse parses an HTTP response from a GetNotificationChannelWithResponse call
+func ParseGetNotificationChannelResponse(rsp *http.Response) (*GetNotificationChannelResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetNotificationChannelResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest NotificationChannel
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateNotificationChannelResponse parses an HTTP response from a UpdateNotificationChannelWithResponse call
+func ParseUpdateNotificationChannelResponse(rsp *http.Response) (*UpdateNotificationChannelResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateNotificationChannelResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest NotificationChannel
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest Error
