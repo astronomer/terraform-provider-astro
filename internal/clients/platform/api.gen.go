@@ -23,7 +23,8 @@ const (
 
 // Defines values for AlertEntityType.
 const (
-	AlertEntityTypeDEPLOYMENT AlertEntityType = "DEPLOYMENT"
+	AlertEntityTypeDEPLOYMENT   AlertEntityType = "DEPLOYMENT"
+	AlertEntityTypeORGANIZATION AlertEntityType = "ORGANIZATION"
 )
 
 // Defines values for AlertSeverity.
@@ -242,6 +243,7 @@ const (
 
 // Defines values for CreateDedicatedDeploymentRequestExecutor.
 const (
+	CreateDedicatedDeploymentRequestExecutorASTRO      CreateDedicatedDeploymentRequestExecutor = "ASTRO"
 	CreateDedicatedDeploymentRequestExecutorCELERY     CreateDedicatedDeploymentRequestExecutor = "CELERY"
 	CreateDedicatedDeploymentRequestExecutorKUBERNETES CreateDedicatedDeploymentRequestExecutor = "KUBERNETES"
 )
@@ -400,6 +402,7 @@ const (
 
 // Defines values for CreateStandardDeploymentRequestExecutor.
 const (
+	CreateStandardDeploymentRequestExecutorASTRO      CreateStandardDeploymentRequestExecutor = "ASTRO"
 	CreateStandardDeploymentRequestExecutorCELERY     CreateStandardDeploymentRequestExecutor = "CELERY"
 	CreateStandardDeploymentRequestExecutorKUBERNETES CreateStandardDeploymentRequestExecutor = "KUBERNETES"
 )
@@ -472,6 +475,7 @@ const (
 
 // Defines values for DeploymentExecutor.
 const (
+	DeploymentExecutorASTRO      DeploymentExecutor = "ASTRO"
 	DeploymentExecutorCELERY     DeploymentExecutor = "CELERY"
 	DeploymentExecutorKUBERNETES DeploymentExecutor = "KUBERNETES"
 )
@@ -742,6 +746,7 @@ const (
 
 // Defines values for UpdateDedicatedDeploymentRequestExecutor.
 const (
+	UpdateDedicatedDeploymentRequestExecutorASTRO      UpdateDedicatedDeploymentRequestExecutor = "ASTRO"
 	UpdateDedicatedDeploymentRequestExecutorCELERY     UpdateDedicatedDeploymentRequestExecutor = "CELERY"
 	UpdateDedicatedDeploymentRequestExecutorKUBERNETES UpdateDedicatedDeploymentRequestExecutor = "KUBERNETES"
 )
@@ -844,6 +849,7 @@ const (
 
 // Defines values for UpdateStandardDeploymentRequestExecutor.
 const (
+	UpdateStandardDeploymentRequestExecutorASTRO      UpdateStandardDeploymentRequestExecutor = "ASTRO"
 	UpdateStandardDeploymentRequestExecutorCELERY     UpdateStandardDeploymentRequestExecutor = "CELERY"
 	UpdateStandardDeploymentRequestExecutorKUBERNETES UpdateStandardDeploymentRequestExecutor = "KUBERNETES"
 )
@@ -939,8 +945,8 @@ const (
 
 // Defines values for ListOrganizationsParamsAstronomerProduct.
 const (
-	ASTRO   ListOrganizationsParamsAstronomerProduct = "ASTRO"
-	OBSERVE ListOrganizationsParamsAstronomerProduct = "OBSERVE"
+	ListOrganizationsParamsAstronomerProductASTRO   ListOrganizationsParamsAstronomerProduct = "ASTRO"
+	ListOrganizationsParamsAstronomerProductOBSERVE ListOrganizationsParamsAstronomerProduct = "OBSERVE"
 )
 
 // Defines values for ListOrganizationsParamsProduct.
@@ -971,7 +977,9 @@ const (
 
 // Defines values for ListAlertsParamsEntityType.
 const (
-	ListAlertsParamsEntityTypeDEPLOYMENT ListAlertsParamsEntityType = "DEPLOYMENT"
+	ListAlertsParamsEntityTypeDEPLOYMENT   ListAlertsParamsEntityType = "DEPLOYMENT"
+	ListAlertsParamsEntityTypeORGANIZATION ListAlertsParamsEntityType = "ORGANIZATION"
+	ListAlertsParamsEntityTypeWORKSPACE    ListAlertsParamsEntityType = "WORKSPACE"
 )
 
 // Defines values for ListAlertsParamsSorts.
@@ -1023,8 +1031,9 @@ const (
 
 // Defines values for GetDeploymentOptionsParamsExecutor.
 const (
-	GetDeploymentOptionsParamsExecutorCELERY     GetDeploymentOptionsParamsExecutor = "CELERY"
-	GetDeploymentOptionsParamsExecutorKUBERNETES GetDeploymentOptionsParamsExecutor = "KUBERNETES"
+	ASTRO      GetDeploymentOptionsParamsExecutor = "ASTRO"
+	CELERY     GetDeploymentOptionsParamsExecutor = "CELERY"
+	KUBERNETES GetDeploymentOptionsParamsExecutor = "KUBERNETES"
 )
 
 // Defines values for GetDeploymentOptionsParamsCloudProvider.
@@ -1836,7 +1845,7 @@ type CreateDedicatedDeploymentRequest struct {
 	// Type The type of the Deployment.
 	Type CreateDedicatedDeploymentRequestType `json:"type"`
 
-	// WorkerQueues The list of worker queues configured for the Deployment. Applies only when `Executor` is `CELERY`. At least 1 worker queue is needed. All Deployments need at least 1 worker queue called `default`.
+	// WorkerQueues The list of worker queues configured for the Deployment. Applies only when `Executor` is `CELERY` or `ASTRO`. All such Deployments need at least 1 worker queue called `default`.
 	WorkerQueues *[]WorkerQueueRequest `json:"workerQueues,omitempty"`
 
 	// WorkloadIdentity The Deployment's workload identity.
@@ -3684,7 +3693,7 @@ type UpdateDedicatedDeploymentRequest struct {
 	// Type The type of the Deployment.
 	Type UpdateDedicatedDeploymentRequestType `json:"type"`
 
-	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY`. All Deployments need at least 1 worker queue called `default`.
+	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY` or `ASTRO`. All such Deployments need at least 1 worker queue called `default`.
 	WorkerQueues *[]WorkerQueueRequest `json:"workerQueues,omitempty"`
 
 	// WorkloadIdentity The Deployment's workload identity.
@@ -4083,7 +4092,7 @@ type UpdateStandardDeploymentRequest struct {
 	// Type The type of the Deployment.
 	Type UpdateStandardDeploymentRequestType `json:"type"`
 
-	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY`. All Deployments need at least 1 worker queue called `default`.
+	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY` or `ASTRO`. All such Deployments need at least 1 worker queue called `default`.
 	WorkerQueues *[]WorkerQueueRequest `json:"workerQueues,omitempty"`
 
 	// WorkloadIdentity The Deployment's workload identity.
