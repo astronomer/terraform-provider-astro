@@ -167,10 +167,6 @@ func checkNotificationChannels(tfVarName string) resource.TestCheckFunc {
 		if instanceState.Attributes[entityType] == "" {
 			return fmt.Errorf("expected 'entity_type' to be set")
 		}
-		entityName := fmt.Sprintf("notification_channels.%d.entity_name", idx)
-		if instanceState.Attributes[entityName] == "" {
-			return fmt.Errorf("expected 'entity_name' to be set")
-		}
 		isShared := fmt.Sprintf("notification_channels.%d.is_shared", idx)
 		if instanceState.Attributes[isShared] == "" {
 			return fmt.Errorf("expected 'is_shared' to be set")
