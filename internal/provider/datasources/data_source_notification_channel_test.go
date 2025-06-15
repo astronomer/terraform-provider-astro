@@ -12,7 +12,7 @@ import (
 func TestAcc_DataSource_NotificationChannel(t *testing.T) {
 	notificationChannelId := os.Getenv("HOSTED_NOTIFICATION_CHANNEL_ID")
 	tfVarName := "test_data_notification_channel"
-	resourceVar := fmt.Sprintf("data.astro_notificationChannel.%v", tfVarName)
+	resourceVar := fmt.Sprintf("data.astro_notification_channel.%v", tfVarName)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -43,7 +43,7 @@ func TestAcc_DataSource_NotificationChannel(t *testing.T) {
 
 func notificationChannel(notificationChannelId string, tfVarName string) string {
 	return fmt.Sprintf(`
-data astro_notificationChannel "%v" {
+data astro_notification_channel "%v" {
 	id = "%v"
 }`, tfVarName, notificationChannelId)
 }
