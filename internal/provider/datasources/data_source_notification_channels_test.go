@@ -14,6 +14,15 @@ import (
 	"github.com/samber/lo"
 )
 
+// Add input struct for filter checks
+type checkNotificationChannelsInput struct {
+	workspaceId           string
+	deploymentId          string
+	notificationChannelId string
+	channelType           string
+	entityType            string
+}
+
 func TestAcc_DataSource_NotificationChannels(t *testing.T) {
 	tfVarName := "test_data_notification_channels"
 	tfWorkspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
@@ -29,37 +38,37 @@ func TestAcc_DataSource_NotificationChannels(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannels(tfVarName),
 				Check: resource.ComposeTestCheckFunc(
-					checkNotificationChannels(tfVarName),
+					checkNotificationChannels(tfVarName, checkNotificationChannelsInput{}),
 				),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannelsFilterWorkspaceIds(tfVarName, []string{tfWorkspaceId}),
 				Check: resource.ComposeTestCheckFunc(
-					checkNotificationChannels(tfVarName),
+					checkNotificationChannels(tfVarName, checkNotificationChannelsInput{workspaceId: tfWorkspaceId}),
 				),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannelsFilterDeploymentIds(tfVarName, []string{tfDeploymentId}),
 				Check: resource.ComposeTestCheckFunc(
-					checkNotificationChannels(tfVarName),
+					checkNotificationChannels(tfVarName, checkNotificationChannelsInput{deploymentId: tfDeploymentId}),
 				),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannelsFilterNotificationChannelIds(tfVarName, []string{tfNotificationChannelId}),
 				Check: resource.ComposeTestCheckFunc(
-					checkNotificationChannels(tfVarName),
+					checkNotificationChannels(tfVarName, checkNotificationChannelsInput{notificationChannelId: tfNotificationChannelId}),
 				),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannelsFilterChannelTypes(tfVarName, []string{string(platform.AlertNotificationChannelTypeEMAIL)}),
 				Check: resource.ComposeTestCheckFunc(
-					checkNotificationChannels(tfVarName),
+					checkNotificationChannels(tfVarName, checkNotificationChannelsInput{channelType: string(platform.AlertNotificationChannelTypeEMAIL)}),
 				),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannelsFilterEntityType(tfVarName, string(platform.AlertNotificationChannelEntityTypeDEPLOYMENT)),
 				Check: resource.ComposeTestCheckFunc(
-					checkNotificationChannels(tfVarName),
+					checkNotificationChannels(tfVarName, checkNotificationChannelsInput{entityType: string(platform.AlertNotificationChannelEntityTypeDEPLOYMENT)}),
 				),
 			},
 		},
@@ -118,7 +127,8 @@ func notificationChannelsFilterEntityType(tfVarName, entityType string) string {
  }`, tfVarName, entityType)
 }
 
-func checkNotificationChannels(tfVarName string) resource.TestCheckFunc {
+// Enhance checkNotificationChannels to apply filter-based assertions
+func checkNotificationChannels(tfVarName string, input checkNotificationChannelsInput) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		instanceState, numChannels, err := utils.GetDataSourcesLength(s, tfVarName, "notification_channels")
 		if err != nil {
@@ -151,14 +161,6 @@ func checkNotificationChannels(tfVarName string) resource.TestCheckFunc {
 		if instanceState.Attributes[orgId] == "" {
 			return fmt.Errorf("expected 'organization_id' to be set")
 		}
-		workspaceId := fmt.Sprintf("notification_channels.%d.workspace_id", idx)
-		if instanceState.Attributes[workspaceId] == "" {
-			return fmt.Errorf("expected 'workspace_id' to be set")
-		}
-		deploymentId := fmt.Sprintf("notification_channels.%d.deployment_id", idx)
-		if instanceState.Attributes[deploymentId] == "" {
-			return fmt.Errorf("expected 'deployment_id' to be set")
-		}
 		entityId := fmt.Sprintf("notification_channels.%d.entity_id", idx)
 		if instanceState.Attributes[entityId] == "" {
 			return fmt.Errorf("expected 'entity_id' to be set")
@@ -186,6 +188,40 @@ func checkNotificationChannels(tfVarName string) resource.TestCheckFunc {
 		updatedBy := fmt.Sprintf("notification_channels.%d.updated_by.id", idx)
 		if instanceState.Attributes[updatedBy] == "" {
 			return fmt.Errorf("expected 'updated_by.id' to be set")
+		}
+		// Filter-specific validations
+		if input.workspaceId != "" {
+			workspaceId := fmt.Sprintf("notification_channels.%d.workspace_id", idx)
+			if instanceState.Attributes[workspaceId] == "" {
+				return fmt.Errorf("expected 'workspace_id' to be set")
+			}
+			if instanceState.Attributes[workspaceId] != input.workspaceId {
+				return fmt.Errorf("expected 'workspace_id' to be '%s', got '%s'", input.workspaceId, instanceState.Attributes[workspaceId])
+			}
+		}
+		if input.deploymentId != "" {
+			deploymentId := fmt.Sprintf("notification_channels.%d.deployment_id", idx)
+			if instanceState.Attributes[deploymentId] == "" {
+				return fmt.Errorf("expected 'deployment_id' to be set")
+			}
+			if instanceState.Attributes[deploymentId] != input.deploymentId {
+				return fmt.Errorf("expected 'deployment_id' to be '%s', got '%s'", input.deploymentId, instanceState.Attributes[deploymentId])
+			}
+		}
+		if input.notificationChannelId != "" {
+			if instanceState.Attributes[id] != input.notificationChannelId {
+				return fmt.Errorf("expected 'id' to be '%s', got '%s'", input.notificationChannelId, instanceState.Attributes[id])
+			}
+		}
+		if input.channelType != "" {
+			if instanceState.Attributes[channelType] != input.channelType {
+				return fmt.Errorf("expected 'type' to be '%s', got '%s'", input.channelType, instanceState.Attributes[channelType])
+			}
+		}
+		if input.entityType != "" {
+			if instanceState.Attributes[entityType] != input.entityType {
+				return fmt.Errorf("expected 'entity_type' to be '%s', got '%s'", input.entityType, instanceState.Attributes[entityType])
+			}
 		}
 		return nil
 	}
