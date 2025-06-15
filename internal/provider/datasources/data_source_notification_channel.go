@@ -33,7 +33,7 @@ func (d *notificationChannelDataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_notificationChannel"
+	resp.TypeName = req.ProviderTypeName + "_notification_channel"
 }
 
 func (d *notificationChannelDataSource) Schema(
@@ -43,7 +43,7 @@ func (d *notificationChannelDataSource) Schema(
 ) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "NotificationChannel data source",
+		MarkdownDescription: "Notification Channel data source",
 		Attributes:          schemas.NotificationChannelDataSourceSchemaAttributes(),
 	}
 }

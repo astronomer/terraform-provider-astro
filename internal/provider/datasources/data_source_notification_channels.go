@@ -47,7 +47,7 @@ func (d *notificationChannelsDataSource) Schema(
 ) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Notification channels data source",
+		MarkdownDescription: "Notification Channels data source",
 		Attributes:          schemas.NotificationChannelsDataSourceSchemaAttributes(),
 	}
 }

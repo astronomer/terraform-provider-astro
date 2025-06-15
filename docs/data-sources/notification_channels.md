@@ -3,12 +3,12 @@
 page_title: "astro_notification_channels Data Source - astro"
 subcategory: ""
 description: |-
-  Notification channels data source
+  Notification Channels data source
 ---
 
 # astro_notification_channels (Data Source)
 
-Notification channels data source
+Notification Channels data source
 
 
 
