@@ -190,7 +190,7 @@ func checkNotificationChannels(tfVarName string, input checkNotificationChannels
 			return fmt.Errorf("expected 'updated_by.id' to be set")
 		}
 		// Filter-specific validations
-		if input.workspaceId != "" {
+		if input.workspaceId != "" && entityType == string(platform.AlertNotificationChannelEntityTypeWORKSPACE) {
 			workspaceId := fmt.Sprintf("notification_channels.%d.workspace_id", idx)
 			if instanceState.Attributes[workspaceId] == "" {
 				return fmt.Errorf("expected 'workspace_id' to be set")
@@ -199,7 +199,7 @@ func checkNotificationChannels(tfVarName string, input checkNotificationChannels
 				return fmt.Errorf("expected 'workspace_id' to be '%s', got '%s'", input.workspaceId, instanceState.Attributes[workspaceId])
 			}
 		}
-		if input.deploymentId != "" {
+		if input.deploymentId != "" && entityType == string(platform.AlertNotificationChannelEntityTypeDEPLOYMENT) {
 			deploymentId := fmt.Sprintf("notification_channels.%d.deployment_id", idx)
 			if instanceState.Attributes[deploymentId] == "" {
 				return fmt.Errorf("expected 'deployment_id' to be set")
