@@ -66,9 +66,9 @@ func TestAcc_DataSource_NotificationChannels(t *testing.T) {
 				),
 			},
 			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannelsFilterEntityType(tfVarName, string(platform.AlertNotificationChannelEntityTypeDEPLOYMENT)),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannelsFilterEntityType(tfVarName, string(platform.AlertNotificationChannelEntityTypeORGANIZATION)),
 				Check: resource.ComposeTestCheckFunc(
-					checkNotificationChannels(tfVarName, checkNotificationChannelsInput{entityType: string(platform.AlertNotificationChannelEntityTypeDEPLOYMENT)}),
+					checkNotificationChannels(tfVarName, checkNotificationChannelsInput{entityType: string(platform.AlertNotificationChannelEntityTypeORGANIZATION)}),
 				),
 			},
 		},
