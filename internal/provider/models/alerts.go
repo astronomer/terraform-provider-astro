@@ -26,8 +26,8 @@ func (data *Alerts) ReadFromResponse(
 ) diag.Diagnostics {
 	values := make([]attr.Value, len(alerts))
 	for i, alert := range alerts {
-		var singleAlertData Alert
-		diags := singleAlertData.ReadFromListResponse(ctx, &alert)
+		var singleAlertData AlertListModel
+		diags := singleAlertData.ReadFromAlertListResponse(ctx, &alert)
 		if diags.HasError() {
 			return diags
 		}
