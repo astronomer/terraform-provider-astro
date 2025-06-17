@@ -60,6 +60,10 @@ func (data *Alert) ReadFromResponse(ctx context.Context, Alert *platform.Alert) 
 	} else {
 		data.EntityName = types.StringValue("")
 	}
+	data.NotificationChannels, diags = AlertNotificationChannelsTypesSet(ctx, Alert.NotificationChannels)
+	if diags.HasError() {
+		return diags
+	}
 	data.OrganizationId = types.StringValue(Alert.OrganizationId)
 	if Alert.WorkspaceId != nil {
 		data.WorkspaceId = types.StringValue(*Alert.WorkspaceId)
@@ -161,4 +165,59 @@ func AlertRulesTypesObject(
 	}
 
 	return types.ObjectValueFrom(ctx, schemas.AlertRulesAttributeTypes(), alertRules)
+}
+
+// AlertNotificationChannelsTypesSet converts a slice of platform.AlertNotificationChannel into a Terraform types.Set of nested NotificationChannelDataSource objects
+func AlertNotificationChannelsTypesSet(ctx context.Context, channels any) (types.Set, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	// Attempt to convert channels to slice
+	var slice []platform.AlertNotificationChannel
+	switch v := channels.(type) {
+	case []platform.AlertNotificationChannel:
+		slice = v
+	case *[]platform.AlertNotificationChannel:
+		slice = *v
+	default:
+		tflog.Error(ctx, "Unexpected type passed into alert notification channels", map[string]interface{}{"value": channels})
+		return types.Set{}, diag.Diagnostics{
+			diag.NewErrorDiagnostic(
+				"Internal Error",
+				"AlertNotificationChannelsTypesSet expects a slice of platform.AlertNotificationChannel",
+			),
+		}
+	}
+	var vals []attr.Value
+	for _, anc := range slice {
+		// Map AlertNotificationChannel fields into NotificationChannelDataSource via temporary platform.NotificationChannel
+		pc := platform.NotificationChannel{
+			CreatedAt:      anc.CreatedAt,
+			CreatedBy:      platform.BasicSubjectProfile{},
+			Definition:     anc.Definition,
+			DeploymentId:   anc.DeploymentId,
+			EntityId:       anc.EntityId,
+			EntityName:     nil,
+			EntityType:     string(anc.EntityType),
+			Id:             anc.Id,
+			IsShared:       false,
+			Name:           anc.Name,
+			OrganizationId: anc.OrganizationId,
+			Type:           string(anc.Type),
+			UpdatedAt:      anc.UpdatedAt,
+			UpdatedBy:      platform.BasicSubjectProfile{},
+			WorkspaceId:    anc.WorkspaceId,
+		}
+		var single NotificationChannelDataSource
+		diagsC := single.ReadFromResponse(ctx, &pc)
+		if diagsC.HasError() {
+			return types.Set{}, diagsC
+		}
+		obj, diagsC := types.ObjectValueFrom(ctx, schemas.NotificationChannelsElementAttributeTypes(), single)
+		if diagsC.HasError() {
+			return types.Set{}, diagsC
+		}
+		vals = append(vals, obj)
+	}
+	setVal, diagsSet := types.SetValue(types.ObjectType{AttrTypes: schemas.NotificationChannelsElementAttributeTypes()}, vals)
+	diags = append(diags, diagsSet...)
+	return setVal, diags
 }

@@ -56,10 +56,12 @@ func AlertDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 			MarkdownDescription: "Name of the entity associated with the alert",
 			Computed:            true,
 		},
-		"notification_channels": datasourceSchema.SetAttribute{
+		"notification_channels": datasourceSchema.SetNestedAttribute{
 			MarkdownDescription: "The notification channels to send alerts to",
-			ElementType:         types.StringType,
-			Computed:            true,
+			NestedObject: datasourceSchema.NestedAttributeObject{
+				Attributes: NotificationChannelDataSourceSchemaAttributes(),
+			},
+			Computed: true,
 		},
 		"organization_id": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Organization identifier associated with the alert",
