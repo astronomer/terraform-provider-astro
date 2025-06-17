@@ -36,10 +36,12 @@ func AlertsElementAttributeTypes() map[string]attr.Type {
 }
 
 func AlertsDataSourceSchemaAttributes() map[string]schema.Attribute {
+	attrs := AlertDataSourceSchemaAttributes()
+	delete(attrs, "notification_channels")
 	return map[string]schema.Attribute{
 		"alerts": schema.SetNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
-				Attributes: AlertDataSourceSchemaAttributes(),
+				Attributes: attrs,
 			},
 			Computed: true,
 		},
