@@ -31,6 +31,25 @@ type Alert struct {
 	UpdatedBy      types.Object `tfsdk:"updated_by"`
 }
 
+// Alert describes the data source data model.
+type AlertResource struct {
+	Id             types.String `tfsdk:"id"`
+	Name           types.String `tfsdk:"name"`
+	Type           types.String `tfsdk:"type"`
+	Rules          types.Object `tfsdk:"rules"`
+	EntityId       types.String `tfsdk:"entity_id"`
+	EntityType     types.String `tfsdk:"entity_type"`
+	EntityName     types.String `tfsdk:"entity_name"`
+	OrganizationId types.String `tfsdk:"organization_id"`
+	WorkspaceId    types.String `tfsdk:"workspace_id"`
+	DeploymentId   types.String `tfsdk:"deployment_id"`
+	Severity       types.String `tfsdk:"severity"`
+	CreatedAt      types.String `tfsdk:"created_at"`
+	UpdatedAt      types.String `tfsdk:"updated_at"`
+	CreatedBy      types.Object `tfsdk:"created_by"`
+	UpdatedBy      types.Object `tfsdk:"updated_by"`
+}
+
 type AlertRules struct {
 	Properties     types.Map  `tfsdk:"properties"`
 	PatternMatches types.List `tfsdk:"pattern_matches"`
