@@ -11,19 +11,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func AlertsElementAttributeTypes() map[string]attr.Type {
+func NotificationChannelsElementAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"id":              types.StringType,
 		"name":            types.StringType,
+		"definition":      types.MapType{ElemType: types.StringType},
 		"type":            types.StringType,
-		"rules":           types.ObjectType{AttrTypes: AlertRulesAttributeTypes()},
+		"is_shared":       types.BoolType,
 		"entity_id":       types.StringType,
 		"entity_type":     types.StringType,
 		"entity_name":     types.StringType,
 		"organization_id": types.StringType,
 		"workspace_id":    types.StringType,
 		"deployment_id":   types.StringType,
-		"severity":        types.StringType,
 		"created_at":      types.StringType,
 		"updated_at":      types.StringType,
 		"created_by": types.ObjectType{
@@ -35,17 +35,15 @@ func AlertsElementAttributeTypes() map[string]attr.Type {
 	}
 }
 
-func AlertsDataSourceSchemaAttributes() map[string]schema.Attribute {
-	attrs := AlertDataSourceSchemaAttributes()
-	delete(attrs, "notification_channels")
+func NotificationChannelsDataSourceSchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
-		"alerts": schema.SetNestedAttribute{
+		"notification_channels": schema.SetNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
-				Attributes: attrs,
+				Attributes: NotificationChannelDataSourceSchemaAttributes(),
 			},
 			Computed: true,
 		},
-		"alert_ids": schema.SetAttribute{
+		"notification_channel_ids": schema.SetAttribute{
 			ElementType: types.StringType,
 			Optional:    true,
 			Validators: []validator.Set{
@@ -69,18 +67,17 @@ func AlertsDataSourceSchemaAttributes() map[string]schema.Attribute {
 				setvalidator.ValueStringsAre(stringvalidator.All(validators.IsCuid())),
 			},
 		},
-		"alert_types": schema.SetAttribute{
+		"channel_types": schema.SetAttribute{
 			ElementType: types.StringType,
 			Optional:    true,
 			Validators: []validator.Set{
 				setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 				setvalidator.ValueStringsAre(stringvalidator.OneOf(
-					string(platform.CreateDagDurationAlertRequestTypeDAGDURATION),
-					string(platform.CreateDagFailureAlertRequestTypeDAGFAILURE),
-					string(platform.CreateDagSuccessAlertRequestTypeDAGSUCCESS),
-					string(platform.CreateDagTimelinessAlertRequestTypeDAGTIMELINESS),
-					string(platform.CreateTaskFailureAlertRequestTypeTASKFAILURE),
-					string(platform.CreateTaskDurationAlertRequestTypeTASKDURATION),
+					string(platform.AlertNotificationChannelTypeEMAIL),
+					string(platform.AlertNotificationChannelTypeSLACK),
+					string(platform.AlertNotificationChannelTypeOPSGENIE),
+					string(platform.AlertNotificationChannelTypePAGERDUTY),
+					string(platform.AlertNotificationChannelTypeDAGTRIGGER),
 				)),
 			},
 		},
@@ -88,7 +85,9 @@ func AlertsDataSourceSchemaAttributes() map[string]schema.Attribute {
 			Optional: true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(platform.AlertEntityTypeDEPLOYMENT),
+					string(platform.AlertNotificationChannelEntityTypeORGANIZATION),
+					string(platform.AlertNotificationChannelEntityTypeWORKSPACE),
+					string(platform.AlertNotificationChannelEntityTypeDEPLOYMENT),
 				),
 			},
 		},

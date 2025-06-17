@@ -18,7 +18,7 @@ import (
 func AlertRulesAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"properties":      types.MapType{ElemType: types.StringType},
-		"pattern_matches": types.ListType{ElemType: types.ObjectType{AttrTypes: AlertRulesPatternMatchAttributeTypes()}},
+		"pattern_matches": types.SetType{ElemType: types.ObjectType{AttrTypes: AlertRulesPatternMatchAttributeTypes()}},
 	}
 }
 
@@ -27,7 +27,7 @@ func AlertRulesPatternMatchAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"entity_type":   types.StringType,
 		"operator_type": types.StringType,
-		"values":        types.ListType{ElemType: types.StringType},
+		"values":        types.SetType{ElemType: types.StringType},
 	}
 }
 
@@ -62,6 +62,13 @@ func AlertDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 		"entity_name": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Name of the entity associated with the alert",
 			Computed:            true,
+		},
+		"notification_channels": datasourceSchema.SetNestedAttribute{
+			MarkdownDescription: "The notification channels to send alerts to",
+			NestedObject: datasourceSchema.NestedAttributeObject{
+				Attributes: NotificationChannelDataSourceSchemaAttributes(),
+			},
+			Computed: true,
 		},
 		"organization_id": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Organization identifier associated with the alert",
@@ -107,7 +114,7 @@ func AlertRulesDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			MarkdownDescription: "The alert's properties used to define the alert",
 			Computed:            true,
 		},
-		"pattern_matches": datasourceSchema.ListNestedAttribute{
+		"pattern_matches": datasourceSchema.SetNestedAttribute{
 			MarkdownDescription: "The alert's pattern matches to match against",
 			NestedObject: datasourceSchema.NestedAttributeObject{
 				Attributes: map[string]datasourceSchema.Attribute{
@@ -119,7 +126,7 @@ func AlertRulesDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 						MarkdownDescription: "The type of operator to use for the pattern match",
 						Computed:            true,
 					},
-					"values": datasourceSchema.ListAttribute{
+					"values": datasourceSchema.SetAttribute{
 						MarkdownDescription: "The values to match against",
 						ElementType:         types.StringType,
 						Computed:            true,

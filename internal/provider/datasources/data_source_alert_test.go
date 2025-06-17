@@ -45,6 +45,8 @@ func TestAcc_DataSource_Alert(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceVar, "updated_at"),
 					resource.TestCheckResourceAttrSet(resourceVar, "created_by.id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "updated_by.id"),
+					resource.TestCheckResourceAttrWith(resourceVar, "notification_channels.#", CheckAttributeLengthIsNotEmpty),
+					resource.TestCheckResourceAttrSet(resourceVar, "notification_channels.0.id"),
 				),
 			},
 		},
