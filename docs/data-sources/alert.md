@@ -39,6 +39,7 @@ output "alert" {
 - `entity_name` (String) Name of the entity associated with the alert
 - `entity_type` (String) Type of entity associated with the alert (e.g., 'DEPLOYMENT')
 - `name` (String) Alert name
+- `notification_channels` (Set of String) The notification channels to send alerts to
 - `organization_id` (String) Organization identifier associated with the alert
 - `rules` (Attributes) Alert rules defining the conditions for triggering the alert (see [below for nested schema](#nestedatt--rules))
 - `severity` (String) Severity level of the alert (e.g., 'INFO', 'WARNING', 'CRITICAL')
@@ -65,7 +66,7 @@ Read-Only:
 
 Read-Only:
 
-- `pattern_matches` (Attributes List) The alert's pattern matches to match against (see [below for nested schema](#nestedatt--rules--pattern_matches))
+- `pattern_matches` (Attributes Set) The alert's pattern matches to match against (see [below for nested schema](#nestedatt--rules--pattern_matches))
 - `properties` (Map of String) The alert's properties used to define the alert
 
 <a id="nestedatt--rules--pattern_matches"></a>
@@ -75,7 +76,7 @@ Read-Only:
 
 - `entity_type` (String) The type of entity to match against
 - `operator_type` (String) The type of operator to use for the pattern match
-- `values` (List of String) The values to match against
+- `values` (Set of String) The values to match against
 
 
 
