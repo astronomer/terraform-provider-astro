@@ -27,7 +27,7 @@ func (data *Alerts) ReadFromResponse(
 	values := make([]attr.Value, len(alerts))
 	for i, alert := range alerts {
 		var singleAlertData Alert
-		diags := singleAlertData.ReadFromResponse(ctx, &alert)
+		diags := singleAlertData.ReadFromListResponse(ctx, &alert)
 		if diags.HasError() {
 			return diags
 		}

@@ -191,14 +191,6 @@ func checkAlerts(tfVarName string) resource.TestCheckFunc {
 		if instanceState.Attributes[updatedBy] == "" {
 			return fmt.Errorf("expected 'updated_by.id' to be set")
 		}
-		ncCountKey := fmt.Sprintf("alerts.%d.notification_channels.#", alertsIdx)
-		if instanceState.Attributes[ncCountKey] == "" {
-			return fmt.Errorf("expected 'notification_channels' to have at least one entry")
-		}
-		ncIdKey := fmt.Sprintf("alerts.%d.notification_channels.0.id", alertsIdx)
-		if instanceState.Attributes[ncIdKey] == "" {
-			return fmt.Errorf("expected 'notification_channels.0.id' to be set")
-		}
 		return nil
 	}
 }

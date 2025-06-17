@@ -13,16 +13,13 @@ import (
 
 func AlertsElementAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"id":          types.StringType,
-		"name":        types.StringType,
-		"type":        types.StringType,
-		"rules":       types.ObjectType{AttrTypes: AlertRulesAttributeTypes()},
-		"entity_id":   types.StringType,
-		"entity_type": types.StringType,
-		"entity_name": types.StringType,
-		"notification_channels": types.SetType{
-			ElemType: types.ObjectType{AttrTypes: NotificationChannelsElementAttributeTypes()},
-		},
+		"id":              types.StringType,
+		"name":            types.StringType,
+		"type":            types.StringType,
+		"rules":           types.ObjectType{AttrTypes: AlertRulesAttributeTypes()},
+		"entity_id":       types.StringType,
+		"entity_type":     types.StringType,
+		"entity_name":     types.StringType,
 		"organization_id": types.StringType,
 		"workspace_id":    types.StringType,
 		"deployment_id":   types.StringType,

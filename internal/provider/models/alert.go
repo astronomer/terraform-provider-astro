@@ -221,3 +221,45 @@ func AlertNotificationChannelsTypesSet(ctx context.Context, channels any) (types
 	diags = append(diags, diagsSet...)
 	return setVal, diags
 }
+
+// ReadFromListResponse populates Alert fields for the alerts data source (list) without notification channels
+func (data *Alert) ReadFromListResponse(ctx context.Context, alert *platform.Alert) diag.Diagnostics {
+	var diags diag.Diagnostics
+	data.Id = types.StringValue(alert.Id)
+	data.Name = types.StringValue(alert.Name)
+	data.Type = types.StringValue(string(alert.Type))
+	data.Rules, diags = AlertRulesTypesObject(ctx, alert.Rules)
+	if diags.HasError() {
+		return diags
+	}
+	data.EntityId = types.StringValue(alert.EntityId)
+	data.EntityType = types.StringValue(string(alert.EntityType))
+	if alert.EntityName != nil {
+		data.EntityName = types.StringValue(*alert.EntityName)
+	} else {
+		data.EntityName = types.StringValue("")
+	}
+	data.OrganizationId = types.StringValue(alert.OrganizationId)
+	if alert.WorkspaceId != nil {
+		data.WorkspaceId = types.StringValue(*alert.WorkspaceId)
+	} else {
+		data.WorkspaceId = types.StringValue("")
+	}
+	if alert.DeploymentId != nil {
+		data.DeploymentId = types.StringValue(*alert.DeploymentId)
+	} else {
+		data.DeploymentId = types.StringValue("")
+	}
+	data.Severity = types.StringValue(string(alert.Severity))
+	data.CreatedAt = types.StringValue(alert.CreatedAt.String())
+	data.UpdatedAt = types.StringValue(alert.UpdatedAt.String())
+	data.CreatedBy, diags = SubjectProfileTypesObject(ctx, alert.CreatedBy)
+	if diags.HasError() {
+		return diags
+	}
+	data.UpdatedBy, diags = SubjectProfileTypesObject(ctx, alert.UpdatedBy)
+	if diags.HasError() {
+		return diags
+	}
+	return nil
+}
