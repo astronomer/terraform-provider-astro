@@ -39,6 +39,7 @@ output "alert" {
 - `entity_name` (String) Name of the entity associated with the alert
 - `entity_type` (String) Type of entity associated with the alert (e.g., 'DEPLOYMENT')
 - `name` (String) Alert name
+- `notification_channels` (Attributes Set) The notification channels to send alerts to (see [below for nested schema](#nestedatt--notification_channels))
 - `organization_id` (String) Organization identifier associated with the alert
 - `rules` (Attributes) Alert rules defining the conditions for triggering the alert (see [below for nested schema](#nestedatt--rules))
 - `severity` (String) Severity level of the alert (e.g., 'INFO', 'WARNING', 'CRITICAL')
@@ -60,12 +61,63 @@ Read-Only:
 - `username` (String)
 
 
+<a id="nestedatt--notification_channels"></a>
+### Nested Schema for `notification_channels`
+
+Required:
+
+- `id` (String) The notification channel's ID
+
+Read-Only:
+
+- `created_at` (String) Notification Channel creation timestamp
+- `created_by` (Attributes) Notification Channel creator (see [below for nested schema](#nestedatt--notification_channels--created_by))
+- `definition` (Map of String) The notification channel's definition
+- `deployment_id` (String) The deployment ID the notification channel is scoped to
+- `entity_id` (String) The entity ID the notification channel is scoped to
+- `entity_name` (String) The name of the entity the notification channel is scoped to
+- `entity_type` (String) The type of entity the notification channel is scoped to (e.g., 'DEPLOYMENT')
+- `is_shared` (Boolean) When entity type is scoped to ORGANIZATION or WORKSPACE, this determines if child entities can access this notification channel.
+- `name` (String) The notification channel's name
+- `organization_id` (String) The organization ID the notification channel is scoped to
+- `type` (String) The notification channel's type
+- `updated_at` (String) Notification Channel last updated timestamp
+- `updated_by` (Attributes) Notification Channel updater (see [below for nested schema](#nestedatt--notification_channels--updated_by))
+- `workspace_id` (String) The workspace ID the notification channel is scoped to
+
+<a id="nestedatt--notification_channels--created_by"></a>
+### Nested Schema for `notification_channels.created_by`
+
+Read-Only:
+
+- `api_token_name` (String)
+- `avatar_url` (String)
+- `full_name` (String)
+- `id` (String)
+- `subject_type` (String)
+- `username` (String)
+
+
+<a id="nestedatt--notification_channels--updated_by"></a>
+### Nested Schema for `notification_channels.updated_by`
+
+Read-Only:
+
+- `api_token_name` (String)
+- `avatar_url` (String)
+- `full_name` (String)
+- `id` (String)
+- `subject_type` (String)
+- `username` (String)
+
+
+
 <a id="nestedatt--rules"></a>
 ### Nested Schema for `rules`
 
 Read-Only:
 
-- `pattern_matches` (Attributes List) The alert's pattern matches to match against (see [below for nested schema](#nestedatt--rules--pattern_matches))
+- `pattern_matches` (Attributes Set) The alert's pattern matches to match against (see [below for nested schema](#nestedatt--rules--pattern_matches))
 - `properties` (Map of String) The alert's properties used to define the alert
 
 <a id="nestedatt--rules--pattern_matches"></a>
@@ -75,7 +127,7 @@ Read-Only:
 
 - `entity_type` (String) The type of entity to match against
 - `operator_type` (String) The type of operator to use for the pattern match
-- `values` (List of String) The values to match against
+- `values` (Set of String) The values to match against
 
 
 

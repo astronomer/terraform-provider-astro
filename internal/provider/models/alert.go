@@ -14,6 +14,26 @@ import (
 
 // Alert describes the data source data model.
 type Alert struct {
+	Id                   types.String `tfsdk:"id"`
+	Name                 types.String `tfsdk:"name"`
+	Type                 types.String `tfsdk:"type"`
+	Rules                types.Object `tfsdk:"rules"`
+	EntityId             types.String `tfsdk:"entity_id"`
+	EntityType           types.String `tfsdk:"entity_type"`
+	EntityName           types.String `tfsdk:"entity_name"`
+	NotificationChannels types.Set    `tfsdk:"notification_channels"`
+	OrganizationId       types.String `tfsdk:"organization_id"`
+	WorkspaceId          types.String `tfsdk:"workspace_id"`
+	DeploymentId         types.String `tfsdk:"deployment_id"`
+	Severity             types.String `tfsdk:"severity"`
+	CreatedAt            types.String `tfsdk:"created_at"`
+	UpdatedAt            types.String `tfsdk:"updated_at"`
+	CreatedBy            types.Object `tfsdk:"created_by"`
+	UpdatedBy            types.Object `tfsdk:"updated_by"`
+}
+
+// AlertListModel is used for listing alerts without notification channels.
+type AlertListModel struct {
 	Id             types.String `tfsdk:"id"`
 	Name           types.String `tfsdk:"name"`
 	Type           types.String `tfsdk:"type"`
@@ -32,15 +52,15 @@ type Alert struct {
 }
 
 type AlertRules struct {
-	Properties     types.Map  `tfsdk:"properties"`
-	PatternMatches types.List `tfsdk:"pattern_matches"`
+	Properties     types.Map `tfsdk:"properties"`
+	PatternMatches types.Set `tfsdk:"pattern_matches"`
 }
 
 // AlertRulesPatternMatch describes element type for pattern_matches in AlertRules.
 type AlertRulesPatternMatch struct {
 	EntityType   types.String `tfsdk:"entity_type"`
 	OperatorType types.String `tfsdk:"operator_type"`
-	Values       types.List   `tfsdk:"values"`
+	Values       types.Set    `tfsdk:"values"`
 }
 
 func (data *Alert) ReadFromResponse(ctx context.Context, Alert *platform.Alert) diag.Diagnostics {
@@ -58,6 +78,10 @@ func (data *Alert) ReadFromResponse(ctx context.Context, Alert *platform.Alert) 
 		data.EntityName = types.StringValue(*Alert.EntityName)
 	} else {
 		data.EntityName = types.StringValue("")
+	}
+	data.NotificationChannels, diags = AlertNotificationChannelsTypesSet(ctx, Alert.NotificationChannels)
+	if diags.HasError() {
+		return diags
 	}
 	data.OrganizationId = types.StringValue(Alert.OrganizationId)
 	if Alert.WorkspaceId != nil {
@@ -83,6 +107,48 @@ func (data *Alert) ReadFromResponse(ctx context.Context, Alert *platform.Alert) 
 		return diags
 	}
 
+	return nil
+}
+
+// ReadFromAlertListResponse populates AlertListModel from a platform.Alert, omitting notification_channels.
+func (data *AlertListModel) ReadFromAlertListResponse(ctx context.Context, alert *platform.Alert) diag.Diagnostics {
+	var diags diag.Diagnostics
+	data.Id = types.StringValue(alert.Id)
+	data.Name = types.StringValue(alert.Name)
+	data.Type = types.StringValue(string(alert.Type))
+	data.Rules, diags = AlertRulesTypesObject(ctx, alert.Rules)
+	if diags.HasError() {
+		return diags
+	}
+	data.EntityId = types.StringValue(alert.EntityId)
+	data.EntityType = types.StringValue(string(alert.EntityType))
+	if alert.EntityName != nil {
+		data.EntityName = types.StringValue(*alert.EntityName)
+	} else {
+		data.EntityName = types.StringValue("")
+	}
+	data.OrganizationId = types.StringValue(alert.OrganizationId)
+	if alert.WorkspaceId != nil {
+		data.WorkspaceId = types.StringValue(*alert.WorkspaceId)
+	} else {
+		data.WorkspaceId = types.StringValue("")
+	}
+	if alert.DeploymentId != nil {
+		data.DeploymentId = types.StringValue(*alert.DeploymentId)
+	} else {
+		data.DeploymentId = types.StringValue("")
+	}
+	data.Severity = types.StringValue(string(alert.Severity))
+	data.CreatedAt = types.StringValue(alert.CreatedAt.String())
+	data.UpdatedAt = types.StringValue(alert.UpdatedAt.String())
+	data.CreatedBy, diags = SubjectProfileTypesObject(ctx, alert.CreatedBy)
+	if diags.HasError() {
+		return diags
+	}
+	data.UpdatedBy, diags = SubjectProfileTypesObject(ctx, alert.UpdatedBy)
+	if diags.HasError() {
+		return diags
+	}
 	return nil
 }
 
@@ -125,7 +191,7 @@ func AlertRulesTypesObject(
 	if propDiags.HasError() {
 		return types.Object{}, propDiags
 	}
-	// Convert pattern matches to types.List
+	// Convert pattern matches to types.Set
 	var pmVals []attr.Value
 	if rulesPtr.PatternMatches != nil {
 		for _, pm := range *rulesPtr.PatternMatches {
@@ -134,7 +200,7 @@ func AlertRulesTypesObject(
 			for j, val := range pm.Values {
 				vals[j] = types.StringValue(val)
 			}
-			valuesList, valDiags := types.ListValue(types.StringType, vals)
+			valuesSet, valDiags := types.SetValue(types.StringType, vals)
 			if valDiags.HasError() {
 				return types.Object{}, valDiags
 			}
@@ -142,7 +208,7 @@ func AlertRulesTypesObject(
 			pmObj, pmDiags := types.ObjectValueFrom(ctx, schemas.AlertRulesPatternMatchAttributeTypes(), AlertRulesPatternMatch{
 				EntityType:   types.StringValue(string(pm.EntityType)),
 				OperatorType: types.StringValue(string(pm.OperatorType)),
-				Values:       valuesList,
+				Values:       valuesSet,
 			})
 			if pmDiags.HasError() {
 				return types.Object{}, pmDiags
@@ -150,14 +216,69 @@ func AlertRulesTypesObject(
 			pmVals = append(pmVals, pmObj)
 		}
 	}
-	pmList, pmDiags := types.ListValue(types.ObjectType{AttrTypes: schemas.AlertRulesPatternMatchAttributeTypes()}, pmVals)
+	pmSet, pmDiags := types.SetValue(types.ObjectType{AttrTypes: schemas.AlertRulesPatternMatchAttributeTypes()}, pmVals)
 	if pmDiags.HasError() {
 		return types.Object{}, pmDiags
 	}
 	alertRules := AlertRules{
 		Properties:     properties,
-		PatternMatches: pmList,
+		PatternMatches: pmSet,
 	}
 
 	return types.ObjectValueFrom(ctx, schemas.AlertRulesAttributeTypes(), alertRules)
+}
+
+// AlertNotificationChannelsTypesSet converts a slice of platform.AlertNotificationChannel into a Terraform types.Set of nested NotificationChannelDataSource objects
+func AlertNotificationChannelsTypesSet(ctx context.Context, channels any) (types.Set, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	// Attempt to convert channels to slice
+	var slice []platform.AlertNotificationChannel
+	switch v := channels.(type) {
+	case []platform.AlertNotificationChannel:
+		slice = v
+	case *[]platform.AlertNotificationChannel:
+		slice = *v
+	default:
+		tflog.Error(ctx, "Unexpected type passed into alert notification channels", map[string]interface{}{"value": channels})
+		return types.Set{}, diag.Diagnostics{
+			diag.NewErrorDiagnostic(
+				"Internal Error",
+				"AlertNotificationChannelsTypesSet expects a slice of platform.AlertNotificationChannel",
+			),
+		}
+	}
+	var vals []attr.Value
+	for _, anc := range slice {
+		// Map AlertNotificationChannel fields into NotificationChannelDataSource via temporary platform.NotificationChannel
+		pc := platform.NotificationChannel{
+			CreatedAt:      anc.CreatedAt,
+			CreatedBy:      platform.BasicSubjectProfile{},
+			Definition:     anc.Definition,
+			DeploymentId:   anc.DeploymentId,
+			EntityId:       anc.EntityId,
+			EntityName:     nil,
+			EntityType:     string(anc.EntityType),
+			Id:             anc.Id,
+			IsShared:       false,
+			Name:           anc.Name,
+			OrganizationId: anc.OrganizationId,
+			Type:           string(anc.Type),
+			UpdatedAt:      anc.UpdatedAt,
+			UpdatedBy:      platform.BasicSubjectProfile{},
+			WorkspaceId:    anc.WorkspaceId,
+		}
+		var single NotificationChannelDataSource
+		diagsC := single.ReadFromResponse(ctx, &pc)
+		if diagsC.HasError() {
+			return types.Set{}, diagsC
+		}
+		obj, diagsC := types.ObjectValueFrom(ctx, schemas.NotificationChannelsElementAttributeTypes(), single)
+		if diagsC.HasError() {
+			return types.Set{}, diagsC
+		}
+		vals = append(vals, obj)
+	}
+	setVal, diagsSet := types.SetValue(types.ObjectType{AttrTypes: schemas.NotificationChannelsElementAttributeTypes()}, vals)
+	diags = append(diags, diagsSet...)
+	return setVal, diags
 }
