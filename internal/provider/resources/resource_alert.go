@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
@@ -13,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -76,7 +78,7 @@ func (r *alertResource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	var data models.Alert
+	var data models.AlertResource
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -85,60 +87,302 @@ func (r *alertResource) Create(
 	}
 
 	var createAlertRequest platform.CreateAlertJSONRequestBody
-
-	switch data.Type.ValueString() {
-	case string(platform.AlertTypeDAGFAILURE):
-		createDagFailureAlertRequest := platform.CreateDagFailureAlertRequest{
-			EntityId:               data.EntityId.ValueString(),
-			EntityType:             platform.CreateDagFailureAlertRequestEntityType(data.EntityType.ValueString()),
-			Name:                   data.Name.ValueString(),
-			Severity: platform.CreateDagFailureAlertRequestSeverity(data.Severity.ValueString()),
-			NotificationChannelIds: data.,
-			Type: platform.CreateDagFailureAlertRequestType(data.Type.ValueString()),
-			Rules:,
-		}
-
-		err := createAlertRequest.FromCreateDagFailureAlertRequest(createDagFailureAlertRequest)
-		if err != nil {
-			return
-		}
-	case string(platform.AlertTypeDAGSUCCESS):
-	case string(platform.AlertTypeDAGDURATION):
-	case string(platform.AlertTypeDAGTIMELINESS):
-	case string(platform.AlertTypeTASKFAILURE):
-	case string(platform.AlertTypeTASKDURATION):
-	}
-
-
-
-	alert, err := r.platformClient.CreateAlertWithResponse(
-		ctx,
-		r.organizationId,
-		createAlertRequest,
-	)
-	if err != nil {
-		tflog.Error(ctx, "failed to create alert", map[string]interface{}{"error": err})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to create alert, got error: %s", err),
-		)
-		return
-	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, alert.HTTPResponse, alert.Body)
-	if diagnostic != nil {
-		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-
-	diags := data.ReadFromResponse(ctx, alert.JSON200)
+	notificationChannelIds, diags := utils.TypesSetToStringSlice(ctx, data.NotificationChannelIds)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
 	}
 
-	tflog.Trace(ctx, fmt.Sprintf("created a alert resource: %v", data.Id.ValueString()))
+	// Build create request based on alert type
+	switch data.Type.ValueString() {
+	case string(platform.AlertTypeDAGFAILURE):
+		var alertRulesInput models.ResourceAlertRulesInput
+		diags := data.Rules.As(ctx, &alertRulesInput, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
 
-	// Save data into Terraform state
+		// turn those into the API's PatternMatchRequest
+		pmReqs := make([]platform.PatternMatchRequest, len(alertRulesInput.PatternMatches))
+		for i, pm := range alertRulesInput.PatternMatches {
+			pmReqs[i] = platform.PatternMatchRequest{
+				EntityType:   platform.PatternMatchRequestEntityType(pm.EntityType),
+				OperatorType: platform.PatternMatchRequestOperatorType(pm.OperatorType),
+				Values:       pm.Values,
+			}
+		}
+
+		deploymentId := alertRulesInput.Properties["deployment_id"].(string)
+
+		createDagFailureAlertRequest := platform.CreateDagFailureAlertRequest{
+			EntityId:               data.EntityId.ValueString(),
+			EntityType:             platform.CreateDagFailureAlertRequestEntityType(data.EntityType.ValueString()),
+			Name:                   data.Name.ValueString(),
+			NotificationChannelIds: notificationChannelIds,
+			Severity:               platform.CreateDagFailureAlertRequestSeverity(data.Severity.ValueString()),
+			Type:                   platform.CreateDagFailureAlertRequestType(data.Type.ValueString()),
+			Rules: platform.CreateDagFailureAlertRules{
+				PatternMatches: pmReqs,
+				Properties: platform.CreateDagFailureAlertProperties{
+					DeploymentId: deploymentId,
+				},
+			},
+		}
+
+		err := createAlertRequest.FromCreateDagFailureAlertRequest(createDagFailureAlertRequest)
+		if err != nil {
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build DAG_FAILURE request: %s", err))
+			return
+		}
+
+	case string(platform.AlertTypeDAGSUCCESS):
+		// decode the Terraform `rules` nested block
+		var alertRulesInput models.ResourceAlertRulesInput
+		diags := data.Rules.As(ctx, &alertRulesInput, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+
+		// turn those into the API's PatternMatchRequest
+		pmReqs := make([]platform.PatternMatchRequest, len(alertRulesInput.PatternMatches))
+		for i, pm := range alertRulesInput.PatternMatches {
+			pmReqs[i] = platform.PatternMatchRequest{
+				EntityType:   platform.PatternMatchRequestEntityType(pm.EntityType),
+				OperatorType: platform.PatternMatchRequestOperatorType(pm.OperatorType),
+				Values:       pm.Values,
+			}
+		}
+
+		deploymentId := alertRulesInput.Properties["deployment_id"].(string)
+
+		createDagSuccessAlertRequest := platform.CreateDagSuccessAlertRequest{
+			EntityId:               data.EntityId.ValueString(),
+			EntityType:             platform.CreateDagSuccessAlertRequestEntityType(data.EntityType.ValueString()),
+			Name:                   data.Name.ValueString(),
+			NotificationChannelIds: notificationChannelIds,
+			Severity:               platform.CreateDagSuccessAlertRequestSeverity(data.Severity.ValueString()),
+			Type:                   platform.CreateDagSuccessAlertRequestType(data.Type.ValueString()),
+			Rules: platform.CreateDagSuccessAlertRules{
+				PatternMatches: pmReqs,
+				Properties: platform.CreateDagSuccessAlertProperties{
+					DeploymentId: deploymentId,
+				},
+			},
+		}
+		err := createAlertRequest.FromCreateDagSuccessAlertRequest(createDagSuccessAlertRequest)
+		if err != nil {
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build DAG_SUCCESS request: %s", err))
+			return
+		}
+
+	case string(platform.AlertTypeDAGDURATION):
+		var alertRulesInput models.ResourceAlertRulesInput
+		diags := data.Rules.As(ctx, &alertRulesInput, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+
+		pmReqs := make([]platform.PatternMatchRequest, len(alertRulesInput.PatternMatches))
+		for i, pm := range alertRulesInput.PatternMatches {
+			pmReqs[i] = platform.PatternMatchRequest{
+				EntityType:   platform.PatternMatchRequestEntityType(pm.EntityType),
+				OperatorType: platform.PatternMatchRequestOperatorType(pm.OperatorType),
+				Values:       pm.Values,
+			}
+		}
+
+		deploymentId := alertRulesInput.Properties["deployment_id"].(string)
+		dagDurationSeconds, err := strconv.Atoi(alertRulesInput.Properties["dag_duration_seconds"].(string))
+		if err != nil {
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to convert dag_duration_seconds to int: %s", err))
+			return
+		}
+
+		createDagDurationAlertRequest := platform.CreateDagDurationAlertRequest{
+			EntityId:               data.EntityId.ValueString(),
+			EntityType:             platform.CreateDagDurationAlertRequestEntityType(data.EntityType.ValueString()),
+			Name:                   data.Name.ValueString(),
+			NotificationChannelIds: notificationChannelIds,
+			Severity:               platform.CreateDagDurationAlertRequestSeverity(data.Severity.ValueString()),
+			Type:                   platform.CreateDagDurationAlertRequestType(data.Type.ValueString()),
+			Rules: platform.CreateDagDurationAlertRules{
+				PatternMatches: pmReqs,
+				Properties: platform.CreateDagDurationAlertProperties{
+					DeploymentId:       deploymentId,
+					DagDurationSeconds: dagDurationSeconds,
+				},
+			},
+		}
+		err = createAlertRequest.FromCreateDagDurationAlertRequest(createDagDurationAlertRequest)
+		if err != nil {
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build DAG_DURATION request: %s", err))
+			return
+		}
+
+	case string(platform.AlertTypeDAGTIMELINESS):
+		var alertRulesInput models.ResourceAlertRulesInput
+		diags := data.Rules.As(ctx, &alertRulesInput, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+
+		pmReqs := make([]platform.PatternMatchRequest, len(alertRulesInput.PatternMatches))
+		for i, pm := range alertRulesInput.PatternMatches {
+			pmReqs[i] = platform.PatternMatchRequest{
+				EntityType:   platform.PatternMatchRequestEntityType(pm.EntityType),
+				OperatorType: platform.PatternMatchRequestOperatorType(pm.OperatorType),
+				Values:       pm.Values,
+			}
+		}
+
+		deploymentId := alertRulesInput.Properties["deployment_id"].(string)
+		dagDeadline := alertRulesInput.Properties["dag_deadline"].(string)
+		daysOfWeek := alertRulesInput.Properties["days_of_week"].([]string)
+		lookBackPeriodSeconds, err := strconv.Atoi(alertRulesInput.Properties["look_back_period_seconds"].(string))
+		if err != nil {
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to convert look_back_period_seconds to int: %s", err))
+			return
+		}
+
+		createDagTimelinessAlertRequest := platform.CreateDagTimelinessAlertRequest{
+			EntityId:               data.EntityId.ValueString(),
+			EntityType:             platform.CreateDagTimelinessAlertRequestEntityType(data.EntityType.ValueString()),
+			Name:                   data.Name.ValueString(),
+			NotificationChannelIds: notificationChannelIds,
+			Severity:               platform.CreateDagTimelinessAlertRequestSeverity(data.Severity.ValueString()),
+			Type:                   platform.CreateDagTimelinessAlertRequestType(data.Type.ValueString()),
+			Rules: platform.CreateDagTimelinessAlertRules{
+				PatternMatches: pmReqs,
+				Properties: platform.CreateDagTimelinessAlertProperties{
+					DeploymentId:          deploymentId,
+					DagDeadline:           dagDeadline,
+					DaysOfWeek:            daysOfWeek,
+					LookBackPeriodSeconds: lookBackPeriodSeconds,
+				},
+			},
+		}
+		err = createAlertRequest.FromCreateDagTimelinessAlertRequest(createDagTimelinessAlertRequest)
+		if err != nil {
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build DAG_TIMELINESS request: %s", err))
+			return
+		}
+
+	case string(platform.AlertTypeTASKFAILURE):
+		var alertRulesInput models.ResourceAlertRulesInput
+		diags := data.Rules.As(ctx, &alertRulesInput, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+
+		pmReqs := make([]platform.PatternMatchRequest, len(alertRulesInput.PatternMatches))
+		for i, pm := range alertRulesInput.PatternMatches {
+			pmReqs[i] = platform.PatternMatchRequest{
+				EntityType:   platform.PatternMatchRequestEntityType(pm.EntityType),
+				OperatorType: platform.PatternMatchRequestOperatorType(pm.OperatorType),
+				Values:       pm.Values,
+			}
+		}
+
+		deploymentId := alertRulesInput.Properties["deployment_id"].(string)
+
+		createTaskFailureAlertRequest := platform.CreateTaskFailureAlertRequest{
+			EntityId:               data.EntityId.ValueString(),
+			EntityType:             platform.CreateTaskFailureAlertRequestEntityType(data.EntityType.ValueString()),
+			Name:                   data.Name.ValueString(),
+			NotificationChannelIds: notificationChannelIds,
+			Severity:               platform.CreateTaskFailureAlertRequestSeverity(data.Severity.ValueString()),
+			Type:                   platform.CreateTaskFailureAlertRequestType(data.Type.ValueString()),
+			Rules: platform.CreateTaskFailureAlertRules{
+				PatternMatches: pmReqs,
+				Properties: platform.CreateTaskFailureAlertProperties{
+					DeploymentId: deploymentId,
+				},
+			},
+		}
+		err := createAlertRequest.FromCreateTaskFailureAlertRequest(createTaskFailureAlertRequest)
+		if err != nil {
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build TASK_FAILURE request: %s", err))
+			return
+		}
+
+	case string(platform.AlertTypeTASKDURATION):
+		var alertRulesInput models.ResourceAlertRulesInput
+		diags := data.Rules.As(ctx, &alertRulesInput, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+
+		pmReqs := make([]platform.PatternMatchRequest, len(alertRulesInput.PatternMatches))
+		for i, pm := range alertRulesInput.PatternMatches {
+			pmReqs[i] = platform.PatternMatchRequest{
+				EntityType:   platform.PatternMatchRequestEntityType(pm.EntityType),
+				OperatorType: platform.PatternMatchRequestOperatorType(pm.OperatorType),
+				Values:       pm.Values,
+			}
+		}
+
+		deploymentId := alertRulesInput.Properties["deployment_id"].(string)
+		taskDurationSeconds, err := strconv.Atoi(alertRulesInput.Properties["task_duration_seconds"].(string))
+		if err != nil {
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to convert task_duration_seconds to int: %s", err))
+			return
+		}
+
+		createTaskDurationAlertRequest := platform.CreateTaskDurationAlertRequest{
+			EntityId:               data.EntityId.ValueString(),
+			EntityType:             platform.CreateTaskDurationAlertRequestEntityType(data.EntityType.ValueString()),
+			Name:                   data.Name.ValueString(),
+			NotificationChannelIds: notificationChannelIds,
+			Severity:               platform.CreateTaskDurationAlertRequestSeverity(data.Severity.ValueString()),
+			Type:                   platform.CreateTaskDurationAlertRequestType(data.Type.ValueString()),
+			Rules: platform.CreateTaskDurationAlertRules{
+				PatternMatches: pmReqs,
+				Properties: platform.CreateTaskDurationAlertProperties{
+					DeploymentId:        deploymentId,
+					TaskDurationSeconds: taskDurationSeconds,
+				},
+			},
+		}
+		err = createAlertRequest.FromCreateTaskDurationAlertRequest(createTaskDurationAlertRequest)
+		if err != nil {
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build TASK_DURATION request: %s", err))
+			return
+		}
+
+	default:
+		resp.Diagnostics.AddError("Invalid alert type", fmt.Sprintf("Unsupported alert type: %s", data.Type.ValueString()))
+		return
+	}
+
+	// Call platform to create
+	alertResp, err := r.platformClient.CreateAlertWithResponse(ctx, r.organizationId, createAlertRequest)
+	if err != nil {
+		tflog.Error(ctx, "failed to create alert", map[string]interface{}{"error": err})
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create alert: %s", err))
+		return
+	}
+	_, diagnostic := clients.NormalizeAPIError(ctx, alertResp.HTTPResponse, alertResp.Body)
+	if diagnostic != nil {
+		resp.Diagnostics.Append(diagnostic)
+		return
+	}
+
+	// Map response into state
+	diags = data.ReadFromResponse(ctx, alertResp.JSON200)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	tflog.Trace(ctx, fmt.Sprintf("created alert resource %s", data.Id.ValueString()))
+
+	// Save to state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -147,7 +391,7 @@ func (r *alertResource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	var data models.Alert
+	var data models.AlertResource
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -199,50 +443,255 @@ func (r *alertResource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	var data models.Alert
+	var data models.AlertResource
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// update request
-	updateAlertRequest := platform.UpdateAlertJSONRequestBody{
-		CicdEnforcedDefault: data.CicdEnforcedDefault.ValueBool(),
-		Description:         data.Description.ValueString(),
-		Name:                data.Name.ValueString(),
-	}
-	alert, err := r.platformClient.UpdateAlertWithResponse(
-		ctx,
-		r.organizationId,
-		data.Id.ValueString(),
-		updateAlertRequest,
-	)
-	if err != nil {
-		tflog.Error(ctx, "failed to update alert", map[string]interface{}{"error": err})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to update alert, got error: %s", err),
-		)
-		return
-	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, alert.HTTPResponse, alert.Body)
-	if diagnostic != nil {
-		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-
-	diags := data.ReadFromResponse(ctx, alert.JSON200)
+	var updateBody platform.UpdateAlertJSONRequestBody
+	// Build notification channel IDs slice
+	ncIds, diags := utils.TypesSetToStringSlice(ctx, data.NotificationChannelIds)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
 	}
 
-	tflog.Trace(ctx, fmt.Sprintf("updated a alert resource: %v", data.Id.ValueString()))
+	// Build update request based on alert type
+	switch data.Type.ValueString() {
+	case string(platform.AlertTypeDAGFAILURE):
+		var alertRulesInput models.ResourceAlertRulesInput
+		diags := data.Rules.As(ctx, &alertRulesInput, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
 
-	// Save updated data into Terraform state
+		pmReqs := make([]platform.PatternMatchRequest, len(alertRulesInput.PatternMatches))
+		for i, pm := range alertRulesInput.PatternMatches {
+			pmReqs[i] = platform.PatternMatchRequest{
+				EntityType:   platform.PatternMatchRequestEntityType(pm.EntityType),
+				OperatorType: platform.PatternMatchRequestOperatorType(pm.OperatorType),
+				Values:       pm.Values,
+			}
+		}
+
+		name := data.Name.ValueString()
+		sev := platform.UpdateDagFailureAlertRequestSeverity(data.Severity.ValueString())
+
+		reqModel := platform.UpdateDagFailureAlertRequest{
+			Name:                   &name,
+			Severity:               &sev,
+			NotificationChannelIds: &ncIds,
+			Rules: &platform.UpdateDagFailureAlertRules{
+				PatternMatches: &pmReqs,
+			},
+		}
+		err := updateBody.FromUpdateDagFailureAlertRequest(reqModel)
+		if err != nil {
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build update for DAG_FAILURE: %s", err))
+			return
+		}
+
+	case string(platform.AlertTypeDAGSUCCESS):
+		var alertRulesInput models.ResourceAlertRulesInput
+		diags := data.Rules.As(ctx, &alertRulesInput, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+
+		pmReqs := make([]platform.PatternMatchRequest, len(alertRulesInput.PatternMatches))
+		for i, pm := range alertRulesInput.PatternMatches {
+			pmReqs[i] = platform.PatternMatchRequest{
+				EntityType:   platform.PatternMatchRequestEntityType(pm.EntityType),
+				OperatorType: platform.PatternMatchRequestOperatorType(pm.OperatorType),
+				Values:       pm.Values,
+			}
+		}
+
+		name := data.Name.ValueString()
+		sev := platform.UpdateDagSuccessAlertRequestSeverity(data.Severity.ValueString())
+		reqModel := platform.UpdateDagSuccessAlertRequest{
+			Name:                   &name,
+			NotificationChannelIds: &ncIds,
+			Severity:               &sev,
+			Rules: &platform.UpdateDagSuccessAlertRules{
+				PatternMatches: &pmReqs,
+			},
+		}
+		err := updateBody.FromUpdateDagSuccessAlertRequest(reqModel)
+		if err != nil {
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build update for DAG_SUCCESS: %s", err))
+			return
+		}
+
+	case string(platform.AlertTypeDAGDURATION):
+		var alertRulesInput models.ResourceAlertRulesInput
+		diags := data.Rules.As(ctx, &alertRulesInput, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+
+		pmReqs := make([]platform.PatternMatchRequest, len(alertRulesInput.PatternMatches))
+		for i, pm := range alertRulesInput.PatternMatches {
+			pmReqs[i] = platform.PatternMatchRequest{
+				EntityType:   platform.PatternMatchRequestEntityType(pm.EntityType),
+				OperatorType: platform.PatternMatchRequestOperatorType(pm.OperatorType),
+				Values:       pm.Values,
+			}
+		}
+
+		name := data.Name.ValueString()
+		sev := platform.UpdateDagDurationAlertRequestSeverity(data.Severity.ValueString())
+
+		reqModel := platform.UpdateDagDurationAlertRequest{
+			Name:                   &name,
+			NotificationChannelIds: &ncIds,
+			Severity:               &sev,
+			Rules: &platform.UpdateDagDurationAlertRules{
+				PatternMatches: &pmReqs,
+			},
+		}
+		err := updateBody.FromUpdateDagDurationAlertRequest(reqModel)
+		if err != nil {
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build update for DAG_DURATION: %s", err))
+			return
+		}
+
+	case string(platform.AlertTypeDAGTIMELINESS):
+		var alertRulesInput models.ResourceAlertRulesInput
+		diags := data.Rules.As(ctx, &alertRulesInput, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+
+		pmReqs := make([]platform.PatternMatchRequest, len(alertRulesInput.PatternMatches))
+		for i, pm := range alertRulesInput.PatternMatches {
+			pmReqs[i] = platform.PatternMatchRequest{
+				EntityType:   platform.PatternMatchRequestEntityType(pm.EntityType),
+				OperatorType: platform.PatternMatchRequestOperatorType(pm.OperatorType),
+				Values:       pm.Values,
+			}
+		}
+
+		name := data.Name.ValueString()
+		sev := platform.UpdateDagTimelinessAlertRequestSeverity(data.Severity.ValueString())
+
+		reqModel := platform.UpdateDagTimelinessAlertRequest{
+			Name:                   &name,
+			NotificationChannelIds: &ncIds,
+			Severity:               &sev,
+			Rules: &platform.UpdateDagTimelinessAlertRules{
+				PatternMatches: &pmReqs,
+			},
+		}
+		err := updateBody.FromUpdateDagTimelinessAlertRequest(reqModel)
+		if err != nil {
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build update for DAG_TIMELINESS: %s", err))
+			return
+		}
+
+	case string(platform.AlertTypeTASKFAILURE):
+		var alertRulesInput models.ResourceAlertRulesInput
+		diags := data.Rules.As(ctx, &alertRulesInput, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+
+		pmReqs := make([]platform.PatternMatchRequest, len(alertRulesInput.PatternMatches))
+		for i, pm := range alertRulesInput.PatternMatches {
+			pmReqs[i] = platform.PatternMatchRequest{
+				EntityType:   platform.PatternMatchRequestEntityType(pm.EntityType),
+				OperatorType: platform.PatternMatchRequestOperatorType(pm.OperatorType),
+				Values:       pm.Values,
+			}
+		}
+
+		name := data.Name.ValueString()
+		sev := platform.UpdateTaskFailureAlertRequestSeverity(data.Severity.ValueString())
+
+		reqModel := platform.UpdateTaskFailureAlertRequest{
+			Name:                   &name,
+			NotificationChannelIds: &ncIds,
+			Severity:               &sev,
+			Rules: &platform.UpdateTaskFailureAlertRules{
+				PatternMatches: &pmReqs,
+			},
+		}
+		err := updateBody.FromUpdateTaskFailureAlertRequest(reqModel)
+		if err != nil {
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build update for TASK_FAILURE: %s", err))
+			return
+		}
+
+	case string(platform.AlertTypeTASKDURATION):
+		var alertRulesInput models.ResourceAlertRulesInput
+		diags := data.Rules.As(ctx, &alertRulesInput, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+
+		pmReqs := make([]platform.PatternMatchRequest, len(alertRulesInput.PatternMatches))
+		for i, pm := range alertRulesInput.PatternMatches {
+			pmReqs[i] = platform.PatternMatchRequest{
+				EntityType:   platform.PatternMatchRequestEntityType(pm.EntityType),
+				OperatorType: platform.PatternMatchRequestOperatorType(pm.OperatorType),
+				Values:       pm.Values,
+			}
+		}
+
+		name := data.Name.ValueString()
+		sev := platform.UpdateTaskDurationAlertRequestSeverity(data.Severity.ValueString())
+
+		reqModel := platform.UpdateTaskDurationAlertRequest{
+			Name:                   &name,
+			NotificationChannelIds: &ncIds,
+			Severity:               &sev,
+			Rules: &platform.UpdateTaskDurationAlertRules{
+				PatternMatches: &pmReqs,
+			},
+		}
+		err := updateBody.FromUpdateTaskDurationAlertRequest(reqModel)
+		if err != nil {
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build update for TASK_DURATION: %s", err))
+			return
+		}
+
+	default:
+		resp.Diagnostics.AddError("Invalid alert type", fmt.Sprintf("Unsupported alert type: %s", data.Type.ValueString()))
+		return
+	}
+
+	// Call platform update
+	alertResp, err := r.platformClient.UpdateAlertWithResponse(ctx, r.organizationId, data.Id.ValueString(), updateBody)
+	if err != nil {
+		tflog.Error(ctx, "failed to update alert", map[string]interface{}{"error": err})
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update alert: %s", err))
+		return
+	}
+	_, diagnostic := clients.NormalizeAPIError(ctx, alertResp.HTTPResponse, alertResp.Body)
+	if diagnostic != nil {
+		resp.Diagnostics.Append(diagnostic)
+		return
+	}
+
+	// Map updated response
+	diags = data.ReadFromResponse(ctx, alertResp.JSON200)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	tflog.Trace(ctx, fmt.Sprintf("updated alert resource %s", data.Id.ValueString()))
+
+	// Save to state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -251,7 +700,7 @@ func (r *alertResource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	var data models.Alert
+	var data models.AlertResource
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)

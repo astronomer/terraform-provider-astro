@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// Alert describes the data source data model.
-type Alert struct {
+// AlertDataSource describes the data source data model.
+type AlertDataSource struct {
 	Id                   types.String `tfsdk:"id"`
 	Name                 types.String `tfsdk:"name"`
 	Type                 types.String `tfsdk:"type"`
@@ -51,23 +51,25 @@ type AlertListModel struct {
 	UpdatedBy      types.Object `tfsdk:"updated_by"`
 }
 
-// Alert describes the data source data model.
+// AlertResource describes the data source data model.
 type AlertResource struct {
-	Id             types.String `tfsdk:"id"`
-	Name           types.String `tfsdk:"name"`
-	Type           types.String `tfsdk:"type"`
-	Rules          types.Object `tfsdk:"rules"`
-	EntityId       types.String `tfsdk:"entity_id"`
-	EntityType     types.String `tfsdk:"entity_type"`
-	EntityName     types.String `tfsdk:"entity_name"`
-	OrganizationId types.String `tfsdk:"organization_id"`
-	WorkspaceId    types.String `tfsdk:"workspace_id"`
-	DeploymentId   types.String `tfsdk:"deployment_id"`
-	Severity       types.String `tfsdk:"severity"`
-	CreatedAt      types.String `tfsdk:"created_at"`
-	UpdatedAt      types.String `tfsdk:"updated_at"`
-	CreatedBy      types.Object `tfsdk:"created_by"`
-	UpdatedBy      types.Object `tfsdk:"updated_by"`
+	Id                     types.String `tfsdk:"id"`
+	Name                   types.String `tfsdk:"name"`
+	Type                   types.String `tfsdk:"type"`
+	Rules                  types.Object `tfsdk:"rules"`
+	EntityId               types.String `tfsdk:"entity_id"`
+	EntityType             types.String `tfsdk:"entity_type"`
+	EntityName             types.String `tfsdk:"entity_name"`
+	NotificationChannelIds types.Set    `tfsdk:"notification_channel_ids"`
+	NotificationChannels   types.Set    `tfsdk:"notification_channels"`
+	OrganizationId         types.String `tfsdk:"organization_id"`
+	WorkspaceId            types.String `tfsdk:"workspace_id"`
+	DeploymentId           types.String `tfsdk:"deployment_id"`
+	Severity               types.String `tfsdk:"severity"`
+	CreatedAt              types.String `tfsdk:"created_at"`
+	UpdatedAt              types.String `tfsdk:"updated_at"`
+	CreatedBy              types.Object `tfsdk:"created_by"`
+	UpdatedBy              types.Object `tfsdk:"updated_by"`
 }
 
 type AlertRules struct {
@@ -82,7 +84,20 @@ type AlertRulesPatternMatch struct {
 	Values       types.Set    `tfsdk:"values"`
 }
 
-func (data *Alert) ReadFromResponse(ctx context.Context, Alert *platform.Alert) diag.Diagnostics {
+// ResourceAlertPatternMatchInput is used to decode the Terraform 'pattern_matches' nested block in Alert resource.
+type ResourceAlertPatternMatchInput struct {
+	EntityType   string   `tfsdk:"entity_type"`
+	OperatorType string   `tfsdk:"operator_type"`
+	Values       []string `tfsdk:"values"`
+}
+
+// ResourceAlertRulesInput is used to decode the Terraform 'rules' block when creating or updating an Alert resource.
+type ResourceAlertRulesInput struct {
+	PatternMatches []ResourceAlertPatternMatchInput `tfsdk:"pattern_matches"`
+	Properties     map[string]any                   `tfsdk:"properties"`
+}
+
+func (data *AlertDataSource) ReadFromResponse(ctx context.Context, Alert *platform.Alert) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(Alert.Id)
 	data.Name = types.StringValue(Alert.Name)
@@ -113,7 +128,6 @@ func (data *Alert) ReadFromResponse(ctx context.Context, Alert *platform.Alert) 
 	} else {
 		data.DeploymentId = types.StringValue("")
 	}
-
 	data.Severity = types.StringValue(string(Alert.Severity))
 	data.CreatedAt = types.StringValue(Alert.CreatedAt.String())
 	data.UpdatedAt = types.StringValue(Alert.UpdatedAt.String())
@@ -165,6 +179,51 @@ func (data *AlertListModel) ReadFromAlertListResponse(ctx context.Context, alert
 		return diags
 	}
 	data.UpdatedBy, diags = SubjectProfileTypesObject(ctx, alert.UpdatedBy)
+	if diags.HasError() {
+		return diags
+	}
+	return nil
+}
+
+func (data *AlertResource) ReadFromResponse(ctx context.Context, Alert *platform.Alert) diag.Diagnostics {
+	var diags diag.Diagnostics
+	data.Id = types.StringValue(Alert.Id)
+	data.Name = types.StringValue(Alert.Name)
+	data.Type = types.StringValue(string(Alert.Type))
+	data.Rules, diags = AlertRulesTypesObject(ctx, Alert.Rules)
+	if diags.HasError() {
+		return diags
+	}
+	data.EntityId = types.StringValue(Alert.EntityId)
+	data.EntityType = types.StringValue(string(Alert.EntityType))
+	if Alert.EntityName != nil {
+		data.EntityName = types.StringValue(*Alert.EntityName)
+	} else {
+		data.EntityName = types.StringValue("")
+	}
+	data.NotificationChannels, diags = AlertNotificationChannelsTypesSet(ctx, Alert.NotificationChannels)
+	if diags.HasError() {
+		return diags
+	}
+	data.OrganizationId = types.StringValue(Alert.OrganizationId)
+	if Alert.WorkspaceId != nil {
+		data.WorkspaceId = types.StringValue(*Alert.WorkspaceId)
+	} else {
+		data.WorkspaceId = types.StringValue("")
+	}
+	if Alert.DeploymentId != nil {
+		data.DeploymentId = types.StringValue(*Alert.DeploymentId)
+	} else {
+		data.DeploymentId = types.StringValue("")
+	}
+	data.Severity = types.StringValue(string(Alert.Severity))
+	data.CreatedAt = types.StringValue(Alert.CreatedAt.String())
+	data.UpdatedAt = types.StringValue(Alert.UpdatedAt.String())
+	data.CreatedBy, diags = SubjectProfileTypesObject(ctx, Alert.CreatedBy)
+	if diags.HasError() {
+		return diags
+	}
+	data.UpdatedBy, diags = SubjectProfileTypesObject(ctx, Alert.UpdatedBy)
 	if diags.HasError() {
 		return diags
 	}

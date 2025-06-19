@@ -69,7 +69,7 @@ func (d *alertDataSource) Configure(
 }
 
 func (d *alertDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data models.Alert
+	var data models.AlertDataSource
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
