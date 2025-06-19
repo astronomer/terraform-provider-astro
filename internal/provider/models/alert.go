@@ -91,10 +91,20 @@ type ResourceAlertPatternMatchInput struct {
 	Values       []string `tfsdk:"values"`
 }
 
+// ResourceAlertPropertiesInput is used to decode the Terraform 'properties' nested block in Alert resource rules.
+type ResourceAlertPropertiesInput struct {
+	DeploymentId          string   `tfsdk:"deployment_id"`
+	DagDurationSeconds    int64    `tfsdk:"dag_duration_seconds"`
+	DagDeadline           string   `tfsdk:"dag_deadline"`
+	DaysOfWeek            []string `tfsdk:"days_of_week"`
+	LookBackPeriodSeconds int64    `tfsdk:"look_back_period_seconds"`
+	TaskDurationSeconds   int64    `tfsdk:"task_duration_seconds"`
+}
+
 // ResourceAlertRulesInput is used to decode the Terraform 'rules' block when creating or updating an Alert resource.
 type ResourceAlertRulesInput struct {
 	PatternMatches []ResourceAlertPatternMatchInput `tfsdk:"pattern_matches"`
-	Properties     map[string]any                   `tfsdk:"properties"`
+	Properties     ResourceAlertPropertiesInput     `tfsdk:"properties"`
 }
 
 func (data *AlertDataSource) ReadFromResponse(ctx context.Context, Alert *platform.Alert) diag.Diagnostics {

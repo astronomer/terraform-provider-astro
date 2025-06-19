@@ -44,7 +44,7 @@ Alert resource
 Required:
 
 - `pattern_matches` (Attributes List) The alert's pattern matches to match against (see [below for nested schema](#nestedatt--rules--pattern_matches))
-- `properties` (Map of String) The alert's properties used to define the alert
+- `properties` (Attributes) The alert's properties used to define the alert (see [below for nested schema](#nestedatt--rules--properties))
 
 <a id="nestedatt--rules--pattern_matches"></a>
 ### Nested Schema for `rules.pattern_matches`
@@ -54,6 +54,22 @@ Required:
 - `entity_type` (String) The type of entity to match against
 - `operator_type` (String) The type of operator to use for the pattern match
 - `values` (List of String) The values to match against
+
+
+<a id="nestedatt--rules--properties"></a>
+### Nested Schema for `rules.properties`
+
+Required:
+
+- `deployment_id` (String) The ID of the deployment for the alert rule
+
+Optional:
+
+- `dag_deadline` (String) The deadline for the DAG in HH:MM 24-hour UTC format
+- `dag_duration_seconds` (Number) The duration of the DAG in seconds
+- `days_of_week` (List of String) The days of the week for the timeliness rule
+- `look_back_period_seconds` (Number) The look-back period in seconds
+- `task_duration_seconds` (Number) The duration of the Task in seconds
 
 
 

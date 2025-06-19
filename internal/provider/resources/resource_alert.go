@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
@@ -113,8 +112,6 @@ func (r *alertResource) Create(
 			}
 		}
 
-		deploymentId := alertRulesInput.Properties["deployment_id"].(string)
-
 		createDagFailureAlertRequest := platform.CreateDagFailureAlertRequest{
 			EntityId:               data.EntityId.ValueString(),
 			EntityType:             platform.CreateDagFailureAlertRequestEntityType(data.EntityType.ValueString()),
@@ -125,7 +122,7 @@ func (r *alertResource) Create(
 			Rules: platform.CreateDagFailureAlertRules{
 				PatternMatches: pmReqs,
 				Properties: platform.CreateDagFailureAlertProperties{
-					DeploymentId: deploymentId,
+					DeploymentId: alertRulesInput.Properties.DeploymentId,
 				},
 			},
 		}
@@ -155,8 +152,6 @@ func (r *alertResource) Create(
 			}
 		}
 
-		deploymentId := alertRulesInput.Properties["deployment_id"].(string)
-
 		createDagSuccessAlertRequest := platform.CreateDagSuccessAlertRequest{
 			EntityId:               data.EntityId.ValueString(),
 			EntityType:             platform.CreateDagSuccessAlertRequestEntityType(data.EntityType.ValueString()),
@@ -167,7 +162,7 @@ func (r *alertResource) Create(
 			Rules: platform.CreateDagSuccessAlertRules{
 				PatternMatches: pmReqs,
 				Properties: platform.CreateDagSuccessAlertProperties{
-					DeploymentId: deploymentId,
+					DeploymentId: alertRulesInput.Properties.DeploymentId,
 				},
 			},
 		}
@@ -194,13 +189,6 @@ func (r *alertResource) Create(
 			}
 		}
 
-		deploymentId := alertRulesInput.Properties["deployment_id"].(string)
-		dagDurationSeconds, err := strconv.Atoi(alertRulesInput.Properties["dag_duration_seconds"].(string))
-		if err != nil {
-			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to convert dag_duration_seconds to int: %s", err))
-			return
-		}
-
 		createDagDurationAlertRequest := platform.CreateDagDurationAlertRequest{
 			EntityId:               data.EntityId.ValueString(),
 			EntityType:             platform.CreateDagDurationAlertRequestEntityType(data.EntityType.ValueString()),
@@ -211,12 +199,12 @@ func (r *alertResource) Create(
 			Rules: platform.CreateDagDurationAlertRules{
 				PatternMatches: pmReqs,
 				Properties: platform.CreateDagDurationAlertProperties{
-					DeploymentId:       deploymentId,
-					DagDurationSeconds: dagDurationSeconds,
+					DeploymentId:       alertRulesInput.Properties.DeploymentId,
+					DagDurationSeconds: int(alertRulesInput.Properties.DagDurationSeconds),
 				},
 			},
 		}
-		err = createAlertRequest.FromCreateDagDurationAlertRequest(createDagDurationAlertRequest)
+		err := createAlertRequest.FromCreateDagDurationAlertRequest(createDagDurationAlertRequest)
 		if err != nil {
 			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build DAG_DURATION request: %s", err))
 			return
@@ -239,15 +227,6 @@ func (r *alertResource) Create(
 			}
 		}
 
-		deploymentId := alertRulesInput.Properties["deployment_id"].(string)
-		dagDeadline := alertRulesInput.Properties["dag_deadline"].(string)
-		daysOfWeek := alertRulesInput.Properties["days_of_week"].([]string)
-		lookBackPeriodSeconds, err := strconv.Atoi(alertRulesInput.Properties["look_back_period_seconds"].(string))
-		if err != nil {
-			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to convert look_back_period_seconds to int: %s", err))
-			return
-		}
-
 		createDagTimelinessAlertRequest := platform.CreateDagTimelinessAlertRequest{
 			EntityId:               data.EntityId.ValueString(),
 			EntityType:             platform.CreateDagTimelinessAlertRequestEntityType(data.EntityType.ValueString()),
@@ -258,14 +237,14 @@ func (r *alertResource) Create(
 			Rules: platform.CreateDagTimelinessAlertRules{
 				PatternMatches: pmReqs,
 				Properties: platform.CreateDagTimelinessAlertProperties{
-					DeploymentId:          deploymentId,
-					DagDeadline:           dagDeadline,
-					DaysOfWeek:            daysOfWeek,
-					LookBackPeriodSeconds: lookBackPeriodSeconds,
+					DeploymentId:          alertRulesInput.Properties.DeploymentId,
+					DagDeadline:           alertRulesInput.Properties.DagDeadline,
+					DaysOfWeek:            alertRulesInput.Properties.DaysOfWeek,
+					LookBackPeriodSeconds: int(alertRulesInput.Properties.LookBackPeriodSeconds),
 				},
 			},
 		}
-		err = createAlertRequest.FromCreateDagTimelinessAlertRequest(createDagTimelinessAlertRequest)
+		err := createAlertRequest.FromCreateDagTimelinessAlertRequest(createDagTimelinessAlertRequest)
 		if err != nil {
 			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build DAG_TIMELINESS request: %s", err))
 			return
@@ -288,8 +267,6 @@ func (r *alertResource) Create(
 			}
 		}
 
-		deploymentId := alertRulesInput.Properties["deployment_id"].(string)
-
 		createTaskFailureAlertRequest := platform.CreateTaskFailureAlertRequest{
 			EntityId:               data.EntityId.ValueString(),
 			EntityType:             platform.CreateTaskFailureAlertRequestEntityType(data.EntityType.ValueString()),
@@ -300,7 +277,7 @@ func (r *alertResource) Create(
 			Rules: platform.CreateTaskFailureAlertRules{
 				PatternMatches: pmReqs,
 				Properties: platform.CreateTaskFailureAlertProperties{
-					DeploymentId: deploymentId,
+					DeploymentId: alertRulesInput.Properties.DeploymentId,
 				},
 			},
 		}
@@ -327,13 +304,6 @@ func (r *alertResource) Create(
 			}
 		}
 
-		deploymentId := alertRulesInput.Properties["deployment_id"].(string)
-		taskDurationSeconds, err := strconv.Atoi(alertRulesInput.Properties["task_duration_seconds"].(string))
-		if err != nil {
-			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to convert task_duration_seconds to int: %s", err))
-			return
-		}
-
 		createTaskDurationAlertRequest := platform.CreateTaskDurationAlertRequest{
 			EntityId:               data.EntityId.ValueString(),
 			EntityType:             platform.CreateTaskDurationAlertRequestEntityType(data.EntityType.ValueString()),
@@ -344,12 +314,12 @@ func (r *alertResource) Create(
 			Rules: platform.CreateTaskDurationAlertRules{
 				PatternMatches: pmReqs,
 				Properties: platform.CreateTaskDurationAlertProperties{
-					DeploymentId:        deploymentId,
-					TaskDurationSeconds: taskDurationSeconds,
+					DeploymentId:        alertRulesInput.Properties.DeploymentId,
+					TaskDurationSeconds: int(alertRulesInput.Properties.TaskDurationSeconds),
 				},
 			},
 		}
-		err = createAlertRequest.FromCreateTaskDurationAlertRequest(createTaskDurationAlertRequest)
+		err := createAlertRequest.FromCreateTaskDurationAlertRequest(createTaskDurationAlertRequest)
 		if err != nil {
 			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build TASK_DURATION request: %s", err))
 			return
@@ -547,6 +517,7 @@ func (r *alertResource) Update(
 
 		name := data.Name.ValueString()
 		sev := platform.UpdateDagDurationAlertRequestSeverity(data.Severity.ValueString())
+		dagDurationSeconds := int(alertRulesInput.Properties.DagDurationSeconds)
 
 		reqModel := platform.UpdateDagDurationAlertRequest{
 			Name:                   &name,
@@ -554,6 +525,9 @@ func (r *alertResource) Update(
 			Severity:               &sev,
 			Rules: &platform.UpdateDagDurationAlertRules{
 				PatternMatches: &pmReqs,
+				Properties: &platform.UpdateDagDurationAlertProperties{
+					DagDurationSeconds: &dagDurationSeconds,
+				},
 			},
 		}
 		err := updateBody.FromUpdateDagDurationAlertRequest(reqModel)
@@ -581,6 +555,7 @@ func (r *alertResource) Update(
 
 		name := data.Name.ValueString()
 		sev := platform.UpdateDagTimelinessAlertRequestSeverity(data.Severity.ValueString())
+		lookBackPeriodSeconds := int(alertRulesInput.Properties.LookBackPeriodSeconds)
 
 		reqModel := platform.UpdateDagTimelinessAlertRequest{
 			Name:                   &name,
@@ -588,6 +563,11 @@ func (r *alertResource) Update(
 			Severity:               &sev,
 			Rules: &platform.UpdateDagTimelinessAlertRules{
 				PatternMatches: &pmReqs,
+				Properties: &platform.UpdateDagTimelinessAlertProperties{
+					DagDeadline:           &alertRulesInput.Properties.DagDeadline,
+					DaysOfWeek:            &alertRulesInput.Properties.DaysOfWeek,
+					LookBackPeriodSeconds: &lookBackPeriodSeconds,
+				},
 			},
 		}
 		err := updateBody.FromUpdateDagTimelinessAlertRequest(reqModel)
@@ -649,6 +629,7 @@ func (r *alertResource) Update(
 
 		name := data.Name.ValueString()
 		sev := platform.UpdateTaskDurationAlertRequestSeverity(data.Severity.ValueString())
+		taskDurationSeconds := int(alertRulesInput.Properties.TaskDurationSeconds)
 
 		reqModel := platform.UpdateTaskDurationAlertRequest{
 			Name:                   &name,
@@ -656,6 +637,9 @@ func (r *alertResource) Update(
 			Severity:               &sev,
 			Rules: &platform.UpdateTaskDurationAlertRules{
 				PatternMatches: &pmReqs,
+				Properties: &platform.UpdateTaskDurationAlertProperties{
+					TaskDurationSeconds: &taskDurationSeconds,
+				},
 			},
 		}
 		err := updateBody.FromUpdateTaskDurationAlertRequest(reqModel)

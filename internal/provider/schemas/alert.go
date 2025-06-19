@@ -254,10 +254,37 @@ func AlertResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 
 func AlertRulesResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
-		"properties": resourceSchema.MapAttribute{
-			ElementType:         types.StringType,
+		"properties": resourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "The alert's properties used to define the alert",
 			Required:            true,
+			Attributes: map[string]resourceSchema.Attribute{
+				"deployment_id": resourceSchema.StringAttribute{
+					MarkdownDescription: "The ID of the deployment for the alert rule",
+					Required:            true,
+					Validators:          []validator.String{validators.IsCuid()},
+				},
+				"dag_duration_seconds": resourceSchema.Int64Attribute{
+					MarkdownDescription: "The duration of the DAG in seconds",
+					Optional:            true,
+				},
+				"dag_deadline": resourceSchema.StringAttribute{
+					MarkdownDescription: "The deadline for the DAG in HH:MM 24-hour UTC format",
+					Optional:            true,
+				},
+				"days_of_week": resourceSchema.ListAttribute{
+					MarkdownDescription: "The days of the week for the timeliness rule",
+					ElementType:         types.StringType,
+					Optional:            true,
+				},
+				"look_back_period_seconds": resourceSchema.Int64Attribute{
+					MarkdownDescription: "The look-back period in seconds",
+					Optional:            true,
+				},
+				"task_duration_seconds": resourceSchema.Int64Attribute{
+					MarkdownDescription: "The duration of the Task in seconds",
+					Optional:            true,
+				},
+			},
 		},
 		"pattern_matches": resourceSchema.ListNestedAttribute{
 			MarkdownDescription: "The alert's pattern matches to match against",
