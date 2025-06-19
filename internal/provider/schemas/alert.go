@@ -150,7 +150,6 @@ func AlertResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 		"name": resourceSchema.StringAttribute{
 			MarkdownDescription: "Alert name",
 			Required:            true,
-			Validators:          []validator.String{validators.IsCuid()},
 		},
 		"type": resourceSchema.StringAttribute{
 			MarkdownDescription: "The alert's type",
