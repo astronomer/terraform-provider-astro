@@ -209,6 +209,13 @@ func AlertResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 				setvalidator.ValueStringsAre(validators.IsCuid()),
 			},
 		},
+		"notification_channels": resourceSchema.SetNestedAttribute{
+			MarkdownDescription: "The notification channels to send alerts to",
+			NestedObject: resourceSchema.NestedAttributeObject{
+				Attributes: NotificationChannelResourceSchemaAttributes(),
+			},
+			Computed: true,
+		},
 		"organization_id": resourceSchema.StringAttribute{
 			MarkdownDescription: "The ID of the Organization to which the alert is scoped",
 			Computed:            true,

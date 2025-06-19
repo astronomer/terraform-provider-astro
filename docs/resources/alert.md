@@ -32,6 +32,7 @@ Alert resource
 - `deployment_id` (String) The ID of the Deployment to which the alert is scoped
 - `entity_name` (String) The name of the entity the alert is associated with
 - `id` (String) Alert identifier
+- `notification_channels` (Attributes Set) The notification channels to send alerts to (see [below for nested schema](#nestedatt--notification_channels))
 - `organization_id` (String) The ID of the Organization to which the alert is scoped
 - `updated_at` (String) Alert last updated timestamp
 - `updated_by` (Attributes) Alert updater (see [below for nested schema](#nestedatt--updated_by))
@@ -67,6 +68,60 @@ Read-Only:
 - `id` (String)
 - `subject_type` (String)
 - `username` (String)
+
+
+<a id="nestedatt--notification_channels"></a>
+### Nested Schema for `notification_channels`
+
+Required:
+
+- `definition` (Map of String) The notification channel's definition
+- `entity_id` (String) The entity ID the notification channel is scoped to
+- `entity_type` (String) The type of entity the notification channel is scoped to (e.g., 'DEPLOYMENT')
+- `id` (String) The notification channel's ID
+- `name` (String) The notification channel's name
+- `type` (String) The notification channel's type
+
+Optional:
+
+- `is_shared` (Boolean) When entity type is scoped to ORGANIZATION or WORKSPACE, this determines if child entities can access this notification channel.
+
+Read-Only:
+
+- `created_at` (String) Notification Channel creation timestamp
+- `created_by` (Attributes) Notification Channel creator (see [below for nested schema](#nestedatt--notification_channels--created_by))
+- `deployment_id` (String) The deployment ID the notification channel is scoped to
+- `entity_name` (String) The name of the entity the notification channel is scoped to
+- `organization_id` (String) The organization ID the notification channel is scoped to
+- `updated_at` (String) Notification Channel last updated timestamp
+- `updated_by` (Attributes) Notification Channel updater (see [below for nested schema](#nestedatt--notification_channels--updated_by))
+- `workspace_id` (String) The workspace ID the notification channel is scoped to
+
+<a id="nestedatt--notification_channels--created_by"></a>
+### Nested Schema for `notification_channels.created_by`
+
+Read-Only:
+
+- `api_token_name` (String)
+- `avatar_url` (String)
+- `full_name` (String)
+- `id` (String)
+- `subject_type` (String)
+- `username` (String)
+
+
+<a id="nestedatt--notification_channels--updated_by"></a>
+### Nested Schema for `notification_channels.updated_by`
+
+Read-Only:
+
+- `api_token_name` (String)
+- `avatar_url` (String)
+- `full_name` (String)
+- `id` (String)
+- `subject_type` (String)
+- `username` (String)
+
 
 
 <a id="nestedatt--updated_by"></a>
