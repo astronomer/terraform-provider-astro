@@ -122,7 +122,7 @@ func (r *alertResource) Create(
 			Rules: platform.CreateDagFailureAlertRules{
 				PatternMatches: pmReqs,
 				Properties: platform.CreateDagFailureAlertProperties{
-					DeploymentId: alertRulesInput.Properties.DeploymentId,
+					DeploymentId: alertRulesInput.Properties.DeploymentId.ValueString(),
 				},
 			},
 		}
@@ -162,7 +162,7 @@ func (r *alertResource) Create(
 			Rules: platform.CreateDagSuccessAlertRules{
 				PatternMatches: pmReqs,
 				Properties: platform.CreateDagSuccessAlertProperties{
-					DeploymentId: alertRulesInput.Properties.DeploymentId,
+					DeploymentId: alertRulesInput.Properties.DeploymentId.ValueString(),
 				},
 			},
 		}
@@ -199,8 +199,8 @@ func (r *alertResource) Create(
 			Rules: platform.CreateDagDurationAlertRules{
 				PatternMatches: pmReqs,
 				Properties: platform.CreateDagDurationAlertProperties{
-					DeploymentId:       alertRulesInput.Properties.DeploymentId,
-					DagDurationSeconds: int(alertRulesInput.Properties.DagDurationSeconds),
+					DeploymentId:       alertRulesInput.Properties.DeploymentId.ValueString(),
+					DagDurationSeconds: int(alertRulesInput.Properties.DagDurationSeconds.ValueInt64()),
 				},
 			},
 		}
@@ -217,6 +217,13 @@ func (r *alertResource) Create(
 			resp.Diagnostics.Append(diags...)
 			return
 		}
+
+		var days []string
+		if errList := alertRulesInput.Properties.DaysOfWeek.ElementsAs(ctx, &days, false); errList.HasError() {
+			resp.Diagnostics.Append(errList...)
+			return
+		}
+		lookBackPeriodSeconds := int(alertRulesInput.Properties.LookBackPeriodSeconds.ValueInt64())
 
 		pmReqs := make([]platform.PatternMatchRequest, len(alertRulesInput.PatternMatches))
 		for i, pm := range alertRulesInput.PatternMatches {
@@ -237,10 +244,10 @@ func (r *alertResource) Create(
 			Rules: platform.CreateDagTimelinessAlertRules{
 				PatternMatches: pmReqs,
 				Properties: platform.CreateDagTimelinessAlertProperties{
-					DeploymentId:          alertRulesInput.Properties.DeploymentId,
-					DagDeadline:           alertRulesInput.Properties.DagDeadline,
-					DaysOfWeek:            alertRulesInput.Properties.DaysOfWeek,
-					LookBackPeriodSeconds: int(alertRulesInput.Properties.LookBackPeriodSeconds),
+					DeploymentId:          alertRulesInput.Properties.DeploymentId.ValueString(),
+					DagDeadline:           alertRulesInput.Properties.DagDeadline.ValueString(),
+					DaysOfWeek:            days,
+					LookBackPeriodSeconds: lookBackPeriodSeconds,
 				},
 			},
 		}
@@ -277,7 +284,7 @@ func (r *alertResource) Create(
 			Rules: platform.CreateTaskFailureAlertRules{
 				PatternMatches: pmReqs,
 				Properties: platform.CreateTaskFailureAlertProperties{
-					DeploymentId: alertRulesInput.Properties.DeploymentId,
+					DeploymentId: alertRulesInput.Properties.DeploymentId.ValueString(),
 				},
 			},
 		}
@@ -314,8 +321,8 @@ func (r *alertResource) Create(
 			Rules: platform.CreateTaskDurationAlertRules{
 				PatternMatches: pmReqs,
 				Properties: platform.CreateTaskDurationAlertProperties{
-					DeploymentId:        alertRulesInput.Properties.DeploymentId,
-					TaskDurationSeconds: int(alertRulesInput.Properties.TaskDurationSeconds),
+					DeploymentId:        alertRulesInput.Properties.DeploymentId.ValueString(),
+					TaskDurationSeconds: int(alertRulesInput.Properties.TaskDurationSeconds.ValueInt64()),
 				},
 			},
 		}
@@ -517,7 +524,7 @@ func (r *alertResource) Update(
 
 		name := data.Name.ValueString()
 		sev := platform.UpdateDagDurationAlertRequestSeverity(data.Severity.ValueString())
-		dagDurationSeconds := int(alertRulesInput.Properties.DagDurationSeconds)
+		dagDurationSeconds := int(alertRulesInput.Properties.DagDurationSeconds.ValueInt64())
 
 		reqModel := platform.UpdateDagDurationAlertRequest{
 			Name:                   &name,
@@ -555,7 +562,13 @@ func (r *alertResource) Update(
 
 		name := data.Name.ValueString()
 		sev := platform.UpdateDagTimelinessAlertRequestSeverity(data.Severity.ValueString())
-		lookBackPeriodSeconds := int(alertRulesInput.Properties.LookBackPeriodSeconds)
+		dagDeadline := alertRulesInput.Properties.DagDeadline.ValueString()
+		var days []string
+		if errList := alertRulesInput.Properties.DaysOfWeek.ElementsAs(ctx, &days, false); errList.HasError() {
+			resp.Diagnostics.Append(errList...)
+			return
+		}
+		lookBackPeriodSeconds := int(alertRulesInput.Properties.LookBackPeriodSeconds.ValueInt64())
 
 		reqModel := platform.UpdateDagTimelinessAlertRequest{
 			Name:                   &name,
@@ -564,8 +577,8 @@ func (r *alertResource) Update(
 			Rules: &platform.UpdateDagTimelinessAlertRules{
 				PatternMatches: &pmReqs,
 				Properties: &platform.UpdateDagTimelinessAlertProperties{
-					DagDeadline:           &alertRulesInput.Properties.DagDeadline,
-					DaysOfWeek:            &alertRulesInput.Properties.DaysOfWeek,
+					DagDeadline:           &dagDeadline,
+					DaysOfWeek:            &days,
 					LookBackPeriodSeconds: &lookBackPeriodSeconds,
 				},
 			},
@@ -629,7 +642,7 @@ func (r *alertResource) Update(
 
 		name := data.Name.ValueString()
 		sev := platform.UpdateTaskDurationAlertRequestSeverity(data.Severity.ValueString())
-		taskDurationSeconds := int(alertRulesInput.Properties.TaskDurationSeconds)
+		taskDurationSeconds := int(alertRulesInput.Properties.TaskDurationSeconds.ValueInt64())
 
 		reqModel := platform.UpdateTaskDurationAlertRequest{
 			Name:                   &name,
