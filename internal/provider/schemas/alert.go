@@ -309,3 +309,18 @@ func AlertRulesResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 		},
 	}
 }
+
+// AlertRulesResourceAttributeTypes returns the attribute types for the resource 'rules' block.
+func AlertRulesResourceAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"properties": types.ObjectType{AttrTypes: map[string]attr.Type{
+			"deployment_id":            types.StringType,
+			"dag_duration_seconds":     types.Int64Type,
+			"dag_deadline":             types.StringType,
+			"days_of_week":             types.ListType{ElemType: types.StringType},
+			"look_back_period_seconds": types.Int64Type,
+			"task_duration_seconds":    types.Int64Type,
+		}},
+		"pattern_matches": types.ListType{ElemType: types.ObjectType{AttrTypes: AlertRulesPatternMatchAttributeTypes()}},
+	}
+}

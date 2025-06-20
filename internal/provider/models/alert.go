@@ -84,7 +84,7 @@ type AlertRulesPatternMatch struct {
 	Values       types.Set    `tfsdk:"values"`
 }
 
-// ResourceAlertPatternMatchInput is used to decode the Terraform 'pattern_matches' nested block in Alert resource.
+// ResourceAlertPatternMatch describes element type for pattern_matches in Alert resource.
 type ResourceAlertPatternMatchInput struct {
 	EntityType   string   `tfsdk:"entity_type"`
 	OperatorType string   `tfsdk:"operator_type"`
@@ -99,6 +99,13 @@ type ResourceAlertPropertiesInput struct {
 	DaysOfWeek            types.List   `tfsdk:"days_of_week"`             // optional
 	LookBackPeriodSeconds types.Int64  `tfsdk:"look_back_period_seconds"` // optional
 	TaskDurationSeconds   types.Int64  `tfsdk:"task_duration_seconds"`    // optional
+}
+
+// ResourceAlertRulesPatternMatch is used to build the Terraform object for each pattern match in AlertRules for resource.
+type ResourceAlertRulesPatternMatch struct {
+	EntityType   types.String `tfsdk:"entity_type"`
+	OperatorType types.String `tfsdk:"operator_type"`
+	Values       types.List   `tfsdk:"values"`
 }
 
 // ResourceAlertRulesInput is used to decode the Terraform 'rules' block when creating or updating an Alert resource.
@@ -200,7 +207,7 @@ func (data *AlertResource) ReadFromResponse(ctx context.Context, Alert *platform
 	data.Id = types.StringValue(Alert.Id)
 	data.Name = types.StringValue(Alert.Name)
 	data.Type = types.StringValue(string(Alert.Type))
-	data.Rules, diags = AlertRulesTypesObject(ctx, Alert.Rules)
+	data.Rules, diags = AlertRulesResourceTypesObject(ctx, Alert.Rules)
 	if diags.HasError() {
 		return diags
 	}
@@ -369,4 +376,104 @@ func AlertNotificationChannelsTypesSet(ctx context.Context, channels any) (types
 	setVal, diagsSet := types.SetValue(types.ObjectType{AttrTypes: schemas.NotificationChannelsElementAttributeTypes()}, vals)
 	diags = append(diags, diagsSet...)
 	return setVal, diags
+}
+
+// AlertRulesResourceTypesObject maps platform.AlertRules into a Terraform types.Object matching the resource schema.
+func AlertRulesResourceTypesObject(ctx context.Context, rules any) (types.Object, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	// Convert rules into *platform.AlertRules
+	var rulesPtr *platform.AlertRules
+	switch v := rules.(type) {
+	case platform.AlertRules:
+		rulesPtr = &v
+	case *platform.AlertRules:
+		rulesPtr = v
+	default:
+		tflog.Error(ctx, "Unexpected type passed into AlertRulesResourceTypesObject", map[string]interface{}{"value": rules})
+		return types.Object{}, diag.Diagnostics{
+			diag.NewErrorDiagnostic("Internal Error", "AlertRulesResourceTypesObject expects a platform.AlertRules type"),
+		}
+	}
+	// Build properties nested object from raw map
+	propMap := make(map[string]interface{})
+	if m, ok := rulesPtr.Properties.(map[string]interface{}); ok {
+		propMap = m
+	}
+	// extract values
+	depsId, _ := propMap["deploymentId"].(string)
+	ddSec := int64(0)
+	if v, ok := propMap["dagDurationSeconds"].(float64); ok {
+		ddSec = int64(v)
+	}
+	ddLine, _ := propMap["dagDeadline"].(string)
+	var days []string
+	if arr, ok := propMap["daysOfWeek"].([]interface{}); ok {
+		for _, el := range arr {
+			if s, ok2 := el.(string); ok2 {
+				days = append(days, s)
+			}
+		}
+	}
+	lbSec := int64(0)
+	if v, ok := propMap["lookBackPeriodSeconds"].(float64); ok {
+		lbSec = int64(v)
+	}
+	tdSec := int64(0)
+	if v, ok := propMap["taskDurationSeconds"].(float64); ok {
+		tdSec = int64(v)
+	}
+	// Convert string slice to attr.Value list for days_of_week
+	dayVals := make([]attr.Value, len(days))
+	for i, s := range days {
+		dayVals[i] = types.StringValue(s)
+	}
+	props, propDiags := types.ObjectValueFrom(ctx,
+		schemas.AlertRulesResourceAttributeTypes()["properties"].(types.ObjectType).AttrTypes,
+		map[string]attr.Value{
+			"deployment_id":            types.StringValue(depsId),
+			"dag_duration_seconds":     types.Int64Value(ddSec),
+			"dag_deadline":             types.StringValue(ddLine),
+			"days_of_week":             types.ListValueMust(types.StringType, dayVals),
+			"look_back_period_seconds": types.Int64Value(lbSec),
+			"task_duration_seconds":    types.Int64Value(tdSec),
+		},
+	)
+	if propDiags.HasError() {
+		return types.Object{}, propDiags
+	}
+	// Build pattern_matches list
+	pmAttrTypes := schemas.AlertRulesPatternMatchAttributeTypes()
+	var pmVals []attr.Value
+	if rulesPtr.PatternMatches != nil {
+		for _, pm := range *rulesPtr.PatternMatches {
+			listVals := make([]attr.Value, len(pm.Values))
+			for i, val := range pm.Values {
+				listVals[i] = types.StringValue(val)
+			}
+			valsList, listDiags := types.ListValue(types.StringType, listVals)
+			if listDiags.HasError() {
+				return types.Object{}, listDiags
+			}
+			// use resource-level pattern match struct
+			pmObj, pmDiags2 := types.ObjectValueFrom(ctx, pmAttrTypes, ResourceAlertRulesPatternMatch{
+				EntityType:   types.StringValue(string(pm.EntityType)),
+				OperatorType: types.StringValue(string(pm.OperatorType)),
+				Values:       valsList,
+			})
+			if pmDiags2.HasError() {
+				return types.Object{}, pmDiags2
+			}
+			pmVals = append(pmVals, pmObj)
+		}
+	}
+	pmList, pmListDiags := types.ListValue(types.ObjectType{AttrTypes: pmAttrTypes}, pmVals)
+	if pmListDiags.HasError() {
+		return types.Object{}, pmListDiags
+	}
+	diags = append(diags, pmListDiags...)
+	// Final object
+	return types.ObjectValueFrom(ctx, schemas.AlertRulesResourceAttributeTypes(), map[string]attr.Value{
+		"properties":      props,
+		"pattern_matches": pmList,
+	})
 }
