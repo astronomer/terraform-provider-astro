@@ -23,8 +23,7 @@ const (
 
 // Defines values for AlertEntityType.
 const (
-	AlertEntityTypeDEPLOYMENT   AlertEntityType = "DEPLOYMENT"
-	AlertEntityTypeORGANIZATION AlertEntityType = "ORGANIZATION"
+	AlertEntityTypeDEPLOYMENT AlertEntityType = "DEPLOYMENT"
 )
 
 // Defines values for AlertSeverity.
@@ -977,9 +976,7 @@ const (
 
 // Defines values for ListAlertsParamsEntityType.
 const (
-	ListAlertsParamsEntityTypeDEPLOYMENT   ListAlertsParamsEntityType = "DEPLOYMENT"
-	ListAlertsParamsEntityTypeORGANIZATION ListAlertsParamsEntityType = "ORGANIZATION"
-	ListAlertsParamsEntityTypeWORKSPACE    ListAlertsParamsEntityType = "WORKSPACE"
+	ListAlertsParamsEntityTypeDEPLOYMENT ListAlertsParamsEntityType = "DEPLOYMENT"
 )
 
 // Defines values for ListAlertsParamsSorts.
@@ -1802,11 +1799,11 @@ type CreateDedicatedDeploymentRequest struct {
 	// ContactEmails A list of contact emails for the Deployment.
 	ContactEmails *[]string `json:"contactEmails,omitempty"`
 
-	// DefaultTaskPodCpu The default CPU resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in number of CPU cores.
-	DefaultTaskPodCpu string `json:"defaultTaskPodCpu"`
+	// DefaultTaskPodCpu The default CPU resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in number of CPU cores. Required if Remote Execution is disabled.
+	DefaultTaskPodCpu *string `json:"defaultTaskPodCpu,omitempty"`
 
-	// DefaultTaskPodMemory The default memory resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `DefaultTaskPodCpu`.
-	DefaultTaskPodMemory string `json:"defaultTaskPodMemory"`
+	// DefaultTaskPodMemory The default memory resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `DefaultTaskPodCpu`. Required if Remote Execution is disabled.
+	DefaultTaskPodMemory *string `json:"defaultTaskPodMemory,omitempty"`
 
 	// Description The Deployment's description.
 	Description *string `json:"description,omitempty"`
@@ -1830,13 +1827,14 @@ type CreateDedicatedDeploymentRequest struct {
 	IsHighAvailability bool `json:"isHighAvailability"`
 
 	// Name The Deployment's name.
-	Name string `json:"name"`
+	Name            string                            `json:"name"`
+	RemoteExecution *DeploymentRemoteExecutionRequest `json:"remoteExecution,omitempty"`
 
-	// ResourceQuotaCpu The CPU quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current CPU usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in number of CPU cores.
-	ResourceQuotaCpu string `json:"resourceQuotaCpu"`
+	// ResourceQuotaCpu The CPU quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current CPU usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in number of CPU cores. Required if Remote Execution is disabled.
+	ResourceQuotaCpu *string `json:"resourceQuotaCpu,omitempty"`
 
-	// ResourceQuotaMemory The memory quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current memory usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `ResourceQuotaCpu`.
-	ResourceQuotaMemory string                        `json:"resourceQuotaMemory"`
+	// ResourceQuotaMemory The memory quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current memory usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `ResourceQuotaCpu`. Required if Remote Execution is disabled.
+	ResourceQuotaMemory *string                       `json:"resourceQuotaMemory,omitempty"`
 	ScalingSpec         *DeploymentScalingSpecRequest `json:"scalingSpec,omitempty"`
 
 	// SchedulerSize The size of the scheduler Pod.
@@ -1845,7 +1843,7 @@ type CreateDedicatedDeploymentRequest struct {
 	// Type The type of the Deployment.
 	Type CreateDedicatedDeploymentRequestType `json:"type"`
 
-	// WorkerQueues The list of worker queues configured for the Deployment. Applies only when `Executor` is `CELERY` or `ASTRO`. All such Deployments need at least 1 worker queue called `default`.
+	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY` or if Remote Execution is disabled and executor is `ASTRO`. All these Deployments need at least 1 worker queue called `default`.
 	WorkerQueues *[]WorkerQueueRequest `json:"workerQueues,omitempty"`
 
 	// WorkloadIdentity The Deployment's workload identity.
@@ -2300,11 +2298,11 @@ type CreateStandardDeploymentRequest struct {
 	// ContactEmails A list of contact emails for the Deployment.
 	ContactEmails *[]string `json:"contactEmails,omitempty"`
 
-	// DefaultTaskPodCpu The default CPU resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in number of CPU cores.
-	DefaultTaskPodCpu string `json:"defaultTaskPodCpu"`
+	// DefaultTaskPodCpu The default CPU resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in number of CPU cores. Required if Remote Execution is disabled.
+	DefaultTaskPodCpu *string `json:"defaultTaskPodCpu,omitempty"`
 
-	// DefaultTaskPodMemory The default memory resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `DefaultTaskPodCpu`.
-	DefaultTaskPodMemory string `json:"defaultTaskPodMemory"`
+	// DefaultTaskPodMemory The default memory resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `DefaultTaskPodCpu`. Required if Remote Execution is disabled.
+	DefaultTaskPodMemory *string `json:"defaultTaskPodMemory,omitempty"`
 
 	// Description The Deployment's description.
 	Description *string `json:"description,omitempty"`
@@ -2331,13 +2329,14 @@ type CreateStandardDeploymentRequest struct {
 	Name string `json:"name"`
 
 	// Region The region to host the Deployment in. Optional if `ClusterId` is specified.
-	Region *string `json:"region,omitempty"`
+	Region          *string                           `json:"region,omitempty"`
+	RemoteExecution *DeploymentRemoteExecutionRequest `json:"remoteExecution,omitempty"`
 
-	// ResourceQuotaCpu The CPU quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current CPU usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in number of CPU cores.
-	ResourceQuotaCpu string `json:"resourceQuotaCpu"`
+	// ResourceQuotaCpu The CPU quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current CPU usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in number of CPU cores. Required if Remote Execution is disabled.
+	ResourceQuotaCpu *string `json:"resourceQuotaCpu,omitempty"`
 
-	// ResourceQuotaMemory The memory quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current memory usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `ResourceQuotaCpu`.
-	ResourceQuotaMemory string                        `json:"resourceQuotaMemory"`
+	// ResourceQuotaMemory The memory quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current memory usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `ResourceQuotaCpu`. Required if Remote Execution is disabled.
+	ResourceQuotaMemory *string                       `json:"resourceQuotaMemory,omitempty"`
 	ScalingSpec         *DeploymentScalingSpecRequest `json:"scalingSpec,omitempty"`
 
 	// SchedulerSize The size of the scheduler Pod.
@@ -2346,7 +2345,7 @@ type CreateStandardDeploymentRequest struct {
 	// Type The type of the Deployment.
 	Type CreateStandardDeploymentRequestType `json:"type"`
 
-	// WorkerQueues The list of worker queues configured for the Deployment. Applies only when `Executor` is `CELERY`. At least 1 worker queue is needed. All Deployments need at least 1 worker queue called `default`.
+	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY` or if Remote Execution is disabled and executor is `ASTRO`. All these Deployments need at least 1 worker queue called `default`.
 	WorkerQueues *[]WorkerQueueRequest `json:"workerQueues,omitempty"`
 
 	// WorkloadIdentity The Deployment's workload identity.
@@ -2568,7 +2567,8 @@ type Deployment struct {
 	OrganizationId string `json:"organizationId"`
 
 	// Region The region of the cluster. Only for Dedicated and Hybrid Deployments.
-	Region *string `json:"region,omitempty"`
+	Region          *string                    `json:"region,omitempty"`
+	RemoteExecution *DeploymentRemoteExecution `json:"remoteExecution,omitempty"`
 
 	// ResourceQuotaCpu The CPU quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current CPU usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in number of CPU cores.
 	ResourceQuotaCpu *string `json:"resourceQuotaCpu,omitempty"`
@@ -2782,6 +2782,23 @@ type DeploymentOptions struct {
 
 	// WorkloadIdentityOptions The available workload identity options.
 	WorkloadIdentityOptions *[]WorkloadIdentityOption `json:"workloadIdentityOptions,omitempty"`
+}
+
+// DeploymentRemoteExecution defines model for DeploymentRemoteExecution.
+type DeploymentRemoteExecution struct {
+	AllowedIpAddressRanges []string `json:"allowedIpAddressRanges"`
+	Enabled                bool     `json:"enabled"`
+	RemoteApiUrl           string   `json:"remoteApiUrl"`
+	TaskLogBucket          *string  `json:"taskLogBucket,omitempty"`
+	TaskLogUrlPattern      *string  `json:"taskLogUrlPattern,omitempty"`
+}
+
+// DeploymentRemoteExecutionRequest defines model for DeploymentRemoteExecutionRequest.
+type DeploymentRemoteExecutionRequest struct {
+	AllowedIpAddressRanges *[]string `json:"allowedIpAddressRanges,omitempty"`
+	Enabled                bool      `json:"enabled"`
+	TaskLogBucket          *string   `json:"taskLogBucket,omitempty"`
+	TaskLogUrlPattern      *string   `json:"taskLogUrlPattern,omitempty"`
 }
 
 // DeploymentScalingSpec defines model for DeploymentScalingSpec.
@@ -3236,6 +3253,9 @@ type OpsgenieNotificationChannelDefinition struct {
 
 // Organization defines model for Organization.
 type Organization struct {
+	// AllowEnhancedSupportAccess Whether the organization allows CRE to have view access to their entities
+	AllowEnhancedSupportAccess bool `json:"allowEnhancedSupportAccess"`
+
 	// BillingEmail The Organization's billing email.
 	BillingEmail *string `json:"billingEmail,omitempty"`
 
@@ -3650,11 +3670,11 @@ type UpdateDedicatedDeploymentRequest struct {
 	// ContactEmails A list of contact emails for the Deployment.
 	ContactEmails *[]string `json:"contactEmails,omitempty"`
 
-	// DefaultTaskPodCpu The default CPU resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in number of CPU cores.
-	DefaultTaskPodCpu string `json:"defaultTaskPodCpu"`
+	// DefaultTaskPodCpu The default CPU resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in number of CPU cores. Required if Remote Execution is disabled.
+	DefaultTaskPodCpu *string `json:"defaultTaskPodCpu,omitempty"`
 
-	// DefaultTaskPodMemory The default memory resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `DefaultTaskPodCpu`.
-	DefaultTaskPodMemory string `json:"defaultTaskPodMemory"`
+	// DefaultTaskPodMemory The default memory resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `DefaultTaskPodCpu`. Required if Remote Execution is disabled.
+	DefaultTaskPodMemory *string `json:"defaultTaskPodMemory,omitempty"`
 
 	// Description The Deployment's description.
 	Description *string `json:"description,omitempty"`
@@ -3662,7 +3682,7 @@ type UpdateDedicatedDeploymentRequest struct {
 	// EnvironmentVariables List of environment variables to add to the Deployment.
 	EnvironmentVariables []DeploymentEnvironmentVariableRequest `json:"environmentVariables"`
 
-	// Executor The executor Deployment's executor.
+	// Executor The Deployment's executor type.
 	Executor UpdateDedicatedDeploymentRequestExecutor `json:"executor"`
 
 	// IsCicdEnforced Whether the Deployment requires that all deploys are made through CI/CD.
@@ -3678,13 +3698,14 @@ type UpdateDedicatedDeploymentRequest struct {
 	IsHighAvailability bool `json:"isHighAvailability"`
 
 	// Name The Deployment's name.
-	Name string `json:"name"`
+	Name            string                            `json:"name"`
+	RemoteExecution *DeploymentRemoteExecutionRequest `json:"remoteExecution,omitempty"`
 
-	// ResourceQuotaCpu The CPU quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current CPU usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in number of CPU cores.
-	ResourceQuotaCpu string `json:"resourceQuotaCpu"`
+	// ResourceQuotaCpu The CPU quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current CPU usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in number of CPU cores. Required if Remote Execution is disabled.
+	ResourceQuotaCpu *string `json:"resourceQuotaCpu,omitempty"`
 
-	// ResourceQuotaMemory The memory quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current memory usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `ResourceQuotaCpu`.
-	ResourceQuotaMemory string                        `json:"resourceQuotaMemory"`
+	// ResourceQuotaMemory The memory quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current memory usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `ResourceQuotaCpu`. Required if Remote Execution is disabled.
+	ResourceQuotaMemory *string                       `json:"resourceQuotaMemory,omitempty"`
 	ScalingSpec         *DeploymentScalingSpecRequest `json:"scalingSpec,omitempty"`
 
 	// SchedulerSize The size of the scheduler Pod.
@@ -3693,7 +3714,7 @@ type UpdateDedicatedDeploymentRequest struct {
 	// Type The type of the Deployment.
 	Type UpdateDedicatedDeploymentRequestType `json:"type"`
 
-	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY` or `ASTRO`. All such Deployments need at least 1 worker queue called `default`.
+	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY` or if Remote Execution is disabled and executor is `ASTRO`. All these Deployments need at least 1 worker queue called `default`.
 	WorkerQueues *[]WorkerQueueRequest `json:"workerQueues,omitempty"`
 
 	// WorkloadIdentity The Deployment's workload identity.
@@ -3703,7 +3724,7 @@ type UpdateDedicatedDeploymentRequest struct {
 	WorkspaceId string `json:"workspaceId"`
 }
 
-// UpdateDedicatedDeploymentRequestExecutor The executor Deployment's executor.
+// UpdateDedicatedDeploymentRequestExecutor The Deployment's executor type.
 type UpdateDedicatedDeploymentRequestExecutor string
 
 // UpdateDedicatedDeploymentRequestSchedulerSize The size of the scheduler Pod.
@@ -4000,6 +4021,8 @@ type UpdateOpsgenieNotificationChannelRequestType string
 
 // UpdateOrganizationRequest defines model for UpdateOrganizationRequest.
 type UpdateOrganizationRequest struct {
+	AllowEnhancedSupportAccess *bool `json:"allowEnhancedSupportAccess,omitempty"`
+
 	// BillingEmail The Organization's billing email.
 	BillingEmail string `json:"billingEmail"`
 
@@ -4049,11 +4072,11 @@ type UpdateStandardDeploymentRequest struct {
 	// ContactEmails A list of contact emails for the Deployment.
 	ContactEmails *[]string `json:"contactEmails,omitempty"`
 
-	// DefaultTaskPodCpu The default CPU resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in number of CPU cores.
-	DefaultTaskPodCpu string `json:"defaultTaskPodCpu"`
+	// DefaultTaskPodCpu The default CPU resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in number of CPU cores. Required if Remote Execution is disabled.
+	DefaultTaskPodCpu *string `json:"defaultTaskPodCpu,omitempty"`
 
-	// DefaultTaskPodMemory The default memory resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `DefaultTaskPodCpu`.
-	DefaultTaskPodMemory string `json:"defaultTaskPodMemory"`
+	// DefaultTaskPodMemory The default memory resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `DefaultTaskPodCpu`. Required if Remote Execution is disabled.
+	DefaultTaskPodMemory *string `json:"defaultTaskPodMemory,omitempty"`
 
 	// Description The Deployment's description.
 	Description *string `json:"description,omitempty"`
@@ -4061,7 +4084,7 @@ type UpdateStandardDeploymentRequest struct {
 	// EnvironmentVariables List of environment variables to add to the Deployment.
 	EnvironmentVariables []DeploymentEnvironmentVariableRequest `json:"environmentVariables"`
 
-	// Executor The executor Deployment's executor.
+	// Executor The Deployment's executor type.
 	Executor UpdateStandardDeploymentRequestExecutor `json:"executor"`
 
 	// IsCicdEnforced Whether the Deployment requires that all deploys are made through CI/CD.
@@ -4077,13 +4100,14 @@ type UpdateStandardDeploymentRequest struct {
 	IsHighAvailability bool `json:"isHighAvailability"`
 
 	// Name The Deployment's name.
-	Name string `json:"name"`
+	Name            string                            `json:"name"`
+	RemoteExecution *DeploymentRemoteExecutionRequest `json:"remoteExecution,omitempty"`
 
-	// ResourceQuotaCpu The CPU quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current CPU usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in number of CPU cores.
-	ResourceQuotaCpu string `json:"resourceQuotaCpu"`
+	// ResourceQuotaCpu The CPU quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current CPU usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in number of CPU cores. Required if Remote Execution is disabled.
+	ResourceQuotaCpu *string `json:"resourceQuotaCpu,omitempty"`
 
-	// ResourceQuotaMemory The memory quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current memory usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `ResourceQuotaCpu`.
-	ResourceQuotaMemory string                        `json:"resourceQuotaMemory"`
+	// ResourceQuotaMemory The memory quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current memory usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `ResourceQuotaCpu`. Required if Remote Execution is disabled.
+	ResourceQuotaMemory *string                       `json:"resourceQuotaMemory,omitempty"`
 	ScalingSpec         *DeploymentScalingSpecRequest `json:"scalingSpec,omitempty"`
 
 	// SchedulerSize The size of the scheduler Pod.
@@ -4092,7 +4116,7 @@ type UpdateStandardDeploymentRequest struct {
 	// Type The type of the Deployment.
 	Type UpdateStandardDeploymentRequestType `json:"type"`
 
-	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY` or `ASTRO`. All such Deployments need at least 1 worker queue called `default`.
+	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY` or if Remote Execution is disabled and executor is `ASTRO`. All these Deployments need at least 1 worker queue called `default`.
 	WorkerQueues *[]WorkerQueueRequest `json:"workerQueues,omitempty"`
 
 	// WorkloadIdentity The Deployment's workload identity.
@@ -4102,7 +4126,7 @@ type UpdateStandardDeploymentRequest struct {
 	WorkspaceId string `json:"workspaceId"`
 }
 
-// UpdateStandardDeploymentRequestExecutor The executor Deployment's executor.
+// UpdateStandardDeploymentRequestExecutor The Deployment's executor type.
 type UpdateStandardDeploymentRequestExecutor string
 
 // UpdateStandardDeploymentRequestSchedulerSize The size of the scheduler Pod.
