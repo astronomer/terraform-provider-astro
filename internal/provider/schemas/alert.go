@@ -286,7 +286,7 @@ func AlertRulesResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 				},
 			},
 		},
-		"pattern_matches": resourceSchema.ListNestedAttribute{
+		"pattern_matches": resourceSchema.SetNestedAttribute{
 			MarkdownDescription: "The alert's pattern matches to match against",
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: map[string]resourceSchema.Attribute{
@@ -298,7 +298,7 @@ func AlertRulesResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 						MarkdownDescription: "The type of operator to use for the pattern match",
 						Required:            true,
 					},
-					"values": resourceSchema.ListAttribute{
+					"values": resourceSchema.SetAttribute{
 						MarkdownDescription: "The values to match against",
 						ElementType:         types.StringType,
 						Required:            true,
@@ -321,6 +321,6 @@ func AlertRulesResourceAttributeTypes() map[string]attr.Type {
 			"look_back_period_seconds": types.Int64Type,
 			"task_duration_seconds":    types.Int64Type,
 		}},
-		"pattern_matches": types.ListType{ElemType: types.ObjectType{AttrTypes: AlertRulesPatternMatchAttributeTypes()}},
+		"pattern_matches": types.SetType{ElemType: types.ObjectType{AttrTypes: AlertRulesPatternMatchAttributeTypes()}},
 	}
 }

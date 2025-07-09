@@ -96,7 +96,7 @@ type ResourceAlertPropertiesInput struct {
 	DeploymentId          types.String `tfsdk:"deployment_id"`            // always present
 	DagDurationSeconds    types.Int64  `tfsdk:"dag_duration_seconds"`     // optional
 	DagDeadline           types.String `tfsdk:"dag_deadline"`             // optional
-	DaysOfWeek            types.List   `tfsdk:"days_of_week"`             // optional
+	DaysOfWeek            types.Set    `tfsdk:"days_of_week"`             // optional
 	LookBackPeriodSeconds types.Int64  `tfsdk:"look_back_period_seconds"` // optional
 	TaskDurationSeconds   types.Int64  `tfsdk:"task_duration_seconds"`    // optional
 }
@@ -105,7 +105,7 @@ type ResourceAlertPropertiesInput struct {
 type ResourceAlertRulesPatternMatch struct {
 	EntityType   types.String `tfsdk:"entity_type"`
 	OperatorType types.String `tfsdk:"operator_type"`
-	Values       types.List   `tfsdk:"values"`
+	Values       types.Set    `tfsdk:"values"`
 }
 
 // ResourceAlertRulesInput is used to decode the Terraform 'rules' block when creating or updating an Alert resource.
@@ -274,53 +274,51 @@ func AlertRulesTypesObject(
 	}
 
 	// Convert properties to types.Map
-	propMap := make(map[string]interface{})
+	propertiesMap := make(map[string]interface{})
 	if m, ok := rulesPtr.Properties.(map[string]interface{}); ok {
-		propMap = m
+		propertiesMap = m
 	}
-	propAttrMap := make(map[string]attr.Value, len(propMap))
-	for k, v := range propMap {
-		propAttrMap[k] = types.StringValue(fmt.Sprintf("%v", v))
+	propertiesAttrMap := make(map[string]attr.Value, len(propertiesMap))
+	for k, v := range propertiesMap {
+		propertiesAttrMap[k] = types.StringValue(fmt.Sprintf("%v", v))
 	}
-	properties, propDiags := types.MapValue(types.StringType, propAttrMap)
+	properties, propDiags := types.MapValue(types.StringType, propertiesAttrMap)
 	if propDiags.HasError() {
 		return types.Object{}, propDiags
 	}
 	// Convert pattern matches to types.Set
-	var pmVals []attr.Value
+	var patternMatchValues []attr.Value
 	if rulesPtr.PatternMatches != nil {
-		for _, pm := range *rulesPtr.PatternMatches {
+		for _, patternMatch := range *rulesPtr.PatternMatches {
 			// Convert values slice to []attr.Value
-			vals := make([]attr.Value, len(pm.Values))
-			for j, val := range pm.Values {
-				vals[j] = types.StringValue(val)
+			values := make([]attr.Value, len(patternMatch.Values))
+			for j, val := range patternMatch.Values {
+				values[j] = types.StringValue(val)
 			}
-			valuesSet, valDiags := types.SetValue(types.StringType, vals)
+			valuesSet, valDiags := types.SetValue(types.StringType, values)
 			if valDiags.HasError() {
 				return types.Object{}, valDiags
 			}
 			// Build pattern match object
-			pmObj, pmDiags := types.ObjectValueFrom(ctx, schemas.AlertRulesPatternMatchAttributeTypes(), AlertRulesPatternMatch{
-				EntityType:   types.StringValue(string(pm.EntityType)),
-				OperatorType: types.StringValue(string(pm.OperatorType)),
-				Values:       valuesSet,
+			pmObj, pmDiags := types.ObjectValue(schemas.AlertRulesPatternMatchAttributeTypes(), map[string]attr.Value{
+				"entity_type":   types.StringValue(string(patternMatch.EntityType)),
+				"operator_type": types.StringValue(string(patternMatch.OperatorType)),
+				"values":        valuesSet,
 			})
 			if pmDiags.HasError() {
 				return types.Object{}, pmDiags
 			}
-			pmVals = append(pmVals, pmObj)
+			patternMatchValues = append(patternMatchValues, pmObj)
 		}
 	}
-	pmSet, pmDiags := types.SetValue(types.ObjectType{AttrTypes: schemas.AlertRulesPatternMatchAttributeTypes()}, pmVals)
-	if pmDiags.HasError() {
-		return types.Object{}, pmDiags
+	patternMatchSet, patternMatchDiags := types.SetValue(types.ObjectType{AttrTypes: schemas.AlertRulesPatternMatchAttributeTypes()}, patternMatchValues)
+	if patternMatchDiags.HasError() {
+		return types.Object{}, patternMatchDiags
 	}
-	alertRules := AlertRules{
-		Properties:     properties,
-		PatternMatches: pmSet,
-	}
-
-	return types.ObjectValueFrom(ctx, schemas.AlertRulesAttributeTypes(), alertRules)
+	return types.ObjectValue(schemas.AlertRulesAttributeTypes(), map[string]attr.Value{
+		"properties":      properties,
+		"pattern_matches": patternMatchSet,
+	})
 }
 
 // AlertNotificationChannelsTypesSet converts a slice of platform.AlertNotificationChannel into a Terraform types.Set of nested NotificationChannelDataSource objects
@@ -342,7 +340,7 @@ func AlertNotificationChannelsTypesSet(ctx context.Context, channels any) (types
 			),
 		}
 	}
-	var vals []attr.Value
+	var notificationChannelValues []attr.Value
 	for _, anc := range slice {
 		// Map AlertNotificationChannel fields into NotificationChannelDataSource via temporary platform.NotificationChannel
 		pc := platform.NotificationChannel{
@@ -371,9 +369,9 @@ func AlertNotificationChannelsTypesSet(ctx context.Context, channels any) (types
 		if diagsC.HasError() {
 			return types.Set{}, diagsC
 		}
-		vals = append(vals, obj)
+		notificationChannelValues = append(notificationChannelValues, obj)
 	}
-	setVal, diagsSet := types.SetValue(types.ObjectType{AttrTypes: schemas.NotificationChannelsElementAttributeTypes()}, vals)
+	setVal, diagsSet := types.SetValue(types.ObjectType{AttrTypes: schemas.NotificationChannelsElementAttributeTypes()}, notificationChannelValues)
 	diags = append(diags, diagsSet...)
 	return setVal, diags
 }
@@ -401,41 +399,77 @@ func AlertRulesResourceTypesObject(ctx context.Context, rules any) (types.Object
 	}
 	// extract values
 	depsId, _ := propMap["deploymentId"].(string)
-	ddSec := int64(0)
-	if v, ok := propMap["dagDurationSeconds"].(float64); ok {
-		ddSec = int64(v)
-	}
-	ddLine, _ := propMap["dagDeadline"].(string)
-	var days []string
-	if arr, ok := propMap["daysOfWeek"].([]interface{}); ok {
-		for _, el := range arr {
-			if s, ok2 := el.(string); ok2 {
-				days = append(days, s)
-			}
+
+	// Handle optional fields - only set if present in the map
+	var dagDurationSeconds types.Int64
+	if v, ok := propMap["dagDurationSeconds"]; ok && v != nil {
+		if f, ok := v.(float64); ok {
+			dagDurationSeconds = types.Int64Value(int64(f))
+		} else {
+			dagDurationSeconds = types.Int64Null()
 		}
+	} else {
+		dagDurationSeconds = types.Int64Null()
 	}
-	lbSec := int64(0)
-	if v, ok := propMap["lookBackPeriodSeconds"].(float64); ok {
-		lbSec = int64(v)
+
+	var dagDeadline types.String
+	if v, ok := propMap["dagDeadline"]; ok && v != nil {
+		if s, ok := v.(string); ok && s != "" {
+			dagDeadline = types.StringValue(s)
+		} else {
+			dagDeadline = types.StringNull()
+		}
+	} else {
+		dagDeadline = types.StringNull()
 	}
-	tdSec := int64(0)
-	if v, ok := propMap["taskDurationSeconds"].(float64); ok {
-		tdSec = int64(v)
+
+	var daysOfWeek types.Set
+	if v, ok := propMap["daysOfWeek"]; ok && v != nil {
+		if arr, ok := v.([]interface{}); ok && len(arr) > 0 {
+			dayVals := make([]attr.Value, 0, len(arr))
+			for _, el := range arr {
+				if s, ok2 := el.(string); ok2 {
+					dayVals = append(dayVals, types.StringValue(s))
+				}
+			}
+			daysOfWeek = types.SetValueMust(types.StringType, dayVals)
+		} else {
+			daysOfWeek = types.SetNull(types.StringType)
+		}
+	} else {
+		daysOfWeek = types.SetNull(types.StringType)
 	}
-	// Convert string slice to attr.Value list for days_of_week
-	dayVals := make([]attr.Value, len(days))
-	for i, s := range days {
-		dayVals[i] = types.StringValue(s)
+
+	var lookBackPeriodSeconds types.Int64
+	if v, ok := propMap["lookBackPeriodSeconds"]; ok && v != nil {
+		if f, ok := v.(float64); ok {
+			lookBackPeriodSeconds = types.Int64Value(int64(f))
+		} else {
+			lookBackPeriodSeconds = types.Int64Null()
+		}
+	} else {
+		lookBackPeriodSeconds = types.Int64Null()
 	}
-	props, propDiags := types.ObjectValueFrom(ctx,
+
+	var taskDurationSeconds types.Int64
+	if v, ok := propMap["taskDurationSeconds"]; ok && v != nil {
+		if f, ok := v.(float64); ok {
+			taskDurationSeconds = types.Int64Value(int64(f))
+		} else {
+			taskDurationSeconds = types.Int64Null()
+		}
+	} else {
+		taskDurationSeconds = types.Int64Null()
+	}
+	props, propDiags := types.ObjectValue(
 		schemas.AlertRulesResourceAttributeTypes()["properties"].(types.ObjectType).AttrTypes,
 		map[string]attr.Value{
 			"deployment_id":            types.StringValue(depsId),
-			"dag_duration_seconds":     types.Int64Value(ddSec),
-			"dag_deadline":             types.StringValue(ddLine),
-			"days_of_week":             types.ListValueMust(types.StringType, dayVals),
-			"look_back_period_seconds": types.Int64Value(lbSec),
-			"task_duration_seconds":    types.Int64Value(tdSec),
+			"dag_duration_seconds":     dagDurationSeconds,
+			"dag_deadline":             dagDeadline,
+			"days_of_week":             daysOfWeek,
+			"look_back_period_seconds": lookBackPeriodSeconds,
+			"task_duration_seconds":    taskDurationSeconds,
 		},
 	)
 	if propDiags.HasError() {
@@ -443,37 +477,39 @@ func AlertRulesResourceTypesObject(ctx context.Context, rules any) (types.Object
 	}
 	// Build pattern_matches list
 	pmAttrTypes := schemas.AlertRulesPatternMatchAttributeTypes()
-	var pmVals []attr.Value
+	var patternMatchValues []attr.Value
 	if rulesPtr.PatternMatches != nil {
-		for _, pm := range *rulesPtr.PatternMatches {
-			listVals := make([]attr.Value, len(pm.Values))
-			for i, val := range pm.Values {
-				listVals[i] = types.StringValue(val)
+		for _, patternMatch := range *rulesPtr.PatternMatches {
+			values := make([]attr.Value, len(patternMatch.Values))
+			for i, val := range patternMatch.Values {
+				values[i] = types.StringValue(val)
 			}
-			valsList, listDiags := types.ListValue(types.StringType, listVals)
-			if listDiags.HasError() {
-				return types.Object{}, listDiags
+			valuesSet, valuesSetDiags := types.SetValue(types.StringType, values)
+			if valuesSetDiags.HasError() {
+				return types.Object{}, valuesSetDiags
 			}
 			// use resource-level pattern match struct
-			pmObj, pmDiags2 := types.ObjectValueFrom(ctx, pmAttrTypes, ResourceAlertRulesPatternMatch{
-				EntityType:   types.StringValue(string(pm.EntityType)),
-				OperatorType: types.StringValue(string(pm.OperatorType)),
-				Values:       valsList,
+			pmObj, pmDiags2 := types.ObjectValue(pmAttrTypes, map[string]attr.Value{
+				"entity_type":   types.StringValue(string(patternMatch.EntityType)),
+				"operator_type": types.StringValue(string(patternMatch.OperatorType)),
+				"values":        valuesSet,
 			})
 			if pmDiags2.HasError() {
 				return types.Object{}, pmDiags2
 			}
-			pmVals = append(pmVals, pmObj)
+			patternMatchValues = append(patternMatchValues, pmObj)
 		}
 	}
-	pmList, pmListDiags := types.ListValue(types.ObjectType{AttrTypes: pmAttrTypes}, pmVals)
-	if pmListDiags.HasError() {
-		return types.Object{}, pmListDiags
+	patternMatchSet, patternMatchDiags := types.SetValue(types.ObjectType{AttrTypes: pmAttrTypes}, patternMatchValues)
+	if patternMatchDiags.HasError() {
+		return types.Object{}, patternMatchDiags
 	}
-	diags = append(diags, pmListDiags...)
+	diags = append(diags, patternMatchDiags...)
 	// Final object
-	return types.ObjectValueFrom(ctx, schemas.AlertRulesResourceAttributeTypes(), map[string]attr.Value{
+	obj, objDiags := types.ObjectValue(schemas.AlertRulesResourceAttributeTypes(), map[string]attr.Value{
 		"properties":      props,
-		"pattern_matches": pmList,
+		"pattern_matches": patternMatchSet,
 	})
+	diags = append(diags, objDiags...)
+	return obj, diags
 }

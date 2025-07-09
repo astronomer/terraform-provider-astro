@@ -43,7 +43,7 @@ Alert resource
 
 Required:
 
-- `pattern_matches` (Attributes List) The alert's pattern matches to match against (see [below for nested schema](#nestedatt--rules--pattern_matches))
+- `pattern_matches` (Attributes Set) The alert's pattern matches to match against (see [below for nested schema](#nestedatt--rules--pattern_matches))
 - `properties` (Attributes) The alert's properties used to define the alert (see [below for nested schema](#nestedatt--rules--properties))
 
 <a id="nestedatt--rules--pattern_matches"></a>
@@ -53,7 +53,7 @@ Required:
 
 - `entity_type` (String) The type of entity to match against
 - `operator_type` (String) The type of operator to use for the pattern match
-- `values` (List of String) The values to match against
+- `values` (Set of String) The values to match against
 
 
 <a id="nestedatt--rules--properties"></a>
