@@ -271,7 +271,7 @@ func AlertRulesResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 					MarkdownDescription: "The deadline for the DAG in HH:MM 24-hour UTC format",
 					Optional:            true,
 				},
-				"days_of_week": resourceSchema.ListAttribute{
+				"days_of_week": resourceSchema.SetAttribute{
 					MarkdownDescription: "The days of the week for the timeliness rule",
 					ElementType:         types.StringType,
 					Optional:            true,
@@ -317,7 +317,7 @@ func AlertRulesResourceAttributeTypes() map[string]attr.Type {
 			"deployment_id":            types.StringType,
 			"dag_duration_seconds":     types.Int64Type,
 			"dag_deadline":             types.StringType,
-			"days_of_week":             types.ListType{ElemType: types.StringType},
+			"days_of_week":             types.SetType{ElemType: types.StringType},
 			"look_back_period_seconds": types.Int64Type,
 			"task_duration_seconds":    types.Int64Type,
 		}},
