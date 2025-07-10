@@ -140,7 +140,7 @@ func TestAcc_ResourceAlertDagFailure(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
+				ExpectError: regexp.MustCompile("entityType should be one of"),
 			},
 			// Validate: invalid pattern match operator type
 			{
@@ -162,7 +162,7 @@ func TestAcc_ResourceAlertDagFailure(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
+				ExpectError: regexp.MustCompile("operatorType should be one of"),
 			},
 			// Validate: empty pattern match values
 			{
@@ -184,7 +184,7 @@ func TestAcc_ResourceAlertDagFailure(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
+				ExpectError: regexp.MustCompile("values should be one of"),
 			},
 			// Create: DAG_FAILURE alert
 			{
@@ -217,6 +217,11 @@ func TestAcc_ResourceAlertDagFailure(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "notification_channel_ids.#", "1"),
 					resource.TestCheckResourceAttr(resourceVar, "rules.properties.deployment_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.entity_type", string(platform.DAGID)),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.operator_type", string(platform.IS)),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.#", "2"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.0", "test_dag"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.1", "another_dag"),
 					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "workspace_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "deployment_id"),
@@ -374,28 +379,6 @@ func TestAcc_ResourceAlertDagSuccess(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
 			},
-			// Validate: empty pattern match values
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
-					Name:                   alertName,
-					Type:                   string(platform.CreateDagSuccessAlertRequestTypeDAGSUCCESS),
-					Severity:               string(platform.CreateDagSuccessAlertRequestSeverityINFO),
-					EntityId:               deploymentId,
-					EntityType:             string(platform.CreateDagSuccessAlertRequestEntityTypeDEPLOYMENT),
-					NotificationChannelIds: []string{notificationChannelId},
-					Properties: map[string]interface{}{
-						"deployment_id": deploymentId,
-					},
-					PatternMatches: []patternMatch{
-						{
-							EntityType:   string(platform.DAGID),
-							OperatorType: string(platform.IS),
-							Values:       []string{""},
-						},
-					},
-				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
-			},
 			// Validate: invalid pattern match entity type
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
@@ -416,7 +399,7 @@ func TestAcc_ResourceAlertDagSuccess(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
+				ExpectError: regexp.MustCompile("entityType should be one of"),
 			},
 			// Validate: invalid pattern match operator type
 			{
@@ -438,7 +421,29 @@ func TestAcc_ResourceAlertDagSuccess(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
+				ExpectError: regexp.MustCompile("operatorType should be one of"),
+			},
+			// Validate: empty pattern match values
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
+					Name:                   alertName,
+					Type:                   string(platform.CreateDagSuccessAlertRequestTypeDAGSUCCESS),
+					Severity:               string(platform.CreateDagSuccessAlertRequestSeverityINFO),
+					EntityId:               deploymentId,
+					EntityType:             string(platform.CreateDagSuccessAlertRequestEntityTypeDEPLOYMENT),
+					NotificationChannelIds: []string{notificationChannelId},
+					Properties: map[string]interface{}{
+						"deployment_id": deploymentId,
+					},
+					PatternMatches: []patternMatch{
+						{
+							EntityType:   string(platform.DAGID),
+							OperatorType: string(platform.IS),
+							Values:       []string{""},
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("values should be one of"),
 			},
 			// Create: DAG_SUCCESS alert
 			{
@@ -467,32 +472,21 @@ func TestAcc_ResourceAlertDagSuccess(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "severity", string(platform.CreateDagSuccessAlertRequestSeverityINFO)),
 					resource.TestCheckResourceAttr(resourceVar, "entity_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "entity_type", string(platform.CreateDagSuccessAlertRequestEntityTypeDEPLOYMENT)),
+					resource.TestCheckResourceAttrSet(resourceVar, "entity_name"),
+					resource.TestCheckResourceAttr(resourceVar, "notification_channel_ids.#", "1"),
 					resource.TestCheckResourceAttr(resourceVar, "rules.properties.deployment_id", deploymentId),
-					testAccCheckAlertExists(t, alertName),
-				),
-			},
-			// Update: pattern matches
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
-					Name:                   alertName,
-					Type:                   string(platform.CreateDagSuccessAlertRequestTypeDAGSUCCESS),
-					Severity:               string(platform.CreateDagSuccessAlertRequestSeverityINFO),
-					EntityId:               deploymentId,
-					EntityType:             string(platform.CreateDagSuccessAlertRequestEntityTypeDEPLOYMENT),
-					NotificationChannelIds: []string{notificationChannelId},
-					Properties: map[string]interface{}{
-						"deployment_id": deploymentId,
-					},
-					PatternMatches: []patternMatch{
-						{
-							EntityType:   string(platform.DAGID),
-							OperatorType: string(platform.ISNOT),
-							Values:       []string{"excluded_dag"},
-						},
-					},
-				}),
-				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.entity_type", string(platform.DAGID)),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.operator_type", string(platform.IS)),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.0", "success_dag"),
+					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "workspace_id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "deployment_id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceVar, "updated_at"),
+					resource.TestCheckResourceAttrSet(resourceVar, "created_by.id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "updated_by.id"),
 					testAccCheckAlertExists(t, alertName),
 				),
 			},
@@ -667,6 +661,75 @@ func TestAcc_ResourceAlertDagDuration(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile("dag_duration_seconds is required for DAG_DURATION alerts"),
 			},
+			// Validate: invalid pattern match entity type
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
+					Name:                   alertName,
+					Type:                   string(platform.CreateDagDurationAlertRequestTypeDAGDURATION),
+					Severity:               string(platform.CreateDagDurationAlertRequestSeverityWARNING),
+					EntityId:               deploymentId,
+					EntityType:             string(platform.CreateDagDurationAlertRequestEntityTypeDEPLOYMENT),
+					NotificationChannelIds: []string{notificationChannelId},
+					Properties: map[string]interface{}{
+						"deployment_id":        deploymentId,
+						"dag_duration_seconds": 300,
+					},
+					PatternMatches: []patternMatch{
+						{
+							EntityType:   "INVALID_ENTITY_TYPE",
+							OperatorType: string(platform.IS),
+							Values:       []string{"slow_dag"},
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("entityType should be one of"),
+			},
+			// Validate: invalid pattern match operator type
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
+					Name:                   alertName,
+					Type:                   string(platform.CreateDagDurationAlertRequestTypeDAGDURATION),
+					Severity:               string(platform.CreateDagDurationAlertRequestSeverityWARNING),
+					EntityId:               deploymentId,
+					EntityType:             string(platform.CreateDagDurationAlertRequestEntityTypeDEPLOYMENT),
+					NotificationChannelIds: []string{notificationChannelId},
+					Properties: map[string]interface{}{
+						"deployment_id":        deploymentId,
+						"dag_duration_seconds": 300,
+					},
+					PatternMatches: []patternMatch{
+						{
+							EntityType:   string(platform.DAGID),
+							OperatorType: "INVALID_OPERATOR_TYPE",
+							Values:       []string{"slow_dag"},
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("operatorType should be one of"),
+			},
+			// Validate: empty pattern match values
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
+					Name:                   alertName,
+					Type:                   string(platform.CreateDagDurationAlertRequestTypeDAGDURATION),
+					Severity:               string(platform.CreateDagDurationAlertRequestSeverityWARNING),
+					EntityId:               deploymentId,
+					EntityType:             string(platform.CreateDagDurationAlertRequestEntityTypeDEPLOYMENT),
+					NotificationChannelIds: []string{notificationChannelId},
+					Properties: map[string]interface{}{
+						"deployment_id":        deploymentId,
+						"dag_duration_seconds": 300,
+					},
+					PatternMatches: []patternMatch{
+						{
+							EntityType:   string(platform.DAGID),
+							OperatorType: string(platform.IS),
+							Values:       []string{""},
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("values should be one of"),
+			},
 			// Create: DAG_DURATION alert
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
@@ -695,6 +758,18 @@ func TestAcc_ResourceAlertDagDuration(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "severity", string(platform.CreateDagDurationAlertRequestSeverityWARNING)),
 					resource.TestCheckResourceAttr(resourceVar, "rules.properties.deployment_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "rules.properties.dag_duration_seconds", "300"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.entity_type", string(platform.DAGID)),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.operator_type", string(platform.IS)),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.0", "slow_dag"),
+					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "workspace_id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "deployment_id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceVar, "updated_at"),
+					resource.TestCheckResourceAttrSet(resourceVar, "created_by.id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "updated_by.id"),
 					testAccCheckAlertExists(t, alertName),
 				),
 			},
@@ -906,6 +981,81 @@ func TestAcc_ResourceAlertDagTimeliness(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile("Invalid|at least one day"),
 			},
+			// Validate: invalid pattern match entity type
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
+					Name:                   alertName,
+					Type:                   string(platform.CreateDagTimelinessAlertRequestTypeDAGTIMELINESS),
+					Severity:               string(platform.CreateDagTimelinessAlertRequestSeverityWARNING),
+					EntityId:               deploymentId,
+					EntityType:             string(platform.CreateDagTimelinessAlertRequestEntityTypeDEPLOYMENT),
+					NotificationChannelIds: []string{notificationChannelId},
+					Properties: map[string]interface{}{
+						"deployment_id":            deploymentId,
+						"dag_deadline":             "08:00",
+						"days_of_week":             []string{"MONDAY"},
+						"look_back_period_seconds": 3600,
+					},
+					PatternMatches: []patternMatch{
+						{
+							EntityType:   "INVALID_ENTITY_TYPE",
+							OperatorType: string(platform.IS),
+							Values:       []string{"daily_etl"},
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("entityType should be one of"),
+			},
+			// Validate: invalid pattern match operator type
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
+					Name:                   alertName,
+					Type:                   string(platform.CreateDagTimelinessAlertRequestTypeDAGTIMELINESS),
+					Severity:               string(platform.CreateDagTimelinessAlertRequestSeverityWARNING),
+					EntityId:               deploymentId,
+					EntityType:             string(platform.CreateDagTimelinessAlertRequestEntityTypeDEPLOYMENT),
+					NotificationChannelIds: []string{notificationChannelId},
+					Properties: map[string]interface{}{
+						"deployment_id":            deploymentId,
+						"dag_deadline":             "08:00",
+						"days_of_week":             []string{"MONDAY"},
+						"look_back_period_seconds": 3600,
+					},
+					PatternMatches: []patternMatch{
+						{
+							EntityType:   string(platform.DAGID),
+							OperatorType: "INVALID_OPERATOR_TYPE",
+							Values:       []string{"daily_etl"},
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("operatorType should be one of"),
+			},
+			// Validate: empty pattern match values
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
+					Name:                   alertName,
+					Type:                   string(platform.CreateDagTimelinessAlertRequestTypeDAGTIMELINESS),
+					Severity:               string(platform.CreateDagTimelinessAlertRequestSeverityWARNING),
+					EntityId:               deploymentId,
+					EntityType:             string(platform.CreateDagTimelinessAlertRequestEntityTypeDEPLOYMENT),
+					NotificationChannelIds: []string{notificationChannelId},
+					Properties: map[string]interface{}{
+						"deployment_id":            deploymentId,
+						"dag_deadline":             "08:00",
+						"days_of_week":             []string{"MONDAY"},
+						"look_back_period_seconds": 3600,
+					},
+					PatternMatches: []patternMatch{
+						{
+							EntityType:   string(platform.DAGID),
+							OperatorType: string(platform.IS),
+							Values:       []string{""},
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("values should be one of"),
+			},
 			// Create: DAG_TIMELINESS alert
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
@@ -938,10 +1088,22 @@ func TestAcc_ResourceAlertDagTimeliness(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "rules.properties.dag_deadline", "08:00"),
 					resource.TestCheckResourceAttr(resourceVar, "rules.properties.days_of_week.#", "5"),
 					resource.TestCheckResourceAttr(resourceVar, "rules.properties.look_back_period_seconds", "3600"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.entity_type", string(platform.DAGID)),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.operator_type", string(platform.IS)),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.0", "daily_etl"),
+					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "workspace_id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "deployment_id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceVar, "updated_at"),
+					resource.TestCheckResourceAttrSet(resourceVar, "created_by.id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "updated_by.id"),
 					testAccCheckAlertExists(t, alertName),
 				),
 			},
-			// Update: schedule
+			// Update: properties
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
 					Name:                   alertName,
@@ -1096,28 +1258,6 @@ func TestAcc_ResourceAlertTaskFailure(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
 			},
-			// Validate: empty pattern match values
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
-					Name:                   alertName,
-					Type:                   string(platform.CreateTaskFailureAlertRequestTypeTASKFAILURE),
-					Severity:               string(platform.CreateTaskFailureAlertRequestSeverityWARNING),
-					EntityId:               deploymentId,
-					EntityType:             string(platform.CreateTaskFailureAlertRequestEntityTypeDEPLOYMENT),
-					NotificationChannelIds: []string{notificationChannelId},
-					Properties: map[string]interface{}{
-						"deployment_id": deploymentId,
-					},
-					PatternMatches: []patternMatch{
-						{
-							EntityType:   string(platform.TASKID),
-							OperatorType: string(platform.IS),
-							Values:       []string{""},
-						},
-					},
-				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
-			},
 			// Validate: invalid pattern match entity type
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
@@ -1138,7 +1278,7 @@ func TestAcc_ResourceAlertTaskFailure(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
+				ExpectError: regexp.MustCompile("entityType should be one of"),
 			},
 			// Validate: invalid pattern match operator type
 			{
@@ -1160,7 +1300,29 @@ func TestAcc_ResourceAlertTaskFailure(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
+				ExpectError: regexp.MustCompile("values should be one of"),
+			},
+			// Validate: empty pattern match values
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
+					Name:                   alertName,
+					Type:                   string(platform.CreateTaskFailureAlertRequestTypeTASKFAILURE),
+					Severity:               string(platform.CreateTaskFailureAlertRequestSeverityWARNING),
+					EntityId:               deploymentId,
+					EntityType:             string(platform.CreateTaskFailureAlertRequestEntityTypeDEPLOYMENT),
+					NotificationChannelIds: []string{notificationChannelId},
+					Properties: map[string]interface{}{
+						"deployment_id": deploymentId,
+					},
+					PatternMatches: []patternMatch{
+						{
+							EntityType:   string(platform.TASKID),
+							OperatorType: string(platform.IS),
+							Values:       []string{""},
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("values should be one of"),
 			},
 			// Validate: using TASK pattern with invalid entity type (must be TASKID for tasks)
 			{
@@ -1218,32 +1380,21 @@ func TestAcc_ResourceAlertTaskFailure(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "entity_type", string(platform.CreateTaskFailureAlertRequestEntityTypeDEPLOYMENT)),
 					resource.TestCheckResourceAttr(resourceVar, "rules.properties.deployment_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.#", "2"),
-					testAccCheckAlertExists(t, alertName),
-				),
-			},
-			// Update: pattern matches
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
-					Name:                   alertName,
-					Type:                   string(platform.CreateTaskFailureAlertRequestTypeTASKFAILURE),
-					Severity:               string(platform.CreateTaskFailureAlertRequestSeverityCRITICAL),
-					EntityId:               deploymentId,
-					EntityType:             string(platform.CreateTaskFailureAlertRequestEntityTypeDEPLOYMENT),
-					NotificationChannelIds: []string{notificationChannelId},
-					Properties: map[string]interface{}{
-						"deployment_id": deploymentId,
-					},
-					PatternMatches: []patternMatch{
-						{
-							EntityType:   string(platform.TASKID),
-							OperatorType: string(platform.INCLUDES),
-							Values:       []string{"critical"},
-						},
-					},
-				}),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceVar, "severity", string(platform.CreateTaskFailureAlertRequestSeverityCRITICAL)),
-					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.entity_type", string(platform.TASKID)),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.operator_type", string(platform.IS)),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.0", "critical_task"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.1.entity_type", string(platform.DAGID)),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.1.operator_type", string(platform.IS)),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.1.values.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.1.values.0", "important_dag"),
+					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "workspace_id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "deployment_id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceVar, "updated_at"),
+					resource.TestCheckResourceAttrSet(resourceVar, "created_by.id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "updated_by.id"),
 					testAccCheckAlertExists(t, alertName),
 				),
 			},
@@ -1422,6 +1573,52 @@ func TestAcc_ResourceAlertTaskDuration(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile("Invalid Attribute Value|must be greater than 0"),
 			},
+			// Validate: invalid pattern match entity type
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
+					Name:                   alertName,
+					Type:                   string(platform.CreateTaskDurationAlertRequestTypeTASKDURATION),
+					Severity:               string(platform.CreateTaskDurationAlertRequestSeverityINFO),
+					EntityId:               deploymentId,
+					EntityType:             string(platform.CreateTaskDurationAlertRequestEntityTypeDEPLOYMENT),
+					NotificationChannelIds: []string{notificationChannelId},
+					Properties: map[string]interface{}{
+						"deployment_id":         deploymentId,
+						"task_duration_seconds": 60,
+					},
+					PatternMatches: []patternMatch{
+						{
+							EntityType:   "INVALID_ENTITY_TYPE",
+							OperatorType: string(platform.IS),
+							Values:       []string{"long_running_task"},
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("entityType should be one of"),
+			},
+			// Validate: invalid pattern match operator type
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
+					Name:                   alertName,
+					Type:                   string(platform.CreateTaskDurationAlertRequestTypeTASKDURATION),
+					Severity:               string(platform.CreateTaskDurationAlertRequestSeverityINFO),
+					EntityId:               deploymentId,
+					EntityType:             string(platform.CreateTaskDurationAlertRequestEntityTypeDEPLOYMENT),
+					NotificationChannelIds: []string{notificationChannelId},
+					Properties: map[string]interface{}{
+						"deployment_id":         deploymentId,
+						"task_duration_seconds": 60,
+					},
+					PatternMatches: []patternMatch{
+						{
+							EntityType:   string(platform.TASKID),
+							OperatorType: "INVALID_OPERATOR_TYPE",
+							Values:       []string{"long_running_task"},
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("operatorType should be one of"),
+			},
 			// Validate: empty pattern match values
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
@@ -1443,7 +1640,7 @@ func TestAcc_ResourceAlertTaskDuration(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
+				ExpectError: regexp.MustCompile("values should be one of"),
 			},
 			// Create: TASK_DURATION alert
 			{
@@ -1473,6 +1670,18 @@ func TestAcc_ResourceAlertTaskDuration(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "severity", string(platform.CreateTaskDurationAlertRequestSeverityINFO)),
 					resource.TestCheckResourceAttr(resourceVar, "rules.properties.deployment_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "rules.properties.task_duration_seconds", "60"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.entity_type", string(platform.TASKID)),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.operator_type", string(platform.IS)),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.0", "long_running_task"),
+					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "workspace_id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "deployment_id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceVar, "updated_at"),
+					resource.TestCheckResourceAttrSet(resourceVar, "created_by.id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "updated_by.id"),
 					testAccCheckAlertExists(t, alertName),
 				),
 			},
