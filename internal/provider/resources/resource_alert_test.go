@@ -1578,7 +1578,7 @@ func alert(input alertInput) string {
 	// Build properties string
 	propertiesStr := ""
 	if input.Properties != nil {
-		propertiesStr = "properties {\n"
+		propertiesStr = "properties = {\n"
 		for k, v := range input.Properties {
 			switch val := v.(type) {
 			case string:
@@ -1594,13 +1594,20 @@ func alert(input alertInput) string {
 
 	// Build pattern matches string
 	patternMatchesStr := ""
-	for _, pm := range input.PatternMatches {
-		patternMatchesStr += fmt.Sprintf(`
-		pattern_matches {
+	if len(input.PatternMatches) > 0 {
+		patternMatchesStr = "pattern_matches = [\n"
+		for i, pm := range input.PatternMatches {
+			patternMatchesStr += fmt.Sprintf(`		{
 			entity_type = "%s"
 			operator_type = "%s"
 			values = [%s]
 		}`, pm.EntityType, pm.OperatorType, formatStringList(pm.Values))
+			if i < len(input.PatternMatches)-1 {
+				patternMatchesStr += ","
+			}
+			patternMatchesStr += "\n"
+		}
+		patternMatchesStr += "\t\t]"
 	}
 
 	// Build notification channel IDs string
@@ -1615,7 +1622,7 @@ resource "astro_alert" "%s" {
 	entity_type = "%s"
 	notification_channel_ids = [%s]
 	
-	rules {
+	rules = {
 		%s
 		%s
 	}
