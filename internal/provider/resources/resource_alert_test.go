@@ -140,7 +140,7 @@ func TestAcc_ResourceAlertDagFailure(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("entityType should be one of"),
+				ExpectError: regexp.MustCompile("entityType should be one of.*TASK_ID.*DAG_ID"),
 			},
 			// Validate: invalid pattern match operator type
 			{
@@ -399,7 +399,7 @@ func TestAcc_ResourceAlertDagSuccess(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("entityType should be one of"),
+				ExpectError: regexp.MustCompile("entityType should be one of.*TASK_ID.*DAG_ID"),
 			},
 			// Validate: invalid pattern match operator type
 			{
@@ -682,7 +682,7 @@ func TestAcc_ResourceAlertDagDuration(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("entityType should be one of"),
+				ExpectError: regexp.MustCompile("entityType should be one of.*TASK_ID.*DAG_ID"),
 			},
 			// Validate: invalid pattern match operator type
 			{
@@ -1004,7 +1004,7 @@ func TestAcc_ResourceAlertDagTimeliness(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("entityType should be one of"),
+				ExpectError: regexp.MustCompile("entityType should be one of.*TASK_ID.*DAG_ID"),
 			},
 			// Validate: invalid pattern match operator type
 			{
@@ -1278,7 +1278,7 @@ func TestAcc_ResourceAlertTaskFailure(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("entityType should be one of"),
+				ExpectError: regexp.MustCompile("entityType should be one of.*TASK_ID.*DAG_ID"),
 			},
 			// Validate: invalid pattern match operator type
 			{
@@ -1594,7 +1594,7 @@ func TestAcc_ResourceAlertTaskDuration(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("entityType should be one of"),
+				ExpectError: regexp.MustCompile("entityType should be one of.*TASK_ID.*DAG_ID"),
 			},
 			// Validate: invalid pattern match operator type
 			{
