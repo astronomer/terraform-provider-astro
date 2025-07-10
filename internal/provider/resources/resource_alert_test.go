@@ -162,7 +162,7 @@ func TestAcc_ResourceAlertDagFailure(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("operatorType should be one of"),
+				ExpectError: regexp.MustCompile("(?s).*operatorType.*should be one of"),
 			},
 			// Validate: empty pattern match values
 			{
@@ -184,7 +184,7 @@ func TestAcc_ResourceAlertDagFailure(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("values should be one of"),
+				ExpectError: regexp.MustCompile("(?s).*values.*should be one of"),
 			},
 			// Create: DAG_FAILURE alert
 			{
@@ -399,7 +399,7 @@ func TestAcc_ResourceAlertDagSuccess(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid field values: field entityType failed check on oneof; entityType should be one of: TASK_ID DAG_ID"),
+				ExpectError: regexp.MustCompile("(?s).*entityType.*should be one of.*TASK_ID.*DAG_ID"),
 			},
 			// Validate: invalid pattern match operator type
 			{
@@ -421,7 +421,7 @@ func TestAcc_ResourceAlertDagSuccess(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("operatorType should be one of"),
+				ExpectError: regexp.MustCompile("(?s).*operatorType.*should be one of"),
 			},
 			// Validate: empty pattern match values
 			{
@@ -443,7 +443,7 @@ func TestAcc_ResourceAlertDagSuccess(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("values should be one of"),
+				ExpectError: regexp.MustCompile("(?s).*values.*should be one of"),
 			},
 			// Create: DAG_SUCCESS alert
 			{
@@ -682,7 +682,7 @@ func TestAcc_ResourceAlertDagDuration(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid field values: field entityType failed check on oneof; entityType should be one of: TASK_ID DAG_ID"),
+				ExpectError: regexp.MustCompile("(?s).*entityType.*should be one of.*TASK_ID.*DAG_ID"),
 			},
 			// Validate: invalid pattern match operator type
 			{
@@ -705,7 +705,7 @@ func TestAcc_ResourceAlertDagDuration(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("operatorType should be one of"),
+				ExpectError: regexp.MustCompile("(?s).*operatorType.*should be one of"),
 			},
 			// Validate: empty pattern match values
 			{
@@ -728,7 +728,7 @@ func TestAcc_ResourceAlertDagDuration(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("values should be one of"),
+				ExpectError: regexp.MustCompile("(?s).*values.*should be one of"),
 			},
 			// Create: DAG_DURATION alert
 			{
@@ -1004,7 +1004,7 @@ func TestAcc_ResourceAlertDagTimeliness(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid field values: field entityType failed check on oneof; entityType should be one of: TASK_ID DAG_ID"),
+				ExpectError: regexp.MustCompile("(?s).*entityType.*should be one of.*TASK_ID.*DAG_ID"),
 			},
 			// Validate: invalid pattern match operator type
 			{
@@ -1029,7 +1029,7 @@ func TestAcc_ResourceAlertDagTimeliness(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("operatorType should be one of"),
+				ExpectError: regexp.MustCompile("(?s).*operatorType.*should be one of"),
 			},
 			// Validate: empty pattern match values
 			{
@@ -1054,7 +1054,7 @@ func TestAcc_ResourceAlertDagTimeliness(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("values should be one of"),
+				ExpectError: regexp.MustCompile("(?s).*values.*should be one of"),
 			},
 			// Create: DAG_TIMELINESS alert
 			{
@@ -1278,7 +1278,7 @@ func TestAcc_ResourceAlertTaskFailure(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid field values: field entityType failed check on oneof; entityType should be one of: TASK_ID DAG_ID"),
+				ExpectError: regexp.MustCompile("(?s).*entityType.*should be one of.*TASK_ID.*DAG_ID"),
 			},
 			// Validate: invalid pattern match operator type
 			{
@@ -1300,7 +1300,7 @@ func TestAcc_ResourceAlertTaskFailure(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("values should be one of"),
+				ExpectError: regexp.MustCompile("(?s).*operatorType.*should be one of"),
 			},
 			// Validate: empty pattern match values
 			{
@@ -1322,7 +1322,7 @@ func TestAcc_ResourceAlertTaskFailure(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("values should be one of"),
+				ExpectError: regexp.MustCompile("(?s).*values.*should be one of"),
 			},
 			// Validate: using TASK pattern with invalid entity type (must be TASKID for tasks)
 			{
@@ -1594,7 +1594,7 @@ func TestAcc_ResourceAlertTaskDuration(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid field values: field entityType failed check on oneof; entityType should be one of: TASK_ID DAG_ID"),
+				ExpectError: regexp.MustCompile("(?s).*entityType.*should be one of.*TASK_ID.*DAG_ID"),
 			},
 			// Validate: invalid pattern match operator type
 			{
@@ -1617,7 +1617,7 @@ func TestAcc_ResourceAlertTaskDuration(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("operatorType should be one of"),
+				ExpectError: regexp.MustCompile("(?s).*operatorType.*should be one of"),
 			},
 			// Validate: empty pattern match values
 			{
@@ -1640,7 +1640,7 @@ func TestAcc_ResourceAlertTaskDuration(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("values should be one of"),
+				ExpectError: regexp.MustCompile("(?s).*values.*should be one of"),
 			},
 			// Create: TASK_DURATION alert
 			{
