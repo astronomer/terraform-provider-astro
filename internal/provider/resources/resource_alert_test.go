@@ -184,7 +184,7 @@ func TestAcc_ResourceAlertDagFailure(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("(?s).*values[0].*should be min: 1"),
+				ExpectError: regexp.MustCompile("(?s).*values\\[0\\].*should be min: 1"),
 			},
 			// Create: DAG_FAILURE alert
 			{
@@ -443,7 +443,7 @@ func TestAcc_ResourceAlertDagSuccess(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("(?s).*values[0].*should be min: 1"),
+				ExpectError: regexp.MustCompile("(?s).*values\\[0\\].*should be min: 1"),
 			},
 			// Create: DAG_SUCCESS alert
 			{
@@ -728,7 +728,7 @@ func TestAcc_ResourceAlertDagDuration(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("(?s).*values.*should be one of"),
+				ExpectError: regexp.MustCompile("(?s).*values\\[0\\].*should be min: 1"),
 			},
 			// Create: DAG_DURATION alert
 			{
@@ -1054,7 +1054,7 @@ func TestAcc_ResourceAlertDagTimeliness(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("(?s).*values[0].*should be min: 1"),
+				ExpectError: regexp.MustCompile("(?s).*values\\[0\\].*should be min: 1"),
 			},
 			// Create: DAG_TIMELINESS alert
 			{
@@ -1322,7 +1322,7 @@ func TestAcc_ResourceAlertTaskFailure(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("(?s).*values[0].*should be min: 1"),
+				ExpectError: regexp.MustCompile("(?s).*values\\[0\\].*should be min: 1"),
 			},
 			// Validate: using TASK pattern with invalid entity type (must be TASKID for tasks)
 			{
@@ -1640,7 +1640,7 @@ func TestAcc_ResourceAlertTaskDuration(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("(?s).*values[0].*should be min: 1"),
+				ExpectError: regexp.MustCompile("(?s).*values\\[0\\].*should be min: 1"),
 			},
 			// Create: TASK_DURATION alert
 			{
