@@ -457,10 +457,12 @@ func (r *alertResource) Update(
 
 		name := data.Name.ValueString()
 		sev := platform.UpdateDagFailureAlertRequestSeverity(data.Severity.ValueString())
+		alertType := platform.UpdateDagFailureAlertRequestType(data.Type.ValueString())
 
 		reqModel := platform.UpdateDagFailureAlertRequest{
 			Name:                   &name,
 			Severity:               &sev,
+			Type:                   &alertType,
 			NotificationChannelIds: &ncIds,
 			Rules: &platform.UpdateDagFailureAlertRules{
 				PatternMatches: &pmReqs,
@@ -491,10 +493,12 @@ func (r *alertResource) Update(
 
 		name := data.Name.ValueString()
 		sev := platform.UpdateDagSuccessAlertRequestSeverity(data.Severity.ValueString())
+		alertType := platform.UpdateDagSuccessAlertRequestType(data.Type.ValueString())
 		reqModel := platform.UpdateDagSuccessAlertRequest{
 			Name:                   &name,
 			NotificationChannelIds: &ncIds,
 			Severity:               &sev,
+			Type:                   &alertType,
 			Rules: &platform.UpdateDagSuccessAlertRules{
 				PatternMatches: &pmReqs,
 			},
@@ -524,12 +528,14 @@ func (r *alertResource) Update(
 
 		name := data.Name.ValueString()
 		sev := platform.UpdateDagDurationAlertRequestSeverity(data.Severity.ValueString())
+		alertType := platform.UpdateDagDurationAlertRequestType(data.Type.ValueString())
 		dagDurationSeconds := int(alertRulesInput.Properties.DagDurationSeconds.ValueInt64())
 
 		reqModel := platform.UpdateDagDurationAlertRequest{
 			Name:                   &name,
 			NotificationChannelIds: &ncIds,
 			Severity:               &sev,
+			Type:                   &alertType,
 			Rules: &platform.UpdateDagDurationAlertRules{
 				PatternMatches: &pmReqs,
 				Properties: &platform.UpdateDagDurationAlertProperties{
@@ -562,6 +568,7 @@ func (r *alertResource) Update(
 
 		name := data.Name.ValueString()
 		sev := platform.UpdateDagTimelinessAlertRequestSeverity(data.Severity.ValueString())
+		alertType := platform.UpdateDagTimelinessAlertRequestType(data.Type.ValueString())
 		dagDeadline := alertRulesInput.Properties.DagDeadline.ValueString()
 		var days []string
 		if errList := alertRulesInput.Properties.DaysOfWeek.ElementsAs(ctx, &days, false); errList.HasError() {
@@ -574,6 +581,7 @@ func (r *alertResource) Update(
 			Name:                   &name,
 			NotificationChannelIds: &ncIds,
 			Severity:               &sev,
+			Type:                   &alertType,
 			Rules: &platform.UpdateDagTimelinessAlertRules{
 				PatternMatches: &pmReqs,
 				Properties: &platform.UpdateDagTimelinessAlertProperties{
@@ -608,11 +616,13 @@ func (r *alertResource) Update(
 
 		name := data.Name.ValueString()
 		sev := platform.UpdateTaskFailureAlertRequestSeverity(data.Severity.ValueString())
+		alertType := platform.UpdateTaskFailureAlertRequestType(data.Type.ValueString())
 
 		reqModel := platform.UpdateTaskFailureAlertRequest{
 			Name:                   &name,
 			NotificationChannelIds: &ncIds,
 			Severity:               &sev,
+			Type:                   &alertType,
 			Rules: &platform.UpdateTaskFailureAlertRules{
 				PatternMatches: &pmReqs,
 			},
@@ -642,12 +652,14 @@ func (r *alertResource) Update(
 
 		name := data.Name.ValueString()
 		sev := platform.UpdateTaskDurationAlertRequestSeverity(data.Severity.ValueString())
+		alertType := platform.UpdateTaskDurationAlertRequestType(data.Type.ValueString())
 		taskDurationSeconds := int(alertRulesInput.Properties.TaskDurationSeconds.ValueInt64())
 
 		reqModel := platform.UpdateTaskDurationAlertRequest{
 			Name:                   &name,
 			NotificationChannelIds: &ncIds,
 			Severity:               &sev,
+			Type:                   &alertType,
 			Rules: &platform.UpdateTaskDurationAlertRules{
 				PatternMatches: &pmReqs,
 				Properties: &platform.UpdateTaskDurationAlertProperties{
