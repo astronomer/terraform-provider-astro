@@ -118,7 +118,7 @@ func TestAcc_ResourceAlertDagFailure(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
+				ExpectError: regexp.MustCompile("deployment with id .* not found"),
 			},
 			// Validate: invalid pattern match entity type
 			{
