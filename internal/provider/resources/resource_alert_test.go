@@ -184,7 +184,7 @@ func TestAcc_ResourceAlertDagFailure(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("(?s).*values.*should be one of"),
+				ExpectError: regexp.MustCompile("Invalid field values: field values[0] failed check on length; values[0] should be min: 1;"),
 			},
 			// Create: DAG_FAILURE alert
 			{
