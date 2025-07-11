@@ -207,18 +207,6 @@ func TestAcc_ResourceAlertDagFailure(t *testing.T) {
 					},
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					// First check if the resource was actually created
-					func(s *terraform.State) error {
-						rs, ok := s.RootModule().Resources[resourceVar]
-						if !ok {
-							return fmt.Errorf("resource %s not found in state", resourceVar)
-						}
-						if rs.Primary.ID == "" {
-							return fmt.Errorf("resource %s has no ID set", resourceVar)
-						}
-						t.Logf("Alert resource created with ID: %s", rs.Primary.ID)
-						return nil
-					},
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttr(resourceVar, "name", alertName),
 					resource.TestCheckResourceAttr(resourceVar, "type", string(platform.CreateDagFailureAlertRequestTypeDAGFAILURE)),
@@ -1872,21 +1860,18 @@ func testAccCheckAlertExists(t *testing.T, alertName string) func(s *terraform.S
 		assert.NoError(t, err)
 
 		organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
+		deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
 		ctx := context.Background()
 
-		resp, err := client.ListAlertsWithResponse(ctx, organizationId, &platform.ListAlertsParams{})
+		// Include deployment ID in the query parameters
+		resp, err := client.ListAlertsWithResponse(ctx, organizationId, &platform.ListAlertsParams{
+			DeploymentIds: &[]string{deploymentId},
+		})
 		if err != nil {
 			return fmt.Errorf("failed to list alerts: %v", err)
 		}
 		if resp == nil || resp.JSON200 == nil {
 			return fmt.Errorf("nil response from list alerts")
-		}
-
-		// Debug: Print all alert names
-		t.Logf("Looking for alert: %s", alertName)
-		t.Logf("Found %d alerts in organization", len(resp.JSON200.Alerts))
-		for _, alert := range resp.JSON200.Alerts {
-			t.Logf("  - Alert name: %s (ID: %s)", alert.Name, alert.Id)
 		}
 
 		for _, alert := range resp.JSON200.Alerts {
@@ -1906,9 +1891,13 @@ func testAccCheckAlertDestroyed(t *testing.T, alertName string) func(s *terrafor
 		assert.NoError(t, err)
 
 		organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
+		deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
 		ctx := context.Background()
 
-		resp, err := client.ListAlertsWithResponse(ctx, organizationId, &platform.ListAlertsParams{})
+		// Include deployment ID in the query parameters
+		resp, err := client.ListAlertsWithResponse(ctx, organizationId, &platform.ListAlertsParams{
+			DeploymentIds: &[]string{deploymentId},
+		})
 		if err != nil {
 			return fmt.Errorf("failed to list alerts: %v", err)
 		}
