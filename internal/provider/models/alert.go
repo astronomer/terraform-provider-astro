@@ -222,6 +222,19 @@ func (data *AlertResource) ReadFromResponse(ctx context.Context, Alert *platform
 	if diags.HasError() {
 		return diags
 	}
+
+	// Extract notification channel IDs from the notification channels
+	var notificationChannelIds []attr.Value
+	if Alert.NotificationChannels != nil {
+		for _, nc := range *Alert.NotificationChannels {
+			notificationChannelIds = append(notificationChannelIds, types.StringValue(nc.Id))
+		}
+	}
+	data.NotificationChannelIds, diags = types.SetValue(types.StringType, notificationChannelIds)
+	if diags.HasError() {
+		return diags
+	}
+
 	data.OrganizationId = types.StringValue(Alert.OrganizationId)
 	if Alert.WorkspaceId != nil {
 		data.WorkspaceId = types.StringValue(*Alert.WorkspaceId)
