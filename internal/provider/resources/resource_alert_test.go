@@ -1877,7 +1877,7 @@ func testAccCheckAlertExists(t *testing.T, alertName string) func(s *terraform.S
 func testAccCheckAlertDestroyed(t *testing.T, alertName string) func(s *terraform.State) error {
 	t.Helper()
 	return func(state *terraform.State) error {
-		client, err := utils.GetTestPlatformClient(false)
+		client, err := utils.GetTestPlatformClient(true)
 		assert.NoError(t, err)
 
 		organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
