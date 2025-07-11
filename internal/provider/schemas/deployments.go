@@ -80,6 +80,9 @@ func DeploymentsElementAttributeTypes() map[string]attr.Type {
 		"scaling_spec": types.ObjectType{
 			AttrTypes: ScalingSpecAttributeTypes(),
 		},
+		"remote_execution": types.ObjectType{
+			AttrTypes: RemoteExecutionAttributeTypes(),
+		},
 	}
 }
 

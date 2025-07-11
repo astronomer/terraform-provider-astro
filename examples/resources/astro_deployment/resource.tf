@@ -24,6 +24,34 @@ resource "astro_deployment" "dedicated" {
   }]
 }
 
+resource "astro_deployment" "dedicated_astro_remote" {
+  original_astro_runtime_version = "3.0-1"
+  name                           = "my dedicated deployment"
+  description                    = "an example deployment"
+  type                           = "DEDICATED"
+  cluster_id                     = "clv17vgft000801kkydsws63x"
+  contact_emails                 = ["preview@astronomer.test"]
+  executor                       = "ASTRO"
+  is_cicd_enforced               = true
+  is_dag_deploy_enabled          = false
+  is_development_mode            = false
+  is_high_availability           = true
+  scheduler_size                 = "SMALL"
+  workspace_id                   = "clnp86ly5000401ndaga21g81"
+  desired_workload_identity      = "arn:aws:iam::123456789:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0"
+  environment_variables = [{
+    key       = "key1"
+    value     = "value1"
+    is_secret = false
+  }]
+  remote_execution = {
+    enabled                   = true
+    allowed_ip_address_ranges = ["0.0.0.0/0"]
+    task_log_bucket           = "s3://my-task-log-bucket"
+    task_log_url_pattern      = "https://s3.amazonaws.com/my-task-log-bucket/{{ task_id }}/{{ execution_date }}/{{ filename }}"
+  }
+}
+
 resource "astro_deployment" "standard" {
   original_astro_runtime_version = "11.3.0"
   name                           = "my standard deployment"

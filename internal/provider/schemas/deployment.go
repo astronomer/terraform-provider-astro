@@ -314,6 +314,11 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			Optional:            true,
 			Attributes:          ScalingSpecResourceSchemaAttributes(),
 		},
+		"remote_execution": resourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Deployment remote execution configuration - only for 'DEDICATED' deployments",
+			Optional:            true,
+			Attributes:          RemoteExecutionResourceSchemaAttributes(),
+		},
 		"region": resourceSchema.StringAttribute{
 			MarkdownDescription: "Deployment region - required for 'STANDARD' deployments. If changing this value, the deployment will be recreated in the new region",
 			Computed:            true,
@@ -556,6 +561,11 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			MarkdownDescription: "Deployment scaling spec",
 			Computed:            true,
 			Attributes:          ScalingSpecDataSourceSchemaAttributes(),
+		},
+		"remote_execution": datasourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Deployment remote execution configuration",
+			Computed:            true,
+			Attributes:          RemoteExecutionDataSourceSchemaAttributes(),
 		},
 	}
 }

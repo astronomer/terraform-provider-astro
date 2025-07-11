@@ -170,6 +170,7 @@ resource "astro_deployment" "imported_deployment" {
 - `is_high_availability` (Boolean) Deployment high availability - required for 'STANDARD' and 'DEDICATED' deployments
 - `original_astro_runtime_version` (String) Deployment's original Astro Runtime version. The Terraform provider will use this provided Astro runtime version to create the Deployment. The Astro runtime version can be updated with your Astro project Dockerfile, but if this value is changed, the Deployment will be recreated with this new Astro runtime version.
 - `region` (String) Deployment region - required for 'STANDARD' deployments. If changing this value, the deployment will be recreated in the new region
+- `remote_execution` (Attributes) Deployment remote execution configuration - only for 'DEDICATED' deployments (see [below for nested schema](#nestedatt--remote_execution))
 - `resource_quota_cpu` (String) Deployment resource quota CPU - required for 'STANDARD' and 'DEDICATED' deployments
 - `resource_quota_memory` (String) Deployment resource quota memory - required for 'STANDARD' and 'DEDICATED' deployments
 - `scaling_spec` (Attributes) Deployment scaling spec - only for 'STANDARD' and 'DEDICATED' deployments (see [below for nested schema](#nestedatt--scaling_spec))
@@ -221,6 +222,24 @@ Optional:
 Read-Only:
 
 - `updated_at` (String) Environment variable last updated timestamp
+
+
+<a id="nestedatt--remote_execution"></a>
+### Nested Schema for `remote_execution`
+
+Required:
+
+- `enabled` (Boolean) Whether remote execution is enabled
+
+Optional:
+
+- `allowed_ip_address_ranges` (Set of String) The allowed IP address ranges for remote execution
+- `task_log_bucket` (String) The bucket for task logs
+- `task_log_url_pattern` (String) The URL pattern for task logs
+
+Read-Only:
+
+- `remote_api_url` (String) The URL for the remote API
 
 
 <a id="nestedatt--scaling_spec"></a>

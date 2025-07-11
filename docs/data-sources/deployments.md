@@ -81,6 +81,7 @@ Read-Only:
 - `namespace` (String) Deployment namespace
 - `oidc_issuer_url` (String) Deployment OIDC issuer URL
 - `region` (String) Deployment region
+- `remote_execution` (Attributes) Deployment remote execution configuration (see [below for nested schema](#nestedatt--deployments--remote_execution))
 - `resource_quota_cpu` (String) Deployment resource quota CPU
 - `resource_quota_memory` (String) Deployment resource quota memory
 - `scaling_spec` (Attributes) Deployment scaling spec (see [below for nested schema](#nestedatt--deployments--scaling_spec))
@@ -125,6 +126,18 @@ Read-Only:
 - `key` (String) Environment variable key
 - `updated_at` (String) Environment variable last updated timestamp
 - `value` (String) Environment variable value
+
+
+<a id="nestedatt--deployments--remote_execution"></a>
+### Nested Schema for `deployments.remote_execution`
+
+Read-Only:
+
+- `allowed_ip_address_ranges` (Set of String) The allowed IP address ranges for remote execution
+- `enabled` (Boolean) Whether remote execution is enabled
+- `remote_api_url` (String) The URL for the remote API
+- `task_log_bucket` (String) The bucket for task logs
+- `task_log_url_pattern` (String) The URL pattern for task logs
 
 
 <a id="nestedatt--deployments--scaling_spec"></a>
