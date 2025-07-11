@@ -1899,6 +1899,7 @@ func testAccCheckAlertExists(t *testing.T, alertName string) func(s *terraform.S
 		t.Logf("\nListing alerts filtered by deployment: %s", deploymentId)
 		respFiltered, err := client.ListAlertsWithResponse(ctx, organizationId, &platform.ListAlertsParams{
 			DeploymentIds: &[]string{deploymentId},
+			Limit:         lo.ToPtr(0),
 		})
 		if err != nil {
 			return fmt.Errorf("failed to list alerts with deployment filter: %v", err)
