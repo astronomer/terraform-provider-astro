@@ -671,6 +671,17 @@ func (r *DeploymentResource) ValidateConfig(
 		return
 	}
 
+	// Block ASTRO executor for HYBRID deployments
+	if data.Executor.ValueString() == string(platform.DeploymentExecutorASTRO) &&
+		data.Type.ValueString() == string(platform.DeploymentTypeHYBRID) {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("executor"),
+			"ASTRO executor is not allowed for HYBRID deployments",
+			"The 'ASTRO' executor cannot be used with deployment type 'HYBRID'.",
+		)
+		return
+	}
+
 	// Type specific validation
 	switch platform.DeploymentType(data.Type.ValueString()) {
 	case platform.DeploymentTypeSTANDARD:
@@ -937,6 +948,32 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 				"worker_queue names must be unique",
 				fmt.Sprintf("The following worker_queue names are duplicated: %v", duplicateWorkerQueueNames),
 			)
+		}
+	}
+
+	// For ASTRO executor, require at least one worker_queue named 'default'
+	if data.Executor.ValueString() == string(platform.DeploymentExecutorASTRO) {
+		if len(data.WorkerQueues.Elements()) == 0 {
+			diags.AddError(
+				"worker_queues is required for 'ASTRO' executor",
+				"Please provide at least one worker_queue for ASTRO executor.",
+			)
+		} else {
+			var workerQueues []models.WorkerQueueResource
+			diags = append(diags, data.WorkerQueues.ElementsAs(ctx, &workerQueues, false)...)
+			foundDefault := false
+			for _, wq := range workerQueues {
+				if wq.Name.ValueString() == "default" {
+					foundDefault = true
+					break
+				}
+			}
+			if !foundDefault {
+				diags.AddError(
+					"'ASTRO' executor requires a worker_queue named 'default'",
+					"Please add a worker_queue with name 'default' for ASTRO executor.",
+				)
+			}
 		}
 	}
 
