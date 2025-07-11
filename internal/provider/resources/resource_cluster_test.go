@@ -65,6 +65,13 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 						Name:                 awsDeploymentName,
 						Description:          "deployment description",
 						SchedulerSize:        "SMALL",
+					}) +
+					dedicatedDeploymentWithAstroExecutor(dedicatedDeploymentInput{
+						ClusterResourceVar:   awsResourceVar,
+						WorkspaceResourceVar: workspaceResourceVar,
+						Name:                 awsDeploymentName,
+						Description:          "deployment description",
+						SchedulerSize:        "SMALL",
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
@@ -85,6 +92,11 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
+
+					// Check ASTRO executor
+					resource.TestCheckResourceAttr(fmt.Sprintf("astro_deployment.%v_astro", awsDeploymentName), "executor", "ASTRO"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("astro_deployment.%v_astro", awsDeploymentName), "worker_queues.0.name", "default"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("astro_deployment.%v_astro", awsDeploymentName), "worker_queues.0.astro_machine", "A5"),
 				),
 			},
 			// Just update cluster and remove workspace restrictions
@@ -238,6 +250,13 @@ func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
 						Name:                 azureDeploymentName,
 						Description:          utils.TestResourceDescription,
 						SchedulerSize:        "SMALL",
+					}) +
+					dedicatedDeploymentWithAstroExecutor(dedicatedDeploymentInput{
+						ClusterResourceVar:   azureResourceVar,
+						WorkspaceResourceVar: workspaceResourceVar,
+						Name:                 azureDeploymentName,
+						Description:          utils.TestResourceDescription,
+						SchedulerSize:        "SMALL",
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
@@ -304,6 +323,13 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 						RestrictedWorkspaceResourceVarName: workspaceResourceVar,
 					}) +
 					dedicatedDeployment(dedicatedDeploymentInput{
+						ClusterResourceVar:   gcpResourceVar,
+						WorkspaceResourceVar: workspaceResourceVar,
+						Name:                 gcpDeploymentName,
+						Description:          utils.TestResourceDescription,
+						SchedulerSize:        "SMALL",
+					}) +
+					dedicatedDeploymentWithAstroExecutor(dedicatedDeploymentInput{
 						ClusterResourceVar:   gcpResourceVar,
 						WorkspaceResourceVar: workspaceResourceVar,
 						Name:                 gcpDeploymentName,
@@ -421,6 +447,31 @@ resource "astro_deployment" "%v" {
 	scheduler_size = "%v"
 	workspace_id = %s.id
 	environment_variables = []
+}
+`, input.Name, input.Name, input.Description, input.ClusterResourceVar, input.SchedulerSize, input.WorkspaceResourceVar)
+}
+
+func dedicatedDeploymentWithAstroExecutor(input dedicatedDeploymentInput) string {
+	return fmt.Sprintf(`
+resource "astro_deployment" "%v_astro" {
+	name = "%v_astro"
+	description = "%s"
+	type = "DEDICATED"
+	cluster_id = %s.id
+	contact_emails = []
+	default_task_pod_cpu = "0.25"
+	default_task_pod_memory = "0.5Gi"
+	executor = "ASTRO"
+	is_cicd_enforced = true
+	is_dag_deploy_enabled = true
+	is_development_mode = false
+	is_high_availability = false
+	resource_quota_cpu = "10"
+	resource_quota_memory = "20Gi"
+	scheduler_size = "%v"
+	workspace_id = %s.id
+	environment_variables = []
+	worker_queues = [{ name = "default", is_default = true, astro_machine = "A5", max_worker_count = 2, min_worker_count = 1, worker_concurrency = 5 }]
 }
 `, input.Name, input.Name, input.Description, input.ClusterResourceVar, input.SchedulerSize, input.WorkspaceResourceVar)
 }

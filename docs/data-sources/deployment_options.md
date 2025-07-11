@@ -45,7 +45,7 @@ output "deployment_options" {
 - `cloud_provider` (String) Cloud provider
 - `deployment_id` (String) Deployment ID
 - `deployment_type` (String) Deployment type
-- `executor` (String) Executor
+- `executor` (String) Executor. Valid values: CELERY, KUBERNETES, ASTRO.
 
 ### Read-Only
 

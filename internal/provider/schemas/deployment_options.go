@@ -74,12 +74,13 @@ func DeploymentOptionsDataSourceSchemaAttributes() map[string]datasourceSchema.A
 			},
 		},
 		"executor": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Executor",
+			MarkdownDescription: "Executor. Valid values: CELERY, KUBERNETES, ASTRO.",
 			Optional:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
 					string(platform.DeploymentExecutorCELERY),
 					string(platform.DeploymentExecutorKUBERNETES),
+					string(platform.DeploymentExecutorASTRO),
 				),
 			},
 		},
