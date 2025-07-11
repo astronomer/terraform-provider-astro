@@ -1871,7 +1871,7 @@ func formatStringList(items []string) string {
 func testAccCheckAlertExists(t *testing.T, alertName string) func(s *terraform.State) error {
 	t.Helper()
 	return func(state *terraform.State) error {
-		client, err := utils.GetTestPlatformClient(false)
+		client, err := utils.GetTestPlatformClient(true)
 		assert.NoError(t, err)
 
 		organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
@@ -1886,8 +1886,12 @@ func testAccCheckAlertExists(t *testing.T, alertName string) func(s *terraform.S
 		if err != nil {
 			return fmt.Errorf("failed to list alerts: %v", err)
 		}
-		if resp == nil || resp.JSON200 == nil {
+		if resp == nil {
 			return fmt.Errorf("nil response from list alerts")
+		}
+		if resp.JSON200 == nil {
+			status, diag := clients.NormalizeAPIError(ctx, resp.HTTPResponse, resp.Body)
+			return fmt.Errorf("response JSON200 is nil status: %v, err: %v", status, diag.Detail())
 		}
 
 		t.Logf("Found %d total alerts in organization", len(resp.JSON200.Alerts))
