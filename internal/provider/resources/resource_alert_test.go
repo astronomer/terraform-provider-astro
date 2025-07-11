@@ -960,7 +960,7 @@ func TestAcc_ResourceAlertDagTimeliness(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Attribute rules.properties.look_back_period_seconds value must be at least 60"),
+				ExpectError: regexp.MustCompile("Attribute rules.properties.look_back_period_seconds value must be at least\\s*60"),
 			},
 			// Validate: empty days_of_week
 			{
@@ -1161,12 +1161,12 @@ func TestAcc_ResourceAlertDagTimeliness(t *testing.T) {
 					PatternMatches: []patternMatch{
 						{
 							EntityType:   string(platform.DAGID),
-							OperatorType: string(platform.INCLUDES),
+							OperatorType: string(platform.IS),
 							Values:       []string{"etl", "daily"},
 						},
 						{
 							EntityType:   string(platform.DAGID),
-							OperatorType: string(platform.EXCLUDES),
+							OperatorType: string(platform.IS),
 							Values:       []string{"test", "dev"},
 						},
 					},
@@ -1392,12 +1392,6 @@ func TestAcc_ResourceAlertTaskFailure(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "notification_channel_ids.0", notificationChannelId),
 					resource.TestCheckResourceAttr(resourceVar, "rules.properties.deployment_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.#", "2"),
-					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.entity_type", string(platform.TASKID)),
-					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.operator_type", string(platform.IS)),
-					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.#", "1"),
-					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.1.entity_type", string(platform.DAGID)),
-					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.1.operator_type", string(platform.IS)),
-					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.1.values.#", "1"),
 					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "workspace_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "deployment_id"),
@@ -1649,6 +1643,11 @@ func TestAcc_ResourceAlertTaskDuration(t *testing.T) {
 							OperatorType: string(platform.IS),
 							Values:       []string{"long_running_task"},
 						},
+						{
+							EntityType:   string(platform.DAGID),
+							OperatorType: string(platform.IS),
+							Values:       []string{"etl_pipeline"},
+						},
 					},
 				}),
 				Check: resource.ComposeTestCheckFunc(
@@ -1662,10 +1661,7 @@ func TestAcc_ResourceAlertTaskDuration(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "notification_channel_ids.0", notificationChannelId),
 					resource.TestCheckResourceAttr(resourceVar, "rules.properties.deployment_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "rules.properties.task_duration_seconds", "60"),
-					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.#", "1"),
-					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.entity_type", string(platform.TASKID)),
-					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.operator_type", string(platform.IS)),
-					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.#", "2"),
 					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "workspace_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "deployment_id"),
