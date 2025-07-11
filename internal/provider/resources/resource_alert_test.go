@@ -207,6 +207,18 @@ func TestAcc_ResourceAlertDagFailure(t *testing.T) {
 					},
 				}),
 				Check: resource.ComposeTestCheckFunc(
+					// Debug: Check organization IDs
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources[resourceVar]
+						if !ok {
+							return fmt.Errorf("resource %s not found in state", resourceVar)
+						}
+						t.Logf("Alert created with ID: %s", rs.Primary.ID)
+						t.Logf("Alert organization_id in state: %s", rs.Primary.Attributes["organization_id"])
+						t.Logf("Test using organization_id: %s", os.Getenv("HOSTED_ORGANIZATION_ID"))
+						t.Logf("Test using deployment_id: %s", deploymentId)
+						return nil
+					},
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttr(resourceVar, "name", alertName),
 					resource.TestCheckResourceAttr(resourceVar, "type", string(platform.CreateDagFailureAlertRequestTypeDAGFAILURE)),
@@ -1863,10 +1875,9 @@ func testAccCheckAlertExists(t *testing.T, alertName string) func(s *terraform.S
 		deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
 		ctx := context.Background()
 
-		// Include deployment ID in the query parameters
-		resp, err := client.ListAlertsWithResponse(ctx, organizationId, &platform.ListAlertsParams{
-			DeploymentIds: &[]string{deploymentId},
-		})
+		// First try listing all alerts without filters
+		t.Logf("Listing all alerts in organization: %s", organizationId)
+		resp, err := client.ListAlertsWithResponse(ctx, organizationId, &platform.ListAlertsParams{})
 		if err != nil {
 			return fmt.Errorf("failed to list alerts: %v", err)
 		}
@@ -1874,8 +1885,40 @@ func testAccCheckAlertExists(t *testing.T, alertName string) func(s *terraform.S
 			return fmt.Errorf("nil response from list alerts")
 		}
 
+		t.Logf("Found %d total alerts in organization", len(resp.JSON200.Alerts))
+		for _, alert := range resp.JSON200.Alerts {
+			t.Logf("  - Alert: %s (ID: %s, OrgID: %s, DeploymentID: %v)", alert.Name, alert.Id, alert.OrganizationId, alert.DeploymentId)
+		}
+
+		// Now try with deployment filter
+		t.Logf("\nListing alerts filtered by deployment: %s", deploymentId)
+		respFiltered, err := client.ListAlertsWithResponse(ctx, organizationId, &platform.ListAlertsParams{
+			DeploymentIds: &[]string{deploymentId},
+		})
+		if err != nil {
+			return fmt.Errorf("failed to list alerts with deployment filter: %v", err)
+		}
+		if respFiltered == nil || respFiltered.JSON200 == nil {
+			return fmt.Errorf("nil response from list alerts with deployment filter")
+		}
+
+		t.Logf("Found %d alerts for deployment %s", len(respFiltered.JSON200.Alerts), deploymentId)
+		for _, alert := range respFiltered.JSON200.Alerts {
+			t.Logf("  - Alert: %s (ID: %s)", alert.Name, alert.Id)
+		}
+
+		// Check in unfiltered list first
 		for _, alert := range resp.JSON200.Alerts {
 			if alert.Name == alertName {
+				t.Logf("Found alert %s in unfiltered list", alertName)
+				return nil
+			}
+		}
+
+		// Also check in filtered list
+		for _, alert := range respFiltered.JSON200.Alerts {
+			if alert.Name == alertName {
+				t.Logf("Found alert %s in filtered list", alertName)
 				return nil
 			}
 		}
