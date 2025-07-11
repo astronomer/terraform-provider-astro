@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
@@ -18,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -102,10 +102,10 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			},
 		},
 		"executor": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment executor",
+			MarkdownDescription: "Deployment executor. Valid values: CELERY, KUBERNETES, ASTRO.",
 			Required:            true,
 			Validators: []validator.String{
-				stringvalidator.OneOf(string(platform.DeploymentExecutorCELERY), string(platform.DeploymentExecutorKUBERNETES)),
+				stringvalidator.OneOf(string(platform.DeploymentExecutorCELERY), string(platform.DeploymentExecutorKUBERNETES), string(platform.DeploymentExecutorASTRO)),
 			},
 		},
 		"scheduler_cpu": resourceSchema.StringAttribute{

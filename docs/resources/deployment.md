@@ -152,7 +152,7 @@ resource "astro_deployment" "imported_deployment" {
 - `contact_emails` (Set of String) Deployment contact emails
 - `description` (String) Deployment description
 - `environment_variables` (Attributes Set) Deployment environment variables (see [below for nested schema](#nestedatt--environment_variables))
-- `executor` (String) Deployment executor
+- `executor` (String) Deployment executor. Valid values: CELERY, KUBERNETES, ASTRO.
 - `is_cicd_enforced` (Boolean) Deployment CI/CD enforced
 - `is_dag_deploy_enabled` (Boolean) Whether DAG deploy is enabled - Changing this value may disrupt your deployment. Read more at https://docs.astronomer.io/astro/deploy-dags#enable-or-disable-dag-only-deploys-on-a-deployment
 - `name` (String) Deployment name

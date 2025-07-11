@@ -50,6 +50,19 @@ func TestAcc_ResourceDeploymentHybrid(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile(`worker_queue names must be unique`),
 			},
+			// ASTRO executor should be blocked for HYBRID deployments
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HYBRID) + hybridDeployment(hybridDeploymentInput{
+					Name:                        deploymentName + "_astro",
+					Description:                 utils.TestResourceDescription,
+					ClusterId:                   clusterId,
+					Executor:                    "ASTRO",
+					IncludeEnvironmentVariables: false,
+					SchedulerAu:                 6,
+					NodePoolId:                  nodePoolId,
+				}),
+				ExpectError: regexp.MustCompile(`The 'ASTRO' executor cannot be used with deployment type 'HYBRID'`),
+			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HYBRID) + hybridDeployment(hybridDeploymentInput{
 					Name:                        deploymentName,
@@ -321,6 +334,24 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"external_ips", "environment_variables.1.value", "scaling_status.%", "scaling_status.hibernation_status.%", "scaling_status.hibernation_status.is_hibernating", "scaling_status.hibernation_status.reason"}, // environment_variables.1.value is a secret value
+			},
+			// ASTRO executor test
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
+					Name:                        awsDeploymentName + "_astro",
+					Description:                 utils.TestResourceDescription,
+					Region:                      "us-west-2",
+					CloudProvider:               "AWS",
+					Executor:                    "ASTRO",
+					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
+					IncludeEnvironmentVariables: true,
+					WorkerQueuesStr:             `worker_queues = [{ name = "default", is_default = true, astro_machine = "A5", max_worker_count = 2, min_worker_count = 1, worker_concurrency = 5 }]`,
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(awsResourceVar+"_astro", "executor", "ASTRO"),
+					resource.TestCheckResourceAttr(awsResourceVar+"_astro", "worker_queues.0.name", "default"),
+					resource.TestCheckResourceAttr(awsResourceVar+"_astro", "worker_queues.0.astro_machine", "A5"),
+				),
 			},
 		},
 	})
