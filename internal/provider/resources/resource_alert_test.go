@@ -638,7 +638,7 @@ func TestAcc_ResourceAlertDagDuration(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value|must be greater than 0"),
+				ExpectError: regexp.MustCompile("Attribute rules.properties.dag_duration_seconds value must be at least 60"),
 			},
 			// Validate: missing required property
 			{
@@ -960,7 +960,7 @@ func TestAcc_ResourceAlertDagTimeliness(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid|must be greater than 0"),
+				ExpectError: regexp.MustCompile("Attribute rules.properties.look_back_period_seconds value must be at least 60"),
 			},
 			// Validate: empty days_of_week
 			{
@@ -1559,30 +1559,7 @@ func TestAcc_ResourceAlertTaskDuration(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value|must be greater than 0"),
-			},
-			// Validate: zero duration
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + alert(alertInput{
-					Name:                   alertName,
-					Type:                   string(platform.CreateTaskDurationAlertRequestTypeTASKDURATION),
-					Severity:               string(platform.CreateTaskDurationAlertRequestSeverityINFO),
-					EntityId:               deploymentId,
-					EntityType:             string(platform.CreateTaskDurationAlertRequestEntityTypeDEPLOYMENT),
-					NotificationChannelIds: []string{notificationChannelId},
-					Properties: map[string]interface{}{
-						"deployment_id":         deploymentId,
-						"task_duration_seconds": 0,
-					},
-					PatternMatches: []patternMatch{
-						{
-							EntityType:   string(platform.TASKID),
-							OperatorType: string(platform.IS),
-							Values:       []string{"long_running_task"},
-						},
-					},
-				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value|must be greater than 0"),
+				ExpectError: regexp.MustCompile("Attribute rules.properties.task_duration_seconds value must be at least 60"),
 			},
 			// Validate: invalid pattern match entity type
 			{

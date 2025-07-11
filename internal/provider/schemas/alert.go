@@ -3,6 +3,7 @@ package schemas
 import (
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -264,8 +265,12 @@ func AlertRulesResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 					Validators:          []validator.String{validators.IsCuid()},
 				},
 				"dag_duration_seconds": resourceSchema.Int64Attribute{
-					MarkdownDescription: "The duration of the DAG in seconds",
+					MarkdownDescription: "The duration of the DAG in seconds (minimum 60)",
 					Optional:            true,
+					Validators: []validator.Int64{
+						int64validator.AtLeast(60),
+						int64validator.AtMost(86400),
+					},
 				},
 				"dag_deadline": resourceSchema.StringAttribute{
 					MarkdownDescription: "The deadline for the DAG in HH:MM 24-hour UTC format",
@@ -277,12 +282,20 @@ func AlertRulesResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 					Optional:            true,
 				},
 				"look_back_period_seconds": resourceSchema.Int64Attribute{
-					MarkdownDescription: "The look-back period in seconds",
+					MarkdownDescription: "The look-back period in seconds (minimum 60)",
 					Optional:            true,
+					Validators: []validator.Int64{
+						int64validator.AtLeast(60),
+						int64validator.AtMost(86400),
+					},
 				},
 				"task_duration_seconds": resourceSchema.Int64Attribute{
-					MarkdownDescription: "The duration of the Task in seconds",
+					MarkdownDescription: "The duration of the Task in seconds (minimum 60)",
 					Optional:            true,
+					Validators: []validator.Int64{
+						int64validator.AtLeast(60),
+						int64validator.AtMost(86400),
+					},
 				},
 			},
 		},

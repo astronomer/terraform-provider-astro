@@ -66,10 +66,10 @@ Required:
 Optional:
 
 - `dag_deadline` (String) The deadline for the DAG in HH:MM 24-hour UTC format
-- `dag_duration_seconds` (Number) The duration of the DAG in seconds
+- `dag_duration_seconds` (Number) The duration of the DAG in seconds (minimum 60)
 - `days_of_week` (Set of String) The days of the week for the timeliness rule
-- `look_back_period_seconds` (Number) The look-back period in seconds
-- `task_duration_seconds` (Number) The duration of the Task in seconds
+- `look_back_period_seconds` (Number) The look-back period in seconds (minimum 60)
+- `task_duration_seconds` (Number) The duration of the Task in seconds (minimum 60)
 
 
 
