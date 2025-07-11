@@ -233,6 +233,8 @@ func TestAcc_ResourceAlertDagFailure(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.operator_type", string(platform.IS)),
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.#", "2"),
 					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
+					resource.TestCheckResourceAttr(resourceVar, "organization_id", os.Getenv("HOSTED_ORGANIZATION_ID")),
+					resource.TestCheckResourceAttr(resourceVar, "deployment_id", deploymentId),
 					resource.TestCheckResourceAttrSet(resourceVar, "workspace_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "deployment_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
