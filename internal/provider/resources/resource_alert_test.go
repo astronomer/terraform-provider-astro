@@ -661,7 +661,7 @@ func TestAcc_ResourceAlertDagDuration(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("dag_duration_seconds is required for DAG_DURATION alerts"),
+				ExpectError: regexp.MustCompile("Missing fields: dagDurationSeconds"),
 			},
 			// Validate: invalid pattern match entity type
 			{
