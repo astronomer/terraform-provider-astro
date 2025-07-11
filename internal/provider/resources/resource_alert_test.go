@@ -14,6 +14,7 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -1879,7 +1880,9 @@ func testAccCheckAlertExists(t *testing.T, alertName string) func(s *terraform.S
 
 		// First try listing all alerts without filters
 		t.Logf("Listing all alerts in organization: %s", organizationId)
-		resp, err := client.ListAlertsWithResponse(ctx, organizationId, &platform.ListAlertsParams{})
+		resp, err := client.ListAlertsWithResponse(ctx, organizationId, &platform.ListAlertsParams{
+			Limit: lo.ToPtr(0),
+		})
 		if err != nil {
 			return fmt.Errorf("failed to list alerts: %v", err)
 		}
