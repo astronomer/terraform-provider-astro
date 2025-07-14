@@ -242,6 +242,6 @@ jobs:
           HOSTED_WORKSPACE_ID: clx42sxw501gl01o0gjenthnh
           HOSTED_API_TOKEN_ID: clxm4836f00ql01me3nigmcr6
           HOSTED_ALERT_ID: cmbr0zpa700db01kuah2pakem
-          HOSTED_NOTIFICATION_CHANNEL_ID: clx4825jb068z01j9931ib5gb
+          HOSTED_NOTIFICATION_CHANNEL_ID: cm4nwrvyg024h01mk2dn58m5s
           TESTARGS: "-failfast"
         run: make testacc
