@@ -69,6 +69,36 @@ resource "astro_deployment" "standard" {
   }]
 }
 
+resource "astro_deployment" "standard_astro" {
+  original_astro_runtime_version = "3-0.1"
+  name                           = "my standard deployment"
+  description                    = "an example deployment"
+  type                           = "STANDARD"
+  cloud_provider                 = "AWS"
+  region                         = "us-east-1"
+  contact_emails                 = []
+  default_task_pod_cpu           = "0.25"
+  default_task_pod_memory        = "0.5Gi"
+  executor                       = "ASTRO"
+  is_cicd_enforced               = true
+  is_dag_deploy_enabled          = true
+  is_development_mode            = false
+  is_high_availability           = false
+  resource_quota_cpu             = "10"
+  resource_quota_memory          = "20Gi"
+  scheduler_size                 = "SMALL"
+  workspace_id                   = "clnp86ly500a401ndaga20g81"
+  environment_variables          = []
+  worker_queues = [{
+    name               = "default"
+    is_default         = true
+    astro_machine      = "A5"
+    max_worker_count   = 10
+    min_worker_count   = 0
+    worker_concurrency = 1
+  }]
+}
+
 resource "astro_deployment" "hybrid" {
   original_astro_runtime_version = "11.3.0"
   name                           = "my hybrid deployment"

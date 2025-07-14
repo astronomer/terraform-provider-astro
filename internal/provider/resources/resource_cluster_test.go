@@ -89,14 +89,16 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "description", "deployment description"),
 					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "type", "DEDICATED"),
 					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "scheduler_size", "SMALL"),
+					// Check dedicated deployment with Astro executor
+					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_astro", "name", awsDeploymentName+"_astro"),
+					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_astro", "description", "deployment description"),
+					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_astro", "type", "DEDICATED"),
+					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_astro", "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_astro", "executor", "ASTRO"),
 
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
-
-					// Check ASTRO executor
-					resource.TestCheckResourceAttr(fmt.Sprintf("astro_deployment.%v_astro", awsDeploymentName), "executor", "ASTRO"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("astro_deployment.%v_astro", awsDeploymentName), "worker_queues.0.name", "default"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("astro_deployment.%v_astro", awsDeploymentName), "worker_queues.0.astro_machine", "A5"),
+					testAccCheckDeploymentExistence(t, awsDeploymentName+"_astro", true, true),
 				),
 			},
 			// Just update cluster and remove workspace restrictions
@@ -274,9 +276,16 @@ func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(azureDeploymentResourceVar, "description", utils.TestResourceDescription),
 					resource.TestCheckResourceAttr(azureDeploymentResourceVar, "type", "DEDICATED"),
 					resource.TestCheckResourceAttr(azureDeploymentResourceVar, "scheduler_size", "SMALL"),
+					// Check dedicated deployment with Astro executor
+					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_astro", "name", azureDeploymentName+"_astro"),
+					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_astro", "description", utils.TestResourceDescription),
+					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_astro", "type", "DEDICATED"),
+					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_astro", "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_astro", "executor", "ASTRO"),
 
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, azureDeploymentName, true, true),
+					testAccCheckDeploymentExistence(t, azureDeploymentName+"_astro", true, true),
 				),
 			},
 			// Import existing cluster and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests
@@ -355,9 +364,16 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(gcpDeploymentResourceVar, "description", utils.TestResourceDescription),
 					resource.TestCheckResourceAttr(gcpDeploymentResourceVar, "type", "DEDICATED"),
 					resource.TestCheckResourceAttr(gcpDeploymentResourceVar, "scheduler_size", "SMALL"),
+					// Check dedicated deployment with Astro executor
+					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_astro", "name", gcpDeploymentName+"_astro"),
+					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_astro", "description", utils.TestResourceDescription),
+					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_astro", "type", "DEDICATED"),
+					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_astro", "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_astro", "executor", "ASTRO"),
 
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, gcpDeploymentName, true, true),
+					testAccCheckDeploymentExistence(t, gcpDeploymentName+"_astro", true, true),
 				),
 			},
 			// Import existing cluster and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests
