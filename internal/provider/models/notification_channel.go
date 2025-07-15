@@ -194,5 +194,5 @@ func NotificationChannelDefinitionResourceTypesObject(ctx context.Context, def i
 	}
 
 	// Create Terraform object using the definition attribute types
-	return types.ObjectValue(schemas.NotificationChannelDefinitionResourceAttributeTypes(), defAttrMap)
+	return types.ObjectValue(schemas.NotificationChannelDefinitionAttributeTypes(), defAttrMap)
 }

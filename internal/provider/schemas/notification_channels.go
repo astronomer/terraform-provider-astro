@@ -15,7 +15,7 @@ func NotificationChannelsElementAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"id":              types.StringType,
 		"name":            types.StringType,
-		"definition":      types.MapType{ElemType: types.StringType},
+		"definition":      types.ObjectType{AttrTypes: NotificationChannelDefinitionAttributeTypes()},
 		"type":            types.StringType,
 		"is_shared":       types.BoolType,
 		"entity_id":       types.StringType,

@@ -237,7 +237,7 @@ func NotificationChannelDefinitionResourceSchemaAttributes() map[string]resource
 	}
 }
 
-func NotificationChannelDefinitionResourceAttributeTypes() map[string]attr.Type {
+func NotificationChannelDefinitionAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"dag_id":               types.StringType,
 		"deployment_api_token": types.StringType,

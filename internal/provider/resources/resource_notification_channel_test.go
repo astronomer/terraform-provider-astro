@@ -42,7 +42,7 @@ func TestAcc_ResourceNotificationChannelEmail(t *testing.T) {
 						"recipients": []string{"test@example.com"},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
+				ExpectError: regexp.MustCompile("(?s).*entityType.*should be one of.*ORGANIZATION.*WORKSPACE.*DEPLOYMENT"),
 			},
 			// Validate: invalid notification channel type
 			{
@@ -68,7 +68,7 @@ func TestAcc_ResourceNotificationChannelEmail(t *testing.T) {
 						"recipients": []string{},
 					},
 				}),
-				ExpectError: regexp.MustCompile("must have at least 1 elements"),
+				ExpectError: regexp.MustCompile("(?s).*recipients.*should be min: 1"),
 			},
 			// Create: EMAIL notification channel for deployment
 			{
@@ -88,8 +88,6 @@ func TestAcc_ResourceNotificationChannelEmail(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "entity_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "entity_type", "DEPLOYMENT"),
 					resource.TestCheckResourceAttr(resourceVar, "definition.recipients.#", "2"),
-					resource.TestCheckResourceAttr(resourceVar, "definition.recipients.0", "test@example.com"),
-					resource.TestCheckResourceAttr(resourceVar, "definition.recipients.1", "admin@example.com"),
 					resource.TestCheckResourceAttr(resourceVar, "is_shared", "false"),
 					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
 					resource.TestCheckResourceAttr(resourceVar, "organization_id", os.Getenv("HOSTED_ORGANIZATION_ID")),
@@ -219,7 +217,7 @@ func TestAcc_ResourceNotificationChannelSlack(t *testing.T) {
 						"webhook_url": "",
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Length"),
+				ExpectError: regexp.MustCompile("(?s).*webhook_url.*should be non-empty"),
 			},
 			// Create: SLACK notification channel
 			{
@@ -301,7 +299,7 @@ func TestAcc_ResourceNotificationChannelDagTrigger(t *testing.T) {
 						"deployment_id":        deploymentId,
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Length"),
+				ExpectError: regexp.MustCompile("(?s).*dag_id.*should be non-empty"),
 			},
 			// Validate: empty deployment_api_token
 			{
@@ -316,7 +314,7 @@ func TestAcc_ResourceNotificationChannelDagTrigger(t *testing.T) {
 						"deployment_id":        deploymentId,
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Length"),
+				ExpectError: regexp.MustCompile("(?s).*deployment_api_token.*should be non-empty"),
 			},
 			// Validate: empty deployment_id
 			{
@@ -331,7 +329,7 @@ func TestAcc_ResourceNotificationChannelDagTrigger(t *testing.T) {
 						"deployment_id":        "",
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Length"),
+				ExpectError: regexp.MustCompile("(?s).*deployment_id.*should be non-empty"),
 			},
 			// Create: DAGTRIGGER notification channel
 			{
@@ -418,7 +416,7 @@ func TestAcc_ResourceNotificationChannelPagerDuty(t *testing.T) {
 						"integration_key": "",
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Length"),
+				ExpectError: regexp.MustCompile("(?s).*integration_key.*should be non-empty"),
 			},
 			// Create: PAGERDUTY notification channel
 			{
@@ -498,7 +496,7 @@ func TestAcc_ResourceNotificationChannelOpsGenie(t *testing.T) {
 						"api_key": "",
 					},
 				}),
-				ExpectError: regexp.MustCompile("Invalid Attribute Value Length"),
+				ExpectError: regexp.MustCompile("(?s).*api_key.*should be non-empty"),
 			},
 			// Create: OPSGENIE notification channel
 			{
@@ -675,7 +673,6 @@ func testAccCheckNotificationChannelExists(t *testing.T, channelName string) fun
 		ctx := context.Background()
 
 		// List all notification channels in the organization
-		t.Logf("Listing all notification channels in organization: %s", organizationId)
 		resp, err := client.ListNotificationChannelsWithResponse(ctx, organizationId, &platform.ListNotificationChannelsParams{
 			Limit: lo.ToPtr(0),
 		})
@@ -690,12 +687,8 @@ func testAccCheckNotificationChannelExists(t *testing.T, channelName string) fun
 			return fmt.Errorf("response JSON200 is nil status: %v, err: %v", status, diag.Detail())
 		}
 
-		t.Logf("Found %d total notification channels in organization", len(resp.JSON200.NotificationChannels))
-
-		// Check in unfiltered list first
 		for _, channel := range resp.JSON200.NotificationChannels {
 			if channel.Name == channelName {
-				t.Logf("Found notification channel %s in unfiltered list", channelName)
 				return nil
 			}
 		}

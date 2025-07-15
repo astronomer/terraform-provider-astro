@@ -1845,7 +1845,6 @@ func testAccCheckAlertExists(t *testing.T, alertName string) func(s *terraform.S
 		ctx := context.Background()
 
 		// First try listing all alerts without filters
-		t.Logf("Listing all alerts in organization: %s", organizationId)
 		resp, err := client.ListAlertsWithResponse(ctx, organizationId, &platform.ListAlertsParams{
 			Limit: lo.ToPtr(0),
 		})
@@ -1860,12 +1859,8 @@ func testAccCheckAlertExists(t *testing.T, alertName string) func(s *terraform.S
 			return fmt.Errorf("response JSON200 is nil status: %v, err: %v", status, diag.Detail())
 		}
 
-		t.Logf("Found %d total alerts in organization", len(resp.JSON200.Alerts))
-
-		// Check in unfiltered list first
 		for _, alert := range resp.JSON200.Alerts {
 			if alert.Name == alertName {
-				t.Logf("Found alert %s in unfiltered list", alertName)
 				return nil
 			}
 		}
