@@ -96,9 +96,9 @@ func (r *notificationChannelResource) Create(
 			return
 		}
 
-		var recipients []string
-		if errList := definition.Recipients.ElementsAs(ctx, &recipients, false); errList.HasError() {
-			resp.Diagnostics.Append(errList...)
+		recipients, diags := utils.TypesSetToStringSlice(ctx, definition.Recipients)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
 			return
 		}
 

@@ -153,17 +153,29 @@ func NotificationChannelDefinitionResourceTypesObject(ctx context.Context, def i
 		defMap = make(map[string]interface{})
 	}
 
-	// Build Terraform attribute map
-	defAttrMap := make(map[string]attr.Value, len(defMap))
+	// Initialize all expected attributes with null values
+	defAttrMap := map[string]attr.Value{
+		"dag_id":               types.StringNull(),
+		"deployment_api_token": types.StringNull(),
+		"deployment_id":        types.StringNull(),
+		"recipients":           types.SetNull(types.StringType),
+		"api_key":              types.StringNull(),
+		"integration_key":      types.StringNull(),
+		"webhook_url":          types.StringNull(),
+	}
+
+	// Override with actual values when present
 	for k, v := range defMap {
 		switch val := v.(type) {
 		case string:
-			defAttrMap[k] = types.StringValue(val)
+			if val != "" {
+				defAttrMap[k] = types.StringValue(val)
+			}
 		case []interface{}:
 			// Handle array values (like recipients)
 			var stringValues []attr.Value
 			for _, item := range val {
-				if str, ok := item.(string); ok {
+				if str, ok := item.(string); ok && str != "" {
 					stringValues = append(stringValues, types.StringValue(str))
 				}
 			}
@@ -175,7 +187,9 @@ func NotificationChannelDefinitionResourceTypesObject(ctx context.Context, def i
 				defAttrMap[k] = set
 			}
 		default:
-			defAttrMap[k] = types.StringValue(fmt.Sprintf("%v", v))
+			if v != nil {
+				defAttrMap[k] = types.StringValue(fmt.Sprintf("%v", v))
+			}
 		}
 	}
 
