@@ -51,7 +51,7 @@ type AlertListModel struct {
 	UpdatedBy      types.Object `tfsdk:"updated_by"`
 }
 
-// AlertResource describes the data source data model.
+// AlertResource describes the resource data model.
 type AlertResource struct {
 	Id                     types.String `tfsdk:"id"`
 	Name                   types.String `tfsdk:"name"`
@@ -84,7 +84,7 @@ type AlertRulesPatternMatch struct {
 	Values       types.Set    `tfsdk:"values"`
 }
 
-// ResourceAlertPatternMatch describes element type for pattern_matches in Alert resource.
+// ResourceAlertPatternMatchInput describes element type for pattern_matches in Alert resource.
 type ResourceAlertPatternMatchInput struct {
 	EntityType   string   `tfsdk:"entity_type"`
 	OperatorType string   `tfsdk:"operator_type"`
