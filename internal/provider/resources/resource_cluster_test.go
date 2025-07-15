@@ -65,6 +65,13 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 						Name:                 awsDeploymentName,
 						Description:          "deployment description",
 						SchedulerSize:        "SMALL",
+					}) +
+					dedicatedDeploymentWithAstroExecutor(dedicatedDeploymentInput{
+						ClusterResourceVar:   awsResourceVar,
+						WorkspaceResourceVar: workspaceResourceVar,
+						Name:                 awsDeploymentName,
+						Description:          "deployment description",
+						SchedulerSize:        "SMALL",
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
@@ -82,9 +89,16 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "description", "deployment description"),
 					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "type", "DEDICATED"),
 					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "scheduler_size", "SMALL"),
+					// Check dedicated deployment with Astro executor
+					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_astro", "name", awsDeploymentName+"_astro"),
+					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_astro", "description", "deployment description"),
+					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_astro", "type", "DEDICATED"),
+					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_astro", "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_astro", "executor", "ASTRO"),
 
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
+					testAccCheckDeploymentExistence(t, awsDeploymentName+"_astro", true, true),
 				),
 			},
 			// Just update cluster and remove workspace restrictions
@@ -238,6 +252,13 @@ func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
 						Name:                 azureDeploymentName,
 						Description:          utils.TestResourceDescription,
 						SchedulerSize:        "SMALL",
+					}) +
+					dedicatedDeploymentWithAstroExecutor(dedicatedDeploymentInput{
+						ClusterResourceVar:   azureResourceVar,
+						WorkspaceResourceVar: workspaceResourceVar,
+						Name:                 azureDeploymentName,
+						Description:          utils.TestResourceDescription,
+						SchedulerSize:        "SMALL",
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
@@ -255,9 +276,16 @@ func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(azureDeploymentResourceVar, "description", utils.TestResourceDescription),
 					resource.TestCheckResourceAttr(azureDeploymentResourceVar, "type", "DEDICATED"),
 					resource.TestCheckResourceAttr(azureDeploymentResourceVar, "scheduler_size", "SMALL"),
+					// Check dedicated deployment with Astro executor
+					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_astro", "name", azureDeploymentName+"_astro"),
+					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_astro", "description", utils.TestResourceDescription),
+					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_astro", "type", "DEDICATED"),
+					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_astro", "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_astro", "executor", "ASTRO"),
 
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, azureDeploymentName, true, true),
+					testAccCheckDeploymentExistence(t, azureDeploymentName+"_astro", true, true),
 				),
 			},
 			// Import existing cluster and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests
@@ -309,6 +337,13 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 						Name:                 gcpDeploymentName,
 						Description:          utils.TestResourceDescription,
 						SchedulerSize:        "SMALL",
+					}) +
+					dedicatedDeploymentWithAstroExecutor(dedicatedDeploymentInput{
+						ClusterResourceVar:   gcpResourceVar,
+						WorkspaceResourceVar: workspaceResourceVar,
+						Name:                 gcpDeploymentName,
+						Description:          utils.TestResourceDescription,
+						SchedulerSize:        "SMALL",
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
@@ -329,9 +364,16 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(gcpDeploymentResourceVar, "description", utils.TestResourceDescription),
 					resource.TestCheckResourceAttr(gcpDeploymentResourceVar, "type", "DEDICATED"),
 					resource.TestCheckResourceAttr(gcpDeploymentResourceVar, "scheduler_size", "SMALL"),
+					// Check dedicated deployment with Astro executor
+					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_astro", "name", gcpDeploymentName+"_astro"),
+					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_astro", "description", utils.TestResourceDescription),
+					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_astro", "type", "DEDICATED"),
+					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_astro", "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_astro", "executor", "ASTRO"),
 
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, gcpDeploymentName, true, true),
+					testAccCheckDeploymentExistence(t, gcpDeploymentName+"_astro", true, true),
 				),
 			},
 			// Import existing cluster and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests
@@ -421,6 +463,31 @@ resource "astro_deployment" "%v" {
 	scheduler_size = "%v"
 	workspace_id = %s.id
 	environment_variables = []
+}
+`, input.Name, input.Name, input.Description, input.ClusterResourceVar, input.SchedulerSize, input.WorkspaceResourceVar)
+}
+
+func dedicatedDeploymentWithAstroExecutor(input dedicatedDeploymentInput) string {
+	return fmt.Sprintf(`
+resource "astro_deployment" "%v_astro" {
+	name = "%v_astro"
+	description = "%s"
+	type = "DEDICATED"
+	cluster_id = %s.id
+	contact_emails = []
+	default_task_pod_cpu = "0.25"
+	default_task_pod_memory = "0.5Gi"
+	executor = "ASTRO"
+	is_cicd_enforced = true
+	is_dag_deploy_enabled = true
+	is_development_mode = false
+	is_high_availability = false
+	resource_quota_cpu = "10"
+	resource_quota_memory = "20Gi"
+	scheduler_size = "%v"
+	workspace_id = %s.id
+	environment_variables = []
+	worker_queues = [{ name = "default", is_default = true, astro_machine = "A5", max_worker_count = 2, min_worker_count = 1, worker_concurrency = 5 }]
 }
 `, input.Name, input.Name, input.Description, input.ClusterResourceVar, input.SchedulerSize, input.WorkspaceResourceVar)
 }
