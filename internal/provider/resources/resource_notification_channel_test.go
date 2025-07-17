@@ -266,7 +266,7 @@ func TestAcc_ResourceNotificationChannelSlack(t *testing.T) {
 				ResourceName:            resourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"entity_name"},
+				ImportStateVerifyIgnore: []string{"entity_name", "definition.webhook_url"},
 			},
 		},
 	})
@@ -385,7 +385,7 @@ func TestAcc_ResourceNotificationChannelDagTrigger(t *testing.T) {
 				ResourceName:            resourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"entity_name"},
+				ImportStateVerifyIgnore: []string{"entity_name", "definition.deployment_api_token"},
 			},
 		},
 	})
@@ -465,7 +465,7 @@ func TestAcc_ResourceNotificationChannelPagerDuty(t *testing.T) {
 				ResourceName:            resourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"entity_name"},
+				ImportStateVerifyIgnore: []string{"entity_name", "definition.integration_key"},
 			},
 		},
 	})
@@ -545,7 +545,7 @@ func TestAcc_ResourceNotificationChannelOpsGenie(t *testing.T) {
 				ResourceName:            resourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"entity_name"},
+				ImportStateVerifyIgnore: []string{"entity_name", "definition.api_key"},
 			},
 		},
 	})
