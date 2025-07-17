@@ -226,6 +226,13 @@ func (r *DeploymentResource) Create(
 			return
 		}
 
+		// remote execution
+		createDedicatedDeploymentRequest.RemoteExecution, diags = RequestRemoteExecution(ctx, data.RemoteExecution)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+
 		err := createDeploymentRequest.FromCreateDedicatedDeploymentRequest(createDedicatedDeploymentRequest)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("failed to create dedicated deployment error: %v", err))
@@ -515,6 +522,13 @@ func (r *DeploymentResource) Update(
 			return
 		}
 
+		// remote execution
+		updateDedicatedDeploymentRequest.RemoteExecution, diags = RequestRemoteExecution(ctx, data.RemoteExecution)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+
 		err := updateDeploymentRequest.FromUpdateDedicatedDeploymentRequest(updateDedicatedDeploymentRequest)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("failed to update dedicated deployment error: %v", err))
@@ -725,6 +739,12 @@ func validateHybridConfig(ctx context.Context, data *models.DeploymentResource) 
 			"Please remove scaling_spec",
 		)
 	}
+	if !data.RemoteExecution.IsNull() {
+		diags.AddError(
+			"remote_execution is not allowed for 'HYBRID' deployment",
+			"Please remove remote_execution",
+		)
+	}
 	if !data.IsDevelopmentMode.IsNull() {
 		diags.AddError(
 			"is_development_mode is not allowed for 'HYBRID' deployment",
@@ -826,6 +846,12 @@ func validateStandardConfig(ctx context.Context, data *models.DeploymentResource
 			"Please remove cluster_id",
 		)
 	}
+	if !data.RemoteExecution.IsNull() {
+		diags.AddError(
+			"remote_execution is not allowed for 'STANDARD' deployment",
+			"Please remove remote_execution",
+		)
+	}
 	return diags
 }
 
@@ -850,25 +876,25 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 			"Please provide is_development_mode",
 		)
 	}
-	if data.ResourceQuotaCpu.IsNull() {
+	if data.ResourceQuotaCpu.IsNull() && data.RemoteExecution.IsNull() {
 		diags.AddError(
 			"resource_quota_cpu is required for 'STANDARD' and 'DEDICATED' deployment",
 			"Please provide a resource_quota_cpu",
 		)
 	}
-	if data.ResourceQuotaMemory.IsNull() {
+	if data.ResourceQuotaMemory.IsNull() && data.RemoteExecution.IsNull() {
 		diags.AddError(
 			"resource_quota_memory is required for 'STANDARD' and 'DEDICATED' deployment",
 			"Please provide a resource_quota_memory",
 		)
 	}
-	if data.DefaultTaskPodCpu.IsNull() {
+	if data.DefaultTaskPodCpu.IsNull() && data.RemoteExecution.IsNull() {
 		diags.AddError(
 			"default_task_pod_cpu is required for 'STANDARD' and 'DEDICATED' deployment",
 			"Please provide a default_task_pod_cpu",
 		)
 	}
-	if data.DefaultTaskPodMemory.IsNull() {
+	if data.DefaultTaskPodMemory.IsNull() && data.RemoteExecution.IsNull() {
 		diags.AddError(
 			"default_task_pod_memory is required for 'STANDARD' and 'DEDICATED' deployment",
 			"Please provide a default_task_pod_memory",
@@ -892,6 +918,12 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 		diags.AddError(
 			"task_node_pool_id is not allowed for 'STANDARD' and 'DEDICATED' deployment",
 			"Please remove task_node_pool_id",
+		)
+	}
+	if !data.RemoteExecution.IsNull() && data.Executor.ValueString() != string(platform.DeploymentExecutorASTRO) {
+		diags.AddError(
+			"remote_execution is only allowed for 'ASTRO' executor",
+			"Please remove remote_execution or change executor to 'ASTRO'",
 		)
 	}
 
@@ -951,8 +983,8 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 		}
 	}
 
-	// For ASTRO executor, require at least one worker_queue named 'default'
-	if data.Executor.ValueString() == string(platform.DeploymentExecutorASTRO) {
+	// For ASTRO executor without Remote Execution, require at least one worker_queue named 'default'
+	if data.Executor.ValueString() == string(platform.DeploymentExecutorASTRO) && data.RemoteExecution.IsNull() {
 		if len(data.WorkerQueues.Elements()) == 0 {
 			diags.AddError(
 				"worker_queues is required for 'ASTRO' executor",
@@ -1077,6 +1109,40 @@ func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*plat
 	}
 
 	return platformScalingSpec, nil
+}
+
+// RequestRemoteExecution converts a Terraform object to a platform.RemoteExecutionRequest to be used in create and update requests
+func RequestRemoteExecution(ctx context.Context, remoteExecutionObj types.Object) (*platform.DeploymentRemoteExecutionRequest, diag.Diagnostics) {
+	if remoteExecutionObj.IsNull() {
+		return nil, nil
+	}
+	var remoteExecution models.RemoteExecution
+	diags := remoteExecutionObj.As(ctx, &remoteExecution, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		tflog.Error(ctx, "failed to convert remote execution", map[string]interface{}{"error": diags})
+		return nil, diags
+	}
+
+	platformRemoteExecution := &platform.DeploymentRemoteExecutionRequest{
+		Enabled:           remoteExecution.Enabled.ValueBool(),
+		TaskLogBucket:     remoteExecution.TaskLogBucket.ValueStringPointer(),
+		TaskLogUrlPattern: remoteExecution.TaskLogUrlPattern.ValueStringPointer(),
+	}
+
+	if !remoteExecution.AllowedIpAddressRanges.IsNull() {
+		var allowedIpAddressRanges []string
+		diags = remoteExecution.AllowedIpAddressRanges.ElementsAs(ctx, &allowedIpAddressRanges, false)
+		if diags.HasError() {
+			tflog.Error(ctx, "failed to convert allowed IP address ranges", map[string]interface{}{"error": diags})
+			return nil, diags
+		}
+		platformRemoteExecution.AllowedIpAddressRanges = &allowedIpAddressRanges
+	}
+
+	return platformRemoteExecution, nil
 }
 
 // RequestHostedWorkerQueues converts a Terraform set to a list of platform.WorkerQueueRequest to be used in create and update requests
