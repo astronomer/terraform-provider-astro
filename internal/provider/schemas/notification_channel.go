@@ -101,6 +101,9 @@ func NotificationChannelResourceSchemaAttributes() map[string]resourceSchema.Att
 			MarkdownDescription: "The notification channel's definition",
 			Required:            true,
 			Attributes:          NotificationChannelDefinitionResourceSchemaAttributes(),
+			Validators: []validator.Object{
+				validators.NotificationChannelDefinitionValidator(),
+			},
 		},
 		"type": resourceSchema.StringAttribute{
 			MarkdownDescription: "The notification channel's type",
