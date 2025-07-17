@@ -208,7 +208,6 @@ resource "astro_alert" "dag_failure_alert_imported" {
 - `entity_name` (String) The name of the entity the alert is associated with
 - `id` (String) Alert identifier
 - `notification_channels` (Attributes Set) The notification channels to send alerts to (see [below for nested schema](#nestedatt--notification_channels))
-- `organization_id` (String) The ID of the Organization to which the alert is scoped
 - `updated_at` (String) Alert last updated timestamp
 - `updated_by` (Attributes) Alert updater (see [below for nested schema](#nestedatt--updated_by))
 - `workspace_id` (String) The ID of the Workspace to which the alert is scoped
@@ -283,7 +282,6 @@ Read-Only:
 - `deployment_id` (String) The deployment ID the notification channel is scoped to
 - `entity_name` (String) The name of the entity the notification channel is scoped to
 - `id` (String) The notification channel's ID
-- `organization_id` (String) The organization ID the notification channel is scoped to
 - `updated_at` (String) Notification Channel last updated timestamp
 - `updated_by` (Attributes) Notification Channel updater (see [below for nested schema](#nestedatt--notification_channels--updated_by))
 - `workspace_id` (String) The workspace ID the notification channel is scoped to

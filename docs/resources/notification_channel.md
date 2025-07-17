@@ -110,7 +110,6 @@ resource "astro_notification_channel" "example_notification_channel" {
 - `deployment_id` (String) The deployment ID the notification channel is scoped to
 - `entity_name` (String) The name of the entity the notification channel is scoped to
 - `id` (String) The notification channel's ID
-- `organization_id` (String) The organization ID the notification channel is scoped to
 - `updated_at` (String) Notification Channel last updated timestamp
 - `updated_by` (Attributes) Notification Channel updater (see [below for nested schema](#nestedatt--updated_by))
 - `workspace_id` (String) The workspace ID the notification channel is scoped to

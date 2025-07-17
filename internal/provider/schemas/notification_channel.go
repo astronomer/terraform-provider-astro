@@ -35,10 +35,6 @@ func NotificationChannelDataSourceSchemaAttributes() map[string]datasourceSchema
 			MarkdownDescription: "The notification channel's type",
 			Computed:            true,
 		},
-		"organization_id": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The organization ID the notification channel is scoped to",
-			Computed:            true,
-		},
 		"workspace_id": datasourceSchema.StringAttribute{
 			MarkdownDescription: "The workspace ID the notification channel is scoped to",
 			Computed:            true,
@@ -117,10 +113,6 @@ func NotificationChannelResourceSchemaAttributes() map[string]resourceSchema.Att
 					string(platform.AlertNotificationChannelTypeOPSGENIE),
 				),
 			},
-		},
-		"organization_id": resourceSchema.StringAttribute{
-			MarkdownDescription: "The organization ID the notification channel is scoped to",
-			Computed:            true,
 		},
 		"workspace_id": resourceSchema.StringAttribute{
 			MarkdownDescription: "The workspace ID the notification channel is scoped to",

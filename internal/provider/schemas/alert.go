@@ -71,10 +71,6 @@ func AlertDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 			},
 			Computed: true,
 		},
-		"organization_id": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Organization identifier associated with the alert",
-			Computed:            true,
-		},
 		"workspace_id": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Workspace identifier associated with the alert",
 			Computed:            true,
@@ -216,10 +212,6 @@ func AlertResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 				Attributes: NotificationChannelResourceSchemaAttributes(),
 			},
 			Computed: true,
-		},
-		"organization_id": resourceSchema.StringAttribute{
-			MarkdownDescription: "The ID of the Organization to which the alert is scoped",
-			Computed:            true,
 		},
 		"workspace_id": resourceSchema.StringAttribute{
 			MarkdownDescription: "The ID of the Workspace to which the alert is scoped",

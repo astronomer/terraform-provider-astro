@@ -41,7 +41,6 @@ output "notification_channel" {
 - `entity_type` (String) The type of entity the notification channel is scoped to (e.g., 'DEPLOYMENT')
 - `is_shared` (Boolean) When entity type is scoped to ORGANIZATION or WORKSPACE, this determines if child entities can access this notification channel.
 - `name` (String) The notification channel's name
-- `organization_id` (String) The organization ID the notification channel is scoped to
 - `type` (String) The notification channel's type
 - `updated_at` (String) Notification Channel last updated timestamp
 - `updated_by` (Attributes) Notification Channel updater (see [below for nested schema](#nestedatt--updated_by))

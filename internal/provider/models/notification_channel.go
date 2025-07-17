@@ -14,40 +14,38 @@ import (
 
 // NotificationChannelDataSource describes the data source data model.
 type NotificationChannelDataSource struct {
-	Id             types.String `tfsdk:"id"`
-	Name           types.String `tfsdk:"name"`
-	Definition     types.Object `tfsdk:"definition"`
-	Type           types.String `tfsdk:"type"`
-	OrganizationId types.String `tfsdk:"organization_id"`
-	WorkspaceId    types.String `tfsdk:"workspace_id"`
-	DeploymentId   types.String `tfsdk:"deployment_id"`
-	EntityId       types.String `tfsdk:"entity_id"`
-	EntityType     types.String `tfsdk:"entity_type"`
-	EntityName     types.String `tfsdk:"entity_name"`
-	IsShared       types.Bool   `tfsdk:"is_shared"`
-	CreatedAt      types.String `tfsdk:"created_at"`
-	UpdatedAt      types.String `tfsdk:"updated_at"`
-	CreatedBy      types.Object `tfsdk:"created_by"`
-	UpdatedBy      types.Object `tfsdk:"updated_by"`
+	Id           types.String `tfsdk:"id"`
+	Name         types.String `tfsdk:"name"`
+	Definition   types.Object `tfsdk:"definition"`
+	Type         types.String `tfsdk:"type"`
+	WorkspaceId  types.String `tfsdk:"workspace_id"`
+	DeploymentId types.String `tfsdk:"deployment_id"`
+	EntityId     types.String `tfsdk:"entity_id"`
+	EntityType   types.String `tfsdk:"entity_type"`
+	EntityName   types.String `tfsdk:"entity_name"`
+	IsShared     types.Bool   `tfsdk:"is_shared"`
+	CreatedAt    types.String `tfsdk:"created_at"`
+	UpdatedAt    types.String `tfsdk:"updated_at"`
+	CreatedBy    types.Object `tfsdk:"created_by"`
+	UpdatedBy    types.Object `tfsdk:"updated_by"`
 }
 
 // NotificationChannelResource describes the resource data model.
 type NotificationChannelResource struct {
-	Id             types.String `tfsdk:"id"`
-	Name           types.String `tfsdk:"name"`
-	Definition     types.Object `tfsdk:"definition"`
-	Type           types.String `tfsdk:"type"`
-	OrganizationId types.String `tfsdk:"organization_id"`
-	WorkspaceId    types.String `tfsdk:"workspace_id"`
-	DeploymentId   types.String `tfsdk:"deployment_id"`
-	EntityId       types.String `tfsdk:"entity_id"`
-	EntityType     types.String `tfsdk:"entity_type"`
-	EntityName     types.String `tfsdk:"entity_name"`
-	IsShared       types.Bool   `tfsdk:"is_shared"`
-	CreatedAt      types.String `tfsdk:"created_at"`
-	UpdatedAt      types.String `tfsdk:"updated_at"`
-	CreatedBy      types.Object `tfsdk:"created_by"`
-	UpdatedBy      types.Object `tfsdk:"updated_by"`
+	Id           types.String `tfsdk:"id"`
+	Name         types.String `tfsdk:"name"`
+	Definition   types.Object `tfsdk:"definition"`
+	Type         types.String `tfsdk:"type"`
+	WorkspaceId  types.String `tfsdk:"workspace_id"`
+	DeploymentId types.String `tfsdk:"deployment_id"`
+	EntityId     types.String `tfsdk:"entity_id"`
+	EntityType   types.String `tfsdk:"entity_type"`
+	EntityName   types.String `tfsdk:"entity_name"`
+	IsShared     types.Bool   `tfsdk:"is_shared"`
+	CreatedAt    types.String `tfsdk:"created_at"`
+	UpdatedAt    types.String `tfsdk:"updated_at"`
+	CreatedBy    types.Object `tfsdk:"created_by"`
+	UpdatedBy    types.Object `tfsdk:"updated_by"`
 }
 
 type NotificationChannelDefinition struct {
@@ -70,7 +68,6 @@ func (data *NotificationChannelDataSource) ReadFromResponse(ctx context.Context,
 		return diags
 	}
 	data.Type = types.StringValue(notificationChannel.Type)
-	data.OrganizationId = types.StringValue(notificationChannel.OrganizationId)
 	if notificationChannel.WorkspaceId != nil {
 		data.WorkspaceId = types.StringValue(*notificationChannel.WorkspaceId)
 	} else {
@@ -116,7 +113,6 @@ func (data *NotificationChannelResource) ReadFromResponse(ctx context.Context, n
 		return diags
 	}
 	data.Type = types.StringValue(notificationChannel.Type)
-	data.OrganizationId = types.StringValue(notificationChannel.OrganizationId)
 	if notificationChannel.WorkspaceId != nil {
 		data.WorkspaceId = types.StringValue(*notificationChannel.WorkspaceId)
 	} else {
