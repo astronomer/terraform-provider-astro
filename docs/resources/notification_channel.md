@@ -44,13 +44,13 @@ Notification Channel resource
 
 Optional:
 
-- `api_key` (String) The API key for the notification channel
+- `api_key` (String, Sensitive) The API key for the notification channel
 - `dag_id` (String) The DAG ID for the notification channel
-- `deployment_api_token` (String) The deployment API token for the notification channel
+- `deployment_api_token` (String, Sensitive) The deployment API token for the notification channel
 - `deployment_id` (String) The deployment ID for the notification channel
-- `integration_key` (String) The integration key for the notification channel
+- `integration_key` (String, Sensitive) The integration key for the notification channel
 - `recipients` (Set of String) The recipients for the notification channel
-- `webhook_url` (String) The webhook URL for the notification channel
+- `webhook_url` (String, Sensitive) The webhook URL for the notification channel
 
 
 <a id="nestedatt--created_by"></a>

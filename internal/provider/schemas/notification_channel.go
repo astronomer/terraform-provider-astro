@@ -212,6 +212,7 @@ func NotificationChannelDefinitionResourceSchemaAttributes() map[string]resource
 		"deployment_api_token": resourceSchema.StringAttribute{
 			MarkdownDescription: "The deployment API token for the notification channel",
 			Optional:            true,
+			Sensitive:           true,
 		},
 		"deployment_id": resourceSchema.StringAttribute{
 			MarkdownDescription: "The deployment ID for the notification channel",
@@ -225,14 +226,17 @@ func NotificationChannelDefinitionResourceSchemaAttributes() map[string]resource
 		"api_key": resourceSchema.StringAttribute{
 			MarkdownDescription: "The API key for the notification channel",
 			Optional:            true,
+			Sensitive:           true,
 		},
 		"integration_key": resourceSchema.StringAttribute{
 			MarkdownDescription: "The integration key for the notification channel",
 			Optional:            true,
+			Sensitive:           true,
 		},
 		"webhook_url": resourceSchema.StringAttribute{
 			MarkdownDescription: "The webhook URL for the notification channel",
 			Optional:            true,
+			Sensitive:           true,
 		},
 	}
 }

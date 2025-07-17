@@ -115,7 +115,7 @@ func (r *notificationChannelResource) Create(
 
 		err := createNotificationChannelRequest.FromCreateEmailNotificationChannelRequest(createEmailNotificationChannelRequest)
 		if err != nil {
-			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build EMAIL Notification Channel request: %s", err))
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build Email Notification Channel request: %s", err))
 			return
 		}
 
@@ -139,7 +139,7 @@ func (r *notificationChannelResource) Create(
 
 		err := createNotificationChannelRequest.FromCreateSlackNotificationChannelRequest(createSlackNotificationChannelRequest)
 		if err != nil {
-			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build SLACK Notification Channel request: %s", err))
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build Slack Notification Channel request: %s", err))
 			return
 		}
 
@@ -165,7 +165,7 @@ func (r *notificationChannelResource) Create(
 
 		err := createNotificationChannelRequest.FromCreateDagTriggerNotificationChannelRequest(createDagTriggerNotificationChannelRequest)
 		if err != nil {
-			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build DAGTRIGGER Notification Channel request: %s", err))
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build DAG Trigger Notification Channel request: %s", err))
 			return
 		}
 
@@ -189,7 +189,7 @@ func (r *notificationChannelResource) Create(
 
 		err := createNotificationChannelRequest.FromCreatePagerDutyNotificationChannelRequest(createPagerDutyNotificationChannelRequest)
 		if err != nil {
-			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build PAGERDUTY Notification Channel request: %s", err))
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build PagerDuty Notification Channel request: %s", err))
 			return
 		}
 
@@ -213,7 +213,7 @@ func (r *notificationChannelResource) Create(
 
 		err := createNotificationChannelRequest.FromCreateOpsgenieNotificationChannelRequest(createOpsgenieNotificationChannelRequest)
 		if err != nil {
-			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build OPSGENIE Notification Channel request: %s", err))
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build Opsgenie Notification Channel request: %s", err))
 			return
 		}
 
@@ -342,7 +342,7 @@ func (r *notificationChannelResource) Update(
 
 		err := updateBody.FromUpdateEmailNotificationChannelRequest(updateEmailNotificationChannelRequest)
 		if err != nil {
-			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build EMAIL Notification Channel update request: %s", err))
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build Email Notification Channel update request: %s", err))
 			return
 		}
 
@@ -366,7 +366,7 @@ func (r *notificationChannelResource) Update(
 
 		err := updateBody.FromUpdateSlackNotificationChannelRequest(updateSlackNotificationChannelRequest)
 		if err != nil {
-			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build SLACK Notification Channel update request: %s", err))
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build Slack Notification Channel update request: %s", err))
 			return
 		}
 
@@ -392,7 +392,7 @@ func (r *notificationChannelResource) Update(
 
 		err := updateBody.FromUpdateDagTriggerNotificationChannelRequest(updateDagTriggerNotificationChannelRequest)
 		if err != nil {
-			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build DAGTRIGGER Notification Channel update request: %s", err))
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build DAG Trigger Notification Channel update request: %s", err))
 			return
 		}
 
@@ -416,7 +416,7 @@ func (r *notificationChannelResource) Update(
 
 		err := updateBody.FromUpdatePagerDutyNotificationChannelRequest(updatePagerDutyNotificationChannelRequest)
 		if err != nil {
-			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build PAGERDUTY Notification Channel update request: %s", err))
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build PagerDuty Notification Channel update request: %s", err))
 			return
 		}
 
@@ -440,7 +440,7 @@ func (r *notificationChannelResource) Update(
 
 		err := updateBody.FromUpdateOpsgenieNotificationChannelRequest(updateOpsgenieNotificationChannelRequest)
 		if err != nil {
-			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build OPSGENIE Notification Channel update request: %s", err))
+			resp.Diagnostics.AddError("Internal Error", fmt.Sprintf("failed to build Opsgenie Notification Channel update request: %s", err))
 			return
 		}
 

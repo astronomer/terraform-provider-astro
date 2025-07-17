@@ -217,7 +217,7 @@ func TestAcc_ResourceNotificationChannelSlack(t *testing.T) {
 						"webhook_url": "",
 					},
 				}),
-				ExpectError: regexp.MustCompile("(?s).*webhook_url.*should be non-empty"),
+				ExpectError: regexp.MustCompile("Missing fields: webhookUrl"),
 			},
 			// Create: SLACK notification channel
 			{
