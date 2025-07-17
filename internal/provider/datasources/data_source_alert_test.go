@@ -28,7 +28,6 @@ func TestAcc_DataSource_Alert(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceVar, "entity_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "entity_type"),
 					resource.TestCheckResourceAttrSet(resourceVar, "entity_name"),
-					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "workspace_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "deployment_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "severity"),

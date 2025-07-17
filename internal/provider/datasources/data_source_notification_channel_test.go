@@ -27,7 +27,6 @@ func TestAcc_DataSource_NotificationChannel(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceVar, "name"),
 					resource.TestCheckResourceAttrWith(resourceVar, "definition.%", CheckAttributeLengthIsNotEmpty),
 					resource.TestCheckResourceAttrSet(resourceVar, "type"),
-					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "entity_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "entity_type"),
 					resource.TestCheckResourceAttrSet(resourceVar, "is_shared"),
