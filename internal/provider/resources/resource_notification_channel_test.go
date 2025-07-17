@@ -84,7 +84,7 @@ func TestAcc_ResourceNotificationChannelEmail(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttr(resourceVar, "name", channelName),
-					resource.TestCheckResourceAttr(resourceVar, "type", "EMAIL"),
+					resource.TestCheckResourceAttr(resourceVar, "type", string(platform.AlertNotificationChannelTypeEMAIL)),
 					resource.TestCheckResourceAttr(resourceVar, "entity_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "entity_type", "DEPLOYMENT"),
 					resource.TestCheckResourceAttr(resourceVar, "definition.recipients.#", "2"),
@@ -157,7 +157,7 @@ func TestAcc_ResourceNotificationChannelEmailWorkspace(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttr(resourceVar, "name", channelName),
-					resource.TestCheckResourceAttr(resourceVar, "type", "EMAIL"),
+					resource.TestCheckResourceAttr(resourceVar, "type", string(platform.AlertNotificationChannelTypeEMAIL)),
 					resource.TestCheckResourceAttr(resourceVar, "entity_id", workspaceId),
 					resource.TestCheckResourceAttr(resourceVar, "entity_type", "WORKSPACE"),
 					resource.TestCheckResourceAttr(resourceVar, "definition.recipients.#", "1"),
@@ -233,7 +233,7 @@ func TestAcc_ResourceNotificationChannelSlack(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttr(resourceVar, "name", channelName),
-					resource.TestCheckResourceAttr(resourceVar, "type", "SLACK"),
+					resource.TestCheckResourceAttr(resourceVar, "type", string(platform.AlertNotificationChannelTypeSLACK)),
 					resource.TestCheckResourceAttr(resourceVar, "entity_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "entity_type", "DEPLOYMENT"),
 					resource.TestCheckResourceAttr(resourceVar, "definition.webhook_url", "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXXXXXX"),
@@ -295,11 +295,11 @@ func TestAcc_ResourceNotificationChannelDagTrigger(t *testing.T) {
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
 						"dag_id":               "",
-						"deployment_api_token": "test-token",
+						"deployment_api_token": os.Getenv("HOSTED_DEPLOYMENT_API_TOKEN"),
 						"deployment_id":        deploymentId,
 					},
 				}),
-				ExpectError: regexp.MustCompile("(?s).*dag_id.*should be non-empty"),
+				ExpectError: regexp.MustCompile("Missing fields: dagId"),
 			},
 			// Validate: empty deployment_api_token
 			{
@@ -314,7 +314,7 @@ func TestAcc_ResourceNotificationChannelDagTrigger(t *testing.T) {
 						"deployment_id":        deploymentId,
 					},
 				}),
-				ExpectError: regexp.MustCompile("(?s).*deployment_api_token.*should be non-empty"),
+				ExpectError: regexp.MustCompile("Missing fields: deploymentApiToken"),
 			},
 			// Validate: empty deployment_id
 			{
@@ -325,11 +325,11 @@ func TestAcc_ResourceNotificationChannelDagTrigger(t *testing.T) {
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
 						"dag_id":               "test_dag",
-						"deployment_api_token": "test-token",
+						"deployment_api_token": os.Getenv("HOSTED_DEPLOYMENT_API_TOKEN"),
 						"deployment_id":        "",
 					},
 				}),
-				ExpectError: regexp.MustCompile("(?s).*deployment_id.*should be non-empty"),
+				ExpectError: regexp.MustCompile("Missing fields: deploymentId"),
 			},
 			// Create: DAGTRIGGER notification channel
 			{
@@ -340,18 +340,18 @@ func TestAcc_ResourceNotificationChannelDagTrigger(t *testing.T) {
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
 						"dag_id":               "notification_dag",
-						"deployment_api_token": "test-api-token-12345",
+						"deployment_api_token": os.Getenv("HOSTED_DEPLOYMENT_API_TOKEN"),
 						"deployment_id":        deploymentId,
 					},
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttr(resourceVar, "name", channelName),
-					resource.TestCheckResourceAttr(resourceVar, "type", "DAGTRIGGER"),
+					resource.TestCheckResourceAttr(resourceVar, "type", string(platform.AlertNotificationChannelTypeDAGTRIGGER)),
 					resource.TestCheckResourceAttr(resourceVar, "entity_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "entity_type", "DEPLOYMENT"),
 					resource.TestCheckResourceAttr(resourceVar, "definition.dag_id", "notification_dag"),
-					resource.TestCheckResourceAttr(resourceVar, "definition.deployment_api_token", "test-api-token-12345"),
+					resource.TestCheckResourceAttr(resourceVar, "definition.deployment_api_token", os.Getenv("HOSTED_DEPLOYMENT_API_TOKEN")),
 					resource.TestCheckResourceAttr(resourceVar, "definition.deployment_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "is_shared", "false"),
 					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
@@ -370,13 +370,12 @@ func TestAcc_ResourceNotificationChannelDagTrigger(t *testing.T) {
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
 						"dag_id":               "updated_notification_dag",
-						"deployment_api_token": "updated-api-token-67890",
+						"deployment_api_token": os.Getenv("HOSTED_DEPLOYMENT_API_TOKEN"),
 						"deployment_id":        deploymentId,
 					},
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "definition.dag_id", "updated_notification_dag"),
-					resource.TestCheckResourceAttr(resourceVar, "definition.deployment_api_token", "updated-api-token-67890"),
 					testAccCheckNotificationChannelExists(t, channelName),
 				),
 			},
@@ -416,7 +415,7 @@ func TestAcc_ResourceNotificationChannelPagerDuty(t *testing.T) {
 						"integration_key": "",
 					},
 				}),
-				ExpectError: regexp.MustCompile("(?s).*integration_key.*should be non-empty"),
+				ExpectError: regexp.MustCompile("Missing fields: integrationKey"),
 			},
 			// Create: PAGERDUTY notification channel
 			{
@@ -432,7 +431,7 @@ func TestAcc_ResourceNotificationChannelPagerDuty(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttr(resourceVar, "name", channelName),
-					resource.TestCheckResourceAttr(resourceVar, "type", "PAGERDUTY"),
+					resource.TestCheckResourceAttr(resourceVar, "type", string(platform.AlertNotificationChannelTypePAGERDUTY)),
 					resource.TestCheckResourceAttr(resourceVar, "entity_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "entity_type", "DEPLOYMENT"),
 					resource.TestCheckResourceAttr(resourceVar, "definition.integration_key", "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"),
@@ -496,7 +495,7 @@ func TestAcc_ResourceNotificationChannelOpsGenie(t *testing.T) {
 						"api_key": "",
 					},
 				}),
-				ExpectError: regexp.MustCompile("(?s).*api_key.*should be non-empty"),
+				ExpectError: regexp.MustCompile("Missing fields: apiKey"),
 			},
 			// Create: OPSGENIE notification channel
 			{
@@ -512,7 +511,7 @@ func TestAcc_ResourceNotificationChannelOpsGenie(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttr(resourceVar, "name", channelName),
-					resource.TestCheckResourceAttr(resourceVar, "type", "OPSGENIE"),
+					resource.TestCheckResourceAttr(resourceVar, "type", string(platform.AlertNotificationChannelTypeOPSGENIE)),
 					resource.TestCheckResourceAttr(resourceVar, "entity_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "entity_type", "DEPLOYMENT"),
 					resource.TestCheckResourceAttr(resourceVar, "definition.api_key", "00000000-0000-0000-0000-000000000000"),
@@ -580,7 +579,7 @@ func TestAcc_ResourceNotificationChannelOrganization(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttr(resourceVar, "name", channelName),
-					resource.TestCheckResourceAttr(resourceVar, "type", "EMAIL"),
+					resource.TestCheckResourceAttr(resourceVar, "type", string(platform.AlertNotificationChannelTypeEMAIL)),
 					resource.TestCheckResourceAttr(resourceVar, "entity_id", organizationId),
 					resource.TestCheckResourceAttr(resourceVar, "entity_type", "ORGANIZATION"),
 					resource.TestCheckResourceAttr(resourceVar, "is_shared", "true"),
