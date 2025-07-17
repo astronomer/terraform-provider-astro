@@ -69,6 +69,36 @@ resource "astro_deployment" "standard" {
   }]
 }
 
+resource "astro_deployment" "standard_astro" {
+  original_astro_runtime_version = "3-0.1"
+  name                           = "my standard deployment"
+  description                    = "an example deployment"
+  type                           = "STANDARD"
+  cloud_provider                 = "AWS"
+  region                         = "us-east-1"
+  contact_emails                 = []
+  default_task_pod_cpu           = "0.25"
+  default_task_pod_memory        = "0.5Gi"
+  executor                       = "ASTRO"
+  is_cicd_enforced               = true
+  is_dag_deploy_enabled          = true
+  is_development_mode            = false
+  is_high_availability           = false
+  resource_quota_cpu             = "10"
+  resource_quota_memory          = "20Gi"
+  scheduler_size                 = "SMALL"
+  workspace_id                   = "clnp86ly500a401ndaga20g81"
+  environment_variables          = []
+  worker_queues = [{
+    name               = "default"
+    is_default         = true
+    astro_machine      = "A5"
+    max_worker_count   = 10
+    min_worker_count   = 0
+    worker_concurrency = 1
+  }]
+}
+
 resource "astro_deployment" "hybrid" {
   original_astro_runtime_version = "11.3.0"
   name                           = "my hybrid deployment"
@@ -152,7 +182,7 @@ resource "astro_deployment" "imported_deployment" {
 - `contact_emails` (Set of String) Deployment contact emails
 - `description` (String) Deployment description
 - `environment_variables` (Attributes Set) Deployment environment variables (see [below for nested schema](#nestedatt--environment_variables))
-- `executor` (String) Deployment executor
+- `executor` (String) Deployment executor. Valid values: CELERY, KUBERNETES, ASTRO.
 - `is_cicd_enforced` (Boolean) Deployment CI/CD enforced
 - `is_dag_deploy_enabled` (Boolean) Whether DAG deploy is enabled - Changing this value may disrupt your deployment. Read more at https://docs.astronomer.io/astro/deploy-dags#enable-or-disable-dag-only-deploys-on-a-deployment
 - `name` (String) Deployment name
