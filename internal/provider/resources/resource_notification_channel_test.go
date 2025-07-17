@@ -35,7 +35,7 @@ func TestAcc_ResourceNotificationChannelEmail(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "EMAIL",
+					Type:       string(platform.AlertNotificationChannelTypeEMAIL),
 					EntityId:   deploymentId,
 					EntityType: "INVALID_ENTITY_TYPE",
 					Definition: map[string]interface{}{
@@ -61,7 +61,7 @@ func TestAcc_ResourceNotificationChannelEmail(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "EMAIL",
+					Type:       string(platform.AlertNotificationChannelTypeEMAIL),
 					EntityId:   deploymentId,
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
@@ -74,7 +74,7 @@ func TestAcc_ResourceNotificationChannelEmail(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "EMAIL",
+					Type:       string(platform.AlertNotificationChannelTypeEMAIL),
 					EntityId:   deploymentId,
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
@@ -104,7 +104,7 @@ func TestAcc_ResourceNotificationChannelEmail(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "EMAIL",
+					Type:       string(platform.AlertNotificationChannelTypeEMAIL),
 					EntityId:   deploymentId,
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
@@ -146,7 +146,7 @@ func TestAcc_ResourceNotificationChannelEmailWorkspace(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "EMAIL",
+					Type:       string(platform.AlertNotificationChannelTypeEMAIL),
 					EntityId:   workspaceId,
 					EntityType: "WORKSPACE",
 					IsShared:   lo.ToPtr(true),
@@ -175,7 +175,7 @@ func TestAcc_ResourceNotificationChannelEmailWorkspace(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "EMAIL",
+					Type:       string(platform.AlertNotificationChannelTypeEMAIL),
 					EntityId:   workspaceId,
 					EntityType: "WORKSPACE",
 					IsShared:   lo.ToPtr(false),
@@ -210,7 +210,7 @@ func TestAcc_ResourceNotificationChannelSlack(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "SLACK",
+					Type:       string(platform.AlertNotificationChannelTypeSLACK),
 					EntityId:   deploymentId,
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
@@ -223,7 +223,7 @@ func TestAcc_ResourceNotificationChannelSlack(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "SLACK",
+					Type:       string(platform.AlertNotificationChannelTypeSLACK),
 					EntityId:   deploymentId,
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
@@ -249,7 +249,7 @@ func TestAcc_ResourceNotificationChannelSlack(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "SLACK",
+					Type:       string(platform.AlertNotificationChannelTypeSLACK),
 					EntityId:   deploymentId,
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
@@ -290,7 +290,7 @@ func TestAcc_ResourceNotificationChannelDagTrigger(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "DAGTRIGGER",
+					Type:       string(platform.AlertNotificationChannelTypeDAGTRIGGER),
 					EntityId:   deploymentId,
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
@@ -305,7 +305,7 @@ func TestAcc_ResourceNotificationChannelDagTrigger(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "DAGTRIGGER",
+					Type:       string(platform.AlertNotificationChannelTypeDAGTRIGGER),
 					EntityId:   deploymentId,
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
@@ -320,7 +320,7 @@ func TestAcc_ResourceNotificationChannelDagTrigger(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "DAGTRIGGER",
+					Type:       string(platform.AlertNotificationChannelTypeDAGTRIGGER),
 					EntityId:   deploymentId,
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
@@ -335,7 +335,7 @@ func TestAcc_ResourceNotificationChannelDagTrigger(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "DAGTRIGGER",
+					Type:       string(platform.AlertNotificationChannelTypeDAGTRIGGER),
 					EntityId:   deploymentId,
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
@@ -365,7 +365,7 @@ func TestAcc_ResourceNotificationChannelDagTrigger(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "DAGTRIGGER",
+					Type:       string(platform.AlertNotificationChannelTypeDAGTRIGGER),
 					EntityId:   deploymentId,
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
@@ -409,7 +409,7 @@ func TestAcc_ResourceNotificationChannelPagerDuty(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "PAGERDUTY",
+					Type:       string(platform.AlertNotificationChannelTypePAGERDUTY),
 					EntityId:   deploymentId,
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
@@ -422,7 +422,7 @@ func TestAcc_ResourceNotificationChannelPagerDuty(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "PAGERDUTY",
+					Type:       string(platform.AlertNotificationChannelTypePAGERDUTY),
 					EntityId:   deploymentId,
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
@@ -448,7 +448,7 @@ func TestAcc_ResourceNotificationChannelPagerDuty(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "PAGERDUTY",
+					Type:       string(platform.AlertNotificationChannelTypePAGERDUTY),
 					EntityId:   deploymentId,
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
@@ -489,7 +489,7 @@ func TestAcc_ResourceNotificationChannelOpsGenie(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "OPSGENIE",
+					Type:       string(platform.AlertNotificationChannelTypeOPSGENIE),
 					EntityId:   deploymentId,
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
@@ -502,7 +502,7 @@ func TestAcc_ResourceNotificationChannelOpsGenie(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "OPSGENIE",
+					Type:       string(platform.AlertNotificationChannelTypeOPSGENIE),
 					EntityId:   deploymentId,
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
@@ -528,7 +528,7 @@ func TestAcc_ResourceNotificationChannelOpsGenie(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "OPSGENIE",
+					Type:       string(platform.AlertNotificationChannelTypeOPSGENIE),
 					EntityId:   deploymentId,
 					EntityType: "DEPLOYMENT",
 					Definition: map[string]interface{}{
@@ -569,7 +569,7 @@ func TestAcc_ResourceNotificationChannelOrganization(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "EMAIL",
+					Type:       string(platform.AlertNotificationChannelTypeEMAIL),
 					EntityId:   organizationId,
 					EntityType: "ORGANIZATION",
 					IsShared:   lo.ToPtr(true),
@@ -598,7 +598,7 @@ func TestAcc_ResourceNotificationChannelOrganization(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + notificationChannel(notificationChannelInput{
 					Name:       channelName,
-					Type:       "EMAIL",
+					Type:       string(platform.AlertNotificationChannelTypeEMAIL),
 					EntityId:   organizationId,
 					EntityType: "ORGANIZATION",
 					IsShared:   lo.ToPtr(false),
