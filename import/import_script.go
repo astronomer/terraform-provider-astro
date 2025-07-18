@@ -35,7 +35,7 @@ func main() {
 	log.Println("Terraform Import Script Starting")
 
 	// collect all arguments from the user, indicating all the resources that need to be imported
-	resourcesPtr := flag.String("resources", "workspace,deployment,cluster,api_token,team,team_roles,user_roles", "Comma separated list of resources to import. The only accepted values are workspace, deployment, cluster, api_token, team, team_roles, user_roles")
+	resourcesPtr := flag.String("resources", "workspace,deployment,cluster,api_token,team,team_roles,user_roles,alert,notification_channel", "Comma separated list of resources to import. The only accepted values are workspace, deployment, cluster, api_token, team, team_roles, user_roles, alert, notification_channel")
 	tokenPtr := flag.String("token", "", "API token to authenticate with the platform")
 	hostPtr := flag.String("host", "https://api.astronomer.io", "API host to connect to")
 	organizationIdPtr := flag.String("organizationId", "", "Organization ID to import resources into")
@@ -57,7 +57,7 @@ func main() {
 
 	// validate the resources argument
 	resources := strings.Split(strings.ToLower(*resourcesPtr), ",")
-	acceptedResources := []string{"workspace", "deployment", "cluster", "api_token", "team", "team_roles", "user_roles"}
+	acceptedResources := []string{"workspace", "deployment", "cluster", "api_token", "team", "team_roles", "user_roles", "alert", "notification_channel"}
 	for _, resource := range resources {
 		if !lo.Contains(acceptedResources, resource) {
 			log.Fatalf("Invalid resource: %s is not accepted. The only accepted resources are %s", resource, acceptedResources)
@@ -140,13 +140,15 @@ provider "astro" {
 	//	for each resource, we get the list of entities and generate the terraform import command
 
 	resourceHandlers := map[string]func(context.Context, *platform.ClientWithResponses, *iam.ClientWithResponses, string) (string, error){
-		"workspace":  handleWorkspaces,
-		"deployment": handleDeployments,
-		"cluster":    handleClusters,
-		"api_token":  handleApiTokens,
-		"team":       handleTeams,
-		"team_roles": handleTeamRoles,
-		"user_roles": handleUserRoles,
+		"workspace":            handleWorkspaces,
+		"deployment":           handleDeployments,
+		"cluster":              handleClusters,
+		"api_token":            handleApiTokens,
+		"team":                 handleTeams,
+		"team_roles":           handleTeamRoles,
+		"user_roles":           handleUserRoles,
+		"alert":                handleAlert,
+		"notification_channel": handleNotificationChannel,
 	}
 
 	results := make(chan HandlerResult, len(resources))
@@ -263,7 +265,7 @@ func printHelp() {
 	log.Println("\nOptions:")
 	log.Println("  -resources string")
 	log.Println("        Comma separated list of resources to import. Accepted values:")
-	log.Println("        workspace, deployment, cluster, api_token, team, team_roles, user_roles")
+	log.Println("        workspace, deployment, cluster, api_token, team, team_roles, user_roles, alert, notification_channel")
 	log.Println("  -token string")
 	log.Println("        API token to authenticate with the platform")
 	log.Println("  -organizationId string")
@@ -282,7 +284,7 @@ func checkRequiredArguments(resourcesPtr string, tokenPtr string, organizationId
 	var missingArgs []string
 
 	if resourcesPtr == "" {
-		missingArgs = append(missingArgs, "-resources (comma-separated list: workspace, deployment, cluster, api_token, team, team_roles, user_roles)")
+		missingArgs = append(missingArgs, "-resources (comma-separated list: workspace, deployment, cluster, api_token, team, team_roles, user_roles, alert, notification_channel)")
 	}
 
 	if tokenPtr == "" && len(os.Getenv("ASTRO_API_TOKEN")) == 0 {
@@ -723,6 +725,88 @@ import {
 }`, userId, userId)
 
 		importString += userImportString + "\n"
+	}
+
+	return importString, nil
+}
+
+func handleAlert(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
+	log.Printf("Importing alerts for organization %s", organizationId)
+
+	alertsResp, err := platformClient.ListAlertsWithResponse(ctx, organizationId, &platform.ListAlertsParams{Limit: lo.ToPtr(1000)})
+	if err != nil {
+		return "", fmt.Errorf("failed to list alerts: %v", err)
+	}
+
+	if alertsResp.StatusCode() != http.StatusOK {
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", alertsResp.StatusCode(), string(alertsResp.Body))
+	}
+
+	if alertsResp.JSON200 == nil {
+		return "", fmt.Errorf("failed to list alerts, JSON200 resp is nil, organizationId: %v", organizationId)
+	}
+
+	alerts := alertsResp.JSON200.Alerts
+	if alerts == nil {
+		return "", fmt.Errorf("alerts list is nil")
+	}
+
+	alertIds := lo.Map(alerts, func(alert platform.Alert, _ int) string {
+		return alert.Id
+	})
+
+	log.Printf("Importing Alerts: %v", alertIds)
+
+	var importString string
+	for _, alertId := range alertIds {
+		alertImportString := fmt.Sprintf(`
+import {
+	id = "%v"
+	to = astro_alert.alert_%v
+}`, alertId, alertId)
+
+		importString += alertImportString + "\n"
+	}
+
+	return importString, nil
+}
+
+func handleNotificationChannel(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
+	log.Printf("Importing notification channels for organization %s", organizationId)
+
+	notificationChannelsResp, err := platformClient.ListNotificationChannelsWithResponse(ctx, organizationId, &platform.ListNotificationChannelsParams{Limit: lo.ToPtr(1000)})
+	if err != nil {
+		return "", fmt.Errorf("failed to list notification channels: %v", err)
+	}
+
+	if notificationChannelsResp.StatusCode() != http.StatusOK {
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", notificationChannelsResp.StatusCode(), string(notificationChannelsResp.Body))
+	}
+
+	if notificationChannelsResp.JSON200 == nil {
+		return "", fmt.Errorf("failed to list notification channels, JSON200 resp is nil, organizationId: %v", organizationId)
+	}
+
+	notificationChannels := notificationChannelsResp.JSON200.NotificationChannels
+	if notificationChannels == nil {
+		return "", fmt.Errorf("notification channels list is nil")
+	}
+
+	channelIds := lo.Map(notificationChannels, func(channel platform.NotificationChannel, _ int) string {
+		return channel.Id
+	})
+
+	log.Printf("Importing Notification Channels: %v", channelIds)
+
+	var importString string
+	for _, channelId := range channelIds {
+		channelImportString := fmt.Sprintf(`
+import {
+	id = "%v"
+	to = "astro_notification_channel.notification_channel_%v"
+}`, channelId, channelId)
+
+		importString += channelImportString + "\n"
 	}
 
 	return importString, nil
