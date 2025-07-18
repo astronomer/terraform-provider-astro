@@ -221,8 +221,6 @@ func TestAcc_ResourceAlertDagFailure(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.entity_type", string(platform.DAGID)),
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.operator_type", string(platform.IS)),
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.#", "2"),
-					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
-					resource.TestCheckResourceAttr(resourceVar, "organization_id", os.Getenv("HOSTED_ORGANIZATION_ID")),
 					resource.TestCheckResourceAttr(resourceVar, "deployment_id", deploymentId),
 					resource.TestCheckResourceAttrSet(resourceVar, "workspace_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "deployment_id"),
@@ -481,7 +479,6 @@ func TestAcc_ResourceAlertDagSuccess(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.entity_type", string(platform.DAGID)),
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.operator_type", string(platform.IS)),
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.#", "1"),
-					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "workspace_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "deployment_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
@@ -768,7 +765,6 @@ func TestAcc_ResourceAlertDagDuration(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.entity_type", string(platform.DAGID)),
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.operator_type", string(platform.IS)),
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.#", "1"),
-					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "workspace_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "deployment_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
@@ -1102,7 +1098,6 @@ func TestAcc_ResourceAlertDagTimeliness(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.entity_type", string(platform.DAGID)),
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.operator_type", string(platform.IS)),
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.0.values.#", "1"),
-					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "workspace_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "deployment_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
@@ -1392,7 +1387,6 @@ func TestAcc_ResourceAlertTaskFailure(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "notification_channel_ids.0", notificationChannelId),
 					resource.TestCheckResourceAttr(resourceVar, "rules.properties.deployment_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.#", "2"),
-					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "workspace_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "deployment_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
@@ -1662,7 +1656,6 @@ func TestAcc_ResourceAlertTaskDuration(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "rules.properties.deployment_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "rules.properties.task_duration_seconds", "60"),
 					resource.TestCheckResourceAttr(resourceVar, "rules.pattern_matches.#", "2"),
-					resource.TestCheckResourceAttrSet(resourceVar, "organization_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "workspace_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "deployment_id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
@@ -1845,7 +1838,6 @@ func testAccCheckAlertExists(t *testing.T, alertName string) func(s *terraform.S
 		ctx := context.Background()
 
 		// First try listing all alerts without filters
-		t.Logf("Listing all alerts in organization: %s", organizationId)
 		resp, err := client.ListAlertsWithResponse(ctx, organizationId, &platform.ListAlertsParams{
 			Limit: lo.ToPtr(0),
 		})
@@ -1860,12 +1852,8 @@ func testAccCheckAlertExists(t *testing.T, alertName string) func(s *terraform.S
 			return fmt.Errorf("response JSON200 is nil status: %v, err: %v", status, diag.Detail())
 		}
 
-		t.Logf("Found %d total alerts in organization", len(resp.JSON200.Alerts))
-
-		// Check in unfiltered list first
 		for _, alert := range resp.JSON200.Alerts {
 			if alert.Name == alertName {
-				t.Logf("Found alert %s in unfiltered list", alertName)
 				return nil
 			}
 		}

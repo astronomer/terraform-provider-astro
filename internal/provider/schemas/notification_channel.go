@@ -4,8 +4,10 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -24,17 +26,13 @@ func NotificationChannelDataSourceSchemaAttributes() map[string]datasourceSchema
 			MarkdownDescription: "The notification channel's name",
 			Computed:            true,
 		},
-		"definition": datasourceSchema.MapAttribute{
-			ElementType:         types.StringType,
+		"definition": datasourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "The notification channel's definition",
 			Computed:            true,
+			Attributes:          NotificationChannelDefinitionDataSourceSchemaAttributes(),
 		},
 		"type": datasourceSchema.StringAttribute{
 			MarkdownDescription: "The notification channel's type",
-			Computed:            true,
-		},
-		"organization_id": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The organization ID the notification channel is scoped to",
 			Computed:            true,
 		},
 		"workspace_id": datasourceSchema.StringAttribute{
@@ -86,7 +84,7 @@ func NotificationChannelResourceSchemaAttributes() map[string]resourceSchema.Att
 	return map[string]resourceSchema.Attribute{
 		"id": resourceSchema.StringAttribute{
 			MarkdownDescription: "The notification channel's ID",
-			Required:            true,
+			Computed:            true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
@@ -95,10 +93,13 @@ func NotificationChannelResourceSchemaAttributes() map[string]resourceSchema.Att
 			MarkdownDescription: "The notification channel's name",
 			Required:            true,
 		},
-		"definition": resourceSchema.MapAttribute{
-			ElementType:         types.StringType,
+		"definition": resourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "The notification channel's definition",
 			Required:            true,
+			Attributes:          NotificationChannelDefinitionResourceSchemaAttributes(),
+			Validators: []validator.Object{
+				validators.NotificationChannelDefinitionValidator(),
+			},
 		},
 		"type": resourceSchema.StringAttribute{
 			MarkdownDescription: "The notification channel's type",
@@ -112,10 +113,6 @@ func NotificationChannelResourceSchemaAttributes() map[string]resourceSchema.Att
 					string(platform.AlertNotificationChannelTypeOPSGENIE),
 				),
 			},
-		},
-		"organization_id": resourceSchema.StringAttribute{
-			MarkdownDescription: "The organization ID the notification channel is scoped to",
-			Computed:            true,
 		},
 		"workspace_id": resourceSchema.StringAttribute{
 			MarkdownDescription: "The workspace ID the notification channel is scoped to",
@@ -140,6 +137,8 @@ func NotificationChannelResourceSchemaAttributes() map[string]resourceSchema.Att
 		"is_shared": resourceSchema.BoolAttribute{
 			MarkdownDescription: "When entity type is scoped to ORGANIZATION or WORKSPACE, this determines if child entities can access this notification channel.",
 			Optional:            true,
+			Computed:            true,
+			Default:             booldefault.StaticBool(false),
 		},
 		"created_at": resourceSchema.StringAttribute{
 			MarkdownDescription: "Notification Channel creation timestamp",
@@ -162,5 +161,91 @@ func NotificationChannelResourceSchemaAttributes() map[string]resourceSchema.Att
 			Computed:            true,
 			Attributes:          ResourceSubjectProfileSchemaAttributes(),
 		},
+	}
+}
+
+func NotificationChannelDefinitionDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
+	return map[string]datasourceSchema.Attribute{
+		"dag_id": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The DAG ID for the notification channel",
+			Computed:            true,
+		},
+		"deployment_api_token": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The deployment API token for the notification channel",
+			Computed:            true,
+		},
+		"deployment_id": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The deployment ID for the notification channel",
+			Computed:            true,
+		},
+		"recipients": datasourceSchema.SetAttribute{
+			MarkdownDescription: "The recipients for the notification channel",
+			ElementType:         types.StringType,
+			Computed:            true,
+		},
+		"api_key": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The API key for the notification channel",
+			Computed:            true,
+		},
+		"integration_key": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The integration key for the notification channel",
+			Computed:            true,
+		},
+		"webhook_url": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The webhook URL for the notification channel",
+			Computed:            true,
+		},
+	}
+}
+
+func NotificationChannelDefinitionResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"dag_id": resourceSchema.StringAttribute{
+			MarkdownDescription: "The DAG ID for the notification channel",
+			Optional:            true,
+		},
+		"deployment_api_token": resourceSchema.StringAttribute{
+			MarkdownDescription: "The deployment API token for the notification channel",
+			Optional:            true,
+			Sensitive:           true,
+		},
+		"deployment_id": resourceSchema.StringAttribute{
+			MarkdownDescription: "The deployment ID for the notification channel",
+			Optional:            true,
+		},
+		"recipients": resourceSchema.SetAttribute{
+			MarkdownDescription: "The recipients for the notification channel",
+			ElementType:         types.StringType,
+			Optional:            true,
+		},
+		"api_key": resourceSchema.StringAttribute{
+			MarkdownDescription: "The API key for the notification channel",
+			Optional:            true,
+			Sensitive:           true,
+		},
+		"integration_key": resourceSchema.StringAttribute{
+			MarkdownDescription: "The integration key for the notification channel",
+			Optional:            true,
+			Sensitive:           true,
+		},
+		"webhook_url": resourceSchema.StringAttribute{
+			MarkdownDescription: "The webhook URL for the notification channel",
+			Optional:            true,
+			Sensitive:           true,
+		},
+	}
+}
+
+func NotificationChannelDefinitionAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"dag_id":               types.StringType,
+		"deployment_api_token": types.StringType,
+		"deployment_id":        types.StringType,
+		"recipients": types.SetType{
+			ElemType: types.StringType,
+		},
+		"api_key":         types.StringType,
+		"integration_key": types.StringType,
+		"webhook_url":     types.StringType,
 	}
 }

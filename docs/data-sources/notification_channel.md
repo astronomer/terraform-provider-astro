@@ -34,14 +34,13 @@ output "notification_channel" {
 
 - `created_at` (String) Notification Channel creation timestamp
 - `created_by` (Attributes) Notification Channel creator (see [below for nested schema](#nestedatt--created_by))
-- `definition` (Map of String) The notification channel's definition
+- `definition` (Attributes) The notification channel's definition (see [below for nested schema](#nestedatt--definition))
 - `deployment_id` (String) The deployment ID the notification channel is scoped to
 - `entity_id` (String) The entity ID the notification channel is scoped to
 - `entity_name` (String) The name of the entity the notification channel is scoped to
 - `entity_type` (String) The type of entity the notification channel is scoped to (e.g., 'DEPLOYMENT')
 - `is_shared` (Boolean) When entity type is scoped to ORGANIZATION or WORKSPACE, this determines if child entities can access this notification channel.
 - `name` (String) The notification channel's name
-- `organization_id` (String) The organization ID the notification channel is scoped to
 - `type` (String) The notification channel's type
 - `updated_at` (String) Notification Channel last updated timestamp
 - `updated_by` (Attributes) Notification Channel updater (see [below for nested schema](#nestedatt--updated_by))
@@ -58,6 +57,20 @@ Read-Only:
 - `id` (String)
 - `subject_type` (String)
 - `username` (String)
+
+
+<a id="nestedatt--definition"></a>
+### Nested Schema for `definition`
+
+Read-Only:
+
+- `api_key` (String) The API key for the notification channel
+- `dag_id` (String) The DAG ID for the notification channel
+- `deployment_api_token` (String) The deployment API token for the notification channel
+- `deployment_id` (String) The deployment ID for the notification channel
+- `integration_key` (String) The integration key for the notification channel
+- `recipients` (Set of String) The recipients for the notification channel
+- `webhook_url` (String) The webhook URL for the notification channel
 
 
 <a id="nestedatt--updated_by"></a>

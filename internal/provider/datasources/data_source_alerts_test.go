@@ -147,10 +147,6 @@ func checkAlerts(tfVarName string) resource.TestCheckFunc {
 		if instanceState.Attributes[entityType] == "" {
 			return fmt.Errorf("expected 'entity_type' to be set")
 		}
-		organizationId := fmt.Sprintf("alerts.%d.organization_id", alertsIdx)
-		if instanceState.Attributes[organizationId] == "" {
-			return fmt.Errorf("expected 'organization_id' to be set")
-		}
 		workspaceId := fmt.Sprintf("alerts.%d.workspace_id", alertsIdx)
 		if instanceState.Attributes[workspaceId] == "" {
 			return fmt.Errorf("expected 'workspace_id' to be set")

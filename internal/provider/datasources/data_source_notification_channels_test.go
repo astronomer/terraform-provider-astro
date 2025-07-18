@@ -157,10 +157,6 @@ func checkNotificationChannels(tfVarName string, input checkNotificationChannels
 		if instanceState.Attributes[channelType] == "" {
 			return fmt.Errorf("expected 'type' to be set")
 		}
-		orgId := fmt.Sprintf("notification_channels.%d.organization_id", idx)
-		if instanceState.Attributes[orgId] == "" {
-			return fmt.Errorf("expected 'organization_id' to be set")
-		}
 		entityId := fmt.Sprintf("notification_channels.%d.entity_id", idx)
 		if instanceState.Attributes[entityId] == "" {
 			return fmt.Errorf("expected 'entity_id' to be set")

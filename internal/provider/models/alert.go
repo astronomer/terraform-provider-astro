@@ -22,7 +22,6 @@ type AlertDataSource struct {
 	EntityType           types.String `tfsdk:"entity_type"`
 	EntityName           types.String `tfsdk:"entity_name"`
 	NotificationChannels types.Set    `tfsdk:"notification_channels"`
-	OrganizationId       types.String `tfsdk:"organization_id"`
 	WorkspaceId          types.String `tfsdk:"workspace_id"`
 	DeploymentId         types.String `tfsdk:"deployment_id"`
 	Severity             types.String `tfsdk:"severity"`
@@ -34,24 +33,23 @@ type AlertDataSource struct {
 
 // AlertListModel is used for listing alerts without notification channels.
 type AlertListModel struct {
-	Id             types.String `tfsdk:"id"`
-	Name           types.String `tfsdk:"name"`
-	Type           types.String `tfsdk:"type"`
-	Rules          types.Object `tfsdk:"rules"`
-	EntityId       types.String `tfsdk:"entity_id"`
-	EntityType     types.String `tfsdk:"entity_type"`
-	EntityName     types.String `tfsdk:"entity_name"`
-	OrganizationId types.String `tfsdk:"organization_id"`
-	WorkspaceId    types.String `tfsdk:"workspace_id"`
-	DeploymentId   types.String `tfsdk:"deployment_id"`
-	Severity       types.String `tfsdk:"severity"`
-	CreatedAt      types.String `tfsdk:"created_at"`
-	UpdatedAt      types.String `tfsdk:"updated_at"`
-	CreatedBy      types.Object `tfsdk:"created_by"`
-	UpdatedBy      types.Object `tfsdk:"updated_by"`
+	Id           types.String `tfsdk:"id"`
+	Name         types.String `tfsdk:"name"`
+	Type         types.String `tfsdk:"type"`
+	Rules        types.Object `tfsdk:"rules"`
+	EntityId     types.String `tfsdk:"entity_id"`
+	EntityType   types.String `tfsdk:"entity_type"`
+	EntityName   types.String `tfsdk:"entity_name"`
+	WorkspaceId  types.String `tfsdk:"workspace_id"`
+	DeploymentId types.String `tfsdk:"deployment_id"`
+	Severity     types.String `tfsdk:"severity"`
+	CreatedAt    types.String `tfsdk:"created_at"`
+	UpdatedAt    types.String `tfsdk:"updated_at"`
+	CreatedBy    types.Object `tfsdk:"created_by"`
+	UpdatedBy    types.Object `tfsdk:"updated_by"`
 }
 
-// AlertResource describes the data source data model.
+// AlertResource describes the resource data model.
 type AlertResource struct {
 	Id                     types.String `tfsdk:"id"`
 	Name                   types.String `tfsdk:"name"`
@@ -62,7 +60,6 @@ type AlertResource struct {
 	EntityName             types.String `tfsdk:"entity_name"`
 	NotificationChannelIds types.Set    `tfsdk:"notification_channel_ids"`
 	NotificationChannels   types.Set    `tfsdk:"notification_channels"`
-	OrganizationId         types.String `tfsdk:"organization_id"`
 	WorkspaceId            types.String `tfsdk:"workspace_id"`
 	DeploymentId           types.String `tfsdk:"deployment_id"`
 	Severity               types.String `tfsdk:"severity"`
@@ -84,7 +81,7 @@ type AlertRulesPatternMatch struct {
 	Values       types.Set    `tfsdk:"values"`
 }
 
-// ResourceAlertPatternMatch describes element type for pattern_matches in Alert resource.
+// ResourceAlertPatternMatchInput describes element type for pattern_matches in Alert resource.
 type ResourceAlertPatternMatchInput struct {
 	EntityType   string   `tfsdk:"entity_type"`
 	OperatorType string   `tfsdk:"operator_type"`
@@ -134,7 +131,6 @@ func (data *AlertDataSource) ReadFromResponse(ctx context.Context, Alert *platfo
 	if diags.HasError() {
 		return diags
 	}
-	data.OrganizationId = types.StringValue(Alert.OrganizationId)
 	if Alert.WorkspaceId != nil {
 		data.WorkspaceId = types.StringValue(*Alert.WorkspaceId)
 	} else {
@@ -177,7 +173,6 @@ func (data *AlertListModel) ReadFromAlertListResponse(ctx context.Context, alert
 	} else {
 		data.EntityName = types.StringValue("")
 	}
-	data.OrganizationId = types.StringValue(alert.OrganizationId)
 	if alert.WorkspaceId != nil {
 		data.WorkspaceId = types.StringValue(*alert.WorkspaceId)
 	} else {
@@ -235,7 +230,6 @@ func (data *AlertResource) ReadFromResponse(ctx context.Context, Alert *platform
 		return diags
 	}
 
-	data.OrganizationId = types.StringValue(Alert.OrganizationId)
 	if Alert.WorkspaceId != nil {
 		data.WorkspaceId = types.StringValue(*Alert.WorkspaceId)
 	} else {
