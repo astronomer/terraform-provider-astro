@@ -117,6 +117,7 @@ jobs:
           HOSTED_API_TOKEN_ID: clxm46ged05b301neuucdqwox
           HOSTED_ALERT_ID: cmbr12l431mbq01ii1h0nz6y0
           HOSTED_NOTIFICATION_CHANNEL_ID: cmbr12fik1m7l01gpln1bgtbb
+          HOSTED_DEDICATED_CLUSTER_ID: cm73vsinm07hy01pu4dq1rei2
           SKIP_CLUSTER_RESOURCE_TESTS: ${{ env.SKIP_CLUSTER_RESOURCE_TESTS }}
           TESTARGS: "-failfast"
         run: make testacc
@@ -182,6 +183,7 @@ jobs:
           HOSTED_API_TOKEN_ID: clxm46ged05b301neuucdqwox
           HOSTED_ALERT_ID: cmbr12l431mbq01ii1h0nz6y0
           HOSTED_NOTIFICATION_CHANNEL_ID: cmbr12fik1m7l01gpln1bgtbb
+          HOSTED_DEDICATED_CLUSTER_ID: cm73vsinm07hy01pu4dq1rei2
           TESTARGS: "-failfast"
         run: make testacc
 
@@ -246,5 +248,6 @@ jobs:
           HOSTED_API_TOKEN_ID: clxm4836f00ql01me3nigmcr6
           HOSTED_ALERT_ID: cmbr0zpa700db01kuah2pakem
           HOSTED_NOTIFICATION_CHANNEL_ID: cm4nwrvyg024h01mk2dn58m5s
+          HOSTED_DEDICATED_CLUSTER_ID: cm1zjsqu008ab01phlcna8swg
           TESTARGS: "-failfast"
         run: make testacc

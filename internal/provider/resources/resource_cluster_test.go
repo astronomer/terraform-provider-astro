@@ -35,11 +35,13 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 	awsDeploymentName := fmt.Sprintf("%v_deployment_aws", namePrefix)
 
 	workspaceResourceVar := fmt.Sprintf("astro_workspace.%v", workspaceName)
+	workspaceResourceVarId := fmt.Sprintf("%v.id", workspaceResourceVar)
 	awsDeploymentResourceVar := fmt.Sprintf("astro_deployment.%v", awsDeploymentName)
 
 	// deployments in AWS cluster will switch executors during our tests
 	awsClusterName := fmt.Sprintf("%v_aws", namePrefix)
 	awsResourceVar := fmt.Sprintf("astro_cluster.%v", awsClusterName)
+	awsResourceVarId := fmt.Sprintf("%v.id", awsResourceVar)
 
 	// aws cluster
 	resource.ParallelTest(t, resource.TestCase{
@@ -60,18 +62,26 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 						RestrictedWorkspaceResourceVarName: workspaceResourceVar,
 					}) +
 					dedicatedDeployment(dedicatedDeploymentInput{
-						ClusterResourceVar:   awsResourceVar,
-						WorkspaceResourceVar: workspaceResourceVar,
-						Name:                 awsDeploymentName,
-						Description:          "deployment description",
-						SchedulerSize:        "SMALL",
+						ClusterId:     awsResourceVarId,
+						WorkspaceId:   workspaceResourceVarId,
+						Name:          awsDeploymentName,
+						Description:   "deployment description",
+						SchedulerSize: "SMALL",
 					}) +
 					dedicatedDeploymentWithAstroExecutor(dedicatedDeploymentInput{
-						ClusterResourceVar:   awsResourceVar,
-						WorkspaceResourceVar: workspaceResourceVar,
-						Name:                 awsDeploymentName,
-						Description:          "deployment description",
-						SchedulerSize:        "SMALL",
+						ClusterId:     awsResourceVarId,
+						WorkspaceId:   workspaceResourceVarId,
+						Name:          awsDeploymentName,
+						Description:   "deployment description",
+						SchedulerSize: "SMALL",
+					}) +
+					dedicatedRemoteDeployment(dedicatedRemoteDeploymentInput{
+						ClusterId:     awsResourceVarId,
+						WorkspaceId:   workspaceResourceVarId,
+						Name:          awsDeploymentName,
+						Description:   "deployment description",
+						Executor:      "ASTRO",
+						TaskLogBucket: "s3://my-task-log-bucket",
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
@@ -95,10 +105,19 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_astro", "type", "DEDICATED"),
 					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_astro", "scheduler_size", "SMALL"),
 					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_astro", "executor", "ASTRO"),
+					// Check dedicated remote deployment
+					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_remote", "name", awsDeploymentName+"_remote"),
+					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_remote", "description", "deployment description"),
+					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_remote", "type", "DEDICATED"),
+					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_remote", "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_remote", "remote_execution.enabled", "true"),
+					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_remote", "remote_execution.allowed_ip_address_ranges.#", "1"),
+					resource.TestCheckResourceAttr(awsDeploymentResourceVar+"_remote", "remote_execution.task_log_bucket", "s3://my-task-log-bucket"),
 
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
 					testAccCheckDeploymentExistence(t, awsDeploymentName+"_astro", true, true),
+					testAccCheckDeploymentExistence(t, awsDeploymentName+"_remote", true, true),
 				),
 			},
 			// Just update cluster and remove workspace restrictions
@@ -111,11 +130,11 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 						CloudProvider: "AWS",
 					}) +
 					dedicatedDeployment(dedicatedDeploymentInput{
-						ClusterResourceVar:   awsResourceVar,
-						WorkspaceResourceVar: workspaceResourceVar,
-						Name:                 awsDeploymentName,
-						Description:          "deployment description",
-						SchedulerSize:        "SMALL",
+						ClusterId:     awsResourceVarId,
+						WorkspaceId:   workspaceResourceVarId,
+						Name:          awsDeploymentName,
+						Description:   "deployment description",
+						SchedulerSize: "SMALL",
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
@@ -150,11 +169,11 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 						RestrictedWorkspaceResourceVarName: workspaceResourceVar,
 					}) +
 					dedicatedDeployment(dedicatedDeploymentInput{
-						ClusterResourceVar:   awsResourceVar,
-						WorkspaceResourceVar: workspaceResourceVar,
-						Name:                 awsDeploymentName,
-						Description:          utils.TestResourceDescription,
-						SchedulerSize:        "MEDIUM",
+						ClusterId:     awsResourceVarId,
+						WorkspaceId:   workspaceResourceVarId,
+						Name:          awsDeploymentName,
+						Description:   utils.TestResourceDescription,
+						SchedulerSize: "MEDIUM",
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
@@ -223,10 +242,12 @@ func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
 	azureDeploymentName := fmt.Sprintf("%v_deployment_azure", namePrefix)
 
 	workspaceResourceVar := fmt.Sprintf("astro_workspace.%v", workspaceName)
+	workspaceResourceVarId := fmt.Sprintf("%v.id", workspaceResourceVar)
 	azureDeploymentResourceVar := fmt.Sprintf("astro_deployment.%v", azureDeploymentName)
 
 	azureClusterName := fmt.Sprintf("%v_azure", namePrefix)
 	azureResourceVar := fmt.Sprintf("astro_cluster.%v", azureClusterName)
+	azureResourceVarId := fmt.Sprintf("%v.id", azureResourceVar)
 
 	// azure cluster
 	resource.ParallelTest(t, resource.TestCase{
@@ -247,18 +268,26 @@ func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
 						RestrictedWorkspaceResourceVarName: workspaceResourceVar,
 					}) +
 					dedicatedDeployment(dedicatedDeploymentInput{
-						ClusterResourceVar:   azureResourceVar,
-						WorkspaceResourceVar: workspaceResourceVar,
-						Name:                 azureDeploymentName,
-						Description:          utils.TestResourceDescription,
-						SchedulerSize:        "SMALL",
+						ClusterId:     azureResourceVarId,
+						WorkspaceId:   workspaceResourceVarId,
+						Name:          azureDeploymentName,
+						Description:   utils.TestResourceDescription,
+						SchedulerSize: "SMALL",
 					}) +
 					dedicatedDeploymentWithAstroExecutor(dedicatedDeploymentInput{
-						ClusterResourceVar:   azureResourceVar,
-						WorkspaceResourceVar: workspaceResourceVar,
-						Name:                 azureDeploymentName,
-						Description:          utils.TestResourceDescription,
-						SchedulerSize:        "SMALL",
+						ClusterId:     azureResourceVarId,
+						WorkspaceId:   workspaceResourceVarId,
+						Name:          azureDeploymentName,
+						Description:   utils.TestResourceDescription,
+						SchedulerSize: "SMALL",
+					}) +
+					dedicatedRemoteDeployment(dedicatedRemoteDeploymentInput{
+						ClusterId:         azureResourceVarId,
+						WorkspaceId:       workspaceResourceVarId,
+						Name:              azureDeploymentName,
+						Description:       utils.TestResourceDescription,
+						Executor:          "ASTRO",
+						TaskLogUrlPattern: "https://s3.amazonaws.com/my-task-log-bucket/{{ task_id }}/{{ execution_date }}/{{ filename }}",
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
@@ -282,10 +311,19 @@ func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_astro", "type", "DEDICATED"),
 					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_astro", "scheduler_size", "SMALL"),
 					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_astro", "executor", "ASTRO"),
+					// Check dedicated remote deployment
+					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_remote", "name", azureDeploymentName+"_remote"),
+					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_remote", "description", utils.TestResourceDescription),
+					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_remote", "type", "DEDICATED"),
+					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_remote", "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_remote", "remote_execution.enabled", "true"),
+					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_remote", "remote_execution.allowed_ip_address_ranges.#", "1"),
+					resource.TestCheckResourceAttr(azureDeploymentResourceVar+"_remote", "remote_execution.task_log_url_pattern", "https://s3.amazonaws.com/my-task-log-bucket/{{ task_id }}/{{ execution_date }}/{{ filename }}"),
 
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, azureDeploymentName, true, true),
 					testAccCheckDeploymentExistence(t, azureDeploymentName+"_astro", true, true),
+					testAccCheckDeploymentExistence(t, azureDeploymentName+"_remote", true, true),
 				),
 			},
 			// Import existing cluster and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests
@@ -308,10 +346,12 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 	gcpDeploymentName := fmt.Sprintf("%v_deployment_gcp", namePrefix)
 
 	workspaceResourceVar := fmt.Sprintf("astro_workspace.%v", workspaceName)
+	workspaceResourceVarId := fmt.Sprintf("%v.id", workspaceResourceVar)
 	gcpDeploymentResourceVar := fmt.Sprintf("astro_deployment.%v", gcpDeploymentName)
 
 	gcpClusterName := fmt.Sprintf("%v_gcp", namePrefix)
 	gcpResourceVar := fmt.Sprintf("astro_cluster.%v", gcpClusterName)
+	gcpResourceVarId := fmt.Sprintf("%v.id", gcpResourceVar)
 
 	// gcp cluster
 	resource.ParallelTest(t, resource.TestCase{
@@ -332,18 +372,25 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 						RestrictedWorkspaceResourceVarName: workspaceResourceVar,
 					}) +
 					dedicatedDeployment(dedicatedDeploymentInput{
-						ClusterResourceVar:   gcpResourceVar,
-						WorkspaceResourceVar: workspaceResourceVar,
-						Name:                 gcpDeploymentName,
-						Description:          utils.TestResourceDescription,
-						SchedulerSize:        "SMALL",
+						ClusterId:     gcpResourceVarId,
+						WorkspaceId:   workspaceResourceVarId,
+						Name:          gcpDeploymentName,
+						Description:   utils.TestResourceDescription,
+						SchedulerSize: "SMALL",
 					}) +
 					dedicatedDeploymentWithAstroExecutor(dedicatedDeploymentInput{
-						ClusterResourceVar:   gcpResourceVar,
-						WorkspaceResourceVar: workspaceResourceVar,
-						Name:                 gcpDeploymentName,
-						Description:          utils.TestResourceDescription,
-						SchedulerSize:        "SMALL",
+						ClusterId:     gcpResourceVarId,
+						WorkspaceId:   workspaceResourceVarId,
+						Name:          gcpDeploymentName,
+						Description:   utils.TestResourceDescription,
+						SchedulerSize: "SMALL",
+					}) +
+					dedicatedRemoteDeployment(dedicatedRemoteDeploymentInput{
+						ClusterId:   gcpResourceVarId,
+						WorkspaceId: workspaceResourceVarId,
+						Name:        gcpDeploymentName,
+						Description: utils.TestResourceDescription,
+						Executor:    "ASTRO",
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
@@ -370,10 +417,18 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_astro", "type", "DEDICATED"),
 					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_astro", "scheduler_size", "SMALL"),
 					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_astro", "executor", "ASTRO"),
+					// Check dedicated remote deployment
+					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_remote", "name", gcpDeploymentName+"_remote"),
+					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_remote", "description", utils.TestResourceDescription),
+					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_remote", "type", "DEDICATED"),
+					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_remote", "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_remote", "remote_execution.enabled", "true"),
+					resource.TestCheckResourceAttr(gcpDeploymentResourceVar+"_remote", "remote_execution.allowed_ip_address_ranges.#", "1"),
 
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, gcpDeploymentName, true, true),
 					testAccCheckDeploymentExistence(t, gcpDeploymentName+"_astro", true, true),
+					testAccCheckDeploymentExistence(t, gcpDeploymentName+"_remote", true, true),
 				),
 			},
 			// Import existing cluster and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests
@@ -436,11 +491,11 @@ func TestAcc_ResourceClusterRemovedOutsideOfTerraform(t *testing.T) {
 }
 
 type dedicatedDeploymentInput struct {
-	ClusterResourceVar   string
-	WorkspaceResourceVar string
-	Name                 string
-	Description          string
-	SchedulerSize        string
+	ClusterId     string
+	WorkspaceId   string
+	Name          string
+	Description   string
+	SchedulerSize string
 }
 
 func dedicatedDeployment(input dedicatedDeploymentInput) string {
@@ -449,7 +504,7 @@ resource "astro_deployment" "%v" {
 	name = "%s"
 	description = "%s"
 	type = "DEDICATED"
-	cluster_id = %s.id
+	cluster_id = %s
 	contact_emails = []
 	default_task_pod_cpu = "0.25"
 	default_task_pod_memory = "0.5Gi"
@@ -461,10 +516,10 @@ resource "astro_deployment" "%v" {
 	resource_quota_cpu = "10"
 	resource_quota_memory = "20Gi"
 	scheduler_size = "%v"
-	workspace_id = %s.id
+	workspace_id = %s
 	environment_variables = []
 }
-`, input.Name, input.Name, input.Description, input.ClusterResourceVar, input.SchedulerSize, input.WorkspaceResourceVar)
+`, input.Name, input.Name, input.Description, input.ClusterId, input.SchedulerSize, input.WorkspaceId)
 }
 
 func dedicatedDeploymentWithAstroExecutor(input dedicatedDeploymentInput) string {
@@ -473,7 +528,7 @@ resource "astro_deployment" "%v_astro" {
 	name = "%v_astro"
 	description = "%s"
 	type = "DEDICATED"
-	cluster_id = %s.id
+	cluster_id = %s
 	contact_emails = []
 	default_task_pod_cpu = "0.25"
 	default_task_pod_memory = "0.5Gi"
@@ -485,11 +540,55 @@ resource "astro_deployment" "%v_astro" {
 	resource_quota_cpu = "10"
 	resource_quota_memory = "20Gi"
 	scheduler_size = "%v"
-	workspace_id = %s.id
+	workspace_id = %s
 	environment_variables = []
 	worker_queues = [{ name = "default", is_default = true, astro_machine = "A5", max_worker_count = 2, min_worker_count = 1, worker_concurrency = 5 }]
 }
-`, input.Name, input.Name, input.Description, input.ClusterResourceVar, input.SchedulerSize, input.WorkspaceResourceVar)
+`, input.Name, input.Name, input.Description, input.ClusterId, input.SchedulerSize, input.WorkspaceId)
+}
+
+type dedicatedRemoteDeploymentInput struct {
+	ClusterId         string
+	WorkspaceId       string
+	Name              string
+	Description       string
+	Executor          string
+	TaskLogBucket     string
+	TaskLogUrlPattern string
+}
+
+func dedicatedRemoteDeployment(input dedicatedRemoteDeploymentInput) string {
+	var taskLogBucketStr string
+	if input.TaskLogBucket != "" {
+		taskLogBucketStr = fmt.Sprintf(`task_log_bucket = "%s"`, input.TaskLogBucket)
+	}
+	var taskLogUrlPatternStr string
+	if input.TaskLogUrlPattern != "" {
+		taskLogUrlPatternStr = fmt.Sprintf(`task_log_url_pattern = "%s"`, input.TaskLogUrlPattern)
+	}
+	return fmt.Sprintf(`
+resource "astro_deployment" "%v_remote" {
+	name = "%v_remote"
+	description = "%s"
+	type = "DEDICATED"
+	cluster_id = %s
+	contact_emails = []
+	executor = "%s"
+	is_cicd_enforced = true
+	is_dag_deploy_enabled = false
+	is_development_mode = false
+	is_high_availability = false
+	scheduler_size = "SMALL"
+	workspace_id = %s
+	environment_variables = []
+	remote_execution = {
+		enabled = true
+		allowed_ip_address_ranges = ["8.8.8.8/32"]
+		%s
+		%s
+	}
+}
+`, input.Name, input.Name, input.Description, input.ClusterId, input.Executor, input.WorkspaceId, taskLogBucketStr, taskLogUrlPatternStr)
 }
 
 type clusterInput struct {

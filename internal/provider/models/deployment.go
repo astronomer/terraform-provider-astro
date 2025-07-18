@@ -71,6 +71,7 @@ type DeploymentResource struct {
 	IsHighAvailability   types.Bool   `tfsdk:"is_high_availability"`
 	ScalingStatus        types.Object `tfsdk:"scaling_status"`
 	ScalingSpec          types.Object `tfsdk:"scaling_spec"`
+	RemoteExecution      types.Object `tfsdk:"remote_execution"`
 }
 
 type DeploymentDataSource struct {
@@ -126,6 +127,7 @@ type DeploymentDataSource struct {
 	DefaultTaskPodMemory types.String `tfsdk:"default_task_pod_memory"`
 	ScalingStatus        types.Object `tfsdk:"scaling_status"`
 	ScalingSpec          types.Object `tfsdk:"scaling_spec"`
+	RemoteExecution      types.Object `tfsdk:"remote_execution"`
 	SchedulerSize        types.String `tfsdk:"scheduler_size"`
 	IsDevelopmentMode    types.Bool   `tfsdk:"is_development_mode"`
 	IsHighAvailability   types.Bool   `tfsdk:"is_high_availability"`
@@ -253,6 +255,10 @@ func (data *DeploymentResource) ReadFromResponse(
 	if diags.HasError() {
 		return diags
 	}
+	data.RemoteExecution, diags = RemoteExecutionTypesObject(ctx, deployment.RemoteExecution)
+	if diags.HasError() {
+		return diags
+	}
 
 	return nil
 }
@@ -347,6 +353,10 @@ func (data *DeploymentDataSource) ReadFromResponse(
 		return diags
 	}
 	data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, deployment.ScalingSpec)
+	if diags.HasError() {
+		return diags
+	}
+	data.RemoteExecution, diags = RemoteExecutionTypesObject(ctx, deployment.RemoteExecution)
 	if diags.HasError() {
 		return diags
 	}
@@ -576,4 +586,33 @@ func ScalingSpecTypesObject(
 		HibernationSpec: hibernationSpec,
 	}
 	return types.ObjectValueFrom(ctx, schemas.ScalingSpecAttributeTypes(), obj)
+}
+
+type RemoteExecution struct {
+	Enabled                types.Bool   `tfsdk:"enabled"`
+	AllowedIpAddressRanges types.Set    `tfsdk:"allowed_ip_address_ranges"`
+	RemoteApiUrl           types.String `tfsdk:"remote_api_url"`
+	TaskLogBucket          types.String `tfsdk:"task_log_bucket"`
+	TaskLogUrlPattern      types.String `tfsdk:"task_log_url_pattern"`
+}
+
+func RemoteExecutionTypesObject(
+	ctx context.Context,
+	remoteExecution *platform.DeploymentRemoteExecution,
+) (types.Object, diag.Diagnostics) {
+	if remoteExecution == nil {
+		return types.ObjectNull(schemas.RemoteExecutionAttributeTypes()), nil
+	}
+	allowedIpAddressRanges, diags := utils.StringSet(&remoteExecution.AllowedIpAddressRanges)
+	if diags.HasError() {
+		return types.ObjectNull(schemas.RemoteExecutionAttributeTypes()), diags
+	}
+	obj := RemoteExecution{
+		Enabled:                types.BoolValue(remoteExecution.Enabled),
+		AllowedIpAddressRanges: allowedIpAddressRanges,
+		RemoteApiUrl:           types.StringValue(remoteExecution.RemoteApiUrl),
+		TaskLogBucket:          types.StringPointerValue(remoteExecution.TaskLogBucket),
+		TaskLogUrlPattern:      types.StringPointerValue(remoteExecution.TaskLogUrlPattern),
+	}
+	return types.ObjectValueFrom(ctx, schemas.RemoteExecutionAttributeTypes(), obj)
 }

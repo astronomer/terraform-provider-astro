@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/samber/lo"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
@@ -137,6 +139,94 @@ func TestAcc_ResourceDeploymentHybrid(t *testing.T) {
 	})
 }
 
+func TestAcc_ResourceDeploymentDedicated(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
+
+	workspaceName := fmt.Sprintf("%v_workspace", namePrefix)
+	workspaceResourceVar := fmt.Sprintf("astro_workspace.%v", workspaceName)
+	workspaceId := fmt.Sprintf("%v.id", workspaceResourceVar)
+
+	clusterId := fmt.Sprintf("\"%v\"", os.Getenv("HOSTED_DEDICATED_CLUSTER_ID"))
+	deploymentName := fmt.Sprintf("%v_dedicated", namePrefix)
+	resourceVar := fmt.Sprintf("astro_deployment.%v", deploymentName)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			// Check that deployments have been removed
+			testAccCheckDeploymentExistence(t, deploymentName, false, false),
+		),
+		Steps: []resource.TestStep{
+			// CELERY executor with Remote Execution enabled should be blocked
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
+					dedicatedRemoteDeployment(dedicatedRemoteDeploymentInput{
+						ClusterId:   clusterId,
+						WorkspaceId: workspaceId,
+						Name:        deploymentName,
+						Description: utils.TestResourceDescription,
+						Executor:    "CELERY",
+					}),
+				ExpectError: regexp.MustCompile(`remote_execution is only allowed for 'ASTRO' executor`),
+			},
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
+					dedicatedDeployment(dedicatedDeploymentInput{
+						ClusterId:     clusterId,
+						WorkspaceId:   workspaceId,
+						Name:          deploymentName,
+						Description:   "deployment description",
+						SchedulerSize: "SMALL",
+					}) +
+					dedicatedDeploymentWithAstroExecutor(dedicatedDeploymentInput{
+						ClusterId:     clusterId,
+						WorkspaceId:   workspaceId,
+						Name:          deploymentName,
+						Description:   "deployment description",
+						SchedulerSize: "SMALL",
+					}) +
+					dedicatedRemoteDeployment(dedicatedRemoteDeploymentInput{
+						ClusterId:     clusterId,
+						WorkspaceId:   workspaceId,
+						Name:          deploymentName,
+						Description:   "deployment description",
+						Executor:      "ASTRO",
+						TaskLogBucket: "s3://my-task-log-bucket",
+					}),
+				Check: resource.ComposeTestCheckFunc(
+					// Check dedicated deployment
+					resource.TestCheckResourceAttr(resourceVar, "name", deploymentName),
+					resource.TestCheckResourceAttr(resourceVar, "description", "deployment description"),
+					resource.TestCheckResourceAttr(resourceVar, "type", "DEDICATED"),
+					resource.TestCheckResourceAttr(resourceVar, "scheduler_size", "SMALL"),
+					// Check dedicated deployment with Astro executor
+					resource.TestCheckResourceAttr(resourceVar+"_astro", "name", deploymentName+"_astro"),
+					resource.TestCheckResourceAttr(resourceVar+"_astro", "description", "deployment description"),
+					resource.TestCheckResourceAttr(resourceVar+"_astro", "type", "DEDICATED"),
+					resource.TestCheckResourceAttr(resourceVar+"_astro", "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr(resourceVar+"_astro", "executor", "ASTRO"),
+					// Check dedicated remote deployment
+					resource.TestCheckResourceAttr(resourceVar+"_remote", "name", deploymentName+"_remote"),
+					resource.TestCheckResourceAttr(resourceVar+"_remote", "description", "deployment description"),
+					resource.TestCheckResourceAttr(resourceVar+"_remote", "type", "DEDICATED"),
+					resource.TestCheckResourceAttr(resourceVar+"_remote", "scheduler_size", "SMALL"),
+					resource.TestCheckResourceAttr(resourceVar+"_remote", "remote_execution.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceVar+"_remote", "remote_execution.allowed_ip_address_ranges.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar+"_remote", "remote_execution.task_log_bucket", "s3://my-task-log-bucket"),
+
+					// Check via API that deployment exists
+					testAccCheckDeploymentExistence(t, deploymentName, true, true),
+					testAccCheckDeploymentExistence(t, deploymentName+"_astro", true, true),
+					testAccCheckDeploymentExistence(t, deploymentName+"_remote", true, true),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 	namePrefix := utils.GenerateTestResourceName(10)
 
@@ -171,6 +261,36 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					WorkerQueuesStr:             workerQueuesDuplicateStr(""),
 				}),
 				ExpectError: regexp.MustCompile(`worker_queue names must be unique`),
+			},
+			// ASTRO executor with Remote Execution enabled should be blocked for STANDARD deployments
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
+					Name:                        awsDeploymentName + "_astro",
+					Description:                 utils.TestResourceDescription,
+					Region:                      "us-west-2",
+					CloudProvider:               "AWS",
+					Executor:                    "ASTRO",
+					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
+					IncludeEnvironmentVariables: false,
+					WorkerQueuesStr:             workerQueuesStr(""),
+					RemoteExecutionEnabled:      lo.ToPtr(true),
+				}),
+				ExpectError: regexp.MustCompile(`remote_execution is not allowed for 'STANDARD' deployment`),
+			},
+			// ASTRO executor with Remote Execution disabled should be blocked
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
+					Name:                        awsDeploymentName + "_astro",
+					Description:                 utils.TestResourceDescription,
+					Region:                      "us-west-2",
+					CloudProvider:               "AWS",
+					Executor:                    "ASTRO",
+					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
+					IncludeEnvironmentVariables: false,
+					WorkerQueuesStr:             workerQueuesStr(""),
+					RemoteExecutionEnabled:      lo.ToPtr(false),
+				}),
+				ExpectError: regexp.MustCompile(`Invalid Attribute Value Match`),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
@@ -826,6 +946,7 @@ type standardDeploymentInput struct {
 	ScalingSpec                 string
 	WorkerQueuesStr             string
 	DesiredWorkloadIdentity     string
+	RemoteExecutionEnabled      *bool
 }
 
 func standardDeployment(input standardDeploymentInput) string {
@@ -854,6 +975,13 @@ func standardDeployment(input standardDeploymentInput) string {
 	desiredWorkloadIdentityStr := ""
 	if input.DesiredWorkloadIdentity != "" {
 		desiredWorkloadIdentityStr = fmt.Sprintf(`desired_workload_identity      = "%s"`, input.DesiredWorkloadIdentity)
+	}
+	remoteExecutionStr := ""
+	if input.RemoteExecutionEnabled != nil {
+		remoteExecutionStr = fmt.Sprintf(`
+		remote_execution = {
+		  enabled = %s
+		}`, strconv.FormatBool(*input.RemoteExecutionEnabled))
 	}
 	return fmt.Sprintf(`
 resource "astro_workspace" "%v_workspace" {
@@ -884,10 +1012,11 @@ resource "astro_deployment" "%v" {
 	%v
     %v
     %v
+	%v
 }
 `,
 		input.Name, input.Name, utils.TestResourceDescription, input.Name, input.Name, input.Description, input.Region, input.CloudProvider, input.Executor, input.IsDevelopmentMode, input.SchedulerSize, input.Name,
-		envVarsStr(input.IncludeEnvironmentVariables), input.WorkerQueuesStr, scalingSpecStr, desiredWorkloadIdentityStr)
+		envVarsStr(input.IncludeEnvironmentVariables), input.WorkerQueuesStr, scalingSpecStr, desiredWorkloadIdentityStr, remoteExecutionStr)
 }
 
 func standardDeploymentWithVariableName(input standardDeploymentInput) string {
