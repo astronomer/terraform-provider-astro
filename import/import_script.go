@@ -803,7 +803,7 @@ func handleNotificationChannel(ctx context.Context, platformClient *platform.Cli
 		channelImportString := fmt.Sprintf(`
 import {
 	id = "%v"
-	to = "astro_notification_channel.notification_channel_%v"
+	to = astro_notification_channel.notification_channel_%v
 }`, channelId, channelId)
 
 		importString += channelImportString + "\n"
