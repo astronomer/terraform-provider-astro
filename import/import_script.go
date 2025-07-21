@@ -182,6 +182,7 @@ provider "astro" {
 
 	var allResults []HandlerResult
 	var deploymentImportString string
+	var notificationChannelImportString string
 	for result := range results {
 		allResults = append(allResults, result)
 		if result.Error != nil {
@@ -189,6 +190,8 @@ provider "astro" {
 		} else {
 			if result.Resource == "deployment" {
 				deploymentImportString += result.ImportString
+			} else if result.Resource == "notification_channel" {
+				notificationChannelImportString += result.ImportString
 			} else {
 				importString += result.ImportString
 			}
@@ -246,6 +249,17 @@ provider "astro" {
 		}
 
 		log.Println("Import process completed successfully. The 'generated.tf' file now includes all resources, including deployments.")
+	}
+
+	// Add notification channel import blocks and HCL to the generated file
+	if notificationChannelImportString != "" {
+		err = addNotificationChannelsToGeneratedFile(notificationChannelImportString, organizationId, platformClient, ctx)
+		if err != nil {
+			log.Fatalf("Failed to add notification channels to generated file: %v", err)
+			return
+		}
+
+		log.Println("Import process completed successfully. The 'generated.tf' file now includes all resources, including notification channels.")
 	}
 
 	// Print summary of results
@@ -854,6 +868,65 @@ func addDeploymentsToGeneratedFile(deploymentImportString string, organizationId
 	return nil
 }
 
+// addNotificationChannelsToGeneratedFile adds the notification channel import blocks and HCL to the generated.tf file
+func addNotificationChannelsToGeneratedFile(notificationChannelImportString string, organizationId string, platformClient *platform.ClientWithResponses, ctx context.Context) error {
+	var contentBytes []byte
+	var err error
+
+	// Try to read the existing generated.tf file
+	contentBytes, err = os.ReadFile("generated.tf")
+	if err != nil {
+		if os.IsNotExist(err) {
+			// File doesn't exist, we'll create our own content
+			log.Println("generated.tf does not exist. Creating new file with notification channel information.")
+			contentBytes = []byte{}
+		} else {
+			// Some other error occurred
+			return fmt.Errorf("error reading generated.tf: %v", err)
+		}
+	}
+
+	// Generate notification channel HCL
+	notificationChannelHCL, channelsWithPlaceholders, err := generateNotificationChannelHCL(ctx, platformClient, organizationId)
+	if err != nil {
+		return fmt.Errorf("failed to generate notification channel HCL: %v", err)
+	}
+
+	// Combine existing content (if any), notification channel import blocks, and notification channel HCL
+	existingContent := strings.TrimSpace(string(contentBytes))
+	newContent := existingContent
+	if newContent != "" {
+		newContent += "\n\n"
+	}
+	newContent += "// generated Notification Channel HCL \n" + strings.TrimSpace(notificationChannelImportString) + "\n\n" + strings.TrimSpace(notificationChannelHCL)
+
+	// Write the updated content to generated.tf
+	err = os.WriteFile("generated.tf", []byte(newContent), 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write updated generated.tf: %v", err)
+	}
+
+	log.Println("Successfully updated generated.tf with notification channel information.")
+
+	// Print message about notification channels that need to be updated
+	if len(channelsWithPlaceholders) > 0 {
+		log.Println("\n" + strings.Repeat("=", 80))
+		log.Println("⚠️  IMPORTANT: The following notification channels contain placeholder values")
+		log.Println("   that need to be updated with actual sensitive information:")
+		log.Println(strings.Repeat("=", 80))
+		for _, channel := range channelsWithPlaceholders {
+			log.Printf("   • %s", channel)
+		}
+		log.Println(strings.Repeat("=", 80))
+		log.Println("   Please update these notification channels in your generated.tf file")
+		log.Println("   with the actual sensitive values (webhook URLs, API keys, tokens, etc.)")
+		log.Println("   before running 'terraform apply'.")
+		log.Println(strings.Repeat("=", 80) + "\n")
+	}
+
+	return nil
+}
+
 // generateDeploymentHCL generates the HCL for all deployments in the organization
 // generateTerraformConfig has trouble with deployments, so we generate the HCL manually
 func generateDeploymentHCL(ctx context.Context, platformClient *platform.ClientWithResponses, organizationId string) (string, error) {
@@ -1015,6 +1088,144 @@ resource "astro_deployment" "deployment_%s" {
 	}
 
 	return hclString, nil
+}
+
+// generateNotificationChannelHCL generates the HCL for all notification channels in the organization
+func generateNotificationChannelHCL(ctx context.Context, platformClient *platform.ClientWithResponses, organizationId string) (string, []string, error) {
+	notificationChannelsResp, err := platformClient.ListNotificationChannelsWithResponse(ctx, organizationId, &platform.ListNotificationChannelsParams{Limit: lo.ToPtr(1000)})
+	if err != nil {
+		return "", nil, fmt.Errorf("failed to list notification channels: %v", err)
+	}
+
+	if notificationChannelsResp.StatusCode() != http.StatusOK {
+		return "", nil, fmt.Errorf("unexpected status code: %d, body: %s", notificationChannelsResp.StatusCode(), string(notificationChannelsResp.Body))
+	}
+
+	if notificationChannelsResp.JSON200 == nil {
+		return "", nil, fmt.Errorf("failed to list notification channels, JSON200 resp is nil, organizationId: %v", organizationId)
+	}
+
+	_, diagnostic := clients.NormalizeAPIError(ctx, notificationChannelsResp.HTTPResponse, notificationChannelsResp.Body)
+	if diagnostic != nil {
+		log.Printf("API Error diagnostic: %+v", diagnostic)
+	}
+
+	notificationChannels := notificationChannelsResp.JSON200.NotificationChannels
+	if notificationChannels == nil {
+		return "", nil, fmt.Errorf("notification channels list is nil")
+	}
+
+	var hclString string
+	var channelsWithPlaceholders []string
+
+	for _, channel := range notificationChannels {
+		var channelHCL string
+		hasPlaceholder := false
+
+		channelType := channel.Type
+		channelName := channel.Name
+		entityId := channel.EntityId
+		entityType := channel.EntityType
+		isShared := channel.IsShared
+
+		// Generate appropriate definition based on channel type
+		var definition string
+		switch channelType {
+		case string(platform.AlertNotificationChannelTypeEMAIL):
+			if defMap, ok := channel.Definition.(map[string]interface{}); ok {
+				if recipientsArray, ok := defMap["recipients"].([]interface{}); ok {
+					var recipients []string
+					for _, r := range recipientsArray {
+						if email, ok := r.(string); ok {
+							recipients = append(recipients, fmt.Sprintf(`"%s"`, email))
+						}
+					}
+					recipientsString := strings.Join(recipients, ", ")
+					definition = fmt.Sprintf(`definition = {
+		recipients = [%s]
+	}`, recipientsString)
+				} else {
+					definition = `definition = {
+		recipients = ["PLACEHOLDER_EMAIL"] # Replace with actual email addresses
+	}`
+					hasPlaceholder = true
+				}
+			} else {
+				definition = `definition = {
+		recipients = ["PLACEHOLDER_EMAIL"] # Replace with actual email addresses
+	}`
+				hasPlaceholder = true
+			}
+		case string(platform.AlertNotificationChannelTypeSLACK):
+			definition = `definition = {
+		webhook_url = "PLACEHOLDER_WEBHOOK_URL" # Replace with actual webhook URL
+	}`
+			hasPlaceholder = true
+		case string(platform.AlertNotificationChannelTypePAGERDUTY):
+			definition = `definition = {
+		integration_key = "PLACEHOLDER_INTEGRATION_KEY" # Replace with actual integration key
+	}`
+			hasPlaceholder = true
+		case string(platform.AlertNotificationChannelTypeOPSGENIE):
+			definition = `definition = {
+		api_key = "PLACEHOLDER_API_KEY" # Replace with actual API key
+	}`
+			hasPlaceholder = true
+		case string(platform.AlertNotificationChannelTypeDAGTRIGGER):
+			// Type assert the definition to access its fields
+			if defMap, ok := channel.Definition.(map[string]interface{}); ok {
+				dagId, _ := defMap["dagId"].(string)
+				deploymentId, _ := defMap["deploymentId"].(string)
+
+				definition = fmt.Sprintf(`definition = {
+		dag_id = "%s"
+		deployment_api_token = "PLACEHOLDER_API_TOKEN" # Replace with actual deployment API token
+		deployment_id = "%s"
+	}`, dagId, deploymentId)
+				hasPlaceholder = true // DAG_TRIGGER always has placeholder for deployment_api_token
+			} else {
+				definition = `definition = {
+		dag_id = "PLACEHOLDER_DAG_ID"
+		deployment_api_token = "PLACEHOLDER_API_TOKEN"
+		deployment_id = "PLACEHOLDER_DEPLOYMENT_ID"
+	}`
+				hasPlaceholder = true
+			}
+
+		default:
+			log.Printf("Skipping notification channel %s: unsupported type %s", channel.Id, channelType)
+			continue
+		}
+
+		// Track channels that have placeholder values
+		if hasPlaceholder {
+			channelsWithPlaceholders = append(channelsWithPlaceholders, fmt.Sprintf("%s (%s - %s)", channel.Id, channelName, channelType))
+		}
+
+		channelHCL = fmt.Sprintf(`
+resource "astro_notification_channel" "notification_channel_%s" {
+	name = "%s"
+	type = "%s"
+	entity_id = "%s"
+	entity_type = "%s"
+	is_shared = %t
+	%s
+}
+`,
+			channel.Id,
+			channelName,
+			channelType,
+			entityId,
+			entityType,
+			isShared,
+			definition,
+		)
+
+		log.Printf("Generated import for astro_notification_channel.notification_channel_%s", channel.Id)
+		hclString += channelHCL
+	}
+
+	return hclString, channelsWithPlaceholders, nil
 }
 
 func stringValue(s *string) string {
