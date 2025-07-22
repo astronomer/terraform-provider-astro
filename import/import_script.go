@@ -765,11 +765,42 @@ func handleAlert(ctx context.Context, platformClient *platform.ClientWithRespons
 		return "", fmt.Errorf("alerts list is nil")
 	}
 
-	alertIds := lo.Map(alerts, func(alert platform.Alert, _ int) string {
+	// Define supported alert types that match the Terraform provider schema
+	supportedAlertTypes := map[string]bool{
+		"DAG_DURATION":   true,
+		"DAG_FAILURE":    true,
+		"DAG_SUCCESS":    true,
+		"DAG_TIMELINESS": true,
+		"TASK_FAILURE":   true,
+		"TASK_DURATION":  true,
+	}
+
+	// Filter alerts to only include supported types
+	var supportedAlerts []platform.Alert
+	var skippedAlerts []string
+
+	for _, alert := range alerts {
+		alertType := string(alert.Type)
+		if supportedAlertTypes[alertType] {
+			supportedAlerts = append(supportedAlerts, alert)
+		} else {
+			skippedAlerts = append(skippedAlerts, fmt.Sprintf("%s (type: %s)", alert.Id, alertType))
+		}
+	}
+
+	// Log information about skipped alerts
+	if len(skippedAlerts) > 0 {
+		log.Printf("Skipping %d alerts with unsupported types:", len(skippedAlerts))
+		for _, skipped := range skippedAlerts {
+			log.Printf("  - %s", skipped)
+		}
+	}
+
+	alertIds := lo.Map(supportedAlerts, func(alert platform.Alert, _ int) string {
 		return alert.Id
 	})
 
-	log.Printf("Importing Alerts: %v", alertIds)
+	log.Printf("Importing %d supported alerts: %v", len(alertIds), alertIds)
 
 	var importString string
 	for _, alertId := range alertIds {
