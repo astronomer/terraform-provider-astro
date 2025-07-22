@@ -147,8 +147,8 @@ provider "astro" {
 		"team":                 handleTeams,
 		"team_roles":           handleTeamRoles,
 		"user_roles":           handleUserRoles,
-		"alert":                handleAlert,
-		"notification_channel": handleNotificationChannel,
+		"alert":                handleAlerts,
+		"notification_channel": handleNotificationChannels,
 	}
 
 	results := make(chan HandlerResult, len(resources))
@@ -744,7 +744,7 @@ import {
 	return importString, nil
 }
 
-func handleAlert(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
+func handleAlerts(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing alerts for organization %s", organizationId)
 
 	alertsResp, err := platformClient.ListAlertsWithResponse(ctx, organizationId, &platform.ListAlertsParams{Limit: lo.ToPtr(1000)})
@@ -816,7 +816,7 @@ import {
 	return importString, nil
 }
 
-func handleNotificationChannel(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
+func handleNotificationChannels(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing notification channels for organization %s", organizationId)
 
 	notificationChannelsResp, err := platformClient.ListNotificationChannelsWithResponse(ctx, organizationId, &platform.ListNotificationChannelsParams{Limit: lo.ToPtr(1000)})

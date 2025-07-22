@@ -379,6 +379,216 @@ var _ = Describe("Import Script", func() {
 			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_user_roles.user_%s", userId2)))
 		})
 	})
+
+	Describe("HandleAlerts", func() {
+		It("should return an error if the platform client returns an error", func() {
+			mockPlatformClient.On("ListAlertsWithResponse", ctx, organizationId, (*platform.ListAlertsParams)(nil)).Return(nil, fmt.Errorf("error"))
+
+			result, err := import_script.HandleAlerts(ctx, mockPlatformClient, mockIAMClient, organizationId)
+
+			Expect(err).ToNot(BeNil())
+			Expect(result).To(BeEmpty())
+		})
+
+		It("should return an error if the platform client returns a non-200 status code", func() {
+			mockResponse := &platform.ListAlertsResponse{
+				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
+			}
+
+			mockPlatformClient.On("ListAlertsWithResponse", ctx, organizationId, (*platform.ListAlertsParams)(nil)).Return(mockResponse, nil)
+
+			result, err := import_script.HandleAlerts(ctx, mockPlatformClient, mockIAMClient, organizationId)
+
+			Expect(err).ToNot(BeNil())
+			Expect(result).To(BeEmpty())
+		})
+
+		It("should return a list of supported alert resources and skip unsupported types", func() {
+			alertId1 := cuid.New()
+			alertId2 := cuid.New()
+			alertId3 := cuid.New()
+			alertId4 := cuid.New()
+
+			alerts := []platform.Alert{
+				{Id: alertId1, Type: platform.AlertTypeDAGFAILURE},
+				{Id: alertId2, Type: platform.AlertTypeDAGSUCCESS},
+				{Id: alertId3, Type: platform.AlertType("JOB_SCHEDULING_DISABLED")},  // unsupported type
+				{Id: alertId4, Type: platform.AlertType("WORKER_QUEUE_AT_CAPACITY")}, // unsupported type
+			}
+
+			mockResponse := &platform.ListAlertsResponse{
+				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+				JSON200: &platform.AlertsPaginated{
+					Alerts: alerts,
+				},
+			}
+
+			mockPlatformClient.On("ListAlertsWithResponse", ctx, organizationId, (*platform.ListAlertsParams)(nil)).Return(mockResponse, nil)
+
+			result, err := import_script.HandleAlerts(ctx, mockPlatformClient, mockIAMClient, organizationId)
+
+			Expect(err).To(BeNil())
+			// Should only include supported alert types
+			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_alert.alert_%s", alertId1)))
+			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_alert.alert_%s", alertId2)))
+			// Should not include unsupported alert types
+			Expect(result).ToNot(ContainSubstring(fmt.Sprintf("astro_alert.alert_%s", alertId3)))
+			Expect(result).ToNot(ContainSubstring(fmt.Sprintf("astro_alert.alert_%s", alertId4)))
+		})
+
+		It("should return empty string when no supported alerts exist", func() {
+			alerts := []platform.Alert{
+				{Id: cuid.New(), Type: platform.AlertType("DEPRECATED_RUNTIME_VERSION")},
+				{Id: cuid.New(), Type: platform.AlertType("AIRFLOW_DB_STORAGE_UNUSUALLY_HIGH")},
+			}
+
+			mockResponse := &platform.ListAlertsResponse{
+				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+				JSON200: &platform.AlertsPaginated{
+					Alerts: alerts,
+				},
+			}
+
+			mockPlatformClient.On("ListAlertsWithResponse", ctx, organizationId, (*platform.ListAlertsParams)(nil)).Return(mockResponse, nil)
+
+			result, err := import_script.HandleAlerts(ctx, mockPlatformClient, mockIAMClient, organizationId)
+
+			Expect(err).To(BeNil())
+			Expect(result).To(BeEmpty())
+		})
+
+		It("should handle all supported alert types", func() {
+			alertIds := make([]string, 6)
+			alerts := make([]platform.Alert, 6)
+			supportedTypes := []platform.AlertType{
+				platform.AlertTypeDAGDURATION,
+				platform.AlertTypeDAGFAILURE,
+				platform.AlertTypeDAGSUCCESS,
+				platform.AlertTypeDAGTIMELINESS,
+				platform.AlertTypeTASKFAILURE,
+				platform.AlertTypeTASKDURATION,
+			}
+
+			for i, alertType := range supportedTypes {
+				alertIds[i] = cuid.New()
+				alerts[i] = platform.Alert{Id: alertIds[i], Type: alertType}
+			}
+
+			mockResponse := &platform.ListAlertsResponse{
+				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+				JSON200: &platform.AlertsPaginated{
+					Alerts: alerts,
+				},
+			}
+
+			mockPlatformClient.On("ListAlertsWithResponse", ctx, organizationId, (*platform.ListAlertsParams)(nil)).Return(mockResponse, nil)
+
+			result, err := import_script.HandleAlerts(ctx, mockPlatformClient, mockIAMClient, organizationId)
+
+			Expect(err).To(BeNil())
+			for _, alertId := range alertIds {
+				Expect(result).To(ContainSubstring(fmt.Sprintf("astro_alert.alert_%s", alertId)))
+			}
+		})
+	})
+
+	Describe("HandleNotificationChannels", func() {
+		It("should return an error if the platform client returns an error", func() {
+			mockPlatformClient.On("ListNotificationChannelsWithResponse", ctx, organizationId, (*platform.ListNotificationChannelsParams)(nil)).Return(nil, fmt.Errorf("error"))
+
+			result, err := import_script.HandleNotificationChannels(ctx, mockPlatformClient, mockIAMClient, organizationId)
+
+			Expect(err).ToNot(BeNil())
+			Expect(result).To(BeEmpty())
+		})
+
+		It("should return an error if the platform client returns a non-200 status code", func() {
+			mockResponse := &platform.ListNotificationChannelsResponse{
+				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
+			}
+
+			mockPlatformClient.On("ListNotificationChannelsWithResponse", ctx, organizationId, (*platform.ListNotificationChannelsParams)(nil)).Return(mockResponse, nil)
+
+			result, err := import_script.HandleNotificationChannels(ctx, mockPlatformClient, mockIAMClient, organizationId)
+
+			Expect(err).ToNot(BeNil())
+			Expect(result).To(BeEmpty())
+		})
+
+		It("should return a list of notification channel resources", func() {
+			channelId1 := cuid.New()
+			channelId2 := cuid.New()
+
+			channels := []platform.NotificationChannel{
+				{Id: channelId1, Type: string(platform.AlertNotificationChannelTypeEMAIL)},
+				{Id: channelId2, Type: string(platform.AlertNotificationChannelTypeSLACK)},
+			}
+
+			mockResponse := &platform.ListNotificationChannelsResponse{
+				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+				JSON200: &platform.NotificationChannelsPaginated{
+					NotificationChannels: channels,
+				},
+			}
+
+			mockPlatformClient.On("ListNotificationChannelsWithResponse", ctx, organizationId, (*platform.ListNotificationChannelsParams)(nil)).Return(mockResponse, nil)
+
+			result, err := import_script.HandleNotificationChannels(ctx, mockPlatformClient, mockIAMClient, organizationId)
+
+			Expect(err).To(BeNil())
+			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_notification_channel.notification_channel_%s", channelId1)))
+			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_notification_channel.notification_channel_%s", channelId2)))
+		})
+
+		It("should handle empty notification channels list", func() {
+			mockResponse := &platform.ListNotificationChannelsResponse{
+				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+				JSON200: &platform.NotificationChannelsPaginated{
+					NotificationChannels: []platform.NotificationChannel{},
+				},
+			}
+
+			mockPlatformClient.On("ListNotificationChannelsWithResponse", ctx, organizationId, (*platform.ListNotificationChannelsParams)(nil)).Return(mockResponse, nil)
+
+			result, err := import_script.HandleNotificationChannels(ctx, mockPlatformClient, mockIAMClient, organizationId)
+
+			Expect(err).To(BeNil())
+			Expect(result).To(BeEmpty())
+		})
+
+		It("should handle different notification channel types", func() {
+			channelIds := make([]string, 5)
+			channels := make([]platform.NotificationChannel, 5)
+			channelTypes := []string{
+				string(platform.AlertNotificationChannelTypeEMAIL),
+				string(platform.AlertNotificationChannelTypeSLACK),
+				string(platform.AlertNotificationChannelTypePAGERDUTY),
+				string(platform.AlertNotificationChannelTypeOPSGENIE),
+				string(platform.AlertNotificationChannelTypeDAGTRIGGER),
+			}
+
+			for i, channelType := range channelTypes {
+				channelIds[i] = cuid.New()
+				channels[i] = platform.NotificationChannel{Id: channelIds[i], Type: channelType}
+			}
+
+			mockResponse := &platform.ListNotificationChannelsResponse{
+				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+				JSON200: &platform.NotificationChannelsPaginated{
+					NotificationChannels: channels,
+				},
+			}
+
+			mockPlatformClient.On("ListNotificationChannelsWithResponse", ctx, organizationId, (*platform.ListNotificationChannelsParams)(nil)).Return(mockResponse, nil)
+
+			result, err := import_script.HandleNotificationChannels(ctx, mockPlatformClient, mockIAMClient, organizationId)
+
+			Expect(err).To(BeNil())
+			for _, channelId := range channelIds {
+				Expect(result).To(ContainSubstring(fmt.Sprintf("astro_notification_channel.notification_channel_%s", channelId)))
+			}
+		})
+	})
 })
 
 // will only work locally if organizationId and token are set
@@ -446,7 +656,7 @@ var _ = Describe("Integration Test", func() {
 
 		// Run the import_script.go file
 		cmd := exec.Command("go", "run", importScriptPath,
-			"-resources", "workspace,deployment,cluster,api_token,team,team_roles,user_roles",
+			"-resources", "workspace,deployment,cluster,api_token,team,team_roles,user_roles,alert,notification_channel",
 			"-token", token,
 			"-organizationId", organizationId,
 			"-host", "dev",
@@ -471,5 +681,7 @@ var _ = Describe("Integration Test", func() {
 		Expect(outputStr).To(ContainSubstring("astro_team"))
 		Expect(outputStr).To(ContainSubstring("astro_team_roles"))
 		Expect(outputStr).To(ContainSubstring("astro_user_roles"))
+		Expect(outputStr).To(ContainSubstring("astro_alert"))
+		Expect(outputStr).To(ContainSubstring("astro_notification_channel"))
 	})
 })

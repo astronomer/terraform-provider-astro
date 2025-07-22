@@ -347,3 +347,116 @@ import {
 
 	return importString, nil
 }
+
+func HandleAlerts(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, iamClient *mocksIam.ClientWithResponsesInterface, organizationId string) (string, error) {
+	log.Printf("Importing alerts for organization %s", organizationId)
+
+	alertsResp, err := platformClient.ListAlertsWithResponse(ctx, organizationId, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to list alerts: %v", err)
+	}
+
+	if alertsResp.StatusCode() != http.StatusOK {
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", alertsResp.StatusCode(), string(alertsResp.Body))
+	}
+
+	if alertsResp.JSON200 == nil {
+		return "", fmt.Errorf("failed to list alerts, JSON200 resp is nil, organizationId: %v", organizationId)
+	}
+
+	alerts := alertsResp.JSON200.Alerts
+	if alerts == nil {
+		return "", fmt.Errorf("alerts list is nil")
+	}
+
+	// Define supported alert types that match the Terraform provider schema
+	supportedAlertTypes := map[string]bool{
+		"DAG_DURATION":   true,
+		"DAG_FAILURE":    true,
+		"DAG_SUCCESS":    true,
+		"DAG_TIMELINESS": true,
+		"TASK_FAILURE":   true,
+		"TASK_DURATION":  true,
+	}
+
+	// Filter alerts to only include supported types
+	var supportedAlerts []platform.Alert
+	var skippedAlerts []string
+
+	for _, alert := range alerts {
+		alertType := string(alert.Type)
+		if supportedAlertTypes[alertType] {
+			supportedAlerts = append(supportedAlerts, alert)
+		} else {
+			skippedAlerts = append(skippedAlerts, fmt.Sprintf("%s (type: %s)", alert.Id, alertType))
+		}
+	}
+
+	// Log information about skipped alerts
+	if len(skippedAlerts) > 0 {
+		log.Printf("Skipping %d alerts with unsupported types:", len(skippedAlerts))
+		for _, skipped := range skippedAlerts {
+			log.Printf("  - %s", skipped)
+		}
+	}
+
+	alertIds := lo.Map(supportedAlerts, func(alert platform.Alert, _ int) string {
+		return alert.Id
+	})
+
+	log.Printf("Importing %d supported alerts: %v", len(alertIds), alertIds)
+
+	var importString string
+	for _, alertId := range alertIds {
+		alertImportString := fmt.Sprintf(`
+import {
+	id = "%v"
+	to = astro_alert.alert_%v
+}`, alertId, alertId)
+
+		importString += alertImportString + "\n"
+	}
+
+	return importString, nil
+}
+
+func HandleNotificationChannels(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, iamClient *mocksIam.ClientWithResponsesInterface, organizationId string) (string, error) {
+	log.Printf("Importing notification channels for organization %s", organizationId)
+
+	notificationChannelsResp, err := platformClient.ListNotificationChannelsWithResponse(ctx, organizationId, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to list notification channels: %v", err)
+	}
+
+	if notificationChannelsResp.StatusCode() != http.StatusOK {
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", notificationChannelsResp.StatusCode(), string(notificationChannelsResp.Body))
+	}
+
+	if notificationChannelsResp.JSON200 == nil {
+		return "", fmt.Errorf("failed to list notification channels, JSON200 resp is nil, organizationId: %v", organizationId)
+	}
+
+	notificationChannels := notificationChannelsResp.JSON200.NotificationChannels
+	if notificationChannels == nil {
+		return "", fmt.Errorf("notification channels list is nil")
+	}
+
+	channelIds := lo.Map(notificationChannels, func(channel platform.NotificationChannel, _ int) string {
+		return channel.Id
+	})
+
+	log.Printf("Importing Notification Channels: %v", channelIds)
+
+	var importString string
+	for _, channelId := range channelIds {
+		channelImportString := fmt.Sprintf(`
+import {
+	id = "%v"
+	to = astro_notification_channel.notification_channel_%v
+}`, channelId, channelId)
+
+		importString += channelImportString + "\n"
+	}
+
+	return importString, nil
+}
