@@ -35,7 +35,7 @@ func main() {
 	log.Println("Terraform Import Script Starting")
 
 	// collect all arguments from the user, indicating all the resources that need to be imported
-	resourcesPtr := flag.String("resources", "workspace,deployment,cluster,api_token,team,team_roles,user_roles", "Comma separated list of resources to import. The only accepted values are workspace, deployment, cluster, api_token, team, team_roles, user_roles")
+	resourcesPtr := flag.String("resources", "workspace,deployment,cluster,api_token,team,team_roles,user_roles,alert,notification_channel", "Comma separated list of resources to import. The only accepted values are workspace, deployment, cluster, api_token, team, team_roles, user_roles, alert, notification_channel")
 	tokenPtr := flag.String("token", "", "API token to authenticate with the platform")
 	hostPtr := flag.String("host", "https://api.astronomer.io", "API host to connect to")
 	organizationIdPtr := flag.String("organizationId", "", "Organization ID to import resources into")
@@ -57,7 +57,7 @@ func main() {
 
 	// validate the resources argument
 	resources := strings.Split(strings.ToLower(*resourcesPtr), ",")
-	acceptedResources := []string{"workspace", "deployment", "cluster", "api_token", "team", "team_roles", "user_roles"}
+	acceptedResources := []string{"workspace", "deployment", "cluster", "api_token", "team", "team_roles", "user_roles", "alert", "notification_channel"}
 	for _, resource := range resources {
 		if !lo.Contains(acceptedResources, resource) {
 			log.Fatalf("Invalid resource: %s is not accepted. The only accepted resources are %s", resource, acceptedResources)
@@ -140,13 +140,15 @@ provider "astro" {
 	//	for each resource, we get the list of entities and generate the terraform import command
 
 	resourceHandlers := map[string]func(context.Context, *platform.ClientWithResponses, *iam.ClientWithResponses, string) (string, error){
-		"workspace":  handleWorkspaces,
-		"deployment": handleDeployments,
-		"cluster":    handleClusters,
-		"api_token":  handleApiTokens,
-		"team":       handleTeams,
-		"team_roles": handleTeamRoles,
-		"user_roles": handleUserRoles,
+		"workspace":            handleWorkspaces,
+		"deployment":           handleDeployments,
+		"cluster":              handleClusters,
+		"api_token":            handleApiTokens,
+		"team":                 handleTeams,
+		"team_roles":           handleTeamRoles,
+		"user_roles":           handleUserRoles,
+		"alert":                handleAlerts,
+		"notification_channel": handleNotificationChannels,
 	}
 
 	results := make(chan HandlerResult, len(resources))
@@ -180,6 +182,7 @@ provider "astro" {
 
 	var allResults []HandlerResult
 	var deploymentImportString string
+	var notificationChannelImportString string
 	for result := range results {
 		allResults = append(allResults, result)
 		if result.Error != nil {
@@ -187,6 +190,8 @@ provider "astro" {
 		} else {
 			if result.Resource == "deployment" {
 				deploymentImportString += result.ImportString
+			} else if result.Resource == "notification_channel" {
+				notificationChannelImportString += result.ImportString
 			} else {
 				importString += result.ImportString
 			}
@@ -246,6 +251,17 @@ provider "astro" {
 		log.Println("Import process completed successfully. The 'generated.tf' file now includes all resources, including deployments.")
 	}
 
+	// Add notification channel import blocks and HCL to the generated file
+	if notificationChannelImportString != "" {
+		err = addNotificationChannelsToGeneratedFile(notificationChannelImportString, organizationId, platformClient, ctx)
+		if err != nil {
+			log.Fatalf("Failed to add notification channels to generated file: %v", err)
+			return
+		}
+
+		log.Println("Import process completed successfully. The 'generated.tf' file now includes all resources, including notification channels.")
+	}
+
 	// Print summary of results
 	log.Println("Import process completed. Summary:")
 	for _, result := range allResults {
@@ -263,7 +279,7 @@ func printHelp() {
 	log.Println("\nOptions:")
 	log.Println("  -resources string")
 	log.Println("        Comma separated list of resources to import. Accepted values:")
-	log.Println("        workspace, deployment, cluster, api_token, team, team_roles, user_roles")
+	log.Println("        workspace, deployment, cluster, api_token, team, team_roles, user_roles, alert, notification_channel")
 	log.Println("  -token string")
 	log.Println("        API token to authenticate with the platform")
 	log.Println("  -organizationId string")
@@ -282,7 +298,7 @@ func checkRequiredArguments(resourcesPtr string, tokenPtr string, organizationId
 	var missingArgs []string
 
 	if resourcesPtr == "" {
-		missingArgs = append(missingArgs, "-resources (comma-separated list: workspace, deployment, cluster, api_token, team, team_roles, user_roles)")
+		missingArgs = append(missingArgs, "-resources (comma-separated list: workspace, deployment, cluster, api_token, team, team_roles, user_roles, alert, notification_channel)")
 	}
 
 	if tokenPtr == "" && len(os.Getenv("ASTRO_API_TOKEN")) == 0 {
@@ -728,6 +744,119 @@ import {
 	return importString, nil
 }
 
+func handleAlerts(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
+	log.Printf("Importing alerts for organization %s", organizationId)
+
+	alertsResp, err := platformClient.ListAlertsWithResponse(ctx, organizationId, &platform.ListAlertsParams{Limit: lo.ToPtr(1000)})
+	if err != nil {
+		return "", fmt.Errorf("failed to list alerts: %v", err)
+	}
+
+	if alertsResp.StatusCode() != http.StatusOK {
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", alertsResp.StatusCode(), string(alertsResp.Body))
+	}
+
+	if alertsResp.JSON200 == nil {
+		return "", fmt.Errorf("failed to list alerts, JSON200 resp is nil, organizationId: %v", organizationId)
+	}
+
+	alerts := alertsResp.JSON200.Alerts
+	if alerts == nil {
+		return "", fmt.Errorf("alerts list is nil")
+	}
+
+	// Define supported alert types that match the Terraform provider schema
+	supportedAlertTypes := map[string]bool{
+		"DAG_DURATION":   true,
+		"DAG_FAILURE":    true,
+		"DAG_SUCCESS":    true,
+		"DAG_TIMELINESS": true,
+		"TASK_FAILURE":   true,
+		"TASK_DURATION":  true,
+	}
+
+	// Filter alerts to only include supported types
+	var supportedAlerts []platform.Alert
+	var skippedAlerts []string
+
+	for _, alert := range alerts {
+		alertType := string(alert.Type)
+		if supportedAlertTypes[alertType] {
+			supportedAlerts = append(supportedAlerts, alert)
+		} else {
+			skippedAlerts = append(skippedAlerts, fmt.Sprintf("%s (type: %s)", alert.Id, alertType))
+		}
+	}
+
+	// Log information about skipped alerts
+	if len(skippedAlerts) > 0 {
+		log.Printf("Skipping %d alerts with unsupported types:", len(skippedAlerts))
+		for _, skipped := range skippedAlerts {
+			log.Printf("  - %s", skipped)
+		}
+	}
+
+	alertIds := lo.Map(supportedAlerts, func(alert platform.Alert, _ int) string {
+		return alert.Id
+	})
+
+	log.Printf("Importing %d supported alerts: %v", len(alertIds), alertIds)
+
+	var importString string
+	for _, alertId := range alertIds {
+		alertImportString := fmt.Sprintf(`
+import {
+	id = "%v"
+	to = astro_alert.alert_%v
+}`, alertId, alertId)
+
+		importString += alertImportString + "\n"
+	}
+
+	return importString, nil
+}
+
+func handleNotificationChannels(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
+	log.Printf("Importing notification channels for organization %s", organizationId)
+
+	notificationChannelsResp, err := platformClient.ListNotificationChannelsWithResponse(ctx, organizationId, &platform.ListNotificationChannelsParams{Limit: lo.ToPtr(1000)})
+	if err != nil {
+		return "", fmt.Errorf("failed to list notification channels: %v", err)
+	}
+
+	if notificationChannelsResp.StatusCode() != http.StatusOK {
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", notificationChannelsResp.StatusCode(), string(notificationChannelsResp.Body))
+	}
+
+	if notificationChannelsResp.JSON200 == nil {
+		return "", fmt.Errorf("failed to list notification channels, JSON200 resp is nil, organizationId: %v", organizationId)
+	}
+
+	notificationChannels := notificationChannelsResp.JSON200.NotificationChannels
+	if notificationChannels == nil {
+		return "", fmt.Errorf("notification channels list is nil")
+	}
+
+	channelIds := lo.Map(notificationChannels, func(channel platform.NotificationChannel, _ int) string {
+		return channel.Id
+	})
+
+	log.Printf("Importing Notification Channels: %v", channelIds)
+
+	var importString string
+	for _, channelId := range channelIds {
+		channelImportString := fmt.Sprintf(`
+import {
+	id = "%v"
+	to = astro_notification_channel.notification_channel_%v
+}`, channelId, channelId)
+
+		importString += channelImportString + "\n"
+	}
+
+	return importString, nil
+}
+
 // addDeploymentsToGeneratedFile adds the deployment import blocks and HCL to the generated.tf file
 func addDeploymentsToGeneratedFile(deploymentImportString string, organizationId string, platformClient *platform.ClientWithResponses, ctx context.Context) error {
 	var contentBytes []byte
@@ -767,6 +896,65 @@ func addDeploymentsToGeneratedFile(deploymentImportString string, organizationId
 	}
 
 	log.Println("Successfully updated generated.tf with deployment information.")
+	return nil
+}
+
+// addNotificationChannelsToGeneratedFile adds the notification channel import blocks and HCL to the generated.tf file
+func addNotificationChannelsToGeneratedFile(notificationChannelImportString string, organizationId string, platformClient *platform.ClientWithResponses, ctx context.Context) error {
+	var contentBytes []byte
+	var err error
+
+	// Try to read the existing generated.tf file
+	contentBytes, err = os.ReadFile("generated.tf")
+	if err != nil {
+		if os.IsNotExist(err) {
+			// File doesn't exist, we'll create our own content
+			log.Println("generated.tf does not exist. Creating new file with notification channel information.")
+			contentBytes = []byte{}
+		} else {
+			// Some other error occurred
+			return fmt.Errorf("error reading generated.tf: %v", err)
+		}
+	}
+
+	// Generate notification channel HCL
+	notificationChannelHCL, channelsWithPlaceholders, err := generateNotificationChannelHCL(ctx, platformClient, organizationId)
+	if err != nil {
+		return fmt.Errorf("failed to generate notification channel HCL: %v", err)
+	}
+
+	// Combine existing content (if any), notification channel import blocks, and notification channel HCL
+	existingContent := strings.TrimSpace(string(contentBytes))
+	newContent := existingContent
+	if newContent != "" {
+		newContent += "\n\n"
+	}
+	newContent += "// generated Notification Channel HCL \n" + strings.TrimSpace(notificationChannelImportString) + "\n\n" + strings.TrimSpace(notificationChannelHCL)
+
+	// Write the updated content to generated.tf
+	err = os.WriteFile("generated.tf", []byte(newContent), 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write updated generated.tf: %v", err)
+	}
+
+	log.Println("Successfully updated generated.tf with notification channel information.")
+
+	// Print message about notification channels that need to be updated
+	if len(channelsWithPlaceholders) > 0 {
+		log.Println("\n" + strings.Repeat("=", 80))
+		log.Println("⚠️  IMPORTANT: The following notification channels contain placeholder values")
+		log.Println("   that need to be updated with actual sensitive information:")
+		log.Println(strings.Repeat("=", 80))
+		for _, channel := range channelsWithPlaceholders {
+			log.Printf("   • %s", channel)
+		}
+		log.Println(strings.Repeat("=", 80))
+		log.Println("   Please update these notification channels in your generated.tf file")
+		log.Println("   with the actual sensitive values (webhook URLs, API keys, tokens, etc.)")
+		log.Println("   before running 'terraform apply'.")
+		log.Println(strings.Repeat("=", 80) + "\n")
+	}
+
 	return nil
 }
 
@@ -931,6 +1119,144 @@ resource "astro_deployment" "deployment_%s" {
 	}
 
 	return hclString, nil
+}
+
+// generateNotificationChannelHCL generates the HCL for all notification channels in the organization
+func generateNotificationChannelHCL(ctx context.Context, platformClient *platform.ClientWithResponses, organizationId string) (string, []string, error) {
+	notificationChannelsResp, err := platformClient.ListNotificationChannelsWithResponse(ctx, organizationId, &platform.ListNotificationChannelsParams{Limit: lo.ToPtr(1000)})
+	if err != nil {
+		return "", nil, fmt.Errorf("failed to list notification channels: %v", err)
+	}
+
+	if notificationChannelsResp.StatusCode() != http.StatusOK {
+		return "", nil, fmt.Errorf("unexpected status code: %d, body: %s", notificationChannelsResp.StatusCode(), string(notificationChannelsResp.Body))
+	}
+
+	if notificationChannelsResp.JSON200 == nil {
+		return "", nil, fmt.Errorf("failed to list notification channels, JSON200 resp is nil, organizationId: %v", organizationId)
+	}
+
+	_, diagnostic := clients.NormalizeAPIError(ctx, notificationChannelsResp.HTTPResponse, notificationChannelsResp.Body)
+	if diagnostic != nil {
+		log.Printf("API Error diagnostic: %+v", diagnostic)
+	}
+
+	notificationChannels := notificationChannelsResp.JSON200.NotificationChannels
+	if notificationChannels == nil {
+		return "", nil, fmt.Errorf("notification channels list is nil")
+	}
+
+	var hclString string
+	var channelsWithPlaceholders []string
+
+	for _, channel := range notificationChannels {
+		var channelHCL string
+		hasPlaceholder := false
+
+		channelType := channel.Type
+		channelName := channel.Name
+		entityId := channel.EntityId
+		entityType := channel.EntityType
+		isShared := channel.IsShared
+
+		// Generate appropriate definition based on channel type
+		var definition string
+		switch channelType {
+		case string(platform.AlertNotificationChannelTypeEMAIL):
+			if defMap, ok := channel.Definition.(map[string]interface{}); ok {
+				if recipientsArray, ok := defMap["recipients"].([]interface{}); ok {
+					var recipients []string
+					for _, r := range recipientsArray {
+						if email, ok := r.(string); ok {
+							recipients = append(recipients, fmt.Sprintf(`"%s"`, email))
+						}
+					}
+					recipientsString := strings.Join(recipients, ", ")
+					definition = fmt.Sprintf(`definition = {
+		recipients = [%s]
+	}`, recipientsString)
+				} else {
+					definition = `definition = {
+		recipients = ["PLACEHOLDER_EMAIL"] # Replace with actual email addresses
+	}`
+					hasPlaceholder = true
+				}
+			} else {
+				definition = `definition = {
+		recipients = ["PLACEHOLDER_EMAIL"] # Replace with actual email addresses
+	}`
+				hasPlaceholder = true
+			}
+		case string(platform.AlertNotificationChannelTypeSLACK):
+			definition = `definition = {
+		webhook_url = "PLACEHOLDER_WEBHOOK_URL" # Replace with actual webhook URL
+	}`
+			hasPlaceholder = true
+		case string(platform.AlertNotificationChannelTypePAGERDUTY):
+			definition = `definition = {
+		integration_key = "PLACEHOLDER_INTEGRATION_KEY" # Replace with actual integration key
+	}`
+			hasPlaceholder = true
+		case string(platform.AlertNotificationChannelTypeOPSGENIE):
+			definition = `definition = {
+		api_key = "PLACEHOLDER_API_KEY" # Replace with actual API key
+	}`
+			hasPlaceholder = true
+		case string(platform.AlertNotificationChannelTypeDAGTRIGGER):
+			// Type assert the definition to access its fields
+			if defMap, ok := channel.Definition.(map[string]interface{}); ok {
+				dagId, _ := defMap["dagId"].(string)
+				deploymentId, _ := defMap["deploymentId"].(string)
+
+				definition = fmt.Sprintf(`definition = {
+		dag_id = "%s"
+		deployment_api_token = "PLACEHOLDER_API_TOKEN" # Replace with actual deployment API token
+		deployment_id = "%s"
+	}`, dagId, deploymentId)
+				hasPlaceholder = true // DAG_TRIGGER always has placeholder for deployment_api_token
+			} else {
+				definition = `definition = {
+		dag_id = "PLACEHOLDER_DAG_ID"
+		deployment_api_token = "PLACEHOLDER_API_TOKEN"
+		deployment_id = "PLACEHOLDER_DEPLOYMENT_ID"
+	}`
+				hasPlaceholder = true
+			}
+
+		default:
+			log.Printf("Skipping notification channel %s: unsupported type %s", channel.Id, channelType)
+			continue
+		}
+
+		// Track channels that have placeholder values
+		if hasPlaceholder {
+			channelsWithPlaceholders = append(channelsWithPlaceholders, fmt.Sprintf("%s (%s - %s)", channel.Id, channelName, channelType))
+		}
+
+		channelHCL = fmt.Sprintf(`
+resource "astro_notification_channel" "notification_channel_%s" {
+	name = "%s"
+	type = "%s"
+	entity_id = "%s"
+	entity_type = "%s"
+	is_shared = %t
+	%s
+}
+`,
+			channel.Id,
+			channelName,
+			channelType,
+			entityId,
+			entityType,
+			isShared,
+			definition,
+		)
+
+		log.Printf("Generated import for astro_notification_channel.notification_channel_%s", channel.Id)
+		hclString += channelHCL
+	}
+
+	return hclString, channelsWithPlaceholders, nil
 }
 
 func stringValue(s *string) string {
