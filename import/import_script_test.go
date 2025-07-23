@@ -616,41 +616,11 @@ var _ = Describe("Integration Test", func() {
 		Expect(err).To(BeNil(), fmt.Sprintf("import_script.go not found at %s", importScriptPath))
 	})
 
-	It("should return a list of generated resources - latest", func() {
-		if os.Getenv("SKIP_IMPORT_SCRIPT_TEST") == "" {
-			Skip("Skipping latest integration test")
-			return
-		}
+	It("should return a list of generated resources", func() {
+		envValue := os.Getenv("RUN_IMPORT_SCRIPT_TEST")
 
-		// Run the import_script.go file
-		cmd := exec.Command("go", "run", importScriptPath,
-			"-resources", "workspace,deployment,cluster,team_roles",
-			"-token", token,
-			"-organizationId", organizationId,
-			"-host", "dev",
-			"-runTerraformInit", "true")
-
-		// Set the working directory to the directory containing import_script.go
-		cmd.Dir = filepath.Dir(importScriptPath)
-
-		// Capture the output of the command
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			fmt.Printf("Error executing command: %v\n", err)
-			fmt.Printf("Command output: %s\n", string(output))
-			Fail(fmt.Sprintf("Command failed with error: %v", err))
-		}
-
-		outputStr := string(output)
-		Expect(outputStr).To(ContainSubstring("astro_workspace"))
-		Expect(outputStr).To(ContainSubstring("astro_deployment"))
-		Expect(outputStr).To(ContainSubstring("astro_cluster"))
-		Expect(outputStr).To(ContainSubstring("astro_team_roles"))
-	})
-
-	It("should return a list of generated resources - dev", func() {
-		if os.Getenv("SKIP_IMPORT_SCRIPT_TEST_DEV") == "" {
-			Skip("Skipping dev integration test")
+		if envValue != "true" {
+			Skip(fmt.Sprintf("Skipping integration test - RUN_IMPORT_SCRIPT_TEST is '%s'", envValue))
 			return
 		}
 
@@ -683,5 +653,7 @@ var _ = Describe("Integration Test", func() {
 		Expect(outputStr).To(ContainSubstring("astro_user_roles"))
 		Expect(outputStr).To(ContainSubstring("astro_alert"))
 		Expect(outputStr).To(ContainSubstring("astro_notification_channel"))
+
+		fmt.Printf("Integration test has successfully passed!\n")
 	})
 })

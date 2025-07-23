@@ -67,7 +67,7 @@ jobs:
       - run: go mod download
       - name: Run import script tests
         env:
-          SKIP_IMPORT_SCRIPT_TEST: 1
+          RUN_IMPORT_SCRIPT_TEST: true
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clx42kkcm01fo01o06agtmshg
         run: make test-import-script
