@@ -1009,6 +1009,7 @@ func generateDeploymentHCL(ctx context.Context, platformClient *platform.ClientW
 		contactEmailsString := formatContactEmails(deployment.ContactEmails)
 		environmentVariablesString := formatEnvironmentVariables(deployment.EnvironmentVariables)
 		workerQueuesString := formatWorkerQueues(deployment.WorkerQueues, (*string)(deployment.Executor))
+		remoteExecutionString := formatRemoteExecution(deployment.RemoteExecution)
 
 		deploymentType := deployment.Type
 
@@ -1018,13 +1019,37 @@ func generateDeploymentHCL(ctx context.Context, platformClient *platform.ClientW
 			workloadIdentityString = fmt.Sprintf(`desired_workload_identity = "%s"`, *workloadIdentity)
 		}
 
+		defaultTaskPodCpu := deployment.DefaultTaskPodCpu
+		defaultTaskPodCpuString := ""
+		if defaultTaskPodCpu != nil {
+			defaultTaskPodCpuString = fmt.Sprintf(`default_task_pod_cpu = "%s"`, *defaultTaskPodCpu)
+		}
+
+		defaultTaskPodMemory := deployment.DefaultTaskPodMemory
+		defaultTaskPodMemoryString := ""
+		if defaultTaskPodMemory != nil {
+			defaultTaskPodMemoryString = fmt.Sprintf(`default_task_pod_memory = "%s"`, *defaultTaskPodMemory)
+		}
+
+		resourceQuotaCpu := deployment.ResourceQuotaCpu
+		resourceQuotaCpuString := ""
+		if resourceQuotaCpu != nil {
+			resourceQuotaCpuString = fmt.Sprintf(`resource_quota_cpu = "%s"`, *resourceQuotaCpu)
+		}
+
+		resourceQuotaMemory := deployment.ResourceQuotaMemory
+		resourceQuotaMemoryString := ""
+		if resourceQuotaMemory != nil {
+			resourceQuotaMemoryString = fmt.Sprintf(`resource_quota_memory = "%s"`, *resourceQuotaMemory)
+		}
+
 		if *deploymentType == platform.DeploymentTypeDEDICATED {
 			deploymentHCL = fmt.Sprintf(`
 resource "astro_deployment" "deployment_%s" {
 	cluster_id = "%s"
 	%s
-	default_task_pod_cpu = "%s"
-	default_task_pod_memory = "%s"
+	%s
+	%s
 	description = "%s"
 	%s
 	executor = "%s"
@@ -1033,20 +1058,21 @@ resource "astro_deployment" "deployment_%s" {
 	is_development_mode = %t
 	is_high_availability = %t
 	name = "%s"
-	resource_quota_cpu = "%s"
-	resource_quota_memory = "%s"
+	%s
+	%s
 	scheduler_size = "%s"
 	type = "%s"
 	workspace_id = "%s"
 	%s
     %s
+	%s
 }
 `,
 				deployment.Id,
 				stringValue(deployment.ClusterId),
 				contactEmailsString,
-				stringValue(deployment.DefaultTaskPodCpu),
-				stringValue(deployment.DefaultTaskPodMemory),
+				defaultTaskPodCpuString,
+				defaultTaskPodMemoryString,
 				stringValue(deployment.Description),
 				environmentVariablesString,
 				stringValue((*string)(deployment.Executor)),
@@ -1055,13 +1081,14 @@ resource "astro_deployment" "deployment_%s" {
 				boolValue(deployment.IsDevelopmentMode),
 				boolValue(deployment.IsHighAvailability),
 				deployment.Name,
-				stringValue(deployment.ResourceQuotaCpu),
-				stringValue(deployment.ResourceQuotaMemory),
+				resourceQuotaCpuString,
+				resourceQuotaMemoryString,
 				stringValue((*string)(deployment.SchedulerSize)),
 				stringValue((*string)(deploymentType)),
 				deployment.WorkspaceId,
 				workerQueuesString,
 				workloadIdentityString,
+				remoteExecutionString,
 			)
 		} else if *deploymentType == platform.DeploymentTypeSTANDARD {
 			deploymentHCL = fmt.Sprintf(`
@@ -1273,6 +1300,17 @@ func boolValue(b *bool) bool {
 	return *b
 }
 
+func sliceValue(s []string) string {
+	if len(s) == 0 {
+		return "[]"
+	}
+	quotedSlice := make([]string, len(s))
+	for i, v := range s {
+		quotedSlice[i] = fmt.Sprintf(`"%s"`, v)
+	}
+	return fmt.Sprintf(`[%s]`, strings.Join(quotedSlice, ", "))
+}
+
 func formatContactEmails(emails *[]string) string {
 	if emails == nil || len(*emails) == 0 {
 		return fmt.Sprintf(`contact_emails = []`)
@@ -1331,5 +1369,34 @@ func formatWorkerQueues(queues *[]platform.WorkerQueue, executor *string) string
 	}
 
 	// If we've reached here, it means queues is nil or empty, and executor is not CELERY
+	return ""
+}
+
+func formatRemoteExecution(remoteExecution *platform.DeploymentRemoteExecution) string {
+	if remoteExecution == nil {
+		return ""
+	}
+
+	// If remote execution is enabled, format the string accordingly
+	if remoteExecution.Enabled {
+		taskLogBucket := remoteExecution.TaskLogBucket
+		taskLogBucketString := ""
+		if taskLogBucket != nil {
+			taskLogBucketString = fmt.Sprintf(`task_log_bucket = "%s"`, *taskLogBucket)
+		}
+		taskLogUrlPattern := remoteExecution.TaskLogUrlPattern
+		taskLogUrlPatternString := ""
+		if taskLogUrlPattern != nil {
+			taskLogUrlPatternString = fmt.Sprintf(`task_log_url_pattern = "%s"`, *taskLogUrlPattern)
+		}
+		return fmt.Sprintf(`remote_execution = {
+		enabled = true
+		allowed_ip_address_ranges = %s
+		%s
+		%s
+	}`, sliceValue(remoteExecution.AllowedIpAddressRanges), taskLogBucketString, taskLogUrlPatternString)
+	}
+
+	// If remote execution is not enabled, return an empty string
 	return ""
 }

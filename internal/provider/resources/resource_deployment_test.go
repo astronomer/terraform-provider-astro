@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -13,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
-	"github.com/samber/lo"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
@@ -273,7 +271,9 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
 					IncludeEnvironmentVariables: false,
 					WorkerQueuesStr:             workerQueuesStr(""),
-					RemoteExecutionEnabled:      lo.ToPtr(true),
+					RemoteExecutionStr: `remote_execution = {
+						enabled = true
+					}`,
 				}),
 				ExpectError: regexp.MustCompile(`remote_execution is not allowed for 'STANDARD' deployment`),
 			},
@@ -288,9 +288,47 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
 					IncludeEnvironmentVariables: false,
 					WorkerQueuesStr:             workerQueuesStr(""),
-					RemoteExecutionEnabled:      lo.ToPtr(false),
+					RemoteExecutionStr: `remote_execution = {
+						enabled = false
+					}`,
 				}),
 				ExpectError: regexp.MustCompile(`Invalid Attribute Value Match`),
+			},
+			// ASTRO executor with Remote Execution enabled and Task Log Bucket set to an empty string should be blocked
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
+					Name:                        awsDeploymentName + "_astro",
+					Description:                 utils.TestResourceDescription,
+					Region:                      "us-west-2",
+					CloudProvider:               "AWS",
+					Executor:                    "ASTRO",
+					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
+					IncludeEnvironmentVariables: false,
+					WorkerQueuesStr:             workerQueuesStr(""),
+					RemoteExecutionStr: `remote_execution = {
+						enabled = true
+						task_log_bucket = ""
+					}`,
+				}),
+				ExpectError: regexp.MustCompile(`Invalid Attribute Value Length`),
+			},
+			// ASTRO executor with Remote Execution enabled and Task Log URL Pattern set to an empty string should be blocked
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
+					Name:                        awsDeploymentName + "_astro",
+					Description:                 utils.TestResourceDescription,
+					Region:                      "us-west-2",
+					CloudProvider:               "AWS",
+					Executor:                    "ASTRO",
+					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
+					IncludeEnvironmentVariables: false,
+					WorkerQueuesStr:             workerQueuesStr(""),
+					RemoteExecutionStr: `remote_execution = {
+						enabled = true
+						task_log_url_pattern = ""
+					}`,
+				}),
+				ExpectError: regexp.MustCompile(`Invalid Attribute Value Length`),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
@@ -946,7 +984,7 @@ type standardDeploymentInput struct {
 	ScalingSpec                 string
 	WorkerQueuesStr             string
 	DesiredWorkloadIdentity     string
-	RemoteExecutionEnabled      *bool
+	RemoteExecutionStr          string
 }
 
 func standardDeployment(input standardDeploymentInput) string {
@@ -975,13 +1013,6 @@ func standardDeployment(input standardDeploymentInput) string {
 	desiredWorkloadIdentityStr := ""
 	if input.DesiredWorkloadIdentity != "" {
 		desiredWorkloadIdentityStr = fmt.Sprintf(`desired_workload_identity      = "%s"`, input.DesiredWorkloadIdentity)
-	}
-	remoteExecutionStr := ""
-	if input.RemoteExecutionEnabled != nil {
-		remoteExecutionStr = fmt.Sprintf(`
-		remote_execution = {
-		  enabled = %s
-		}`, strconv.FormatBool(*input.RemoteExecutionEnabled))
 	}
 	return fmt.Sprintf(`
 resource "astro_workspace" "%v_workspace" {
@@ -1016,7 +1047,7 @@ resource "astro_deployment" "%v" {
 }
 `,
 		input.Name, input.Name, utils.TestResourceDescription, input.Name, input.Name, input.Description, input.Region, input.CloudProvider, input.Executor, input.IsDevelopmentMode, input.SchedulerSize, input.Name,
-		envVarsStr(input.IncludeEnvironmentVariables), input.WorkerQueuesStr, scalingSpecStr, desiredWorkloadIdentityStr, remoteExecutionStr)
+		envVarsStr(input.IncludeEnvironmentVariables), input.WorkerQueuesStr, scalingSpecStr, desiredWorkloadIdentityStr, input.RemoteExecutionStr)
 }
 
 func standardDeploymentWithVariableName(input standardDeploymentInput) string {
