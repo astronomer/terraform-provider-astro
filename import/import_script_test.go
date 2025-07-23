@@ -617,8 +617,10 @@ var _ = Describe("Integration Test", func() {
 	})
 
 	It("should return a list of generated resources", func() {
-		if os.Getenv("RUN_IMPORT_SCRIPT_TEST") != "true" {
-			Skip("Skipping integration test")
+		envValue := os.Getenv("RUN_IMPORT_SCRIPT_TEST")
+		fmt.Printf("RUN_IMPORT_SCRIPT_TEST environment variable value: '%s'\n", envValue)
+		if envValue != "true" {
+			Skip(fmt.Sprintf("Skipping integration test - RUN_IMPORT_SCRIPT_TEST is '%s'", envValue))
 			return
 		}
 
