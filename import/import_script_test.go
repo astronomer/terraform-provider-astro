@@ -618,14 +618,11 @@ var _ = Describe("Integration Test", func() {
 
 	It("should return a list of generated resources", func() {
 		envValue := os.Getenv("RUN_IMPORT_SCRIPT_TEST")
-		fmt.Printf("DEBUG: RUN_IMPORT_SCRIPT_TEST = '%s'\n", envValue)
 
 		if envValue != "true" {
 			Skip(fmt.Sprintf("Skipping integration test - RUN_IMPORT_SCRIPT_TEST is '%s'", envValue))
 			return
 		}
-
-		fmt.Printf("DEBUG: Integration test is running!\n")
 
 		// Run the import_script.go file
 		cmd := exec.Command("go", "run", importScriptPath,
@@ -656,5 +653,7 @@ var _ = Describe("Integration Test", func() {
 		Expect(outputStr).To(ContainSubstring("astro_user_roles"))
 		Expect(outputStr).To(ContainSubstring("astro_alert"))
 		Expect(outputStr).To(ContainSubstring("astro_notification_channel"))
+
+		fmt.Printf("Integration test has successfully passed!\n")
 	})
 })
