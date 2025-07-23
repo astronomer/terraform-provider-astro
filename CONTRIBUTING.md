@@ -8,8 +8,9 @@ Welcome to the Terraform Provider Astro project! We're excited that you're inter
 2. [Making Changes](#making-changes)
 3. [Testing](#testing)
 4. [Reporting Issues](#reporting-issues)
-5. [Best Practices](#best-practices)
-6. [Additional Resources](#additional-resources)
+5. [Releases](#releases)
+6. [Best Practices](#best-practices)
+7. [Additional Resources](#additional-resources)
 
 ## Development Environment Setup
 
@@ -153,6 +154,49 @@ If you encounter a bug or have a suggestion for improvement, please create an is
 ### Security Issues
 
 If you discover a security vulnerability, please do NOT open an issue. Email security@astronomer.io instead.
+
+## Releases
+
+The Terraform Provider Astro follows semantic versioning (SemVer) for releases. Only maintainers can create releases.
+
+### Release Process
+
+1. **Navigate to Releases**: Go to the [Releases page](https://github.com/astronomer/terraform-provider-astro/releases) on GitHub and click "Draft a new release".
+
+2. **Create a Tag**: Create a new tag following semantic versioning:
+   - **Major version** (`vx.0.0`): Breaking changes or major new features
+   - **Minor version** (`vx.y.0`): New features that are backward compatible
+   - **Patch version** (`vx.y.z`): Bug fixes and minor improvements
+
+3. **Set Release Details**:
+   - **Title**: Use the version number (e.g., `v1.2.3`)
+   - **Target**: Ensure the release targets the `main` branch
+   - **Description**: Click "Generate release notes" to automatically create notes based on merged pull requests since the previous version
+
+4. **Pre-release Testing**:
+   - Check "Set as a pre-release" 
+   - Publish the pre-release
+   - Test the release thoroughly in a staging environment
+   - Verify the provider can be downloaded and used correctly
+
+5. **Promote to Production**:
+   - Once testing is complete, edit the release
+   - Uncheck "Set as a pre-release"
+   - Save the changes to make it a production release
+
+### Version Guidelines
+
+- **Major versions**: Reserved for breaking changes that require user action
+- **Minor versions**: New resources, data sources, or significant features
+- **Patch versions**: Bug fixes, documentation updates, or minor improvements
+
+### Release Checklist
+
+- [ ] All tests pass in CI/CD
+- [ ] Documentation is updated
+- [ ] Breaking changes are clearly documented
+- [ ] Release notes are comprehensive and user-friendly
+- [ ] Pre-release testing is completed
 
 ## Best Practices
 
