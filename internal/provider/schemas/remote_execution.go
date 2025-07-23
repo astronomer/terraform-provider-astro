@@ -2,6 +2,7 @@ package schemas
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -71,10 +72,22 @@ func RemoteExecutionResourceSchemaAttributes() map[string]resourceSchema.Attribu
 		"task_log_bucket": resourceSchema.StringAttribute{
 			MarkdownDescription: "The bucket for task logs",
 			Optional:            true,
+			Validators: []validator.String{
+				// An empty string is not allowed,
+				// as the API removes it from the response if set to an empty string,
+				// which causes issues with the provider.
+				stringvalidator.LengthAtLeast(1),
+			},
 		},
 		"task_log_url_pattern": resourceSchema.StringAttribute{
 			MarkdownDescription: "The URL pattern for task logs",
 			Optional:            true,
+			Validators: []validator.String{
+				// An empty string is not allowed,
+				// as the API removes it from the response if set to an empty string,
+				// which causes issues with the provider.
+				stringvalidator.LengthAtLeast(1),
+			},
 		},
 	}
 }
