@@ -165,7 +165,7 @@ The Terraform Provider Astro follows semantic versioning (SemVer) for releases. 
 
 2. **Create a Tag**: Create a new tag following semantic versioning:
    - **Major version** (`vx.0.0`): Breaking changes or major new features
-   - **Minor version** (`vx.y.0`): New features that are backward compatible
+   - **Minor version** (`vx.y.0`): New features that are backwards compatible
    - **Patch version** (`vx.y.z`): Bug fixes and minor improvements
 
 3. **Set Release Details**:
