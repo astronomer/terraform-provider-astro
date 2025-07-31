@@ -95,7 +95,7 @@ func (data *TeamResource) ReadFromResponse(ctx context.Context, team *iam.Team, 
 	} else {
 		data.Description = types.StringNull()
 	}
-	if memberIds != nil && len(*memberIds) > 0 {
+	if memberIds != nil {
 		data.MemberIds, diags = utils.StringSet(memberIds)
 		if diags.HasError() {
 			return diags

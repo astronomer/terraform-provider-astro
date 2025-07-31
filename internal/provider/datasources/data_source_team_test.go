@@ -32,6 +32,7 @@ func TestAcc_DataSourceTeam(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceVar, "updated_at"),
 					resource.TestCheckResourceAttrSet(resourceVar, "created_by.id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "updated_by.id"),
+					resource.TestCheckResourceAttrSet(resourceVar, "team_members"),
 				),
 			},
 		},
