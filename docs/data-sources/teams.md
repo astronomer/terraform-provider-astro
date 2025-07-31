@@ -53,6 +53,7 @@ Read-Only:
 - `name` (String) Team name
 - `organization_role` (String) The role assigned to the Organization
 - `roles_count` (Number) Number of roles assigned to the Team
+- `team_members` (Attributes Set) The members of the Team (see [below for nested schema](#nestedatt--teams--team_members))
 - `updated_at` (String) Team last updated timestamp
 - `updated_by` (Attributes) Team updater (see [below for nested schema](#nestedatt--teams--updated_by))
 - `workspace_roles` (Attributes Set) The roles assigned to the Workspaces (see [below for nested schema](#nestedatt--teams--workspace_roles))
@@ -77,6 +78,18 @@ Read-Only:
 
 - `deployment_id` (String) The ID of the deployment the role is assigned to
 - `role` (String) The role assigned to the deployment
+
+
+<a id="nestedatt--teams--team_members"></a>
+### Nested Schema for `teams.team_members`
+
+Read-Only:
+
+- `avatar_url` (String) Team member avatar URL
+- `created_at` (String) Team member creation timestamp
+- `full_name` (String) Team member full name
+- `user_id` (String) The ID of the user in the Team
+- `username` (String) Team member username
 
 
 <a id="nestedatt--teams--updated_by"></a>

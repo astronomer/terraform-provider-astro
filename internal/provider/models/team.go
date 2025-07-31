@@ -16,6 +16,7 @@ type TeamDataSource struct {
 	Name             types.String `tfsdk:"name"`
 	Description      types.String `tfsdk:"description"`
 	IsIdpManaged     types.Bool   `tfsdk:"is_idp_managed"`
+	TeamMembers      types.Set    `tfsdk:"team_members"`
 	OrganizationRole types.String `tfsdk:"organization_role"`
 	DeploymentRoles  types.Set    `tfsdk:"deployment_roles"`
 	WorkspaceRoles   types.Set    `tfsdk:"workspace_roles"`
@@ -42,7 +43,7 @@ type TeamResource struct {
 	UpdatedBy        types.Object `tfsdk:"updated_by"`
 }
 
-func (data *TeamDataSource) ReadFromResponse(ctx context.Context, team *iam.Team) diag.Diagnostics {
+func (data *TeamDataSource) ReadFromResponse(ctx context.Context, team *iam.Team, teamMembers *[]iam.TeamMember) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(team.Id)
 	data.Name = types.StringValue(team.Name)
@@ -50,6 +51,10 @@ func (data *TeamDataSource) ReadFromResponse(ctx context.Context, team *iam.Team
 		data.Description = types.StringValue(*team.Description)
 	} else {
 		data.Description = types.StringValue("")
+	}
+	data.TeamMembers, diags = utils.ObjectSet(ctx, teamMembers, schemas.TeamMemberAttributeTypes(), TeamMemberTypesObject)
+	if diags.HasError() {
+		return diags
 	}
 	data.IsIdpManaged = types.BoolValue(team.IsIdpManaged)
 	data.OrganizationRole = types.StringValue(string(team.OrganizationRole))
@@ -126,4 +131,23 @@ func (data *TeamResource) ReadFromResponse(ctx context.Context, team *iam.Team, 
 	}
 
 	return nil
+}
+
+type TeamMember struct {
+	UserId    types.String `tfsdk:"user_id"`
+	Username  types.String `tfsdk:"username"`
+	FullName  types.String `tfsdk:"full_name"`
+	AvatarUrl types.String `tfsdk:"avatar_url"`
+	CreatedAt types.String `tfsdk:"created_at"`
+}
+
+func TeamMemberTypesObject(ctx context.Context, member iam.TeamMember) (types.Object, diag.Diagnostics) {
+	obj := TeamMember{
+		UserId:    types.StringValue(member.UserId),
+		Username:  types.StringValue(member.Username),
+		FullName:  types.StringValue(*member.FullName),
+		AvatarUrl: types.StringValue(*member.AvatarUrl),
+		CreatedAt: types.StringValue(member.CreatedAt.String()),
+	}
+	return types.ObjectValueFrom(ctx, schemas.TeamMemberAttributeTypes(), obj)
 }

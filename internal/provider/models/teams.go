@@ -20,7 +20,7 @@ func (data *Teams) ReadFromResponse(ctx context.Context, teams []iam.Team) diag.
 	values := make([]attr.Value, len(teams))
 	for i, team := range teams {
 		var singleTeamData TeamDataSource
-		diags := singleTeamData.ReadFromResponse(ctx, &team)
+		diags := singleTeamData.ReadFromResponse(ctx, &team, nil)
 		if diags.HasError() {
 			return diags
 		}
