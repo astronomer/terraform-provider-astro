@@ -257,7 +257,7 @@ type teamInput struct {
 	Name             string
 	Description      string
 	MemberIds        []string
-	IncludeMemberIds bool // whether to include member_ids in the config
+	IncludeMemberIds bool
 	OrganizationRole string
 	DeploymentRoles  []utils.Role
 	WorkspaceRoles   []utils.Role
