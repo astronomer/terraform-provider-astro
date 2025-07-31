@@ -36,6 +36,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckTeamExistence(t, teamName, false),
+			testAccCheckTeamExistence(t, teamName+"_empty", false),
 		),
 		Steps: []resource.TestStep{
 			// Test failure: disable team resource if org is isScimEnabled
@@ -133,6 +134,21 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					},
 				}),
 				ExpectError: regexp.MustCompile("Unable to mutate roles, not every deployment role has a corresponding valid deployment"),
+			},
+			// Create team with empty member_ids array
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
+					Name:             teamName + "_empty",
+					Description:      utils.TestResourceDescription,
+					MemberIds:        []string{},
+					OrganizationRole: string(iam.ORGANIZATIONOWNER),
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(fmt.Sprintf("astro_team.%v_empty", teamName), "id"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_empty", teamName), "name", teamName+"_empty"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_empty", teamName), "member_ids.#", "0"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_empty", teamName), "organization_role", string(iam.ORGANIZATIONOWNER)),
+				),
 			},
 			// Create team with all fields
 			{
