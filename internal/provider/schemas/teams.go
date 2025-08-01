@@ -11,10 +11,15 @@ import (
 
 func TeamsElementAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"id":                types.StringType,
-		"name":              types.StringType,
-		"description":       types.StringType,
-		"is_idp_managed":    types.BoolType,
+		"id":             types.StringType,
+		"name":           types.StringType,
+		"description":    types.StringType,
+		"is_idp_managed": types.BoolType,
+		"team_members": types.SetType{
+			ElemType: types.ObjectType{
+				AttrTypes: TeamMemberAttributeTypes(),
+			},
+		},
 		"organization_role": types.StringType,
 		"deployment_roles": types.SetType{
 			ElemType: types.ObjectType{
