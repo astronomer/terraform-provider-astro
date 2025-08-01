@@ -16,11 +16,15 @@ type Teams struct {
 	Names types.Set `tfsdk:"names"` // query parameter
 }
 
-func (data *Teams) ReadFromResponse(ctx context.Context, teams []iam.Team) diag.Diagnostics {
+func (data *Teams) ReadFromResponse(ctx context.Context, teams []iam.Team, teamsWithMembers map[string][]iam.TeamMember) diag.Diagnostics {
 	values := make([]attr.Value, len(teams))
 	for i, team := range teams {
 		var singleTeamData TeamDataSource
-		diags := singleTeamData.ReadFromResponse(ctx, &team)
+		var teamMembersPtr *[]iam.TeamMember
+		if members, exists := teamsWithMembers[team.Id]; exists {
+			teamMembersPtr = &members
+		}
+		diags := singleTeamData.ReadFromResponse(ctx, &team, teamMembersPtr)
 		if diags.HasError() {
 			return diags
 		}

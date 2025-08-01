@@ -5,6 +5,7 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -26,6 +27,13 @@ func TeamDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 		},
 		"description": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Team description",
+			Computed:            true,
+		},
+		"team_members": datasourceSchema.SetNestedAttribute{
+			NestedObject: datasourceSchema.NestedAttributeObject{
+				Attributes: DataSourceTeamMemberSchemaAttributes(),
+			},
+			MarkdownDescription: "The members of the Team",
 			Computed:            true,
 		},
 		"is_idp_managed": datasourceSchema.BoolAttribute{
@@ -149,6 +157,41 @@ func TeamResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			MarkdownDescription: "Team updater",
 			Computed:            true,
 			Attributes:          ResourceSubjectProfileSchemaAttributes(),
+		},
+	}
+}
+
+func TeamMemberAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"user_id":    types.StringType,
+		"username":   types.StringType,
+		"full_name":  types.StringType,
+		"avatar_url": types.StringType,
+		"created_at": types.StringType,
+	}
+}
+
+func DataSourceTeamMemberSchemaAttributes() map[string]datasourceSchema.Attribute {
+	return map[string]datasourceSchema.Attribute{
+		"user_id": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The ID of the user in the Team",
+			Computed:            true,
+		},
+		"username": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Team member username",
+			Computed:            true,
+		},
+		"full_name": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Team member full name",
+			Computed:            true,
+		},
+		"avatar_url": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Team member avatar URL",
+			Computed:            true,
+		},
+		"created_at": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Team member creation timestamp",
+			Computed:            true,
 		},
 	}
 }

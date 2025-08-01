@@ -97,8 +97,28 @@ func (d *teamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
+	teamMembers, err := d.IamClient.ListTeamMembersWithResponse(ctx, d.OrganizationId, data.Id.ValueString(), nil)
+	if err != nil {
+		tflog.Error(ctx, "Failed to get team members", map[string]interface{}{"error": err})
+		resp.Diagnostics.AddError(
+			"Client Error",
+			fmt.Sprintf("Unable to read team members, got error: %s", err),
+		)
+		return
+	}
+	_, diagnostic = clients.NormalizeAPIError(ctx, teamMembers.HTTPResponse, teamMembers.Body)
+	if diagnostic != nil {
+		resp.Diagnostics.Append(diagnostic)
+		return
+	}
+	if teamMembers.JSON200 == nil {
+		tflog.Error(ctx, "failed to get team members", map[string]interface{}{"error": "nil response"})
+		resp.Diagnostics.AddError("Client Error", "Unable to read team members, got nil response")
+		return
+	}
+
 	// Populate the model with the response data
-	diags := data.ReadFromResponse(ctx, team.JSON200)
+	diags := data.ReadFromResponse(ctx, team.JSON200, &teamMembers.JSON200.TeamMembers)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
