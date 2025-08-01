@@ -14,10 +14,12 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/samber/lo"
 )
@@ -352,6 +354,16 @@ func (r *TeamResource) Update(
 			return
 		}
 		newMemberIdsPtr = &newMemberIds
+	} else {
+		originalMemberIds := data.MemberIds
+		data.MemberIds = types.SetValueMust(types.StringType, []attr.Value{})
+		_, diags := r.UpdateTeamMembers(ctx, data)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+		data.MemberIds = originalMemberIds
+		newMemberIdsPtr = nil
 	}
 
 	// Update team
