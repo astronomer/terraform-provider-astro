@@ -14,10 +14,12 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/samber/lo"
 )
@@ -160,17 +162,21 @@ func (r *TeamResource) Create(
 		return
 	}
 
-	memberIds, diags := utils.TypesSetToStringSlice(ctx, data.MemberIds)
-	if diags.HasError() {
-		resp.Diagnostics.Append(diags...)
-		return
+	var memberIdsPtr *[]string
+	if !data.MemberIds.IsNull() {
+		memberIds, diags := utils.TypesSetToStringSlice(ctx, data.MemberIds)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+		memberIdsPtr = &memberIds
 	}
 
 	// Create the team request
 	createTeamRequest := iam.CreateTeamRequest{
 		Name:             data.Name.ValueString(),
 		Description:      data.Description.ValueStringPointer(),
-		MemberIds:        &memberIds,
+		MemberIds:        memberIdsPtr,
 		OrganizationRole: lo.ToPtr(iam.CreateTeamRequestOrganizationRole(data.OrganizationRole.ValueString())),
 	}
 
@@ -242,7 +248,7 @@ func (r *TeamResource) Create(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, teamResp.JSON200, &memberIds)
+	diags = data.ReadFromResponse(ctx, teamResp.JSON200, memberIdsPtr)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -295,13 +301,17 @@ func (r *TeamResource) Read(
 		return
 	}
 
-	memberIds, diags := utils.TypesSetToStringSlice(ctx, data.MemberIds)
-	if diags.HasError() {
-		resp.Diagnostics.Append(diags...)
-		return
+	var memberIdsPtr *[]string
+	if !data.MemberIds.IsNull() {
+		memberIds, diags := utils.TypesSetToStringSlice(ctx, data.MemberIds)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+		memberIdsPtr = &memberIds
 	}
 
-	diags = data.ReadFromResponse(ctx, team.JSON200, &memberIds)
+	diags := data.ReadFromResponse(ctx, team.JSON200, memberIdsPtr)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -336,10 +346,24 @@ func (r *TeamResource) Update(
 	}
 
 	// Update team members
-	newMemberIds, diags := r.UpdateTeamMembers(ctx, data)
-	if diags.HasError() {
-		resp.Diagnostics.Append(diags...)
-		return
+	var newMemberIdsPtr *[]string
+	if !data.MemberIds.IsNull() {
+		newMemberIds, diags := r.UpdateTeamMembers(ctx, data)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+		newMemberIdsPtr = &newMemberIds
+	} else {
+		originalMemberIds := data.MemberIds
+		data.MemberIds = types.SetValueMust(types.StringType, []attr.Value{})
+		_, diags := r.UpdateTeamMembers(ctx, data)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+		data.MemberIds = originalMemberIds
+		newMemberIdsPtr = nil
 	}
 
 	// Update team
@@ -398,7 +422,7 @@ func (r *TeamResource) Update(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, teamResp.JSON200, &newMemberIds)
+	diags = data.ReadFromResponse(ctx, teamResp.JSON200, newMemberIdsPtr)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
