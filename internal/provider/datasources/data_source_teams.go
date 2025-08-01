@@ -133,8 +133,33 @@ func (d *teamsDataSource) Read(
 		offset += 1000
 	}
 
+	// Fetch team members for each team
+	teamsWithMembers := make(map[string][]iam.TeamMember)
+	for _, team := range teams {
+		teamMembers, err := d.IamClient.ListTeamMembersWithResponse(ctx, d.OrganizationId, team.Id, nil)
+		if err != nil {
+			tflog.Error(ctx, "Failed to get team members", map[string]interface{}{"error": err, "team_id": team.Id})
+			resp.Diagnostics.AddError(
+				"Client Error",
+				fmt.Sprintf("Unable to read team members for team %s, got error: %s", team.Id, err),
+			)
+			return
+		}
+		_, diagnostic := clients.NormalizeAPIError(ctx, teamMembers.HTTPResponse, teamMembers.Body)
+		if diagnostic != nil {
+			resp.Diagnostics.Append(diagnostic)
+			return
+		}
+		if teamMembers.JSON200 == nil {
+			tflog.Error(ctx, "failed to get team members", map[string]interface{}{"error": "nil response", "team_id": team.Id})
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read team members for team %s, got nil response", team.Id))
+			return
+		}
+		teamsWithMembers[team.Id] = teamMembers.JSON200.TeamMembers
+	}
+
 	// Populate the model with the response data
-	diags = data.ReadFromResponse(ctx, teams)
+	diags = data.ReadFromResponse(ctx, teams, teamsWithMembers)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
