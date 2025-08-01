@@ -95,9 +95,13 @@ func (data *TeamResource) ReadFromResponse(ctx context.Context, team *iam.Team, 
 	} else {
 		data.Description = types.StringNull()
 	}
-	data.MemberIds, diags = utils.StringSet(memberIds)
-	if diags.HasError() {
-		return diags
+	if memberIds != nil {
+		data.MemberIds, diags = utils.StringSet(memberIds)
+		if diags.HasError() {
+			return diags
+		}
+	} else {
+		data.MemberIds = types.SetNull(types.StringType)
 	}
 	data.IsIdpManaged = types.BoolValue(team.IsIdpManaged)
 	data.OrganizationRole = types.StringValue(string(team.OrganizationRole))
