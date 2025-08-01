@@ -36,6 +36,8 @@ func TestAcc_ResourceTeam(t *testing.T) {
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckTeamExistence(t, teamName, false),
+			testAccCheckTeamExistence(t, teamName+"_null", false),
+			testAccCheckTeamExistence(t, teamName+"_empty", false),
 		),
 		Steps: []resource.TestStep{
 			// Test failure: disable team resource if org is isScimEnabled
@@ -44,6 +46,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Name:             failTeamName,
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
+					IncludeMemberIds: true,
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
 					DeploymentRoles: []utils.Role{
 						{
@@ -66,6 +69,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Name:             failTeamName,
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
+					IncludeMemberIds: true,
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
 					WorkspaceRoles: []utils.Role{
 						{
@@ -82,6 +86,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Name:             failTeamName,
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
+					IncludeMemberIds: true,
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
 					DeploymentRoles: []utils.Role{
 						{
@@ -98,6 +103,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Name:             failTeamName,
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
+					IncludeMemberIds: true,
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
 					WorkspaceRoles: []utils.Role{
 						{
@@ -118,6 +124,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Name:             failTeamName,
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
+					IncludeMemberIds: true,
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
 					WorkspaceRoles: []utils.Role{
 						{
@@ -134,12 +141,45 @@ func TestAcc_ResourceTeam(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile("Unable to mutate roles, not every deployment role has a corresponding valid deployment"),
 			},
+			// Create team with null member_ids (not specified)
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
+					Name:             teamName + "_null",
+					Description:      utils.TestResourceDescription,
+					MemberIds:        []string{},
+					IncludeMemberIds: false, // Don't include member_ids in config
+					OrganizationRole: string(iam.ORGANIZATIONOWNER),
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(fmt.Sprintf("astro_team.%v_null", teamName), "id"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_null", teamName), "name", teamName+"_null"),
+					resource.TestCheckNoResourceAttr(fmt.Sprintf("astro_team.%v_null", teamName), "member_ids"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_null", teamName), "organization_role", string(iam.ORGANIZATIONOWNER)),
+				),
+			},
+			// Create team with empty member_ids array
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
+					Name:             teamName + "_empty",
+					Description:      utils.TestResourceDescription,
+					MemberIds:        []string{},
+					IncludeMemberIds: true,
+					OrganizationRole: string(iam.ORGANIZATIONOWNER),
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(fmt.Sprintf("astro_team.%v_empty", teamName), "id"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_empty", teamName), "name", teamName+"_empty"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_empty", teamName), "member_ids.#", "0"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_empty", teamName), "organization_role", string(iam.ORGANIZATIONOWNER)),
+				),
+			},
 			// Create team with all fields
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
 					Name:             teamName,
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
+					IncludeMemberIds: true,
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
 					DeploymentRoles: []utils.Role{
 						{
@@ -177,12 +217,13 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					testAccCheckTeamExistence(t, teamName, true),
 				),
 			},
-			// Update team
+			// Update team to empty member_ids
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
 					Name:             teamName,
 					Description:      "new description",
 					MemberIds:        []string{},
+					IncludeMemberIds: true,
 					OrganizationRole: string(iam.ORGANIZATIONOWNER),
 					WorkspaceRoles: []utils.Role{
 						{
@@ -194,6 +235,31 @@ func TestAcc_ResourceTeam(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "description", "new description"),
 					resource.TestCheckResourceAttr(resourceVar, "member_ids.#", "0"),
+					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.#", "1"),
+					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.0.role", string(iam.WORKSPACEACCESSOR)),
+					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.0.workspace_id", workspaceId),
+					// Check via API that team exists
+					testAccCheckTeamExistence(t, teamName, true),
+				),
+			},
+			// Update team to null member_ids (remove member_ids from config)
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
+					Name:             teamName,
+					Description:      "updated to null members",
+					MemberIds:        []string{},
+					IncludeMemberIds: false, // Don't include member_ids in config (null)
+					OrganizationRole: string(iam.ORGANIZATIONOWNER),
+					WorkspaceRoles: []utils.Role{
+						{
+							Role:     string(iam.WORKSPACEACCESSOR),
+							EntityId: workspaceId,
+						},
+					},
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "description", "updated to null members"),
+					resource.TestCheckNoResourceAttr(resourceVar, "member_ids"), // Should be null
 					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.#", "1"),
 					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.0.role", string(iam.WORKSPACEACCESSOR)),
 					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.0.workspace_id", workspaceId),
@@ -216,6 +282,7 @@ type teamInput struct {
 	Name             string
 	Description      string
 	MemberIds        []string
+	IncludeMemberIds bool
 	OrganizationRole string
 	DeploymentRoles  []utils.Role
 	WorkspaceRoles   []utils.Role
@@ -223,11 +290,15 @@ type teamInput struct {
 
 func team(input teamInput) string {
 	var memberIds string
-	if len(input.MemberIds) > 0 {
-		formattedIds := lo.Map(input.MemberIds, func(id string, _ int) string {
-			return fmt.Sprintf(`"%v"`, id)
-		})
-		memberIds = fmt.Sprintf(`member_ids = [%v]`, strings.Join(formattedIds, ", "))
+	if input.IncludeMemberIds {
+		if len(input.MemberIds) > 0 {
+			formattedIds := lo.Map(input.MemberIds, func(id string, _ int) string {
+				return fmt.Sprintf(`"%v"`, id)
+			})
+			memberIds = fmt.Sprintf(`member_ids = [%v]`, strings.Join(formattedIds, ", "))
+		} else {
+			memberIds = `member_ids = []`
+		}
 	}
 
 	deploymentRoles := lo.Map(input.DeploymentRoles, func(role utils.Role, _ int) string {
