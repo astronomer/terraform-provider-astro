@@ -1327,7 +1327,7 @@ func formatEnvironmentVariables(envVars *[]platform.DeploymentEnvironmentVariabl
 		return fmt.Sprintf(`environment_variables = []`)
 	}
 	variables := lo.Map(*envVars, func(envVar platform.DeploymentEnvironmentVariable, _ int) string {
-		value := fmt.Sprintf(`"%s"`, stringValue(envVar.Value))
+		value := fmt.Sprintf(`"%s"`, strings.ReplaceAll(*envVar.Value, `"`, `\"`))
 
 		if envVar.IsSecret {
 			value = "null"
