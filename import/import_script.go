@@ -523,7 +523,7 @@ import {
 	to = astro_cluster.cluster_%v
 }`, clusterId, clusterId)
 		} else {
-			clusterImportString += fmt.Sprintf(`
+			clusterImportString = fmt.Sprintf(`
 import {
 	id = "%v"
 	to = astro_hybrid_cluster_workspace_authorization.cluster_%v
@@ -990,15 +990,15 @@ func generateDeploymentHCL(ctx context.Context, platformClient *platform.ClientW
 		// get deployment details
 		deploymentResp, err := platformClient.GetDeploymentWithResponse(ctx, organizationId, deploymentId)
 		if err != nil {
-			return "", fmt.Errorf("failed to list deployments: %v", err)
+			return "", fmt.Errorf("failed to get deployment %s: %v", deploymentId, err)
 		}
 
-		if deploymentsResp.StatusCode() != http.StatusOK {
-			return "", fmt.Errorf("unexpected status code: %d, body: %s", deploymentsResp.StatusCode(), string(deploymentsResp.Body))
+		if deploymentResp.StatusCode() != http.StatusOK {
+			return "", fmt.Errorf("unexpected status code for deployment %s: %d, body: %s", deploymentId, deploymentResp.StatusCode(), string(deploymentResp.Body))
 		}
 
-		if deploymentsResp.JSON200 == nil {
-			return "", fmt.Errorf("failed to list deployments, JSON200 resp is nil, organizationId: %v", organizationId)
+		if deploymentResp.JSON200 == nil {
+			return "", fmt.Errorf("failed to get deployment %s, JSON200 resp is nil", deploymentId)
 		}
 
 		deployment := deploymentResp.JSON200
@@ -1010,6 +1010,7 @@ func generateDeploymentHCL(ctx context.Context, platformClient *platform.ClientW
 		environmentVariablesString := formatEnvironmentVariables(deployment.EnvironmentVariables)
 		workerQueuesString := formatWorkerQueues(deployment.WorkerQueues, (*string)(deployment.Executor))
 		remoteExecutionString := formatRemoteExecution(deployment.RemoteExecution)
+		scalingSpecString := formatScalingSpec(deployment.ScalingSpec)
 
 		deploymentType := deployment.Type
 
@@ -1060,11 +1061,12 @@ resource "astro_deployment" "deployment_%s" {
 	name = "%s"
 	%s
 	%s
+  %s
 	scheduler_size = "%s"
 	type = "%s"
 	workspace_id = "%s"
 	%s
-    %s
+  %s
 	%s
 }
 `,
@@ -1083,6 +1085,7 @@ resource "astro_deployment" "deployment_%s" {
 				deployment.Name,
 				resourceQuotaCpuString,
 				resourceQuotaMemoryString,
+				scalingSpecString,
 				stringValue((*string)(deployment.SchedulerSize)),
 				stringValue((*string)(deploymentType)),
 				deployment.WorkspaceId,
@@ -1108,11 +1111,12 @@ resource "astro_deployment" "deployment_%s" {
 	region = "%s"
 	resource_quota_cpu = "%s"
 	resource_quota_memory = "%s"
+	%s
 	scheduler_size = "%s"
 	type = "%s"
 	workspace_id = "%s"
 	%s
-    %s
+	%s
 }
 `,
 				deployment.Id,
@@ -1131,7 +1135,51 @@ resource "astro_deployment" "deployment_%s" {
 				stringValue(deployment.Region),
 				stringValue(deployment.ResourceQuotaCpu),
 				stringValue(deployment.ResourceQuotaMemory),
+				scalingSpecString,
 				stringValue((*string)(deployment.SchedulerSize)),
+				stringValue((*string)(deploymentType)),
+				deployment.WorkspaceId,
+				workerQueuesString,
+				workloadIdentityString,
+			)
+		} else if *deploymentType == platform.DeploymentTypeHYBRID {
+			// For HYBRID deployments, we need to include task_pod_node_pool_id and use scheduler_au/scheduler_replicas
+			taskPodNodePoolIdString := ""
+			if deployment.TaskPodNodePoolId != nil {
+				taskPodNodePoolIdString = fmt.Sprintf(`task_pod_node_pool_id = "%s"`, *deployment.TaskPodNodePoolId)
+			}
+
+			deploymentHCL = fmt.Sprintf(`
+resource "astro_deployment" "deployment_%s" {
+	cluster_id = "%s"
+	%s
+	description = "%s"
+	%s
+	executor = "%s"
+	is_cicd_enforced = %t
+	is_dag_deploy_enabled = %t
+	name = "%s"
+	scheduler_au = %d
+	scheduler_replicas = %d
+	%s
+	type = "%s"
+	workspace_id = "%s"
+	%s
+	%s
+}
+`,
+				deployment.Id,
+				stringValue(deployment.ClusterId),
+				contactEmailsString,
+				stringValue(deployment.Description),
+				environmentVariablesString,
+				stringValue((*string)(deployment.Executor)),
+				deployment.IsCicdEnforced,
+				deployment.IsDagDeployEnabled,
+				deployment.Name,
+				*deployment.SchedulerAu,
+				deployment.SchedulerReplicas,
+				taskPodNodePoolIdString,
 				stringValue((*string)(deploymentType)),
 				deployment.WorkspaceId,
 				workerQueuesString,
@@ -1399,4 +1447,58 @@ func formatRemoteExecution(remoteExecution *platform.DeploymentRemoteExecution) 
 
 	// If remote execution is not enabled, return an empty string
 	return ""
+}
+
+func formatScalingSpec(spec *platform.DeploymentScalingSpec) string {
+	if spec == nil || spec.HibernationSpec == nil {
+		return ""
+	}
+
+	hibernationSpec := spec.HibernationSpec
+	if hibernationSpec == nil {
+		return ""
+	}
+
+	var hibernationParts []string
+
+	// Handle schedules
+	if hibernationSpec.Schedules != nil && len(*hibernationSpec.Schedules) > 0 {
+		schedules := lo.Map(*hibernationSpec.Schedules, func(schedule platform.DeploymentHibernationSchedule, _ int) string {
+			return fmt.Sprintf(`{
+			description = "%s"
+			hibernate_at_cron = "%s"
+			is_enabled = %t
+			wake_at_cron = "%s"
+		}`, stringValue(schedule.Description), schedule.HibernateAtCron, schedule.IsEnabled, schedule.WakeAtCron)
+		})
+		hibernationParts = append(hibernationParts, fmt.Sprintf(`schedules = [%s]`, strings.Join(schedules, ", ")))
+	}
+
+	// Handle override
+	if hibernationSpec.Override != nil {
+		override := hibernationSpec.Override
+		var overrideParts []string
+		if override.IsActive != nil {
+			overrideParts = append(overrideParts, fmt.Sprintf(`is_active = %t`, *override.IsActive))
+		}
+		if override.IsHibernating != nil {
+			overrideParts = append(overrideParts, fmt.Sprintf(`is_hibernating = %t`, *override.IsHibernating))
+		}
+		if override.OverrideUntil != nil {
+			overrideParts = append(overrideParts, fmt.Sprintf(`override_until = "%s"`, override.OverrideUntil.Format("2006-01-02T15:04:05Z")))
+		}
+		if len(overrideParts) > 0 {
+			hibernationParts = append(hibernationParts, fmt.Sprintf(`override = {%s}`, strings.Join(overrideParts, ", ")))
+		}
+	}
+
+	if len(hibernationParts) == 0 {
+		return ""
+	}
+
+	return fmt.Sprintf(`scaling_spec = {
+		hibernation_spec = {
+			%s
+		}
+	}`, strings.Join(hibernationParts, "\n\t\t\t"))
 }
