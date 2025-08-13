@@ -2,6 +2,7 @@ package schemas
 
 import (
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -108,6 +109,19 @@ func EnvironmentObjectAirflowVariableOverridesDataSourceSchemaAttributes() map[s
 	}
 }
 
+func EnvironmentObjectConnectionAuthTypeParametersAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"airflow_param_name": types.StringType,
+		"friendly_name":      types.StringType,
+		"data_type":          types.StringType,
+		"is_required":        types.BoolType,
+		"is_secret":          types.BoolType,
+		"description":        types.StringType,
+		"example":            types.StringType,
+		"is_in_extra":        types.BoolType,
+	}
+}
+
 func EnvironmentObjectConnectionAuthTypeParametersDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"airflow_param_name": datasourceSchema.SingleNestedAttribute{
@@ -143,6 +157,22 @@ func EnvironmentObjectConnectionAuthTypeParametersDataSourceSchemaAttributes() m
 			MarkdownDescription: "Whether or not the parameter is included in the \"extra\" field",
 			Computed:            true,
 		},
+	}
+}
+
+func EnvironmentObjectConnectionAuthTypeAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"parameters": types.ObjectType{
+			AttrTypes: EnvironmentObjectConnectionAuthTypeParametersAttributeTypes(),
+		},
+		"id":                    types.StringType,
+		"name":                  types.StringType,
+		"auth_method_name":      types.StringType,
+		"airflow_type":          types.StringType,
+		"description":           types.StringType,
+		"provider_package_name": types.StringType,
+		"provider_logo":         types.StringType,
+		"guide_path":            types.StringType,
 	}
 }
 
@@ -187,6 +217,21 @@ func EnvironmentObjectConnectionAuthTypeDataSourceSchemaAttributes() map[string]
 			MarkdownDescription: "The URL to the guide for the connection auth type",
 			Computed:            true,
 		},
+	}
+}
+
+func EnvironmentObjectConnectionAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"connection_auth_type": types.ObjectType{
+			AttrTypes: EnvironmentObjectConnectionAuthTypeAttributeTypes(),
+		},
+		"type":     types.StringType,
+		"host":     types.StringType,
+		"port":     types.Int64Type,
+		"schema":   types.StringType,
+		"login":    types.StringType,
+		"password": types.StringType,
+		"extra":    types.StringType,
 	}
 }
 
@@ -261,6 +306,13 @@ func EnvironmentObjectConnectionOverridesDataSourceSchemaAttributes() map[string
 	}
 }
 
+func EnvironmentObjectExcludeLinkAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"scope":           types.StringType,
+		"scope_entity_id": types.StringType,
+	}
+}
+
 func EnvironmentObjectExcludeLinksDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"scope": datasourceSchema.StringAttribute{
@@ -274,13 +326,63 @@ func EnvironmentObjectExcludeLinksDataSourceSchemaAttributes() map[string]dataso
 	}
 }
 
+func EnvironmentObjectLinksAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"scope":           types.StringType,
+		"scope_entity_id": types.StringType,
+		"connection": types.ObjectType{
+			AttrTypes: EnvironmentObjectLinksConnectionOverridesAttributeTypes(),
+		},
+		"airflow_variable": types.ObjectType{
+			AttrTypes: EnvironmentObjectLinksAirflowVariableOverridesAttributeTypes(),
+		},
+		"metrics_export": types.ObjectType{
+			AttrTypes: EnvironmentObjectLinksMetricsExportOverridesAttributeTypes(),
+		},
+	}
+}
+
+func EnvironmentObjectLinksAirflowVariableOverridesAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"value": types.StringType,
+	}
+}
+
+func EnvironmentObjectLinksConnectionOverridesAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"type":     types.StringType,
+		"host":     types.StringType,
+		"port":     types.Int64Type,
+		"schema":   types.StringType,
+		"login":    types.StringType,
+		"password": types.StringType,
+		"extra":    types.StringType,
+	}
+}
+
+func EnvironmentObjectLinksMetricsExportOverridesAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"auth_type":     types.StringType,
+		"endpoint":      types.StringType,
+		"basic_token":   types.Int64Type,
+		"exporter_type": types.StringType,
+		"username":      types.StringType,
+		"password":      types.StringType,
+		"extra":         types.StringType,
+		"headers":       types.MapType{ElemType: types.StringType},
+		"labels": types.MapType{
+			ElemType: types.StringType,
+		},
+	}
+}
+
 func EnvironmentObjectLinksDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"scope": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Scope of the linked entity for the environment object",
 			Computed:            true,
 		},
-		"scope_entity_id": datasourceSchema.BoolAttribute{
+		"scope_entity_id": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Linked entity ID the environment object",
 			Computed:            true,
 		},
@@ -447,6 +549,13 @@ func EnvironmentObjectMetricsExportOverridesResourceSchemaAttributes() map[strin
 			ElementType:         types.StringType,
 			MarkdownDescription: "Any key-value pair metrics labels for your export. You can use these to filter your metrics in downstream applications.",
 		},
+	}
+}
+
+func EnvironmentObjectAirflowVariableAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"value":     types.StringType,
+		"is_secret": types.BoolType,
 	}
 }
 
