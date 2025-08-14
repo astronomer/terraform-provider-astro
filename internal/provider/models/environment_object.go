@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// EnvironmentObjectDataSource describes the data source data model.
-type EnvironmentObjectDataSource struct {
+// EnvironmentObject describes the data source data model.
+type EnvironmentObject struct {
 	Id                  types.String `tfsdk:"id"`
 	ObjectKey           types.String `tfsdk:"object_key"`
 	ScopeEntityId       types.String `tfsdk:"scope_entity_id"`
@@ -32,7 +32,7 @@ type EnvironmentObjectDataSource struct {
 	UpdatedBy           types.Object `tfsdk:"updated_by"`
 }
 
-func (data *EnvironmentObjectDataSource) ReadFromResponse(ctx context.Context, EnvironmentObject *platform.EnvironmentObject) diag.Diagnostics {
+func (data *EnvironmentObject) ReadFromResponse(ctx context.Context, EnvironmentObject *platform.EnvironmentObject) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(*EnvironmentObject.Id)
 	data.ObjectKey = types.StringValue(EnvironmentObject.ObjectKey)

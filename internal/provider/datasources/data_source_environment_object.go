@@ -18,7 +18,7 @@ import (
 var _ datasource.DataSource = &environmentObjectDataSource{}
 var _ datasource.DataSourceWithConfigure = &environmentObjectDataSource{}
 
-func NewEnvironmentObejctDataSource() datasource.DataSource {
+func NewEnvironmentObjectDataSource() datasource.DataSource {
 	return &environmentObjectDataSource{}
 }
 
@@ -43,8 +43,8 @@ func (d *environmentObjectDataSource) Schema(
 ) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "EnvironmentObejct data source",
-		Attributes:          schemas.EnvironmentObejctDataSourceSchemaAttributes(),
+		MarkdownDescription: "EnvironmentObject data source",
+		Attributes:          schemas.EnvironmentObjectDataSourceSchemaAttributes(),
 	}
 }
 
@@ -73,7 +73,7 @@ func (d *environmentObjectDataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var data models.EnvironmentObejct
+	var data models.EnvironmentObject
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -81,7 +81,7 @@ func (d *environmentObjectDataSource) Read(
 		return
 	}
 
-	environmentObject, err := d.PlatformClient.GetEnvironmentObejctWithResponse(
+	environmentObject, err := d.PlatformClient.GetEnvironmentObjectWithResponse(
 		ctx,
 		d.OrganizationId,
 		data.Id.ValueString(),
