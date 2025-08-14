@@ -189,10 +189,14 @@ provider "astro" {
 			log.Printf("Error handling resource %s: %v", result.Resource, result.Error)
 		} else {
 			if result.Resource == "deployment" {
+				// Store deployment import strings separately - they will be handled specially
+				// and should NOT be included in the initial import.tf file to avoid auto-generation
 				deploymentImportString += result.ImportString
 			} else if result.Resource == "notification_channel" {
+				// Store notification channel import strings separately for the same reason
 				notificationChannelImportString += result.ImportString
 			} else {
+				// All other resources go into the main import.tf file for auto-generation
 				importString += result.ImportString
 			}
 			log.Printf("Successfully handled resource %s", result.Resource)
@@ -1006,13 +1010,12 @@ func generateDeploymentHCL(ctx context.Context, platformClient *platform.ClientW
 			return "", fmt.Errorf("deployment is nil")
 		}
 
+		deploymentType := deployment.Type
 		contactEmailsString := formatContactEmails(deployment.ContactEmails)
 		environmentVariablesString := formatEnvironmentVariables(deployment.EnvironmentVariables)
-		workerQueuesString := formatWorkerQueues(deployment.WorkerQueues, (*string)(deployment.Executor))
+		workerQueuesString := formatWorkerQueues(deployment.WorkerQueues, (*string)(deployment.Executor), (*string)(deploymentType))
 		remoteExecutionString := formatRemoteExecution(deployment.RemoteExecution)
 		scalingSpecString := formatScalingSpec(deployment.ScalingSpec)
-
-		deploymentType := deployment.Type
 
 		workloadIdentity := deployment.WorkloadIdentity
 		workloadIdentityString := ""
@@ -1143,7 +1146,6 @@ resource "astro_deployment" "deployment_%s" {
 				workloadIdentityString,
 			)
 		} else if *deploymentType == platform.DeploymentTypeHYBRID {
-			// For HYBRID deployments, we need to include task_pod_node_pool_id and use scheduler_au/scheduler_replicas
 			taskPodNodePoolIdString := ""
 			if deployment.TaskPodNodePoolId != nil {
 				taskPodNodePoolIdString = fmt.Sprintf(`task_pod_node_pool_id = "%s"`, *deployment.TaskPodNodePoolId)
@@ -1390,7 +1392,7 @@ func formatEnvironmentVariables(envVars *[]platform.DeploymentEnvironmentVariabl
 	return fmt.Sprintf(`environment_variables = [%s]`, strings.Join(variables, ", "))
 }
 
-func formatWorkerQueues(queues *[]platform.WorkerQueue, executor *string) string {
+func formatWorkerQueues(queues *[]platform.WorkerQueue, executor *string, deploymentType *string) string {
 	// If queues is nil and executor is not CELERY, return an empty string
 	if queues == nil && (executor == nil || *executor != "CELERY") {
 		return ""
@@ -1404,7 +1406,24 @@ func formatWorkerQueues(queues *[]platform.WorkerQueue, executor *string) string
 	// If we have queues, format them
 	if queues != nil && len(*queues) > 0 {
 		workerQueues := lo.Map(*queues, func(queue platform.WorkerQueue, _ int) string {
-			return fmt.Sprintf(`{
+			// For HYBRID deployments, use different fields
+			if deploymentType != nil && *deploymentType == string(platform.DeploymentTypeHYBRID) {
+				// HYBRID deployments use node_pool_id instead of astro_machine
+				nodePoolIdString := ""
+				if queue.NodePoolId != nil {
+					nodePoolIdString = fmt.Sprintf(`node_pool_id = "%s"`, *queue.NodePoolId)
+				}
+				return fmt.Sprintf(`{
+		name = "%s"
+		is_default = %t
+		max_worker_count = %d
+		min_worker_count = %d
+		worker_concurrency = %d
+		%s
+	}`, queue.Name, queue.IsDefault, queue.MaxWorkerCount, queue.MinWorkerCount, queue.WorkerConcurrency, nodePoolIdString)
+			} else {
+				// For non-HYBRID deployments, use astro_machine
+				return fmt.Sprintf(`{
 		astro_machine = "%s"
 		name = "%s"
 		is_default = %t
@@ -1412,6 +1431,7 @@ func formatWorkerQueues(queues *[]platform.WorkerQueue, executor *string) string
 		min_worker_count = %d
 		worker_concurrency = %d
 	}`, stringValue(queue.AstroMachine), queue.Name, queue.IsDefault, queue.MaxWorkerCount, queue.MinWorkerCount, queue.WorkerConcurrency)
+			}
 		})
 		return fmt.Sprintf(`worker_queues = [%s]`, strings.Join(workerQueues, ", "))
 	}
