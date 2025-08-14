@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"fmt"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -24,9 +23,9 @@ type EnvironmentObjectDataSource struct {
 	ExcludeLinks        types.Object `tfsdk:"exclude_links"`
 	Links               types.Object `tfsdk:"links"`
 	MetricsExport       types.Object `tfsdk:"metrics_export"`
-	ObjectType          types.Object `tfsdk:"object_type"`
-	Scope               types.Object `tfsdk:"scope"`
-	SourceScope         types.Object `tfsdk:"source_scope"`
+	ObjectType          types.String `tfsdk:"object_type"`
+	Scope               types.String `tfsdk:"scope"`
+	SourceScope         types.String `tfsdk:"source_scope"`
 	CreatedAt           types.String `tfsdk:"created_at"`
 	UpdatedAt           types.String `tfsdk:"updated_at"`
 	CreatedBy           types.Object `tfsdk:"created_by"`
@@ -61,18 +60,10 @@ func (data *EnvironmentObjectDataSource) ReadFromResponse(ctx context.Context, E
 	if diags.HasError() {
 		return diags
 	}
-	data.ObjectType, diags = EnvironmentObjectObjectTypeObject(ctx, EnvironmentObject.ObjectType)
-	if diags.HasError() {
-		return diags
-	}
-	data.Scope, diags = EnvironmentObjectScopeObject(ctx, EnvironmentObject.Scope)
-	if diags.HasError() {
-		return diags
-	}
-	data.SourceScope, diags = EnvironmentObjectSourceScopeObject(ctx, EnvironmentObject.SourceScope)
-	if diags.HasError() {
-		return diags
-	}
+
+	data.ObjectType = types.StringValue(string(EnvironmentObject.ObjectType))
+	data.Scope = types.StringValue(string(EnvironmentObject.Scope))
+	data.SourceScope = types.StringValue(string(*EnvironmentObject.SourceScope))
 
 	data.CreatedAt = types.StringValue(*EnvironmentObject.CreatedAt)
 	data.UpdatedAt = types.StringValue(*EnvironmentObject.UpdatedAt)
@@ -92,7 +83,6 @@ func EnvironmentObjectLinksObject(
 	ctx context.Context,
 	environmentObjectLinks any,
 ) (types.Object, diag.Diagnostics) {
-	// Attempt to convert rules to *platform.AlertRules
 	var environmentObjectLinksPtr *platform.EnvironmentObjectLink
 
 	switch v := environmentObjectLinks.(type) {
@@ -150,11 +140,118 @@ func EnvironmentObjectLinksObject(
 	})
 }
 
+func EnvironmentObjectMetricsExportObject(
+	ctx context.Context,
+	metricsExportObject any,
+) (types.Object, diag.Diagnostics) {
+	var metricsExportPtr *platform.EnvironmentObjectMetricsExport
+
+	switch v := metricsExportObject.(type) {
+	case platform.EnvironmentObjectMetricsExport:
+		metricsExportPtr = &v
+	case *platform.EnvironmentObjectMetricsExport:
+		metricsExportPtr = v
+	default:
+		tflog.Error(
+			ctx,
+			"Unexpected type passed into metricsExportObject",
+			map[string]interface{}{"value": metricsExportObject},
+		)
+		return types.Object{}, diag.Diagnostics{
+			diag.NewErrorDiagnostic(
+				"Internal Error",
+				"MetricsExportObject expects a platform.EnvironmentObjectMetricsExport type but did not receive one",
+			),
+		}
+	}
+	headersMap := make(map[string]attr.Value, len(*metricsExportPtr.Headers))
+	for s, s2 := range *metricsExportPtr.Headers {
+		headersMap[s] = types.StringValue(s2)
+	}
+	headers, diags := types.MapValue(types.StringType, headersMap)
+	if diags.HasError() {
+		return types.Object{}, diags
+	}
+
+	labelsMap := make(map[string]attr.Value, len(*metricsExportPtr.Headers))
+	for s, s2 := range *metricsExportPtr.Headers {
+		labelsMap[s] = types.StringValue(s2)
+	}
+	labels, diags := types.MapValue(types.StringType, labelsMap)
+	if diags.HasError() {
+		return types.Object{}, diags
+	}
+
+	return types.ObjectValue(schemas.EnvironmentObjectMetricsExportAttributeTypes(), map[string]attr.Value{
+		"auth_type":     types.StringValue(string(*metricsExportPtr.AuthType)),
+		"endpoint":      types.StringValue(metricsExportPtr.Endpoint),
+		"basic_token":   types.StringPointerValue(metricsExportPtr.BasicToken),
+		"exporter_type": types.StringValue(string(metricsExportPtr.ExporterType)),
+		"username":      types.StringPointerValue(metricsExportPtr.Username),
+		"password":      types.StringPointerValue(metricsExportPtr.Password),
+		"headers":       headers,
+		"labels":        labels,
+	})
+}
+
+func EnvironmentObjectLinksMetricsExportOverridesObject(
+	ctx context.Context,
+	metricsExportOverridesObject any,
+) (types.Object, diag.Diagnostics) {
+	var metricsExportOverridesPtr *platform.EnvironmentObjectMetricsExportOverrides
+
+	switch v := metricsExportOverridesObject.(type) {
+	case platform.EnvironmentObjectMetricsExportOverrides:
+		metricsExportOverridesPtr = &v
+	case *platform.EnvironmentObjectMetricsExportOverrides:
+		metricsExportOverridesPtr = v
+	default:
+		tflog.Error(
+			ctx,
+			"Unexpected type passed into metricsExportOverridesObject",
+			map[string]interface{}{"value": metricsExportOverridesObject},
+		)
+		return types.Object{}, diag.Diagnostics{
+			diag.NewErrorDiagnostic(
+				"Internal Error",
+				"MetricsExportObject expects a platform.EnvironmentObjectMetricsExport type but did not receive one",
+			),
+		}
+	}
+	headersMap := make(map[string]attr.Value, len(*metricsExportOverridesPtr.Headers))
+	for s, s2 := range *metricsExportOverridesPtr.Headers {
+		headersMap[s] = types.StringValue(s2)
+	}
+	headers, diags := types.MapValue(types.StringType, headersMap)
+	if diags.HasError() {
+		return types.Object{}, diags
+	}
+
+	labelsMap := make(map[string]attr.Value, len(*metricsExportOverridesPtr.Headers))
+	for s, s2 := range *metricsExportOverridesPtr.Headers {
+		labelsMap[s] = types.StringValue(s2)
+	}
+	labels, diags := types.MapValue(types.StringType, labelsMap)
+	if diags.HasError() {
+		return types.Object{}, diags
+	}
+
+	return types.ObjectValue(schemas.EnvironmentObjectLinksMetricsExportOverridesAttributeTypes(), map[string]attr.Value{
+		"auth_type":     types.StringValue(string(*metricsExportOverridesPtr.AuthType)),
+		"endpoint":      types.StringPointerValue(metricsExportOverridesPtr.Endpoint),
+		"basic_token":   types.StringPointerValue(metricsExportOverridesPtr.BasicToken),
+		"exporter_type": types.StringValue(string(*metricsExportOverridesPtr.ExporterType)),
+		"username":      types.StringPointerValue(metricsExportOverridesPtr.Username),
+		"password":      types.StringPointerValue(metricsExportOverridesPtr.Password),
+		"headers":       headers,
+		"labels":        labels,
+	})
+}
+
 func EnvironmentObjectLinksAirflowVariableOverridesObject(
 	ctx context.Context,
 	airflowVariableOverridesObject any,
 ) (types.Object, diag.Diagnostics) {
-	// Attempt to convert rules to *platform.AlertRules
 	var airflowVariableOverridesPtr *platform.EnvironmentObjectAirflowVariableOverrides
 
 	switch v := airflowVariableOverridesObject.(type) {
@@ -185,7 +282,6 @@ func EnvironmentObjectAirflowVariableObject(
 	ctx context.Context,
 	airflowVariableObject any,
 ) (types.Object, diag.Diagnostics) {
-	// Attempt to convert rules to *platform.AlertRules
 	var airflowVariablePtr *platform.EnvironmentObjectAirflowVariable
 
 	switch v := airflowVariableObject.(type) {
@@ -217,7 +313,6 @@ func EnvironmentObjectLinksConnectionOverridesObject(
 	ctx context.Context,
 	connectionOverridesObject any,
 ) (types.Object, diag.Diagnostics) {
-	// Attempt to convert rules to *platform.AlertRules
 	var connectionOverridesPtr *platform.EnvironmentObjectConnectionOverrides
 
 	switch v := connectionOverridesObject.(type) {
@@ -246,7 +341,7 @@ func EnvironmentObjectLinksConnectionOverridesObject(
 		"password": types.StringPointerValue(connectionOverridesPtr.Password),
 		"port":     types.Int64Value(int64(*connectionOverridesPtr.Port)),
 		"schema":   types.StringPointerValue(connectionOverridesPtr.Schema),
-		"extra":    types.StringPointerValue(connectionOverridesPtr.Extra), // TODO fix extra everywhere
+		//"extra":    types.Object{}(connectionOverridesPtr.Extra), // TODO not sure how to fix extra as it uses interface and terraform is strongly typed
 	})
 }
 
@@ -254,7 +349,6 @@ func EnvironmentObjectConnectionObject(
 	ctx context.Context,
 	connectionObject any,
 ) (types.Object, diag.Diagnostics) {
-	// Attempt to convert rules to *platform.AlertRules
 	var connectionPtr *platform.EnvironmentObjectConnection
 
 	switch v := connectionObject.(type) {
@@ -300,7 +394,6 @@ func EnvironmentObjectExcludeLinksObject(
 	ctx context.Context,
 	excludeLinks any,
 ) (types.Object, diag.Diagnostics) {
-	// Attempt to convert rules to *platform.AlertRules
 	var excludeLinkPtr *platform.EnvironmentObjectExcludeLink
 
 	switch v := excludeLinks.(type) {
@@ -332,7 +425,6 @@ func EnvironmentObjectConnectionAuthTypeObject(
 	ctx context.Context,
 	connectionAuthTypeObject any,
 ) (types.Object, diag.Diagnostics) {
-	// Attempt to convert rules to *platform.AlertRules
 	var connectionAuthTypePtr *platform.ConnectionAuthType
 
 	switch v := connectionAuthTypeObject.(type) {
@@ -380,7 +472,6 @@ func EnvironmentObjectConnectionAuthTypeParametersObject(
 	ctx context.Context,
 	connectionAuthTypeParametersObject any,
 ) (types.Object, diag.Diagnostics) {
-	// Attempt to convert rules to *platform.AlertRules
 	var connectionAuthTypeParametersPtr *platform.ConnectionAuthTypeParameter
 
 	switch v := connectionAuthTypeParametersObject.(type) {

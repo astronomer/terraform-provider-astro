@@ -9,6 +9,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+func EnvironmentObjectMetricsExportAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"auth_type":     types.StringType,
+		"endpoint":      types.StringType,
+		"basic_token":   types.StringType,
+		"exporter_type": types.StringType,
+		"username":      types.StringType,
+		"password":      types.StringType,
+		"headers":       types.MapType{ElemType: types.StringType},
+		"labels": types.MapType{
+			ElemType: types.StringType,
+		},
+	}
+}
+
 func EnvironmentObjectMetricsExportDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"auth_type": datasourceSchema.StringAttribute{
@@ -356,7 +371,7 @@ func EnvironmentObjectLinksConnectionOverridesAttributeTypes() map[string]attr.T
 		"schema":   types.StringType,
 		"login":    types.StringType,
 		"password": types.StringType,
-		"extra":    types.StringType,
+		"extra":    types.MapType{ElemType: types.StringType},
 	}
 }
 
@@ -364,7 +379,7 @@ func EnvironmentObjectLinksMetricsExportOverridesAttributeTypes() map[string]att
 	return map[string]attr.Type{
 		"auth_type":     types.StringType,
 		"endpoint":      types.StringType,
-		"basic_token":   types.Int64Type,
+		"basic_token":   types.StringType,
 		"exporter_type": types.StringType,
 		"username":      types.StringType,
 		"password":      types.StringType,
