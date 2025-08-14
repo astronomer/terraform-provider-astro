@@ -127,6 +127,140 @@ var _ = Describe("Import Script", func() {
 			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_deployment.deployment_%s", deploymentId1)))
 			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_deployment.deployment_%s", deploymentId2)))
 		})
+
+		It("should generate import statements for hybrid deployments", func() {
+			deploymentId := cuid.New()
+			clusterId := cuid.New()
+			workspaceId := cuid.New()
+			taskPodNodePoolId := cuid.New()
+			deploymentType := platform.DeploymentTypeHYBRID
+
+			deployments := []platform.Deployment{
+				{
+					Id:                 deploymentId,
+					Name:               "hybrid-deployment",
+					Type:               &deploymentType,
+					ClusterId:          &clusterId,
+					WorkspaceId:        workspaceId,
+					TaskPodNodePoolId:  &taskPodNodePoolId,
+					Executor:           (*platform.DeploymentExecutor)(&[]string{"KUBERNETES"}[0]),
+					SchedulerAu:        &[]int{5}[0],
+					SchedulerReplicas:  1,
+					IsCicdEnforced:     false,
+					IsDagDeployEnabled: true,
+				},
+			}
+
+			mockResponse := &platform.ListDeploymentsResponse{
+				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+				JSON200: &platform.DeploymentsPaginated{
+					Deployments: deployments,
+				},
+			}
+
+			mockPlatformClient.On("ListDeploymentsWithResponse", ctx, organizationId, (*platform.ListDeploymentsParams)(nil)).Return(mockResponse, nil)
+
+			result, err := import_script.HandleDeployments(ctx, mockPlatformClient, mockIAMClient, organizationId)
+
+			Expect(err).To(BeNil())
+			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_deployment.deployment_%s", deploymentId)))
+		})
+
+		It("should generate import statements for hybrid deployments with worker queues", func() {
+			deploymentId := cuid.New()
+			clusterId := cuid.New()
+			workspaceId := cuid.New()
+			nodePoolId := cuid.New()
+			deploymentType := platform.DeploymentTypeHYBRID
+
+			workerQueues := []platform.WorkerQueue{
+				{
+					Name:              "default",
+					IsDefault:         true,
+					MaxWorkerCount:    10,
+					MinWorkerCount:    1,
+					WorkerConcurrency: 16,
+					NodePoolId:        &nodePoolId,
+				},
+			}
+
+			deployments := []platform.Deployment{
+				{
+					Id:                 deploymentId,
+					Name:               "hybrid-deployment-with-queues",
+					Type:               &deploymentType,
+					ClusterId:          &clusterId,
+					WorkspaceId:        workspaceId,
+					Executor:           (*platform.DeploymentExecutor)(&[]string{"CELERY"}[0]),
+					SchedulerAu:        &[]int{5}[0],
+					SchedulerReplicas:  1,
+					IsCicdEnforced:     false,
+					IsDagDeployEnabled: true,
+					WorkerQueues:       &workerQueues,
+				},
+			}
+
+			mockResponse := &platform.ListDeploymentsResponse{
+				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+				JSON200: &platform.DeploymentsPaginated{
+					Deployments: deployments,
+				},
+			}
+
+			mockPlatformClient.On("ListDeploymentsWithResponse", ctx, organizationId, (*platform.ListDeploymentsParams)(nil)).Return(mockResponse, nil)
+
+			result, err := import_script.HandleDeployments(ctx, mockPlatformClient, mockIAMClient, organizationId)
+
+			Expect(err).To(BeNil())
+			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_deployment.deployment_%s", deploymentId)))
+		})
+
+		It("should generate import statements for mixed deployment types", func() {
+			standardDeploymentId := cuid.New()
+			hybridDeploymentId := cuid.New()
+			standardType := platform.DeploymentTypeSTANDARD
+			hybridType := platform.DeploymentTypeHYBRID
+			taskPodNodePoolId := cuid.New()
+
+			deployments := []platform.Deployment{
+				{
+					Id:                 standardDeploymentId,
+					Name:               "standard-deployment",
+					Type:               &standardType,
+					WorkspaceId:        cuid.New(),
+					SchedulerSize:      (*platform.DeploymentSchedulerSize)(&[]string{"SMALL"}[0]),
+					IsCicdEnforced:     false,
+					IsDagDeployEnabled: true,
+				},
+				{
+					Id:                 hybridDeploymentId,
+					Name:               "hybrid-deployment",
+					Type:               &hybridType,
+					WorkspaceId:        cuid.New(),
+					TaskPodNodePoolId:  &taskPodNodePoolId,
+					SchedulerAu:        &[]int{5}[0],
+					SchedulerReplicas:  1,
+					IsCicdEnforced:     false,
+					IsDagDeployEnabled: true,
+				},
+			}
+
+			mockResponse := &platform.ListDeploymentsResponse{
+				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+				JSON200: &platform.DeploymentsPaginated{
+					Deployments: deployments,
+				},
+			}
+
+			mockPlatformClient.On("ListDeploymentsWithResponse", ctx, organizationId, (*platform.ListDeploymentsParams)(nil)).Return(mockResponse, nil)
+
+			result, err := import_script.HandleDeployments(ctx, mockPlatformClient, mockIAMClient, organizationId)
+
+			Expect(err).To(BeNil())
+			// Should include both deployment import statements
+			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_deployment.deployment_%s", standardDeploymentId)))
+			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_deployment.deployment_%s", hybridDeploymentId)))
+		})
 	})
 
 	Describe("HandleClusters", func() {
