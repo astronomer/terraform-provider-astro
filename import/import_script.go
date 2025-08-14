@@ -189,14 +189,10 @@ provider "astro" {
 			log.Printf("Error handling resource %s: %v", result.Resource, result.Error)
 		} else {
 			if result.Resource == "deployment" {
-				// Store deployment import strings separately - they will be handled specially
-				// and should NOT be included in the initial import.tf file to avoid auto-generation
 				deploymentImportString += result.ImportString
 			} else if result.Resource == "notification_channel" {
-				// Store notification channel import strings separately for the same reason
 				notificationChannelImportString += result.ImportString
 			} else {
-				// All other resources go into the main import.tf file for auto-generation
 				importString += result.ImportString
 			}
 			log.Printf("Successfully handled resource %s", result.Resource)
@@ -1406,7 +1402,6 @@ func formatWorkerQueues(queues *[]platform.WorkerQueue, executor *string, deploy
 	// If we have queues, format them
 	if queues != nil && len(*queues) > 0 {
 		workerQueues := lo.Map(*queues, func(queue platform.WorkerQueue, _ int) string {
-			// For HYBRID deployments, use different fields
 			if deploymentType != nil && *deploymentType == string(platform.DeploymentTypeHYBRID) {
 				// HYBRID deployments use node_pool_id instead of astro_machine
 				nodePoolIdString := ""
