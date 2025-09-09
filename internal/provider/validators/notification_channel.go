@@ -139,7 +139,7 @@ func (v notificationChannelDefinitionValidator) ValidateObject(ctx context.Conte
 	required := requiredFields[channelTypeStr]
 	var missingFields []string
 	for _, requiredField := range required {
-		if fieldValue, exists := definitionAttrs[requiredField]; !exists || fieldValue.IsNull() || fieldValue.IsUnknown() {
+		if fieldValue, exists := definitionAttrs[requiredField]; !exists || fieldValue.IsNull() {
 			missingFields = append(missingFields, requiredField)
 		}
 	}
