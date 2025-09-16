@@ -105,7 +105,7 @@ jobs:
           HOSTED_SCIM_ORGANIZATION_ID: clz3blqb500lh01mtkwu9zk5z
           HYBRID_CLUSTER_ID: cmfn55kzv0x0401mps8d3pw3e
           HYBRID_DRY_RUN_CLUSTER_ID: cmfn54h0k0vuf01mp52kkfu6d
-          HYBRID_NODE_POOL_ID: clxm3xg9e05bk01ixrqk52cob
+          HYBRID_NODE_POOL_ID: cmfn55kzv0x0301mppsx7hwb6
           ASTRO_API_HOST: https://api.astronomer-stage.io
           HOSTED_TEAM_ID: clx486hno068301il306nuhsm
           HOSTED_USER_ID: clz3a95hw00j301jj5jfmcgwd
@@ -171,7 +171,7 @@ jobs:
           HOSTED_SCIM_ORGANIZATION_ID: clz3blqb500lh01mtkwu9zk5z
           HYBRID_CLUSTER_ID: cmfn55kzv0x0401mps8d3pw3e
           HYBRID_DRY_RUN_CLUSTER_ID: cmfn54h0k0vuf01mp52kkfu6d
-          HYBRID_NODE_POOL_ID: clxm3xg9e05bk01ixrqk52cob
+          HYBRID_NODE_POOL_ID: cmfn55kzv0x0301mppsx7hwb6
           ASTRO_API_HOST: https://api.astronomer-stage.io
           HOSTED_TEAM_ID: clx486hno068301il306nuhsm
           HOSTED_USER_ID: clz3a95hw00j301jj5jfmcgwd
