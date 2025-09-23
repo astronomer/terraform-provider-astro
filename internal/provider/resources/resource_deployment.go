@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -129,9 +130,6 @@ func (r *DeploymentResource) Create(
 			Type:                 platform.CreateStandardDeploymentRequestTypeSTANDARD,
 			WorkspaceId:          data.WorkspaceId.ValueString(),
 		}
-		if desiredWorkloadIdentity != "" {
-			createStandardDeploymentRequest.WorkloadIdentity = &desiredWorkloadIdentity
-		}
 
 		// contact emails
 		contactEmails, diags := utils.TypesSetToStringSlice(ctx, data.ContactEmails)
@@ -191,9 +189,6 @@ func (r *DeploymentResource) Create(
 			SchedulerSize:        platform.CreateDedicatedDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString()),
 			Type:                 platform.CreateDedicatedDeploymentRequestTypeDEDICATED,
 			WorkspaceId:          data.WorkspaceId.ValueString(),
-		}
-		if desiredWorkloadIdentity != "" {
-			createDedicatedDeploymentRequest.WorkloadIdentity = &desiredWorkloadIdentity
 		}
 
 		// contact emails
@@ -261,10 +256,6 @@ func (r *DeploymentResource) Create(
 			WorkspaceId:       data.WorkspaceId.ValueString(),
 		}
 
-		if desiredWorkloadIdentity != "" {
-			createHybridDeploymentRequest.WorkloadIdentity = &desiredWorkloadIdentity
-		}
-
 		// contact emails
 		contactEmails, diags := utils.TypesSetToStringSlice(ctx, data.ContactEmails)
 		createHybridDeploymentRequest.ContactEmails = &contactEmails
@@ -312,9 +303,44 @@ func (r *DeploymentResource) Create(
 		)
 		return
 	}
+
 	_, diagnostic := clients.NormalizeAPIError(ctx, deployment.HTTPResponse, deployment.Body)
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
+		return
+	}
+
+	if desiredWorkloadIdentity != "" {
+		updateDeploymentRequest, _, updateDiags, err := r.CreateUpdateRequest(ctx, data)
+		if err != nil {
+			resp.Diagnostics.Append(updateDiags...)
+			return
+		}
+		updateDeploymentResponse, err := r.platformClient.UpdateDeploymentWithResponse(
+			ctx,
+			r.organizationId,
+			deployment.JSON200.Id,
+			updateDeploymentRequest,
+		)
+		if err != nil {
+			tflog.Error(ctx, "failed to update deployment workload identity", map[string]interface{}{"error": err})
+			resp.Diagnostics.AddError(
+				"Client Error",
+				fmt.Sprintf("Unable to update deployment workload identity, got error: %s", err),
+			)
+			return
+		}
+
+		diags = data.ReadFromResponse(ctx, updateDeploymentResponse.JSON200, data.OriginalAstroRuntimeVersion.ValueStringPointer(), &envVars)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+
+		tflog.Trace(ctx, fmt.Sprintf("created a deployment resource: %v", data.Id.ValueString()))
+
+		// Save data into Terraform state
+		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 		return
 	}
 
@@ -387,21 +413,10 @@ func (r *DeploymentResource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *DeploymentResource) Update(
+func (r *DeploymentResource) CreateUpdateRequest(
 	ctx context.Context,
-	req resource.UpdateRequest,
-	resp *resource.UpdateResponse,
-) {
-	var data models.DeploymentResource
-
-	// Read Terraform plan data into the model
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// update request
-	diags := make(diag.Diagnostics, 0)
+	data models.DeploymentResource,
+) (deploymentReq platform.UpdateDeploymentRequest, envVarReq []platform.DeploymentEnvironmentVariableRequest, diags diag.Diagnostics, err error) {
 	var updateDeploymentRequest platform.UpdateDeploymentRequest
 	var envVars []platform.DeploymentEnvironmentVariableRequest
 
@@ -429,45 +444,43 @@ func (r *DeploymentResource) Update(
 		if desiredWorkloadIdentity != "" {
 			updateStandardDeploymentRequest.WorkloadIdentity = &desiredWorkloadIdentity
 		}
-
+		contactEmails := []string{}
 		// contact emails
-		contactEmails, diags := utils.TypesSetToStringSlice(ctx, data.ContactEmails)
+		contactEmails, diags = utils.TypesSetToStringSlice(ctx, data.ContactEmails)
 		updateStandardDeploymentRequest.ContactEmails = &contactEmails
 		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
+			return updateDeploymentRequest, envVars, diags, errors.New("failed to convert contact emails")
 		}
 
 		// env vars
 		envVars, diags = RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
 		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
+			return updateDeploymentRequest, envVars, diags, errors.New("failed to convert environment variables")
 		}
 		updateStandardDeploymentRequest.EnvironmentVariables = envVars
 
 		// worker queues
 		updateStandardDeploymentRequest.WorkerQueues, diags = RequestHostedWorkerQueues(ctx, data.WorkerQueues)
 		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
+			return updateDeploymentRequest, envVars, diags, errors.New("failed to convert worker queues")
 		}
 
 		// scaling spec
 		updateStandardDeploymentRequest.ScalingSpec, diags = RequestScalingSpec(ctx, data.ScalingSpec)
 		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
+			return updateDeploymentRequest, envVars, diags, errors.New("failed to convert scaling spec")
+
 		}
 
 		err := updateDeploymentRequest.FromUpdateStandardDeploymentRequest(updateStandardDeploymentRequest)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("failed to update standard deployment error: %v", err))
-			resp.Diagnostics.AddError(
+			diags.AddError(
 				"Client Error",
 				fmt.Sprintf("Unable to update standard deployment request body, got error: %s", err),
 			)
-			return
+			return updateDeploymentRequest, envVars, diags, errors.New("failed to create update request from standard deployment")
+
 		}
 
 	case string(platform.DeploymentTypeDEDICATED):
@@ -493,50 +506,49 @@ func (r *DeploymentResource) Update(
 		}
 
 		// contact emails
-		contactEmails, diags := utils.TypesSetToStringSlice(ctx, data.ContactEmails)
+		contactEmails := []string{}
+		contactEmails, diags = utils.TypesSetToStringSlice(ctx, data.ContactEmails)
 		updateDedicatedDeploymentRequest.ContactEmails = &contactEmails
 		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
+			return updateDeploymentRequest, envVars, diags, errors.New("failed to convert contact emails")
+
 		}
 
 		// env vars
 		envVars, diags = RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
 		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
+			return updateDeploymentRequest, envVars, diags, errors.New("failed to convert environment variables")
+
 		}
 		updateDedicatedDeploymentRequest.EnvironmentVariables = envVars
 
 		// worker queues
 		updateDedicatedDeploymentRequest.WorkerQueues, diags = RequestHostedWorkerQueues(ctx, data.WorkerQueues)
 		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
+			return updateDeploymentRequest, envVars, diags, errors.New("failed to convert worker queues")
+
 		}
 
 		// scaling spec
 		updateDedicatedDeploymentRequest.ScalingSpec, diags = RequestScalingSpec(ctx, data.ScalingSpec)
 		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
+			return updateDeploymentRequest, envVars, diags, errors.New("failed to convert scaling spec")
 		}
 
 		// remote execution
 		updateDedicatedDeploymentRequest.RemoteExecution, diags = RequestRemoteExecution(ctx, data.RemoteExecution)
 		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
+			return updateDeploymentRequest, envVars, diags, errors.New("failed to convert remote execution")
 		}
 
 		err := updateDeploymentRequest.FromUpdateDedicatedDeploymentRequest(updateDedicatedDeploymentRequest)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("failed to update dedicated deployment error: %v", err))
-			resp.Diagnostics.AddError(
+			diags.AddError(
 				"Client Error",
 				fmt.Sprintf("Unable to update dedicated deployment request body, got error: %s", err),
 			)
-			return
+			return updateDeploymentRequest, envVars, diags, errors.New("failed to create update request from dedicated deployment")
 		}
 
 	case string(platform.DeploymentTypeHYBRID):
@@ -560,37 +572,60 @@ func (r *DeploymentResource) Update(
 		}
 
 		// contact emails
-		contactEmails, diags := utils.TypesSetToStringSlice(ctx, data.ContactEmails)
+		contactEmails := []string{}
+		contactEmails, diags = utils.TypesSetToStringSlice(ctx, data.ContactEmails)
 		updateHybridDeploymentRequest.ContactEmails = &contactEmails
 		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
+			return updateDeploymentRequest, envVars, diags, errors.New("failed to convert contact emails")
 		}
 
 		// env vars
 		envVars, diags = RequestDeploymentEnvironmentVariables(ctx, data.EnvironmentVariables)
 		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
+			return updateDeploymentRequest, envVars, diags, errors.New("failed to convert environment variables")
 		}
 		updateHybridDeploymentRequest.EnvironmentVariables = envVars
 
 		// worker queues
 		updateHybridDeploymentRequest.WorkerQueues, diags = RequestHybridWorkerQueues(ctx, data.WorkerQueues)
 		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
+			return updateDeploymentRequest, envVars, diags, errors.New("failed to convert worker queues")
 		}
 
 		err := updateDeploymentRequest.FromUpdateHybridDeploymentRequest(updateHybridDeploymentRequest)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("failed to create hybrid deployment error: %v", err))
-			resp.Diagnostics.AddError(
+			diags.AddError(
 				"Client Error",
 				fmt.Sprintf("Unable to create hybrid deployment request body, got error: %s", err),
 			)
-			return
+			return updateDeploymentRequest, envVars, diags, errors.New("failed to create update request from hybrid deployment")
 		}
+	}
+	return updateDeploymentRequest, envVars, diags, nil
+}
+
+func (r *DeploymentResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
+
+	var data models.DeploymentResource
+
+	// Read Terraform plan data into the model
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// update request
+	diags := make(diag.Diagnostics, 0)
+
+	updateDeploymentRequest, envVars, diags, err := r.CreateUpdateRequest(ctx, data)
+	if err != nil {
+		resp.Diagnostics.Append(diags...)
+		return
 	}
 
 	deployment, err := r.platformClient.UpdateDeploymentWithResponse(
