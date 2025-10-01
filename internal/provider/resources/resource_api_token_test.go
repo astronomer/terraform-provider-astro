@@ -196,6 +196,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "roles.2.entity_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "roles.2.entity_type", string(iam.DEPLOYMENT)),
 					resource.TestCheckResourceAttr(resourceVar, "roles.2.role", "DEPLOYMENT_ADMIN"),
+					resource.TestCheckResourceAttrSet(resourceVar, "token"),
 					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
@@ -229,6 +230,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "description", "new description"),
 					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
+					resource.TestCheckResourceAttrSet(resourceVar, "token"),
 				),
 			},
 			// Test invalid expiry period update
