@@ -197,8 +197,19 @@ func (r *UserRolesResource) Read(
 		)
 		return
 	}
+	// Check if the response is valid before accessing fields
+	if userRoles.JSON200 == nil {
+		tflog.Error(ctx, "failed to get user_roles", map[string]interface{}{"error": "nil response"})
+		resp.Diagnostics.AddError(
+			"Client Error",
+			fmt.Sprintf("Unable to get user_roles for user '%s', got nil response", userId),
+		)
+		return
+	}
+
+	// Check if user is active
 	if userRoles.JSON200.Status != iam.ACTIVE {
-		tflog.Error(ctx, "failed to get user_roles", map[string]interface{}{"error": err})
+		tflog.Error(ctx, "user is not active", map[string]interface{}{"user_id": userId, "status": userRoles.JSON200.Status})
 		resp.Diagnostics.AddError(
 			"Client Error",
 			fmt.Sprintf("User '%s' is not 'ACTIVE'", userId),

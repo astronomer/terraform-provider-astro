@@ -199,6 +199,14 @@ func (r *TeamResource) Create(
 		resp.Diagnostics.Append(diagnostic)
 		return
 	}
+	if team.JSON200 == nil {
+		tflog.Error(ctx, "failed to create Team", map[string]interface{}{"error": "nil response"})
+		resp.Diagnostics.AddError(
+			"Client Error",
+			"Unable to create Team, got nil response",
+		)
+		return
+	}
 
 	teamId := team.JSON200.Id
 
