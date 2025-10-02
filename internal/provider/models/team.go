@@ -143,11 +143,27 @@ type TeamMember struct {
 
 func TeamMemberTypesObject(ctx context.Context, member iam.TeamMember) (types.Object, diag.Diagnostics) {
 	obj := TeamMember{
-		UserId:    types.StringValue(member.UserId),
-		Username:  types.StringValue(member.Username),
-		FullName:  types.StringValue(*member.FullName),
-		AvatarUrl: types.StringValue(*member.AvatarUrl),
-		CreatedAt: types.StringValue(member.CreatedAt.String()),
+		UserId:   types.StringValue(member.UserId),
+		Username: types.StringValue(member.Username),
 	}
+
+	if member.FullName != nil {
+		obj.FullName = types.StringValue(*member.FullName)
+	} else {
+		obj.FullName = types.StringValue("")
+	}
+
+	if member.AvatarUrl != nil {
+		obj.AvatarUrl = types.StringValue(*member.AvatarUrl)
+	} else {
+		obj.AvatarUrl = types.StringValue("")
+	}
+
+	if member.CreatedAt != nil {
+		obj.CreatedAt = types.StringValue(member.CreatedAt.String())
+	} else {
+		obj.CreatedAt = types.StringValue("")
+	}
+
 	return types.ObjectValueFrom(ctx, schemas.TeamMemberAttributeTypes(), obj)
 }
