@@ -182,6 +182,14 @@ func (r *ApiTokenResource) Create(
 		resp.Diagnostics.Append(diagnostic)
 		return
 	}
+	if apiToken.JSON200 == nil {
+		tflog.Error(ctx, "failed to create API token", map[string]interface{}{"error": "nil response"})
+		resp.Diagnostics.AddError(
+			"Client Error",
+			"Unable to create API token, got nil response",
+		)
+		return
+	}
 	tokenId := apiToken.JSON200.Id
 
 	// Update api token with additional roles
@@ -221,6 +229,27 @@ func (r *ApiTokenResource) Create(
 		resp.Diagnostics.AddError(
 			"Client Error",
 			fmt.Sprintf("Unable to create API token and get API token, got error: %s", err),
+		)
+		return
+	}
+	_, diagnostic = clients.NormalizeAPIError(ctx, apiTokenResp.HTTPResponse, apiTokenResp.Body)
+	if diagnostic != nil {
+		resp.Diagnostics.Append(diagnostic)
+		return
+	}
+	if apiTokenResp.JSON200 == nil {
+		tflog.Error(ctx, "failed to get API token", map[string]interface{}{"error": "nil response"})
+		resp.Diagnostics.AddError(
+			"Client Error",
+			"Unable to get API token after creation, got nil response",
+		)
+		return
+	}
+	if apiToken.JSON200.Token == nil {
+		tflog.Error(ctx, "failed to create API token", map[string]interface{}{"error": "nil token value"})
+		resp.Diagnostics.AddError(
+			"Client Error",
+			"Unable to create API token, got nil token value in response",
 		)
 		return
 	}
