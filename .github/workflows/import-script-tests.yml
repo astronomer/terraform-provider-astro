@@ -39,7 +39,7 @@ jobs:
     name: Import Script Tests
     needs: build
     timeout-minutes: 20
-    environment: ${{ github.event.pull_request.head.repo.full_name != github.repository && 'acc-secrets' || null }} # Only sets env if pull request is from a different repository
+    environment: ${{ github.event.pull_request.head.repo.owner.login != github.repository_owner && 'acc-secrets' || null }}
     strategy:
       fail-fast: true
       matrix:
