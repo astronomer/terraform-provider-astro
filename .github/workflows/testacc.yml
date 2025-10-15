@@ -45,7 +45,7 @@ jobs:
     name: Terraform Provider Acceptance Tests
     needs: build
     timeout-minutes: 180 # 3 hours since cluster creation and cluster updates can take a while
-    environment: ${{ github.event.pull_request.head.repo.full_name != github.repository && 'acc-secrets' || null }} # Only sets env if pull request is from a different repository
+    environment: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner.login != github.repository_owner && 'acc-secrets' || null }}
     strategy:
       fail-fast: true
       matrix:
