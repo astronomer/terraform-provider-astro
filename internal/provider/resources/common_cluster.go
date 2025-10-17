@@ -40,6 +40,9 @@ func ClusterResourceRefreshFunc(ctx context.Context, platformClient *platform.Cl
 				return cluster.JSON200, string(cluster.JSON200.Status), nil
 			case platform.ClusterStatusACCESSDENIED:
 				return cluster.JSON200, string(cluster.JSON200.Status), fmt.Errorf("access denied for cluster '%v'", cluster.JSON200.Id)
+			case "": // Handle empty status as transient initialization state
+				tflog.Debug(ctx, "cluster status is empty, treating as pending", map[string]interface{}{"clusterId": cluster.JSON200.Id})
+				return cluster.JSON200, string(platform.ClusterStatusCREATING), nil
 			default:
 				return cluster.JSON200, string(cluster.JSON200.Status), fmt.Errorf("unexpected cluster status '%v' for cluster '%v'", cluster.JSON200.Status, cluster.JSON200.Id)
 			}
