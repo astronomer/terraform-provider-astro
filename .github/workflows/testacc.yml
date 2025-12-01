@@ -244,7 +244,7 @@ jobs:
           HOSTED_DUMMY_USER_ID: clzawipbm00bm01qw98vzzoca
           HOSTED_DEPLOYMENT_ID: cm1zkps2a0cv301ph39benet6
           HOSTED_DEPLOYMENT_API_TOKEN: ${{ secrets.DEV_HOSTED_DEPLOYMENT_API_TOKEN }}
-          HOSTED_STANDARD_DEPLOYMENT_ID: cm070pg0r00wd01qgnskk0dir
+          HOSTED_STANDARD_DEPLOYMENT_ID: cminkrx8r000o01mt9vuin7i9
           HOSTED_WORKSPACE_ID: clx42sxw501gl01o0gjenthnh
           HOSTED_API_TOKEN_ID: clxm4836f00ql01me3nigmcr6
           HOSTED_ALERT_ID: cmbr0zpa700db01kuah2pakem
