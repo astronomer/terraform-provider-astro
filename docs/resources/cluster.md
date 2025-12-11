@@ -71,7 +71,7 @@ resource "astro_cluster" "imported_cluster" {
 
 ### Required
 
-- `cloud_provider` (String) Cluster cloud provider - if changed, the cluster will be recreated.
+- `cloud_provider` (String) Cluster cloud provider - if changed, the cluster will be recreated. Allowed values: `AWS`, `AZURE`, `GCP`.
 - `name` (String) Cluster name
 - `region` (String) Cluster region - if changed, the cluster will be recreated.
 - `type` (String) Cluster type
@@ -143,7 +143,7 @@ Read-Only:
 
 Read-Only:
 
-- `cloud_provider` (String) Node pool cloud provider
+- `cloud_provider` (String) Node pool cloud provider. Allowed values: `AWS`, `AZURE`, `GCP`.
 - `cluster_id` (String) Node pool cluster identifier
 - `created_at` (String) Node pool creation timestamp
 - `id` (String) Node pool identifier
