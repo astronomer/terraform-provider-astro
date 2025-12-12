@@ -138,23 +138,14 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 		"webserver_ingress_hostname": resourceSchema.StringAttribute{
 			MarkdownDescription: "Deployment webserver ingress hostname",
 			Computed:            true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
 		},
 		"webserver_url": resourceSchema.StringAttribute{
 			MarkdownDescription: "Deployment webserver URL",
 			Computed:            true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
 		},
 		"webserver_airflow_api_url": resourceSchema.StringAttribute{
 			MarkdownDescription: "Deployment webserver Airflow API URL",
 			Computed:            true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
 		},
 		"status": resourceSchema.StringAttribute{
 			MarkdownDescription: "Deployment status",

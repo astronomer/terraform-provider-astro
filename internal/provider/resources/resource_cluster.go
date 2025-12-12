@@ -342,23 +342,36 @@ func (r *ClusterResource) Update(
 	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
 	defer cancel()
 
-	cluster, err := r.platformClient.UpdateClusterWithResponse(
-		ctx,
-		r.organizationId,
-		data.Id.ValueString(),
-		updateClusterRequest,
-	)
+	// Retry update cluster request if there is a 409 conflict (workflow already running)
+	var cluster *platform.UpdateClusterResponse
+	err = retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
+		var apiErr error
+		cluster, apiErr = r.platformClient.UpdateClusterWithResponse(
+			ctx,
+			r.organizationId,
+			data.Id.ValueString(),
+			updateClusterRequest,
+		)
+		if apiErr != nil {
+			tflog.Error(ctx, "failed to update cluster", map[string]interface{}{"error": apiErr})
+			return retry.NonRetryableError(fmt.Errorf("unable to update cluster, got error: %s", apiErr))
+		}
+		statusCode, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
+		if statusCode == http.StatusConflict {
+			// Workflow is already running, retry after a delay
+			tflog.Info(ctx, "cluster workflow in progress, retrying update", map[string]interface{}{"clusterId": data.Id.ValueString()})
+			return retry.RetryableError(fmt.Errorf("workflow is already running for cluster, retrying"))
+		}
+		if diagnostic != nil {
+			return retry.NonRetryableError(fmt.Errorf("%s", diagnostic.Detail()))
+		}
+		return nil
+	})
 	if err != nil {
-		tflog.Error(ctx, "failed to update cluster", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to update cluster, got error: %s", err),
+			fmt.Sprintf("Unable to update cluster after retries, got error: %s", err),
 		)
-		return
-	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
-	if diagnostic != nil {
-		resp.Diagnostics.Append(diagnostic)
 		return
 	}
 
@@ -412,24 +425,39 @@ func (r *ClusterResource) Delete(
 	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 
-	// delete request
-	cluster, err := r.platformClient.DeleteClusterWithResponse(
-		ctx,
-		r.organizationId,
-		data.Id.ValueString(),
-	)
+	// Retry delete cluster request if there is a 409 conflict (workflow already running)
+	var cluster *platform.DeleteClusterResponse
+	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
+		var apiErr error
+		cluster, apiErr = r.platformClient.DeleteClusterWithResponse(
+			ctx,
+			r.organizationId,
+			data.Id.ValueString(),
+		)
+		if apiErr != nil {
+			tflog.Error(ctx, "failed to delete cluster", map[string]interface{}{"error": apiErr})
+			return retry.NonRetryableError(fmt.Errorf("unable to delete cluster, got error: %s", apiErr))
+		}
+		statusCode, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
+		// It is recommended to ignore 404 Resource Not Found errors when deleting a resource
+		if statusCode == http.StatusNotFound {
+			return nil
+		}
+		if statusCode == http.StatusConflict {
+			// Workflow is already running, retry after a delay
+			tflog.Info(ctx, "cluster workflow in progress, retrying delete", map[string]interface{}{"clusterId": data.Id.ValueString()})
+			return retry.RetryableError(fmt.Errorf("workflow is already running for cluster, retrying"))
+		}
+		if diagnostic != nil {
+			return retry.NonRetryableError(fmt.Errorf("%s", diagnostic.Detail()))
+		}
+		return nil
+	})
 	if err != nil {
-		tflog.Error(ctx, "failed to delete cluster", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to delete cluster, got error: %s", err),
+			fmt.Sprintf("Unable to delete cluster after retries, got error: %s", err),
 		)
-		return
-	}
-	statusCode, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
-	// It is recommended to ignore 404 Resource Not Found errors when deleting a resource
-	if statusCode != http.StatusNotFound && diagnostic != nil {
-		resp.Diagnostics.Append(diagnostic)
 		return
 	}
 
