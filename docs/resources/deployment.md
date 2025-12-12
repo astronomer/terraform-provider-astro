@@ -209,7 +209,7 @@ resource "astro_deployment" "imported_deployment" {
 - `contact_emails` (Set of String) Deployment contact emails
 - `description` (String) Deployment description
 - `environment_variables` (Attributes Set) Deployment environment variables (see [below for nested schema](#nestedatt--environment_variables))
-- `executor` (String) Deployment executor. Valid values: CELERY, KUBERNETES, ASTRO.
+- `executor` (String) Deployment executor. Valid values: `CELERY`, `KUBERNETES`, `ASTRO`.
 - `is_cicd_enforced` (Boolean) Deployment CI/CD enforced
 - `is_dag_deploy_enabled` (Boolean) Whether DAG deploy is enabled - Changing this value may disrupt your deployment. Read more at https://docs.astronomer.io/astro/deploy-dags#enable-or-disable-dag-only-deploys-on-a-deployment
 - `name` (String) Deployment name
@@ -218,7 +218,7 @@ resource "astro_deployment" "imported_deployment" {
 
 ### Optional
 
-- `cloud_provider` (String) Deployment cloud provider - required for 'STANDARD' deployments. If changing this value, the deployment will be recreated in the new cloud provider
+- `cloud_provider` (String) Deployment cloud provider - required for 'STANDARD' deployments. If changing this value, the deployment will be recreated in the new cloud provider. Allowed values: `AWS`, `AZURE`, `GCP`.
 - `cluster_id` (String) Deployment cluster identifier - required for 'HYBRID' and 'DEDICATED' deployments. If changing this value, the deployment will be recreated in the new cluster
 - `default_task_pod_cpu` (String) Deployment default task pod CPU - required for 'STANDARD' and 'DEDICATED' deployments
 - `default_task_pod_memory` (String) Deployment default task pod memory - required for 'STANDARD' and 'DEDICATED' deployments

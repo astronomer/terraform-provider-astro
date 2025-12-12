@@ -34,7 +34,7 @@ output "clusters" {
 
 ### Optional
 
-- `cloud_provider` (String)
+- `cloud_provider` (String) - Allowed values: `AWS`, `AZURE`, `GCP`.
 - `names` (Set of String)
 
 ### Read-Only
@@ -50,7 +50,7 @@ Required:
 
 Read-Only:
 
-- `cloud_provider` (String) Cluster cloud provider
+- `cloud_provider` (String) Cluster cloud provider. Allowed values: `AWS`, `AZURE`, `GCP`.
 - `created_at` (String) Cluster creation timestamp
 - `db_instance_type` (String) Cluster database instance type
 - `health_status` (Attributes) Cluster health status (see [below for nested schema](#nestedatt--clusters--health_status))
