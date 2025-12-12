@@ -3,7 +3,8 @@ name: Acceptance Tests
 # In the future, we will need to figure out how we want to run acceptance tests
 # since creation of deployments and clusters are costly
 on:
-  pull_request:
+  pull_request_target:  # For external PRs (runs in base repo context)
+  pull_request:         # For internal PRs (keep for faster feedback)
   push:
     branches:
       - main
@@ -45,7 +46,7 @@ jobs:
     name: Terraform Provider Acceptance Tests
     needs: build
     timeout-minutes: 180 # 3 hours since cluster creation and cluster updates can take a while
-    environment: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner.login != github.repository_owner && 'acc-secrets' || null }}
+    environment: ${{ (github.event_name == 'pull_request_target' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner.login != github.repository_owner)) && 'acc-secrets' || null }}
     strategy:
       fail-fast: true
       matrix:
@@ -55,6 +56,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
         with:
           go-version-file: 'go.mod'
@@ -89,7 +92,7 @@ jobs:
            "internal/provider/resources/common_cluster.go"
          )
          for file in "${FILES_TO_CHECK[@]}"; do
-           if git diff --name-only remotes/origin/${{ github.base_ref }} remotes/origin/${{ github.head_ref }} | grep -q "$file"; then
+           if git diff --name-only origin/${{ github.event.pull_request.base.ref || github.ref_name }} ${{ github.event.pull_request.head.sha || github.sha }} | grep -q "$file"; then
              SKIP_TESTS="False"
              break
            fi
