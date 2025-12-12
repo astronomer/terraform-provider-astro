@@ -149,6 +149,51 @@ resource "astro_deployment" "team_1_prod_deployment" {
   }]
 }
 
+resource "astro_team" "team_1_admins" {
+  name              = "Team 1"
+  description       = ""
+  member_ids        = ["cl26baazt276912f06nnne1234"]
+  organization_role = "ORGANIZATION_MEMBER"
+  # Available Organization Roles:
+  # - ORGANIZATION_OWNER
+  # - ORGANIZATION_BILLING_ADMIN
+  # - ORGANIZATION_OBSERVE_ADMIN
+  # - ORGANIZATION_OBSERVE_MEMBER
+  # - ORGANIZATION_MEMBER
+  # https://www.astronomer.io/docs/astro/user-permissions#organization-roles
+  workspace_roles   = [{
+    workspace_id    = astro_workspace.team_1_workspace.id
+    # Available Workspace Roles:
+    # - WORKSPACE_OWNER
+    # - WORKSPACE_OPERATOR
+    # - WORKSPACE_AUTHOR
+    # - WORKSPACE_MEMBER
+    # - WORKSPACE_ACCESSOR
+    # https://www.astronomer.io/docs/astro/user-permissions#workspace-roles
+    role            = "WORKSPACE_OWNER"
+  }]
+}
+
+
+
+resource "astro_team" "team_1_users" {
+  name              = "Team 1"
+  description       = ""
+  member_ids        = ["cl26baazt276912f06nnne5678", "cl26baazt276912f06nnne9999"]
+  organization_role = "ORGANIZATION_MEMBER"
+  workspace_roles   = [{
+    workspace_id    = astro_workspace.team_1_workspace.id
+    role            = "WORKSPACE_MEMBER"
+  }]
+  deployment_roles  = [{
+    deployment_id   = astro_deployment.team_1_dev_deployment.id
+    # Available Deployment Roles:
+    # - DEPLOYMENT_ADMIN (https://www.astronomer.io/docs/astro/user-permissions#deployment-roles)
+    # - Custom roles (https://www.astronomer.io/docs/astro/deployment-role-reference)
+    role            = "DEPLOYMENT_ADMIN"
+  }]
+}
+
 resource "astro_workspace" "team_2_workspace" {
   name                  = "Team 2 Workspace"
   description           = "Team 2 Workspace"
