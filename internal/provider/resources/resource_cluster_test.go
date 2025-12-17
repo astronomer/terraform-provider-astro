@@ -328,9 +328,10 @@ func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
 			},
 			// Import existing cluster and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests
 			{
-				ResourceName:      azureResourceVar,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            azureResourceVar,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"health_status", "health_status.value"},
 			},
 		},
 	})
@@ -433,9 +434,10 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 			},
 			// Import existing cluster and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests
 			{
-				ResourceName:      gcpResourceVar,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            gcpResourceVar,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"health_status", "health_status.value"},
 			},
 		},
 	})

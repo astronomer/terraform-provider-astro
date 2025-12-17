@@ -102,7 +102,7 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			},
 		},
 		"executor": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment executor. Valid values: CELERY, KUBERNETES, ASTRO.",
+			MarkdownDescription: "Deployment executor. Allowed values: `CELERY`, `KUBERNETES`, `ASTRO`.",
 			Required:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(string(platform.DeploymentExecutorCELERY), string(platform.DeploymentExecutorKUBERNETES), string(platform.DeploymentExecutorASTRO)),
@@ -235,7 +235,7 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			Optional:            true,
 		},
 		"scheduler_size": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment scheduler size - required for 'STANDARD' and 'DEDICATED' deployments",
+			MarkdownDescription: "Deployment scheduler size - required for 'STANDARD' and 'DEDICATED' deployments. Allowed values: `SMALL`, `MEDIUM`, `LARGE`, `EXTRALARGE`.",
 			Optional:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
@@ -320,7 +320,7 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			},
 		},
 		"cloud_provider": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment cloud provider - required for 'STANDARD' deployments. If changing this value, the deployment will be recreated in the new cloud provider",
+			MarkdownDescription: "Deployment cloud provider - required for 'STANDARD' deployments. If changing this value, the deployment will be recreated in the new cloud provider. Allowed values: `AWS`, `GCP`, `AZURE`.",
 			Optional:            true,
 			Computed:            true,
 			PlanModifiers: []planmodifier.String{
@@ -392,7 +392,7 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			Computed:            true,
 		},
 		"cloud_provider": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment cloud provider",
+			MarkdownDescription: "Deployment cloud provider. Allowed values: `AWS`, `GCP`, `AZURE`.",
 			Computed:            true,
 		},
 		"astro_runtime_version": datasourceSchema.StringAttribute{
@@ -413,7 +413,7 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			Computed:            true,
 		},
 		"executor": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment executor",
+			MarkdownDescription: "Deployment executor. Allowed values: `CELERY`, `KUBERNETES`, `ASTRO`.",
 			Computed:            true,
 		},
 		"scheduler_au": datasourceSchema.Int64Attribute{
@@ -503,7 +503,7 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			Computed:            true,
 		},
 		"scheduler_size": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment scheduler size",
+			MarkdownDescription: "Deployment scheduler size. Allowed values: `SMALL`, `MEDIUM`, `LARGE`, `EXTRALARGE`.",
 			Computed:            true,
 		},
 		"is_high_availability": datasourceSchema.BoolAttribute{
@@ -653,7 +653,7 @@ func WorkerQueueDataSourceSchemaAttributes() map[string]datasourceSchema.Attribu
 			Computed:            true,
 		},
 		"astro_machine": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Worker queue Astro machine value",
+			MarkdownDescription: "Worker queue Astro machine value. Allowed values: `A5`, `A10`, `A20`, `A40`, `A60`, `A120`, `A160`.",
 			Computed:            true,
 		},
 		"is_default": datasourceSchema.BoolAttribute{
@@ -730,7 +730,7 @@ func WorkerQueueResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			},
 		},
 		"astro_machine": resourceSchema.StringAttribute{
-			MarkdownDescription: "Worker queue Astro machine value - required for 'STANDARD' and 'DEDICATED' deployments",
+			MarkdownDescription: "Worker queue Astro machine value - required for 'STANDARD' and 'DEDICATED' deployments. Allowed values: `A5`, `A10`, `A20`, `A40`, `A60`, `A120`, `A160`.",
 			Optional:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(

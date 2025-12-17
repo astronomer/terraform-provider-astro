@@ -209,7 +209,7 @@ resource "astro_deployment" "imported_deployment" {
 - `contact_emails` (Set of String) Deployment contact emails
 - `description` (String) Deployment description
 - `environment_variables` (Attributes Set) Deployment environment variables (see [below for nested schema](#nestedatt--environment_variables))
-- `executor` (String) Deployment executor. Valid values: CELERY, KUBERNETES, ASTRO.
+- `executor` (String) Deployment executor. Allowed values: `CELERY`, `KUBERNETES`, `ASTRO`.
 - `is_cicd_enforced` (Boolean) Deployment CI/CD enforced
 - `is_dag_deploy_enabled` (Boolean) Whether DAG deploy is enabled - Changing this value may disrupt your deployment. Read more at https://docs.astronomer.io/astro/deploy-dags#enable-or-disable-dag-only-deploys-on-a-deployment
 - `name` (String) Deployment name
@@ -218,7 +218,7 @@ resource "astro_deployment" "imported_deployment" {
 
 ### Optional
 
-- `cloud_provider` (String) Deployment cloud provider - required for 'STANDARD' deployments. If changing this value, the deployment will be recreated in the new cloud provider
+- `cloud_provider` (String) Deployment cloud provider - required for 'STANDARD' deployments. If changing this value, the deployment will be recreated in the new cloud provider. Allowed values: `AWS`, `GCP`, `AZURE`.
 - `cluster_id` (String) Deployment cluster identifier - required for 'HYBRID' and 'DEDICATED' deployments. If changing this value, the deployment will be recreated in the new cluster
 - `default_task_pod_cpu` (String) Deployment default task pod CPU - required for 'STANDARD' and 'DEDICATED' deployments
 - `default_task_pod_memory` (String) Deployment default task pod memory - required for 'STANDARD' and 'DEDICATED' deployments
@@ -233,7 +233,7 @@ resource "astro_deployment" "imported_deployment" {
 - `scaling_spec` (Attributes) Deployment scaling spec - only for 'STANDARD' and 'DEDICATED' deployments (see [below for nested schema](#nestedatt--scaling_spec))
 - `scheduler_au` (Number) Deployment scheduler AU - required for 'HYBRID' deployments
 - `scheduler_replicas` (Number) Deployment scheduler replicas - required for 'HYBRID' deployments
-- `scheduler_size` (String) Deployment scheduler size - required for 'STANDARD' and 'DEDICATED' deployments
+- `scheduler_size` (String) Deployment scheduler size - required for 'STANDARD' and 'DEDICATED' deployments. Allowed values: `SMALL`, `MEDIUM`, `LARGE`, `EXTRALARGE`.
 - `task_pod_node_pool_id` (String) Deployment task pod node pool identifier - required if executor is 'KUBERNETES' and type is 'HYBRID'
 - `worker_queues` (Attributes Set) Deployment worker queues - required for deployments with 'CELERY' executor. For 'STANDARD' and 'DEDICATED' deployments, use astro_machine. For 'HYBRID' deployments, use node_pool_id. (see [below for nested schema](#nestedatt--worker_queues))
 
@@ -359,7 +359,7 @@ Required:
 
 Optional:
 
-- `astro_machine` (String) Worker queue Astro machine value - required for 'STANDARD' and 'DEDICATED' deployments
+- `astro_machine` (String) Worker queue Astro machine value - required for 'STANDARD' and 'DEDICATED' deployments. Allowed values: `A5`, `A10`, `A20`, `A40`, `A60`, `A120`, `A160`.
 - `node_pool_id` (String) Worker queue Node pool identifier - required for 'HYBRID' deployments
 
 Read-Only:

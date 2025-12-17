@@ -57,7 +57,7 @@ Read-Only:
 
 - `airflow_version` (String) Deployment Airflow version
 - `astro_runtime_version` (String) Deployment Astro Runtime version
-- `cloud_provider` (String) Deployment cloud provider
+- `cloud_provider` (String) Deployment cloud provider. Allowed values: `AWS`, `GCP`, `AZURE`.
 - `cluster_id` (String) Deployment cluster identifier
 - `contact_emails` (Set of String) Deployment contact emails
 - `created_at` (String) Deployment creation timestamp
@@ -68,7 +68,7 @@ Read-Only:
 - `description` (String) Deployment description
 - `desired_dag_tarball_version` (String) Deployment desired DAG tarball version
 - `environment_variables` (Attributes Set) Deployment environment variables (see [below for nested schema](#nestedatt--deployments--environment_variables))
-- `executor` (String) Deployment executor
+- `executor` (String) Deployment executor. Allowed values: `CELERY`, `KUBERNETES`, `ASTRO`.
 - `external_ips` (Set of String) Deployment external IPs
 - `image_repository` (String) Deployment image repository
 - `image_tag` (String) Deployment image tag
@@ -90,7 +90,7 @@ Read-Only:
 - `scheduler_cpu` (String) Deployment scheduler CPU
 - `scheduler_memory` (String) Deployment scheduler memory
 - `scheduler_replicas` (Number) Deployment scheduler replicas
-- `scheduler_size` (String) Deployment scheduler size
+- `scheduler_size` (String) Deployment scheduler size. Allowed values: `SMALL`, `MEDIUM`, `LARGE`, `EXTRALARGE`.
 - `status` (String) Deployment status
 - `status_reason` (String) Deployment status reason
 - `task_pod_node_pool_id` (String) Deployment task pod node pool identifier
@@ -215,7 +215,7 @@ Read-Only:
 
 Read-Only:
 
-- `astro_machine` (String) Worker queue Astro machine value
+- `astro_machine` (String) Worker queue Astro machine value. Allowed values: `A5`, `A10`, `A20`, `A40`, `A60`, `A120`, `A160`.
 - `id` (String) Worker queue identifier
 - `is_default` (Boolean) Whether Worker queue is default
 - `max_worker_count` (Number) Worker queue max worker count
