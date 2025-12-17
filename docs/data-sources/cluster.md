@@ -32,7 +32,7 @@ output "cluster" {
 
 ### Read-Only
 
-- `cloud_provider` (String) Cluster cloud provider. Allowed values: `AWS`, `AZURE`, `GCP`.
+- `cloud_provider` (String) Cluster cloud provider. Allowed values: `AWS`, `GCP`, `AZURE`.
 - `created_at` (String) Cluster creation timestamp
 - `db_instance_type` (String) Cluster database instance type
 - `health_status` (Attributes) Cluster health status (see [below for nested schema](#nestedatt--health_status))
@@ -87,7 +87,7 @@ Read-Only:
 
 Read-Only:
 
-- `cloud_provider` (String) Node pool cloud provider
+- `cloud_provider` (String) Node pool cloud provider. Allowed values: `AWS`, `GCP`, `AZURE`.
 - `cluster_id` (String) Node pool cluster identifier
 - `created_at` (String) Node pool creation timestamp
 - `id` (String) Node pool identifier

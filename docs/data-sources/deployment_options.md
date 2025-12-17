@@ -42,10 +42,10 @@ output "deployment_options" {
 
 ### Optional
 
-- `cloud_provider` (String) Cloud provider. Allowed values: `AWS`, `AZURE`, `GCP`.
+- `cloud_provider` (String) Cloud provider
 - `deployment_id` (String) Deployment ID
 - `deployment_type` (String) Deployment type
-- `executor` (String) Executor. Valid values: `CELERY`, `KUBERNETES`, `ASTRO`.
+- `executor` (String) Executor. Valid values: CELERY, KUBERNETES, ASTRO.
 
 ### Read-Only
 
@@ -165,18 +165,6 @@ Read-Only:
 - `concurrency` (Object) (see [below for nested schema](#nestedobjatt--worker_machines--concurrency))
 - `name` (String)
 - `spec` (Object) (see [below for nested schema](#nestedobjatt--worker_machines--spec))
-
-### Astro Machine Values
-| Worker Type | vCPU | Memory  | Ephemeral Storage | Default Task Concurrency | Max Task Concurrency |
-|-------------|------|---------|-------------------|---------------------------|------------------------|
-| A5          | 1    | 2 GiB   | 10 GiB            | 5                         | 15                     |
-| A10         | 2    | 4 GiB   | 10 GiB            | 10                        | 30                     |
-| A20         | 4    | 8 GiB   | 10 GiB            | 20                        | 60                     |
-| A40         | 8    | 16 GiB  | 10 GiB            | 40                        | 120                    |
-| A60         | 12   | 24 GiB  | 10 GiB            | 60                        | 180                    |
-| A120        | 24   | 48 GiB  | 10 GiB            | 120                       | 360                    |
-| A160        | 32   | 64 GiB  | 10 GiB            | 160                       | 480                    |
-
 
 <a id="nestedobjatt--worker_machines--concurrency"></a>
 ### Nested Schema for `worker_machines.concurrency`

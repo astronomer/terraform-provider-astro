@@ -34,7 +34,7 @@ output "deployment" {
 
 - `airflow_version` (String) Deployment Airflow version
 - `astro_runtime_version` (String) Deployment Astro Runtime version
-- `cloud_provider` (String) Deployment cloud provider. Allowed values: `AWS`, `AZURE`, `GCP`.
+- `cloud_provider` (String) Deployment cloud provider. Allowed values: `AWS`, `GCP`, `AZURE`.
 - `cluster_id` (String) Deployment cluster identifier
 - `contact_emails` (Set of String) Deployment contact emails
 - `created_at` (String) Deployment creation timestamp
@@ -45,7 +45,7 @@ output "deployment" {
 - `description` (String) Deployment description
 - `desired_dag_tarball_version` (String) Deployment desired DAG tarball version
 - `environment_variables` (Attributes Set) Deployment environment variables (see [below for nested schema](#nestedatt--environment_variables))
-- `executor` (String) Deployment executor
+- `executor` (String) Deployment executor. Allowed values: `CELERY`, `KUBERNETES`, `ASTRO`.
 - `external_ips` (Set of String) Deployment external IPs
 - `image_repository` (String) Deployment image repository
 - `image_tag` (String) Deployment image tag
@@ -67,7 +67,7 @@ output "deployment" {
 - `scheduler_cpu` (String) Deployment scheduler CPU
 - `scheduler_memory` (String) Deployment scheduler memory
 - `scheduler_replicas` (Number) Deployment scheduler replicas
-- `scheduler_size` (String) Deployment scheduler size. Allowed values: `SMALL`, `MEDIUM`, `LARGE`, `EXTRA_LARGE`.
+- `scheduler_size` (String) Deployment scheduler size. Allowed values: `SMALL`, `MEDIUM`, `LARGE`, `EXTRALARGE`.
 - `status` (String) Deployment status
 - `status_reason` (String) Deployment status reason
 - `task_pod_node_pool_id` (String) Deployment task pod node pool identifier
@@ -192,7 +192,7 @@ Read-Only:
 
 Read-Only:
 
-- `astro_machine` (String) Worker queue Astro machine value (full values below)
+- `astro_machine` (String) Worker queue Astro machine value. Allowed values: `A5`, `A10`, `A20`, `A40`, `A60`, `A120`, `A160`.
 - `id` (String) Worker queue identifier
 - `is_default` (Boolean) Whether Worker queue is default
 - `max_worker_count` (Number) Worker queue max worker count
@@ -202,14 +202,3 @@ Read-Only:
 - `pod_cpu` (String) Worker queue pod CPU
 - `pod_memory` (String) Worker queue pod memory
 - `worker_concurrency` (Number) Worker queue worker concurrency
-
-### Astro Machine Values
-| Worker Type | vCPU | Memory  | Ephemeral Storage | Default Task Concurrency | Max Task Concurrency |
-|-------------|------|---------|-------------------|---------------------------|------------------------|
-| A5          | 1    | 2 GiB   | 10 GiB            | 5                         | 15                     |
-| A10         | 2    | 4 GiB   | 10 GiB            | 10                        | 30                     |
-| A20         | 4    | 8 GiB   | 10 GiB            | 20                        | 60                     |
-| A40         | 8    | 16 GiB  | 10 GiB            | 40                        | 120                    |
-| A60         | 12   | 24 GiB  | 10 GiB            | 60                        | 180                    |
-| A120        | 24   | 48 GiB  | 10 GiB            | 120                       | 360                    |
-| A160        | 32   | 64 GiB  | 10 GiB            | 160                       | 480                    |
