@@ -45,8 +45,18 @@ jobs:
     # This job runs on push to main branch.
     name: Terraform Provider Acceptance Tests
     needs: build
+    # Only run for:
+    # - push events (main branch)
+    # - schedule events
+    # - pull_request from internal contributors (same repo)
+    # - pull_request_target from external contributors (forks)
+    if: |
+      github.event_name == 'push' ||
+      github.event_name == 'schedule' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name != github.repository)
     timeout-minutes: 180 # 3 hours since cluster creation and cluster updates can take a while
-    environment: ${{ (github.event_name == 'pull_request_target' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner.login != github.repository_owner)) && 'acc-secrets' || null }}
+    environment: ${{ github.event_name == 'pull_request_target' && 'acc-secrets' || null }}
     strategy:
       fail-fast: true
       matrix:
