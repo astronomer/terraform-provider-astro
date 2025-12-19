@@ -40,7 +40,7 @@ The Astro Terraform Import Script is a tool designed to help you import existing
 This script automates the process of generating Terraform import blocks and resource configurations for the following resources: workspaces, deployments, clusters, hybrid cluster workspace authorizations, API tokens, teams, team roles, and user roles.
 See Astro's [import script guide](https://registry.terraform.io/providers/astronomer/astro/latest/docs/guides/import-script) for more information.
 
-To use the import script, download the `terraform-provider-astro-import-script` executable file from [releases](https://github.com/astronomer/terraform-provider-astro/releases) based on your OS and architecture and run it with the following command:
+To use the import script, download the `terraform-provider-astro-import-script` executable file from [releases](https://github.com/astronomer/terraform-provider-astro/releases/tag/import%2Fv0.1.6) based on your OS and architecture and run it with the following command:
 
 On Unix-based systems:
 
