@@ -33,7 +33,7 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 			Required:            true,
 		},
 		"cloud_provider": resourceSchema.StringAttribute{
-			MarkdownDescription: "Cluster cloud provider - if changed, the cluster will be recreated.",
+			MarkdownDescription: "Cluster cloud provider - if changed, the cluster will be recreated. Allowed values: `AWS`, `GCP`, `AZURE`.",
 			Required:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
@@ -181,7 +181,7 @@ func ClusterDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 			Computed:            true,
 		},
 		"cloud_provider": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Cluster cloud provider",
+			MarkdownDescription: "Cluster cloud provider. Allowed values: `AWS`, `GCP`, `AZURE`.",
 			Computed:            true,
 		},
 		"db_instance_type": datasourceSchema.StringAttribute{
@@ -365,7 +365,7 @@ func NodePoolResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			Computed:            true,
 		},
 		"cloud_provider": resourceSchema.StringAttribute{
-			MarkdownDescription: "Node pool cloud provider",
+			MarkdownDescription: "Node pool cloud provider. Allowed values: `AWS`, `GCP`, `AZURE`.",
 			Computed:            true,
 		},
 		"max_node_count": resourceSchema.Int64Attribute{
@@ -411,7 +411,7 @@ func NodePoolDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute 
 			Computed:            true,
 		},
 		"cloud_provider": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Node pool cloud provider",
+			MarkdownDescription: "Node pool cloud provider. Allowed values: `AWS`, `GCP`, `AZURE`.",
 			Computed:            true,
 		},
 		"max_node_count": datasourceSchema.Int64Attribute{

@@ -191,25 +191,29 @@ func (data *DeploymentResource) ReadFromResponse(
 	// Since terraform wants to know the values of the secret values in the request at all times, and our API does not send back the secret values in the response
 	// We must use the request value and set it in the Terraform response to keep Terraform from emitting errors
 	// Since the value is marked as sensitive, Terraform will not output the actual value in the plan/apply output
-	envVars := *deployment.EnvironmentVariables
-	if requestEnvVars != nil && deployment.EnvironmentVariables != nil {
-		requestEnvVarsMap := lo.SliceToMap(*requestEnvVars, func(envVar platform.DeploymentEnvironmentVariableRequest) (string, platform.DeploymentEnvironmentVariable) {
-			return envVar.Key, platform.DeploymentEnvironmentVariable{
-				Key:      envVar.Key,
-				Value:    envVar.Value,
-				IsSecret: envVar.IsSecret,
-			}
-		})
-		for i, envVar := range envVars {
-			if envVar.IsSecret {
-				if requestEnvVar, ok := requestEnvVarsMap[envVar.Key]; ok {
-					// If the envVar has a secret value, update the value in the response
-					envVars[i].Value = requestEnvVar.Value
+	var envVarsPtr *[]platform.DeploymentEnvironmentVariable
+	if deployment.EnvironmentVariables != nil {
+		envVars := *deployment.EnvironmentVariables
+		if requestEnvVars != nil {
+			requestEnvVarsMap := lo.SliceToMap(*requestEnvVars, func(envVar platform.DeploymentEnvironmentVariableRequest) (string, platform.DeploymentEnvironmentVariable) {
+				return envVar.Key, platform.DeploymentEnvironmentVariable{
+					Key:      envVar.Key,
+					Value:    envVar.Value,
+					IsSecret: envVar.IsSecret,
+				}
+			})
+			for i, envVar := range envVars {
+				if envVar.IsSecret {
+					if requestEnvVar, ok := requestEnvVarsMap[envVar.Key]; ok {
+						// If the envVar has a secret value, update the value in the response
+						envVars[i].Value = requestEnvVar.Value
+					}
 				}
 			}
 		}
+		envVarsPtr = &envVars
 	}
-	data.EnvironmentVariables, diags = utils.ObjectSet(ctx, &envVars, schemas.DeploymentEnvironmentVariableAttributeTypes(), DeploymentEnvironmentVariableTypesObject)
+	data.EnvironmentVariables, diags = utils.ObjectSet(ctx, envVarsPtr, schemas.DeploymentEnvironmentVariableAttributeTypes(), DeploymentEnvironmentVariableTypesObject)
 	if diags.HasError() {
 		return diags
 	}

@@ -90,7 +90,8 @@ func ClusterOptionsDataSourceSchemaAttributes() map[string]schema.Attribute {
 			},
 		},
 		"cloud_provider": schema.StringAttribute{
-			Optional: true,
+			MarkdownDescription: "ClusterOptions cloud provider. Allowed values: `AWS`, `GCP`, `AZURE`.",
+			Optional:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
 					string(platform.ClusterCloudProviderAWS),

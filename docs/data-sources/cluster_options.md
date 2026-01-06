@@ -37,7 +37,7 @@ output "cluster_options" {
 
 ### Optional
 
-- `cloud_provider` (String)
+- `cloud_provider` (String) ClusterOptions cloud provider. Allowed values: `AWS`, `GCP`, `AZURE`.
 
 ### Read-Only
 
