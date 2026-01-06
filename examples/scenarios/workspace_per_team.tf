@@ -26,7 +26,7 @@ terraform {
 
 
 provider "astro" {
-  organization_id = "cl17wsdpe084o0rw3e46g3smn"
+  organization_id = "<replace with your organization id>"
 }
 
 resource "astro_workspace" "team_1_workspace" {
