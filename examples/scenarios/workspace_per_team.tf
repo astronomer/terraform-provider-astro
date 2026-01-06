@@ -26,7 +26,7 @@ terraform {
 
 
 provider "astro" {
-  organization_id = "XXXXX"
+  organization_id = "cl17wsdpe084o0rw3e46g3smn"
 }
 
 resource "astro_workspace" "team_1_workspace" {
@@ -161,8 +161,8 @@ resource "astro_team" "team_1_admins" {
   # - ORGANIZATION_OBSERVE_MEMBER
   # - ORGANIZATION_MEMBER
   # https://www.astronomer.io/docs/astro/user-permissions#organization-roles
-  workspace_roles   = [{
-    workspace_id    = astro_workspace.team_1_workspace.id
+  workspace_roles = [{
+    workspace_id = astro_workspace.team_1_workspace.id
     # Available Workspace Roles:
     # - WORKSPACE_OWNER
     # - WORKSPACE_OPERATOR
@@ -170,7 +170,7 @@ resource "astro_team" "team_1_admins" {
     # - WORKSPACE_MEMBER
     # - WORKSPACE_ACCESSOR
     # https://www.astronomer.io/docs/astro/user-permissions#workspace-roles
-    role            = "WORKSPACE_OWNER"
+    role = "WORKSPACE_OWNER"
   }]
 }
 
@@ -181,16 +181,16 @@ resource "astro_team" "team_1_users" {
   description       = ""
   member_ids        = ["cl26baazt276912f06nnne5678", "cl26baazt276912f06nnne9999"]
   organization_role = "ORGANIZATION_MEMBER"
-  workspace_roles   = [{
-    workspace_id    = astro_workspace.team_1_workspace.id
-    role            = "WORKSPACE_MEMBER"
+  workspace_roles = [{
+    workspace_id = astro_workspace.team_1_workspace.id
+    role         = "WORKSPACE_MEMBER"
   }]
-  deployment_roles  = [{
-    deployment_id   = astro_deployment.team_1_dev_deployment.id
+  deployment_roles = [{
+    deployment_id = astro_deployment.team_1_dev_deployment.id
     # Available Deployment Roles:
     # - DEPLOYMENT_ADMIN (https://www.astronomer.io/docs/astro/user-permissions#deployment-roles)
     # - Custom roles (https://www.astronomer.io/docs/astro/deployment-role-reference)
-    role            = "DEPLOYMENT_ADMIN"
+    role = "DEPLOYMENT_ADMIN"
   }]
 }
 
