@@ -35,7 +35,7 @@ func TestAcc_ResourceUserInvite(t *testing.T) {
 					userInvite(userInviteInput{
 						Name:  userInviteName,
 						Email: "invalid-email",
-						Role:  string(iam.ORGANIZATIONOWNER),
+						Role:  string(iam.CreateUserInviteRequestRoleORGANIZATIONOWNER),
 					}),
 				ExpectError: regexp.MustCompile("must be a valid email address"),
 			},
@@ -55,11 +55,11 @@ func TestAcc_ResourceUserInvite(t *testing.T) {
 					userInvite(userInviteInput{
 						Name:  userInviteName,
 						Email: email,
-						Role:  string(iam.ORGANIZATIONOWNER),
+						Role:  string(iam.CreateUserInviteRequestRoleORGANIZATIONOWNER),
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "email", email),
-					resource.TestCheckResourceAttr(tfVarName, "role", string(iam.ORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(tfVarName, "role", string(iam.CreateUserInviteRequestRoleORGANIZATIONOWNER)),
 					resource.TestCheckResourceAttrSet(tfVarName, "invite_id"),
 					resource.TestCheckResourceAttrSet(tfVarName, "expires_at"),
 					resource.TestCheckResourceAttrSet(tfVarName, "invitee.id"),
@@ -75,11 +75,11 @@ func TestAcc_ResourceUserInvite(t *testing.T) {
 					userInvite(userInviteInput{
 						Name:  userInviteName,
 						Email: email,
-						Role:  string(iam.ORGANIZATIONMEMBER),
+						Role:  string(iam.CreateUserInviteRequestRoleORGANIZATIONMEMBER),
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "email", email),
-					resource.TestCheckResourceAttr(tfVarName, "role", string(iam.ORGANIZATIONMEMBER)),
+					resource.TestCheckResourceAttr(tfVarName, "role", string(iam.CreateUserInviteRequestRoleORGANIZATIONMEMBER)),
 					resource.TestCheckResourceAttrSet(tfVarName, "invite_id"),
 					// Check via API that user invite exists
 					testAccCheckUserInviteExistence(t, email, true),

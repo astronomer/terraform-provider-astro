@@ -23,9 +23,9 @@ func UserInviteResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			MarkdownDescription: "The Organization role to assign to the user",
 			Required:            true,
 			Validators: []validator.String{
-				stringvalidator.OneOf(string(iam.ORGANIZATIONOWNER),
-					string(iam.ORGANIZATIONMEMBER),
-					string(iam.ORGANIZATIONBILLINGADMIN),
+				stringvalidator.OneOf(string(iam.CreateUserInviteRequestRoleORGANIZATIONOWNER),
+					string(iam.CreateUserInviteRequestRoleORGANIZATIONMEMBER),
+					string(iam.CreateUserInviteRequestRoleORGANIZATIONBILLINGADMIN),
 				),
 			},
 		},

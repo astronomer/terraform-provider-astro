@@ -62,7 +62,7 @@ func ValidateRoleMatchesEntityType(role string, scopeType string) bool {
 		return false
 	}
 
-	organizationRoles := []string{string(iam.ORGANIZATIONBILLINGADMIN), string(iam.ORGANIZATIONMEMBER), string(iam.ORGANIZATIONOWNER)}
+	organizationRoles := []string{string(iam.UserOrganizationRoleORGANIZATIONBILLINGADMIN), string(iam.UserOrganizationRoleORGANIZATIONMEMBER), string(iam.UserOrganizationRoleORGANIZATIONOWNER)}
 	workspaceRoles := []string{string(iam.WORKSPACEACCESSOR), string(iam.WORKSPACEAUTHOR), string(iam.WORKSPACEMEMBER), string(iam.WORKSPACEOWNER), string(iam.WORKSPACEOPERATOR)}
 	deploymentRoles := []string{"DEPLOYMENT_ADMIN"}
 	var nonEntityRoles []string
@@ -196,10 +196,10 @@ func ValidateRoles(
 	deploymentRoles []iam.DeploymentRole,
 ) diag.Diagnostics {
 	for _, role := range workspaceRoles {
-		if !ValidateRoleMatchesEntityType(string(role.Role), string(iam.WORKSPACE)) {
+		if !ValidateRoleMatchesEntityType(string(role.Role), string(iam.RoleScopeTypeWORKSPACE)) {
 			return diag.Diagnostics{diag.NewErrorDiagnostic(
-				fmt.Sprintf("Role '%s' is not valid for role type '%s'", string(role.Role), string(iam.WORKSPACE)),
-				fmt.Sprintf("Please provide a valid role for the type '%s'", string(iam.WORKSPACE)),
+				fmt.Sprintf("Role '%s' is not valid for role type '%s'", string(role.Role), string(iam.RoleScopeTypeWORKSPACE)),
+				fmt.Sprintf("Please provide a valid role for the type '%s'", string(iam.RoleScopeTypeWORKSPACE)),
 			)}
 		}
 	}
@@ -213,10 +213,10 @@ func ValidateRoles(
 	}
 
 	for _, role := range deploymentRoles {
-		if !ValidateRoleMatchesEntityType(role.Role, string(iam.DEPLOYMENT)) {
+		if !ValidateRoleMatchesEntityType(role.Role, string(iam.RoleScopeTypeDEPLOYMENT)) {
 			return diag.Diagnostics{diag.NewErrorDiagnostic(
-				fmt.Sprintf("Role '%s' is not valid for role type '%s'", role.Role, string(iam.DEPLOYMENT)),
-				fmt.Sprintf("Please provide a valid role for the type '%s'", string(iam.DEPLOYMENT)),
+				fmt.Sprintf("Role '%s' is not valid for role type '%s'", role.Role, string(iam.RoleScopeTypeDEPLOYMENT)),
+				fmt.Sprintf("Please provide a valid role for the type '%s'", string(iam.RoleScopeTypeDEPLOYMENT)),
 			)}
 		}
 	}

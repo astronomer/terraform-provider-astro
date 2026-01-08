@@ -32,10 +32,10 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{
-						OrganizationRole: string(iam.ORGANIZATIONOWNER),
+						OrganizationRole: string(iam.UserOrganizationRoleORGANIZATIONOWNER),
 						WorkspaceRoles: []utils.Role{
 							{
-								Role:     string(iam.ORGANIZATIONOWNER),
+								Role:     string(iam.UserOrganizationRoleORGANIZATIONOWNER),
 								EntityId: workspaceId,
 							},
 						},
@@ -46,7 +46,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{
-						OrganizationRole: string(iam.ORGANIZATIONOWNER),
+						OrganizationRole: string(iam.UserOrganizationRoleORGANIZATIONOWNER),
 						DeploymentRoles: []utils.Role{
 							{
 								Role:     "DEPLOYMENT_ADMIN",
@@ -60,7 +60,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{
-						OrganizationRole: string(iam.ORGANIZATIONOWNER),
+						OrganizationRole: string(iam.UserOrganizationRoleORGANIZATIONOWNER),
 						WorkspaceRoles: []utils.Role{
 							{
 								Role:     string(iam.WORKSPACEOWNER),
@@ -77,21 +77,21 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{
-						OrganizationRole: string(iam.ORGANIZATIONOWNER),
+						OrganizationRole: string(iam.UserOrganizationRoleORGANIZATIONOWNER),
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "user_id", userId),
-					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.ORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.UserOrganizationRoleORGANIZATIONOWNER)),
 					resource.TestCheckNoResourceAttr(tfVarName, "workspace_roles"),
 					resource.TestCheckNoResourceAttr(tfVarName, "deployment_roles"),
 					// Check via API that user has correct roles
-					testAccCheckUserRolesCorrect(t, string(iam.ORGANIZATIONOWNER), nil, nil),
+					testAccCheckUserRolesCorrect(t, string(iam.UserOrganizationRoleORGANIZATIONOWNER), nil, nil),
 				),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{
-						OrganizationRole: string(iam.ORGANIZATIONOWNER),
+						OrganizationRole: string(iam.UserOrganizationRoleORGANIZATIONOWNER),
 						WorkspaceRoles: []utils.Role{
 							{
 								Role:     string(iam.WORKSPACEOWNER),
@@ -107,7 +107,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "user_id", userId),
-					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.ORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.UserOrganizationRoleORGANIZATIONOWNER)),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.0.role", string(iam.WORKSPACEOWNER)),
@@ -115,7 +115,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 
 					// Check via API that user has correct roles
 					testAccCheckUserRolesCorrect(t,
-						string(iam.ORGANIZATIONOWNER),
+						string(iam.UserOrganizationRoleORGANIZATIONOWNER),
 						[]utils.Role{
 							{
 								Role:     string(iam.WORKSPACEOWNER),
@@ -135,7 +135,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{
-						OrganizationRole: string(iam.ORGANIZATIONOWNER),
+						OrganizationRole: string(iam.UserOrganizationRoleORGANIZATIONOWNER),
 						WorkspaceRoles: []utils.Role{
 							{
 								Role:     string(iam.WORKSPACEOWNER),
@@ -155,7 +155,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "user_id", userId),
-					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.ORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.UserOrganizationRoleORGANIZATIONOWNER)),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "2"),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.0.role", string(iam.WORKSPACEOWNER)),
@@ -164,7 +164,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 
 					// Check via API that user has correct roles
 					testAccCheckUserRolesCorrect(t,
-						string(iam.ORGANIZATIONOWNER),
+						string(iam.UserOrganizationRoleORGANIZATIONOWNER),
 						[]utils.Role{
 							{
 								Role:     string(iam.WORKSPACEOWNER),

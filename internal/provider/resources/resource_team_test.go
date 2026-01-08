@@ -47,7 +47,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					IncludeMemberIds: true,
-					OrganizationRole: string(iam.ORGANIZATIONOWNER),
+					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 					DeploymentRoles: []utils.Role{
 						{
 							Role:     "DEPLOYMENT_ADMIN",
@@ -70,10 +70,10 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					IncludeMemberIds: true,
-					OrganizationRole: string(iam.ORGANIZATIONOWNER),
+					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 					WorkspaceRoles: []utils.Role{
 						{
-							Role:     string(iam.ORGANIZATIONOWNER),
+							Role:     string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 							EntityId: workspaceId,
 						},
 					},
@@ -87,7 +87,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					IncludeMemberIds: true,
-					OrganizationRole: string(iam.ORGANIZATIONOWNER),
+					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 					DeploymentRoles: []utils.Role{
 						{
 							Role:     "DEPLOYMENT_ADMIN",
@@ -104,7 +104,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					IncludeMemberIds: true,
-					OrganizationRole: string(iam.ORGANIZATIONOWNER),
+					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 					WorkspaceRoles: []utils.Role{
 						{
 							Role:     string(iam.WORKSPACEOWNER),
@@ -125,7 +125,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					IncludeMemberIds: true,
-					OrganizationRole: string(iam.ORGANIZATIONOWNER),
+					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 					WorkspaceRoles: []utils.Role{
 						{
 							Role:     string(iam.WORKSPACEOWNER),
@@ -148,13 +148,13 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{},
 					IncludeMemberIds: false, // Don't include member_ids in config
-					OrganizationRole: string(iam.ORGANIZATIONOWNER),
+					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(fmt.Sprintf("astro_team.%v_null", teamName), "id"),
 					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_null", teamName), "name", teamName+"_null"),
 					resource.TestCheckNoResourceAttr(fmt.Sprintf("astro_team.%v_null", teamName), "member_ids"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_null", teamName), "organization_role", string(iam.ORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_null", teamName), "organization_role", string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER)),
 				),
 			},
 			// Create team with empty member_ids array
@@ -164,13 +164,13 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{},
 					IncludeMemberIds: true,
-					OrganizationRole: string(iam.ORGANIZATIONOWNER),
+					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(fmt.Sprintf("astro_team.%v_empty", teamName), "id"),
 					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_empty", teamName), "name", teamName+"_empty"),
 					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_empty", teamName), "member_ids.#", "0"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_empty", teamName), "organization_role", string(iam.ORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_empty", teamName), "organization_role", string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER)),
 				),
 			},
 			// Create team with all fields
@@ -180,7 +180,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					IncludeMemberIds: true,
-					OrganizationRole: string(iam.ORGANIZATIONOWNER),
+					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 					DeploymentRoles: []utils.Role{
 						{
 							Role:     "DEPLOYMENT_ADMIN",
@@ -198,7 +198,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttr(resourceVar, "name", teamName),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
-					resource.TestCheckResourceAttr(resourceVar, "organization_role", string(iam.ORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(resourceVar, "organization_role", string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER)),
 					resource.TestCheckResourceAttr(resourceVar, "member_ids.#", "1"),
 					resource.TestCheckResourceAttr(resourceVar, "member_ids.0", userId),
 					resource.TestCheckResourceAttr(resourceVar, "deployment_roles.#", "1"),
@@ -224,7 +224,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      "new description",
 					MemberIds:        []string{},
 					IncludeMemberIds: true,
-					OrganizationRole: string(iam.ORGANIZATIONOWNER),
+					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 					WorkspaceRoles: []utils.Role{
 						{
 							Role:     string(iam.WORKSPACEACCESSOR),
@@ -249,7 +249,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      "updated to null members",
 					MemberIds:        []string{},
 					IncludeMemberIds: false, // Don't include member_ids in config (null)
-					OrganizationRole: string(iam.ORGANIZATIONOWNER),
+					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 					WorkspaceRoles: []utils.Role{
 						{
 							Role:     string(iam.WORKSPACEACCESSOR),

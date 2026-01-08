@@ -85,6 +85,8 @@ const (
 	ClusterStatusCREATED        ClusterStatus = "CREATED"
 	ClusterStatusCREATEFAILED   ClusterStatus = "CREATE_FAILED"
 	ClusterStatusCREATING       ClusterStatus = "CREATING"
+	ClusterStatusFAILINGOVER    ClusterStatus = "FAILING_OVER"
+	ClusterStatusFAILOVERFAILED ClusterStatus = "FAILOVER_FAILED"
 	ClusterStatusUPDATEFAILED   ClusterStatus = "UPDATE_FAILED"
 	ClusterStatusUPDATING       ClusterStatus = "UPDATING"
 	ClusterStatusUPGRADEPENDING ClusterStatus = "UPGRADE_PENDING"
@@ -581,11 +583,12 @@ const (
 
 // Defines values for OrganizationPaymentMethod.
 const (
-	AWSMARKETPLACE   OrganizationPaymentMethod = "AWS_MARKETPLACE"
-	AZUREMARKETPLACE OrganizationPaymentMethod = "AZURE_MARKETPLACE"
-	CREDITCARD       OrganizationPaymentMethod = "CREDIT_CARD"
-	GCPMARKETPLACE   OrganizationPaymentMethod = "GCP_MARKETPLACE"
-	INVOICE          OrganizationPaymentMethod = "INVOICE"
+	AWSMARKETPLACE       OrganizationPaymentMethod = "AWS_MARKETPLACE"
+	AZUREMARKETPLACE     OrganizationPaymentMethod = "AZURE_MARKETPLACE"
+	CREDITCARD           OrganizationPaymentMethod = "CREDIT_CARD"
+	GCPMARKETPLACE       OrganizationPaymentMethod = "GCP_MARKETPLACE"
+	INVOICE              OrganizationPaymentMethod = "INVOICE"
+	SNOWFLAKEMARKETPLACE OrganizationPaymentMethod = "SNOWFLAKE_MARKETPLACE"
 )
 
 // Defines values for OrganizationProduct.
@@ -1284,7 +1287,8 @@ type Cluster struct {
 	ProviderAccount *string `json:"providerAccount,omitempty"`
 
 	// Region The region in which the cluster is created.
-	Region string `json:"region"`
+	Region           string  `json:"region"`
+	SecondaryVpcCidr *string `json:"secondaryVpcCidr,omitempty"`
 
 	// ServicePeeringRange The service peering range. For GCP clusters only.
 	ServicePeeringRange *string `json:"servicePeeringRange,omitempty"`
@@ -1305,10 +1309,8 @@ type Cluster struct {
 	Type ClusterType `json:"type"`
 
 	// UpdatedAt The time when the cluster was last updated in UTC. formatted as `YYYY-MM-DDTHH:MM:SSZ`.
-	UpdatedAt time.Time `json:"updatedAt"`
-
-	// VpcSubnetRange The VPC subnet range.
-	VpcSubnetRange string `json:"vpcSubnetRange"`
+	UpdatedAt      time.Time `json:"updatedAt"`
+	VpcSubnetRange string    `json:"vpcSubnetRange"`
 
 	// WorkspaceIds The list of Workspaces that are authorized to the cluster.
 	WorkspaceIds *[]string `json:"workspaceIds,omitempty"`
@@ -1481,6 +1483,9 @@ type ConnectionAuthTypeParameter struct {
 
 	// IsSecret Whether the parameter is a secret
 	IsSecret bool `json:"isSecret"`
+
+	// Pattern A regex pattern for the parameter
+	Pattern *string `json:"pattern,omitempty"`
 }
 
 // CreateAlertRequest defines model for CreateAlertRequest.
@@ -1510,6 +1515,9 @@ type CreateAwsClusterRequest struct {
 
 	// Region The cluster's region.
 	Region string `json:"region"`
+
+	// SecondaryVpcCidr The secondary VPC CIDR for pods. For AWS clusters only.
+	SecondaryVpcCidr *string `json:"secondaryVpcCidr,omitempty"`
 
 	// Type The cluster's type.
 	Type CreateAwsClusterRequestType `json:"type"`
@@ -1807,6 +1815,9 @@ type CreateDedicatedDeploymentRequest struct {
 
 	// Description The Deployment's description.
 	Description *string `json:"description,omitempty"`
+
+	// DrWorkloadIdentity The Deployment's DR workload identity.
+	DrWorkloadIdentity *string `json:"drWorkloadIdentity,omitempty"`
 
 	// EnvironmentVariables List of environment variables to add to the Deployment.
 	EnvironmentVariables *[]DeploymentEnvironmentVariableRequest `json:"environmentVariables,omitempty"`
@@ -2148,6 +2159,9 @@ type CreateHybridDeploymentRequest struct {
 	// Description The Deployment's description.
 	Description *string `json:"description,omitempty"`
 
+	// DrWorkloadIdentity The Deployment's DR workload identity.
+	DrWorkloadIdentity *string `json:"drWorkloadIdentity,omitempty"`
+
 	// EnvironmentVariables List of environment variables to add to the Deployment.
 	EnvironmentVariables *[]DeploymentEnvironmentVariableRequest `json:"environmentVariables,omitempty"`
 
@@ -2306,6 +2320,9 @@ type CreateStandardDeploymentRequest struct {
 
 	// Description The Deployment's description.
 	Description *string `json:"description,omitempty"`
+
+	// DrWorkloadIdentity The Deployment's DR workload identity.
+	DrWorkloadIdentity *string `json:"drWorkloadIdentity,omitempty"`
 
 	// EnvironmentVariables List of environment variables to add to the Deployment.
 	EnvironmentVariables *[]DeploymentEnvironmentVariableRequest `json:"environmentVariables,omitempty"`
@@ -2487,6 +2504,9 @@ type Deployment struct {
 	// AirflowVersion The Deployment's Airflow version.
 	AirflowVersion string `json:"airflowVersion"`
 
+	// ApiUrl The base URL to directly access the Airflow API.
+	ApiUrl string `json:"apiUrl"`
+
 	// AstroRuntimeVersion The Deployment's Astro Runtime version.
 	AstroRuntimeVersion string `json:"astroRuntimeVersion"`
 
@@ -2520,6 +2540,15 @@ type Deployment struct {
 
 	// DesiredDagTarballVersion The Deployment's expected DAG tarball version after a currently processing deploy completes. This value is updated when a user triggers a DAG-only deploy to indicate that the Deployment is expecting a new DAG tarball version. If no deploys are currently processing, this value should be the same as DagTarballVersion.
 	DesiredDagTarballVersion *string `json:"desiredDagTarballVersion,omitempty"`
+
+	// DrExternalIPs A list of the Deployment's external IPs in the DR cluster
+	DrExternalIPs *[]string `json:"drExternalIPs,omitempty"`
+
+	// DrOidcIssuerUrl OIDC issuer URL of the deployment's DR cluster
+	DrOidcIssuerUrl *string `json:"drOidcIssuerUrl,omitempty"`
+
+	// DrWorkloadIdentity The Deployment's DR workload identity.
+	DrWorkloadIdentity *string `json:"drWorkloadIdentity,omitempty"`
 
 	// EnvironmentVariables The Deployment's environment variables. Secret values will be omitted from response.
 	EnvironmentVariables *[]DeploymentEnvironmentVariable `json:"environmentVariables,omitempty"`
@@ -2608,6 +2637,9 @@ type Deployment struct {
 	// Type The type of cluster that the Deployment runs on.
 	Type *DeploymentType `json:"type,omitempty"`
 
+	// UiUrl The URL to access the Airflow UI.
+	UiUrl string `json:"uiUrl"`
+
 	// UpdatedAt The time when the Deployment was last updated in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
 	UpdatedAt time.Time           `json:"updatedAt"`
 	UpdatedBy BasicSubjectProfile `json:"updatedBy"`
@@ -2688,13 +2720,13 @@ type DeploymentEnvironmentVariableRequest struct {
 // DeploymentHibernationOverride defines model for DeploymentHibernationOverride.
 type DeploymentHibernationOverride struct {
 	// IsActive Whether the override is currently active or not
-	IsActive *bool `json:"isActive,omitempty"`
+	IsActive *bool `json:"isActive"`
 
 	// IsHibernating Whether to go into hibernation or not via the override rule
-	IsHibernating *bool `json:"isHibernating,omitempty"`
+	IsHibernating *bool `json:"isHibernating"`
 
 	// OverrideUntil Timestamp till the override on the hibernation schedule is in effect
-	OverrideUntil *time.Time `json:"overrideUntil,omitempty"`
+	OverrideUntil *time.Time `json:"overrideUntil"`
 }
 
 // DeploymentHibernationOverrideRequest defines model for DeploymentHibernationOverrideRequest.
@@ -3337,10 +3369,10 @@ type OrganizationsPaginated struct {
 // OverrideDeploymentHibernationBody defines model for OverrideDeploymentHibernationBody.
 type OverrideDeploymentHibernationBody struct {
 	// IsHibernating The type of override to perform. Set this value to 'true' to have the Deployment hibernate regardless of its hibernation schedule. Set the value to 'false' to have the Deployment wake up regardless of its hibernation schedule. Use 'OverrideUntil' to define the length of the override.
-	IsHibernating bool `json:"isHibernating"`
+	IsHibernating *bool `json:"isHibernating"`
 
 	// OverrideUntil The end of the override time in UTC, formatted as 'YYYY-MM-DDTHH:MM:SSZ'. If this value isn't specified, the override persists until you end it through the Astro UI or another API call.
-	OverrideUntil *time.Time `json:"overrideUntil,omitempty"`
+	OverrideUntil *time.Time `json:"overrideUntil"`
 }
 
 // PagerDutyNotificationChannelDefinition defines model for PagerDutyNotificationChannelDefinition.
@@ -3679,6 +3711,9 @@ type UpdateDedicatedDeploymentRequest struct {
 	// Description The Deployment's description.
 	Description *string `json:"description,omitempty"`
 
+	// DrWorkloadIdentity The Deployment's DR workload identity.
+	DrWorkloadIdentity *string `json:"drWorkloadIdentity,omitempty"`
+
 	// EnvironmentVariables List of environment variables to add to the Deployment.
 	EnvironmentVariables []DeploymentEnvironmentVariableRequest `json:"environmentVariables"`
 
@@ -3941,6 +3976,9 @@ type UpdateHybridDeploymentRequest struct {
 	// Description The Deployment's description.
 	Description *string `json:"description,omitempty"`
 
+	// DrWorkloadIdentity The Deployment's DR workload identity.
+	DrWorkloadIdentity *string `json:"drWorkloadIdentity,omitempty"`
+
 	// EnvironmentVariables List of environment variables to add to the Deployment.
 	EnvironmentVariables []DeploymentEnvironmentVariableRequest `json:"environmentVariables"`
 
@@ -4080,6 +4118,9 @@ type UpdateStandardDeploymentRequest struct {
 
 	// Description The Deployment's description.
 	Description *string `json:"description,omitempty"`
+
+	// DrWorkloadIdentity The Deployment's DR workload identity.
+	DrWorkloadIdentity *string `json:"drWorkloadIdentity,omitempty"`
 
 	// EnvironmentVariables List of environment variables to add to the Deployment.
 	EnvironmentVariables []DeploymentEnvironmentVariableRequest `json:"environmentVariables"`

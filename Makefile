@@ -96,6 +96,6 @@ api_client_gen:
 		echo "Correct version of oapi-codegen is already installed."; \
 	fi
 	@echo "Generating IAM API client..."
-	oapi-codegen -include-tags=User,Invite,Team,ApiToken -generate=types,client -package=iam "$(CORE_IAM_OPENAPI_SPEC)" > ./internal/clients/iam/api.gen.go
+	oapi-codegen -include-tags=User,Invite,Team,ApiToken,Role -generate=types,client -package=iam "$(CORE_IAM_OPENAPI_SPEC)" > ./internal/clients/iam/api.gen.go
 	@echo "Generating Platform API client..."
 	oapi-codegen -include-tags=Organization,Workspace,Cluster,Options,Deployment,Role,Environment,Alerts,NotificationChannels -generate=types,client -package=platform "$(CORE_PLATFORM_OPENAPI_SPEC)" > ./internal/clients/platform/api.gen.go

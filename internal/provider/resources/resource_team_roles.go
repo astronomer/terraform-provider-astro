@@ -110,7 +110,7 @@ func (r *teamRolesResource) MutateRoles(
 	// create request
 	updateTeamRolesRequest := iam.UpdateTeamRolesJSONRequestBody{
 		DeploymentRoles:  &deploymentRoles,
-		OrganizationRole: iam.UpdateTeamRolesRequestOrganizationRole(data.OrganizationRole.ValueString()),
+		OrganizationRole: data.OrganizationRole.ValueString(),
 		WorkspaceRoles:   &workspaceRoles,
 	}
 	teamRoles, err := r.iamClient.UpdateTeamRolesWithResponse(
@@ -207,7 +207,7 @@ func (r *teamRolesResource) Read(
 
 	// Generate subjectRoles from the get team API response
 	subjectRoles := iam.SubjectRoles{
-		OrganizationRole: lo.ToPtr(iam.SubjectRolesOrganizationRole(teamRoles.JSON200.OrganizationRole)),
+		OrganizationRole: lo.ToPtr(string(teamRoles.JSON200.OrganizationRole)),
 		WorkspaceRoles:   teamRoles.JSON200.WorkspaceRoles,
 		DeploymentRoles:  teamRoles.JSON200.DeploymentRoles,
 	}
@@ -265,7 +265,7 @@ func (r *teamRolesResource) Delete(
 	// update request with no workspace roles, no deployment roles and lowest organization role
 	updateTeamRolesRequest := iam.UpdateTeamRolesJSONRequestBody{
 		DeploymentRoles:  nil,
-		OrganizationRole: iam.UpdateTeamRolesRequestOrganizationRole(iam.ORGANIZATIONMEMBER),
+		OrganizationRole: string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),
 		WorkspaceRoles:   nil,
 	}
 	teamRoles, err := r.iamClient.UpdateTeamRolesWithResponse(
