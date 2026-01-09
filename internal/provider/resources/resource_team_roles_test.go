@@ -31,12 +31,12 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					teamRoles(string(iam.ORGANIZATIONBILLINGADMIN), "[]", ""),
+					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "[]", ""),
 				ExpectError: regexp.MustCompile("Attribute workspace_roles set must contain at least 1 elements"),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					teamRoles(string(iam.ORGANIZATIONBILLINGADMIN), "", "[]"),
+					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "", "[]"),
 				ExpectError: regexp.MustCompile("Attribute deployment_roles set must contain at least 1 elements"),
 			},
 			{
@@ -46,14 +46,14 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					teamRoles(string(iam.ORGANIZATIONBILLINGADMIN), "", ""),
+					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "", ""),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
-					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.ORGANIZATIONBILLINGADMIN)),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN)),
 					resource.TestCheckNoResourceAttr(tfVarName, "workspace_roles"),
 					resource.TestCheckNoResourceAttr(tfVarName, "deployment_roles"),
 					// Check via API that team has correct roles
-					testAccCheckTeamRolesCorrect(t, string(iam.ORGANIZATIONBILLINGADMIN), 0, 0),
+					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), 0, 0),
 				),
 			},
 			{
@@ -69,21 +69,21 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 						IsDevelopmentMode:           false,
 						WorkerQueuesStr:             workerQueuesStr(""),
 					}) +
-					teamRoles(string(iam.ORGANIZATIONMEMBER),
+					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),
 						fmt.Sprintf(`[{workspace_id = %s
 										   role = "WORKSPACE_OWNER"}]`, "astro_workspace."+deploymentName+"_workspace.id"),
 						fmt.Sprintf(`[{deployment_id = %s
 											role = "DEPLOYMENT_ADMIN"}]`, "astro_deployment."+deploymentName+".id")),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
-					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.ORGANIZATIONMEMBER)),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.TeamOrganizationRoleORGANIZATIONMEMBER)),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.0.role", "WORKSPACE_OWNER"),
 					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.0.role", "DEPLOYMENT_ADMIN"),
 
 					// Check via API that team has correct roles
-					testAccCheckTeamRolesCorrect(t, string(iam.ORGANIZATIONMEMBER), 1, 1),
+					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 1),
 				),
 			},
 			// Import existing team_roles and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests

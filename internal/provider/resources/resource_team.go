@@ -114,7 +114,7 @@ func (r *TeamResource) MutateRoles(
 	// Update team roles
 	updateTeamRolesRequest := iam.UpdateTeamRolesJSONRequestBody{
 		DeploymentRoles:  &deploymentRoles,
-		OrganizationRole: iam.UpdateTeamRolesRequestOrganizationRole(data.OrganizationRole.ValueString()),
+		OrganizationRole: data.OrganizationRole.ValueString(),
 		WorkspaceRoles:   &workspaceRoles,
 	}
 	teamRoles, err := r.IamClient.UpdateTeamRolesWithResponse(

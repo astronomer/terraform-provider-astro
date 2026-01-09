@@ -109,7 +109,7 @@ func (r *ApiTokenResource) Create(
 	}
 
 	// Validate organization id
-	if string(role.EntityType) == string(iam.ORGANIZATION) {
+	if string(role.EntityType) == string(iam.ApiTokenRoleEntityTypeORGANIZATION) {
 		if role.EntityId != r.OrganizationId {
 			resp.Diagnostics.AddError(
 				"API Token of type 'ORGANIZATION' cannot have an 'ORGANIZATION' role with a different organization id",
@@ -120,7 +120,7 @@ func (r *ApiTokenResource) Create(
 	}
 
 	// Validate workspaces
-	workspaceRoles := FilterApiTokenRolesByType(roles, string(iam.WORKSPACE))
+	workspaceRoles := FilterApiTokenRolesByType(roles, string(iam.ApiTokenRoleEntityTypeWORKSPACE))
 	diags = r.HasValidWorkspaces(ctx, workspaceRoles)
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)
@@ -128,7 +128,7 @@ func (r *ApiTokenResource) Create(
 	}
 
 	// Validate deployments
-	deploymentRoles := FilterApiTokenRolesByType(roles, string(iam.DEPLOYMENT))
+	deploymentRoles := FilterApiTokenRolesByType(roles, string(iam.ApiTokenRoleEntityTypeDEPLOYMENT))
 	diags = r.HasValidDeployments(ctx, deploymentRoles)
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)
@@ -150,7 +150,7 @@ func (r *ApiTokenResource) Create(
 	}
 
 	// If the entity type is WORKSPACE or DEPLOYMENT, set the entity id
-	if createApiTokenRequest.Type == iam.WORKSPACE || createApiTokenRequest.Type == iam.DEPLOYMENT {
+	if createApiTokenRequest.Type == iam.CreateApiTokenRequestTypeWORKSPACE || createApiTokenRequest.Type == iam.CreateApiTokenRequestTypeDEPLOYMENT {
 		createApiTokenRequest.EntityId = lo.ToPtr(role.EntityId)
 	}
 
@@ -349,7 +349,7 @@ func (r *ApiTokenResource) Update(
 	}
 
 	// Validate organization id
-	if string(role.EntityType) == string(iam.ORGANIZATION) {
+	if string(role.EntityType) == string(iam.ApiTokenRoleEntityTypeORGANIZATION) {
 		if role.EntityId != r.OrganizationId {
 			resp.Diagnostics.AddError(
 				"API Token of type 'ORGANIZATION' cannot have an 'ORGANIZATION' role with a different organization id",
@@ -360,7 +360,7 @@ func (r *ApiTokenResource) Update(
 	}
 
 	// Validate workspaces
-	workspaceRoles := FilterApiTokenRolesByType(roles, string(iam.WORKSPACE))
+	workspaceRoles := FilterApiTokenRolesByType(roles, string(iam.ApiTokenRoleEntityTypeWORKSPACE))
 	diags = r.HasValidWorkspaces(ctx, workspaceRoles)
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)
@@ -368,7 +368,7 @@ func (r *ApiTokenResource) Update(
 	}
 
 	// Validate deployments
-	deploymentRoles := FilterApiTokenRolesByType(roles, string(iam.DEPLOYMENT))
+	deploymentRoles := FilterApiTokenRolesByType(roles, string(iam.ApiTokenRoleEntityTypeDEPLOYMENT))
 	diags = r.HasValidDeployments(ctx, deploymentRoles)
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)

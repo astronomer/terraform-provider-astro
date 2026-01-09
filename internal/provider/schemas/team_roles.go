@@ -23,9 +23,9 @@ func ResourceTeamRolesSchemaAttributes() map[string]resourceSchema.Attribute {
 			Required:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(iam.ORGANIZATIONOWNER),
-					string(iam.ORGANIZATIONMEMBER),
-					string(iam.ORGANIZATIONBILLINGADMIN),
+					string(iam.TeamOrganizationRoleORGANIZATIONOWNER),
+					string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),
+					string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN),
 				),
 			},
 		},
