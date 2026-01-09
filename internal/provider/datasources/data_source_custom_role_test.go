@@ -10,7 +10,7 @@ import (
 )
 
 func TestAcc_DataSourceCustomRole(t *testing.T) {
-	customRoleId := os.Getenv("CUSTOM_ROLE_ID")
+	customRoleId := os.Getenv("HOSTED_CUSTOM_ROLE_ID")
 	roleName := "custom_role"
 	resourceVar := fmt.Sprintf("data.astro_custom_role.%v", roleName)
 

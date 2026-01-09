@@ -132,6 +132,7 @@ jobs:
           HOSTED_ALERT_ID: cmbr12l431mbq01ii1h0nz6y0
           HOSTED_NOTIFICATION_CHANNEL_ID: cmbr12fik1m7l01gpln1bgtbb
           HOSTED_DEDICATED_CLUSTER_ID: cm73vsinm07hy01pu4dq1rei2
+          HOSTED_CUSTOM_ROLE_ID: cmk64yvat027n01q7f9gn5ghg
           SKIP_CLUSTER_RESOURCE_TESTS: ${{ env.SKIP_CLUSTER_RESOURCE_TESTS }}
           TESTARGS: "-failfast"
         run: make testacc
@@ -198,6 +199,7 @@ jobs:
           HOSTED_ALERT_ID: cmbr12l431mbq01ii1h0nz6y0
           HOSTED_NOTIFICATION_CHANNEL_ID: cmbr12fik1m7l01gpln1bgtbb
           HOSTED_DEDICATED_CLUSTER_ID: cm73vsinm07hy01pu4dq1rei2
+          HOSTED_CUSTOM_ROLE_ID: cmk64yvat027n01q7f9gn5ghg
           TESTARGS: "-failfast"
         run: make testacc
 
@@ -263,5 +265,6 @@ jobs:
           HOSTED_ALERT_ID: cmbr0zpa700db01kuah2pakem
           HOSTED_NOTIFICATION_CHANNEL_ID: cm4nwrvyg024h01mk2dn58m5s
           HOSTED_DEDICATED_CLUSTER_ID: cm1zjsqu008ab01phlcna8swg
+          HOSTED_CUSTOM_ROLE_ID: clzlwgj6h001c01hi3gqlk66p
           TESTARGS: "-failfast"
         run: make testacc
