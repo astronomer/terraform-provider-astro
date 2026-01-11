@@ -2,8 +2,13 @@ package schemas
 
 import (
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -69,6 +74,73 @@ func CustomRoleDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			MarkdownDescription: "The subject who last updated the custom role",
 			Computed:            true,
 			Attributes:          DataSourceSubjectProfileSchemaAttributes(),
+		},
+	}
+}
+
+func CustomRoleResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"id": resourceSchema.StringAttribute{
+			MarkdownDescription: "Custom role identifier",
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"name": resourceSchema.StringAttribute{
+			MarkdownDescription: "The custom role's name",
+			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
+		},
+		"description": resourceSchema.StringAttribute{
+			MarkdownDescription: "The custom role's description",
+			Optional:            true,
+		},
+		"permissions": resourceSchema.SetAttribute{
+			ElementType:         types.StringType,
+			MarkdownDescription: "The custom role's permissions",
+			Required:            true,
+		},
+		"scope_type": resourceSchema.StringAttribute{
+			MarkdownDescription: "The custom role's scope (DEPLOYMENT or DAG)",
+			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf("DEPLOYMENT", "DAG"),
+			},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+			},
+		},
+		"restricted_workspace_ids": resourceSchema.SetAttribute{
+			ElementType:         types.StringType,
+			MarkdownDescription: "The IDs of Workspaces that the custom role is restricted to",
+			Optional:            true,
+		},
+		"created_at": resourceSchema.StringAttribute{
+			MarkdownDescription: "The time the custom role was created",
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"created_by": resourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "The subject who created the custom role",
+			Computed:            true,
+			Attributes:          ResourceSubjectProfileSchemaAttributes(),
+			PlanModifiers: []planmodifier.Object{
+				objectplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"updated_at": resourceSchema.StringAttribute{
+			MarkdownDescription: "The time the custom role was last updated",
+			Computed:            true,
+		},
+		"updated_by": resourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "The subject who last updated the custom role",
+			Computed:            true,
+			Attributes:          ResourceSubjectProfileSchemaAttributes(),
 		},
 	}
 }
