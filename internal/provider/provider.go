@@ -131,6 +131,7 @@ func (p *AstroProvider) Resources(ctx context.Context) []func() resource.Resourc
 		resources.NewUserInviteResource,
 		resources.NewAlertResource,
 		resources.NewNotificationChannelResource,
+		resources.NewCustomRoleResource,
 	}
 }
 
