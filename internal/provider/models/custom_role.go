@@ -45,12 +45,17 @@ func (data *CustomRole) ReadFromResponse(ctx context.Context, role *iam.RoleWith
 	data.ScopeType = types.StringValue(string(role.ScopeType))
 
 	// Convert restricted workspace IDs slice to Set
-	restrictedWorkspaceIdsSet, wsDiags := types.SetValueFrom(ctx, types.StringType, role.RestrictedWorkspaceIds)
-	if wsDiags.HasError() {
-		diags.Append(wsDiags...)
-		return diags
+	// If empty, set to null to match Terraform's expectation
+	if len(role.RestrictedWorkspaceIds) > 0 {
+		restrictedWorkspaceIdsSet, wsDiags := types.SetValueFrom(ctx, types.StringType, role.RestrictedWorkspaceIds)
+		if wsDiags.HasError() {
+			diags.Append(wsDiags...)
+			return diags
+		}
+		data.RestrictedWorkspaceIds = restrictedWorkspaceIdsSet
+	} else {
+		data.RestrictedWorkspaceIds = types.SetNull(types.StringType)
 	}
-	data.RestrictedWorkspaceIds = restrictedWorkspaceIdsSet
 
 	data.CreatedAt = types.StringValue(role.CreatedAt)
 	data.UpdatedAt = types.StringValue(role.UpdatedAt)
