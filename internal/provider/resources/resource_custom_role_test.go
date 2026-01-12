@@ -20,9 +20,9 @@ import (
 
 func TestAcc_ResourceCustomRole(t *testing.T) {
 	namePrefix := utils.GenerateTestResourceName(10)
-	customRole1Name := fmt.Sprintf("%v-deployment", namePrefix)
-	customRole2Name := fmt.Sprintf("%v-dag", namePrefix)
-	customRole3Name := fmt.Sprintf("%v-updated", namePrefix)
+	customRole1Name := fmt.Sprintf("%v_deployment", namePrefix)
+	customRole2Name := fmt.Sprintf("%v_dag", namePrefix)
+	customRole3Name := fmt.Sprintf("%v_updated", namePrefix)
 	description1 := "Test custom role description"
 	description2 := utils.TestResourceDescription
 
@@ -106,7 +106,7 @@ func TestAcc_ResourceCustomRole(t *testing.T) {
 
 func TestAcc_ResourceCustomRoleWithRestrictedWorkspaces(t *testing.T) {
 	namePrefix := utils.GenerateTestResourceName(10)
-	customRoleName := fmt.Sprintf("%v-restricted", namePrefix)
+	customRoleName := fmt.Sprintf("%v_restricted", namePrefix)
 	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
 
 	resource.Test(t, resource.TestCase{

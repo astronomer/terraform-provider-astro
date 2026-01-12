@@ -90,9 +90,6 @@ func CustomRoleResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 		"name": resourceSchema.StringAttribute{
 			MarkdownDescription: "The custom role's name",
 			Required:            true,
-			Validators: []validator.String{
-				stringvalidator.LengthAtLeast(1),
-			},
 		},
 		"description": resourceSchema.StringAttribute{
 			MarkdownDescription: "The custom role's description",
