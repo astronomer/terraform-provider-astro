@@ -82,7 +82,7 @@ func TestAcc_ResourceCustomRole(t *testing.T) {
 			},
 			// Change scope_type (should replace the resource)
 			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + customRole("test", customRole2Name, description1, "DAG", []string{"dag.get"}),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + customRole("test", customRole2Name, description1, "DAG", []string{"dag.airflow.dag.get"}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("astro_custom_role.test", "name", customRole2Name),
 					resource.TestCheckResourceAttr("astro_custom_role.test", "description", description1),
