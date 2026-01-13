@@ -19,7 +19,7 @@ resource "astro_custom_role" "example" {
   scope_type  = "DEPLOYMENT"
   permissions = [
     "deployment.get",
-    "deployment.list"
+    "deployment.delete"
   ]
 }
 

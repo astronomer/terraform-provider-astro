@@ -70,7 +70,7 @@ func TestAcc_ResourceCustomRole(t *testing.T) {
 			},
 			// Update name, description, and permissions
 			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + customRole("test", customRole3Name, description2, "DEPLOYMENT", []string{"deployment.get", "deployment.list", "deployment.update"}),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + customRole("test", customRole3Name, description2, "DEPLOYMENT", []string{"deployment.get", "deployment.delete", "deployment.update"}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("astro_custom_role.test", "name", customRole3Name),
 					resource.TestCheckResourceAttr("astro_custom_role.test", "description", description2),
