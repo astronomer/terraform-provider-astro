@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"time"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -44,21 +45,16 @@ func (data *CustomRole) ReadFromResponse(ctx context.Context, role *iam.RoleWith
 
 	data.ScopeType = types.StringValue(string(role.ScopeType))
 
-	// Convert restricted workspace IDs slice to Set
-	// If empty, set to null to match Terraform's expectation
-	if len(role.RestrictedWorkspaceIds) > 0 {
-		restrictedWorkspaceIdsSet, wsDiags := types.SetValueFrom(ctx, types.StringType, role.RestrictedWorkspaceIds)
-		if wsDiags.HasError() {
-			diags.Append(wsDiags...)
-			return diags
-		}
-		data.RestrictedWorkspaceIds = restrictedWorkspaceIdsSet
-	} else {
-		data.RestrictedWorkspaceIds = types.SetNull(types.StringType)
+	// Convert restricted workspace IDs slice to Set (empty slice produces empty set with .# = 0)
+	restrictedWorkspaceIdsSet, wsDiags := types.SetValueFrom(ctx, types.StringType, role.RestrictedWorkspaceIds)
+	if wsDiags.HasError() {
+		diags.Append(wsDiags...)
+		return diags
 	}
+	data.RestrictedWorkspaceIds = restrictedWorkspaceIdsSet
 
-	data.CreatedAt = types.StringValue(role.CreatedAt.String())
-	data.UpdatedAt = types.StringValue(role.UpdatedAt.String())
+	data.CreatedAt = types.StringValue(role.CreatedAt.Format(time.RFC3339))
+	data.UpdatedAt = types.StringValue(role.UpdatedAt.Format(time.RFC3339))
 
 	// Convert CreatedBy to Object
 	createdByObj, createdByDiags := SubjectProfileTypesObject(ctx, role.CreatedBy)
