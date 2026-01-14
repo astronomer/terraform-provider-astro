@@ -57,8 +57,8 @@ func (data *CustomRole) ReadFromResponse(ctx context.Context, role *iam.RoleWith
 		data.RestrictedWorkspaceIds = types.SetNull(types.StringType)
 	}
 
-	data.CreatedAt = types.StringValue(role.CreatedAt)
-	data.UpdatedAt = types.StringValue(role.UpdatedAt)
+	data.CreatedAt = types.StringValue(role.CreatedAt.String())
+	data.UpdatedAt = types.StringValue(role.UpdatedAt.String())
 
 	// Convert CreatedBy to Object
 	createdByObj, createdByDiags := SubjectProfileTypesObject(ctx, role.CreatedBy)
