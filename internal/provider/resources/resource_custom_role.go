@@ -77,7 +77,7 @@ func (r *customRoleResource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	var data models.CustomRole
+	var data models.CustomRoleResource
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -162,7 +162,7 @@ func (r *customRoleResource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	var data models.CustomRole
+	var data models.CustomRoleResource
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -222,7 +222,7 @@ func (r *customRoleResource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	var data models.CustomRole
+	var data models.CustomRoleResource
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -307,7 +307,7 @@ func (r *customRoleResource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	var data models.CustomRole
+	var data models.CustomRoleResource
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
