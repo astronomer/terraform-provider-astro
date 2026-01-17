@@ -114,9 +114,7 @@ func (r *customRoleResource) Create(
 		createCustomRoleRequest.Description = lo.ToPtr(data.Description.ValueString())
 	}
 
-	if !data.RestrictedWorkspaceIds.IsNull() {
-		createCustomRoleRequest.RestrictedWorkspaceIds = &restrictedWorkspaceIds
-	}
+	createCustomRoleRequest.RestrictedWorkspaceIds = &restrictedWorkspaceIds
 
 	customRole, err := r.IamClient.CreateCustomRoleWithResponse(
 		ctx,
@@ -258,9 +256,7 @@ func (r *customRoleResource) Update(
 		updateCustomRoleRequest.Description = lo.ToPtr(data.Description.ValueString())
 	}
 
-	if !data.RestrictedWorkspaceIds.IsNull() {
-		updateCustomRoleRequest.RestrictedWorkspaceIds = &restrictedWorkspaceIds
-	}
+	updateCustomRoleRequest.RestrictedWorkspaceIds = &restrictedWorkspaceIds
 
 	customRole, err := r.IamClient.UpdateCustomRoleWithResponse(
 		ctx,

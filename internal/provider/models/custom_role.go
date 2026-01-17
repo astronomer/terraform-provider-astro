@@ -115,12 +115,16 @@ func (data *CustomRoleResource) ReadFromResponse(ctx context.Context, role *iam.
 
 	data.ScopeType = types.StringValue(string(role.ScopeType))
 
-	restrictedWorkspaceIdsSet, wsDiags := types.SetValueFrom(ctx, types.StringType, role.RestrictedWorkspaceIds)
-	if wsDiags.HasError() {
-		diags.Append(wsDiags...)
-		return diags
+	if len(role.RestrictedWorkspaceIds) == 0 {
+		data.RestrictedWorkspaceIds = types.SetNull(types.StringType)
+	} else {
+		restrictedWorkspaceIdsSet, wsDiags := types.SetValueFrom(ctx, types.StringType, role.RestrictedWorkspaceIds)
+		if wsDiags.HasError() {
+			diags.Append(wsDiags...)
+			return diags
+		}
+		data.RestrictedWorkspaceIds = restrictedWorkspaceIdsSet
 	}
-	data.RestrictedWorkspaceIds = restrictedWorkspaceIdsSet
 
 	data.CreatedAt = types.StringValue(role.CreatedAt.Format(time.RFC3339))
 	data.UpdatedAt = types.StringValue(role.UpdatedAt.Format(time.RFC3339))
