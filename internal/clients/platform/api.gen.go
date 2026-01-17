@@ -1165,7 +1165,7 @@ type AlertType string
 // AlertNotificationChannel defines model for AlertNotificationChannel.
 type AlertNotificationChannel struct {
 	// CreatedAt The time when the notification channel was created in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
-	CreatedAt string `json:"createdAt"`
+	CreatedAt time.Time `json:"createdAt"`
 
 	// Definition The definition of the notification.
 	Definition interface{} `json:"definition"`
@@ -1192,7 +1192,7 @@ type AlertNotificationChannel struct {
 	Type AlertNotificationChannelType `json:"type"`
 
 	// UpdatedAt The time when the notification channel was last updated in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
-	UpdatedAt string `json:"updatedAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 
 	// WorkspaceId The ID of the workspace the notification channel is associated with.
 	WorkspaceId *string `json:"workspaceId,omitempty"`
@@ -2699,7 +2699,7 @@ type DeploymentEnvironmentVariable struct {
 	Key string `json:"key"`
 
 	// UpdatedAt The time when the environment variable was last updated in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
-	UpdatedAt string `json:"updatedAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 
 	// Value The environment variable value.
 	Value *string `json:"value,omitempty"`
@@ -3221,7 +3221,7 @@ type NodePoolCloudProvider string
 // NotificationChannel defines model for NotificationChannel.
 type NotificationChannel struct {
 	// CreatedAt The time when the alert was created in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
-	CreatedAt string              `json:"createdAt"`
+	CreatedAt time.Time           `json:"createdAt"`
 	CreatedBy BasicSubjectProfile `json:"createdBy"`
 
 	// Definition The notification channel's definition.
@@ -3255,7 +3255,7 @@ type NotificationChannel struct {
 	Type string `json:"type"`
 
 	// UpdatedAt The time when the alert was updated in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
-	UpdatedAt string              `json:"updatedAt"`
+	UpdatedAt time.Time           `json:"updatedAt"`
 	UpdatedBy BasicSubjectProfile `json:"updatedBy"`
 
 	// WorkspaceId The workspace ID the notification channel is scoped to.

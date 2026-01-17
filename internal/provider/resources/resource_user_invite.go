@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
@@ -191,8 +192,10 @@ func (r *UserInviteResource) Read(
 	}
 
 	// Generate userInvite from the get user API response
+	// Parse ExpiresAt string back to time.Time
+	expiresAt, _ := time.Parse(time.RFC3339Nano, data.ExpiresAt.ValueString())
 	userInvite := iam.Invite{
-		ExpiresAt: data.ExpiresAt.ValueString(),
+		ExpiresAt: expiresAt,
 		InviteId:  data.InviteId.ValueString(),
 		Invitee: iam.BasicSubjectProfile{
 			ApiTokenName: invitee.ApiTokenName.ValueStringPointer(),

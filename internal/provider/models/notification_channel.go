@@ -86,8 +86,8 @@ func (data *NotificationChannelDataSource) ReadFromResponse(ctx context.Context,
 		data.EntityName = types.StringValue("")
 	}
 	data.IsShared = types.BoolValue(notificationChannel.IsShared)
-	data.CreatedAt = types.StringValue(notificationChannel.CreatedAt)
-	data.UpdatedAt = types.StringValue(notificationChannel.UpdatedAt)
+	data.CreatedAt = types.StringValue(notificationChannel.CreatedAt.String())
+	data.UpdatedAt = types.StringValue(notificationChannel.UpdatedAt.String())
 	data.CreatedBy, diags = SubjectProfileTypesObject(ctx, notificationChannel.CreatedBy)
 	if diags.HasError() {
 		return diags
@@ -131,8 +131,8 @@ func (data *NotificationChannelResource) ReadFromResponse(ctx context.Context, n
 		data.EntityName = types.StringValue("")
 	}
 	data.IsShared = types.BoolValue(notificationChannel.IsShared)
-	data.CreatedAt = types.StringValue(notificationChannel.CreatedAt)
-	data.UpdatedAt = types.StringValue(notificationChannel.UpdatedAt)
+	data.CreatedAt = types.StringValue(notificationChannel.CreatedAt.String())
+	data.UpdatedAt = types.StringValue(notificationChannel.UpdatedAt.String())
 	data.CreatedBy, diags = SubjectProfileTypesObject(ctx, notificationChannel.CreatedBy)
 	if diags.HasError() {
 		return diags
