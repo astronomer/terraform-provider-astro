@@ -127,13 +127,13 @@ func TestAcc_ResourceCustomRoleWithRestrictedWorkspaces(t *testing.T) {
 					testAccCheckCustomRoleExistence(t, customRoleName, true),
 				),
 			},
-			// Remove restricted workspaces
+			// Remove restricted workspaces by removing the attribute from config
 			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + customRoleWithRestrictedWorkspaces("test", customRoleName, "Unrestricted role", "DEPLOYMENT", []string{"deployment.get"}, []string{}),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + customRole("test", customRoleName, "Unrestricted role", "DEPLOYMENT", []string{"deployment.get"}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("astro_custom_role.test", "name", customRoleName),
 					resource.TestCheckResourceAttr("astro_custom_role.test", "description", "Unrestricted role"),
-					resource.TestCheckNoResourceAttr("astro_custom_role.test", "restricted_workspace_ids.#"),
+					resource.TestCheckNoResourceAttr("astro_custom_role.test", "restricted_workspace_ids"),
 					testAccCheckCustomRoleExistence(t, customRoleName, true),
 				),
 			},

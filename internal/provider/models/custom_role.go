@@ -92,7 +92,6 @@ func (data *CustomRoleDataSource) ReadFromResponse(ctx context.Context, role *ia
 }
 
 // ReadFromResponse populates the CustomRoleResource from an API response.
-// For resources, empty RestrictedWorkspaceIds array becomes null (optional field not configured).
 func (data *CustomRoleResource) ReadFromResponse(ctx context.Context, role *iam.RoleWithPermission) diag.Diagnostics {
 	var diags diag.Diagnostics
 
@@ -115,9 +114,7 @@ func (data *CustomRoleResource) ReadFromResponse(ctx context.Context, role *iam.
 
 	data.ScopeType = types.StringValue(string(role.ScopeType))
 
-	if len(role.RestrictedWorkspaceIds) == 0 {
-		data.RestrictedWorkspaceIds = types.SetNull(types.StringType)
-	} else {
+	if len(role.RestrictedWorkspaceIds) > 0 {
 		restrictedWorkspaceIdsSet, wsDiags := types.SetValueFrom(ctx, types.StringType, role.RestrictedWorkspaceIds)
 		if wsDiags.HasError() {
 			diags.Append(wsDiags...)
