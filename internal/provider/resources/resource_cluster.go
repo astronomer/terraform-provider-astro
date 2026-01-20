@@ -342,6 +342,23 @@ func (r *ClusterResource) Update(
 	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
 	defer cancel()
 
+	// Wait for cluster to be in a stable state before updating
+	// This prevents race conditions with concurrent workflows (e.g., from deployment deletions)
+	tflog.Info(ctx, "Waiting for cluster to be in stable state before update", map[string]interface{}{"clusterId": data.Id.ValueString()})
+	preUpdateStateConf := &retry.StateChangeConf{
+		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING), string(platform.ClusterStatusUPGRADEPENDING)},
+		Target:     []string{string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED), string(platform.ClusterStatusACCESSDENIED)},
+		Refresh:    ClusterResourceRefreshFunc(ctx, r.platformClient, r.organizationId, data.Id.ValueString()),
+		Timeout:    10 * time.Minute,
+		MinTimeout: 10 * time.Second,
+	}
+	_, err = preUpdateStateConf.WaitForStateContext(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError("Cluster not ready for update",
+			fmt.Sprintf("Cluster is not in a stable state before update: %s", err.Error()))
+		return
+	}
+
 	// Retry update cluster request if there is a 409 conflict (workflow already running)
 	var cluster *platform.UpdateClusterResponse
 	err = retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
