@@ -410,22 +410,33 @@ func (r *ClusterResource) Update(
 			// Wait for any running workflows to complete before retrying
 			time.Sleep(30 * time.Second)
 
-			// Re-send the update request
-			cluster, err = r.platformClient.UpdateClusterWithResponse(
-				ctx,
-				r.organizationId,
-				data.Id.ValueString(),
-				updateClusterRequest,
-			)
-			if err != nil {
-				tflog.Error(ctx, "Failed to retry cluster update request", map[string]interface{}{"error": err})
+			// Re-send the update request with retry for 409 conflicts
+			retryErr := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
+				var apiErr error
+				cluster, apiErr = r.platformClient.UpdateClusterWithResponse(
+					ctx,
+					r.organizationId,
+					data.Id.ValueString(),
+					updateClusterRequest,
+				)
+				if apiErr != nil {
+					tflog.Error(ctx, "Failed to retry cluster update request", map[string]interface{}{"error": apiErr})
+					return retry.NonRetryableError(fmt.Errorf("unable to retry cluster update: %s", apiErr))
+				}
+				statusCode, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
+				if statusCode == http.StatusConflict {
+					// Workflow is already running, retry after a delay
+					tflog.Info(ctx, "cluster workflow in progress during retry, retrying update", map[string]interface{}{"clusterId": data.Id.ValueString()})
+					return retry.RetryableError(fmt.Errorf("workflow is already running for cluster, retrying"))
+				}
+				if diagnostic != nil {
+					return retry.NonRetryableError(fmt.Errorf("%s", diagnostic.Detail()))
+				}
+				return nil
+			})
+			if retryErr != nil {
 				resp.Diagnostics.AddError("Cluster update failed",
-					fmt.Sprintf("Unable to retry cluster update: %s", err.Error()))
-				return
-			}
-			_, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
-			if diagnostic != nil {
-				resp.Diagnostics.Append(diagnostic)
+					fmt.Sprintf("Unable to retry cluster update after conflicts: %s", retryErr.Error()))
 				return
 			}
 			continue
