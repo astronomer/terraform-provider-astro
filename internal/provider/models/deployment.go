@@ -166,7 +166,12 @@ func (data *DeploymentResource) ReadFromResponse(
 	data.CloudProvider = types.StringPointerValue((*string)(deployment.CloudProvider))
 
 	// OriginalAstroRuntimeVersion is the version of the Astro runtime that was used to create the deployment
-	data.OriginalAstroRuntimeVersion = types.StringPointerValue(originalAstroRuntimeVersion)
+	// If originalAstroRuntimeVersion is nil (e.g., during import), fall back to the current AstroRuntimeVersion
+	if originalAstroRuntimeVersion == nil || *originalAstroRuntimeVersion == "" {
+		data.OriginalAstroRuntimeVersion = types.StringValue(deployment.AstroRuntimeVersion)
+	} else {
+		data.OriginalAstroRuntimeVersion = types.StringPointerValue(originalAstroRuntimeVersion)
+	}
 	data.AstroRuntimeVersion = types.StringValue(deployment.AstroRuntimeVersion)
 
 	data.AirflowVersion = types.StringValue(deployment.AirflowVersion)
