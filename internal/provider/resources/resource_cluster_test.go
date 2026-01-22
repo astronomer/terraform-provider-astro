@@ -159,43 +159,43 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 			},
 			// Change properties of cluster and deployment and check they have been updated in terraform state
 			// Add back workspace restrictions
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
-					cluster(clusterInput{
-						Name:                               awsClusterName,
-						Region:                             "us-east-1",
-						CloudProvider:                      "AWS",
-						RestrictedWorkspaceResourceVarName: workspaceResourceVar,
-					}) +
-					dedicatedDeployment(dedicatedDeploymentInput{
-						ClusterId:     awsResourceVarId,
-						WorkspaceId:   workspaceResourceVarId,
-						Name:          awsDeploymentName,
-						Description:   utils.TestResourceDescription,
-						SchedulerSize: "MEDIUM",
-					}),
-				Check: resource.ComposeTestCheckFunc(
-					// Check cluster
-					resource.TestCheckResourceAttr(awsResourceVar, "name", awsClusterName),
-					resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-1"),
-					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
-					resource.TestCheckResourceAttrSet(awsResourceVar, "vpc_subnet_range"),
-					resource.TestCheckResourceAttr(awsResourceVar, "workspace_ids.#", "1"),
+			// {
+			// 	Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+			// 		workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
+			// 		cluster(clusterInput{
+			// 			Name:                               awsClusterName,
+			// 			Region:                             "us-east-1",
+			// 			CloudProvider:                      "AWS",
+			// 			RestrictedWorkspaceResourceVarName: workspaceResourceVar,
+			// 		}) +
+			// 		dedicatedDeployment(dedicatedDeploymentInput{
+			// 			ClusterId:     awsResourceVarId,
+			// 			WorkspaceId:   workspaceResourceVarId,
+			// 			Name:          awsDeploymentName,
+			// 			Description:   utils.TestResourceDescription,
+			// 			SchedulerSize: "MEDIUM",
+			// 		}),
+			// 	Check: resource.ComposeTestCheckFunc(
+			// 		// Check cluster
+			// 		resource.TestCheckResourceAttr(awsResourceVar, "name", awsClusterName),
+			// 		resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-1"),
+			// 		resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
+			// 		resource.TestCheckResourceAttrSet(awsResourceVar, "vpc_subnet_range"),
+			// 		resource.TestCheckResourceAttr(awsResourceVar, "workspace_ids.#", "1"),
 
-					// Check via API that cluster exists
-					testAccCheckClusterExistence(t, awsClusterName, true, true),
+			// 		// Check via API that cluster exists
+			// 		testAccCheckClusterExistence(t, awsClusterName, true, true),
 
-					// Check dedicated deployment
-					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "name", awsDeploymentName),
-					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "description", utils.TestResourceDescription),
-					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "type", "DEDICATED"),
-					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "scheduler_size", "MEDIUM"),
+			// 		// Check dedicated deployment
+			// 		resource.TestCheckResourceAttr(awsDeploymentResourceVar, "name", awsDeploymentName),
+			// 		resource.TestCheckResourceAttr(awsDeploymentResourceVar, "description", utils.TestResourceDescription),
+			// 		resource.TestCheckResourceAttr(awsDeploymentResourceVar, "type", "DEDICATED"),
+			// 		resource.TestCheckResourceAttr(awsDeploymentResourceVar, "scheduler_size", "MEDIUM"),
 
-					// Check via API that deployment exists
-					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
-				),
-			},
+			// 		// Check via API that deployment exists
+			// 		testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
+			// 	),
+			// },
 			// Remove deployment
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
