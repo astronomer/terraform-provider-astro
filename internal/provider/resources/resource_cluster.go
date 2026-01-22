@@ -379,7 +379,7 @@ func (r *ClusterResource) Update(
 	// Wait for the cluster to be updated (or fail)
 	// Retry if cluster reaches UPDATE_FAILED due to internal workflow conflicts
 	// (The 409 from stagehand may not be propagated to the client, resulting in UPDATE_FAILED status)
-	const maxUpdateFailedRetries = 3
+	const maxUpdateFailedRetries = 5
 	var readyCluster any
 
 	for attempt := 0; attempt <= maxUpdateFailedRetries; attempt++ {
@@ -407,11 +407,24 @@ func (r *ClusterResource) Update(
 					"maxRetries": maxUpdateFailedRetries,
 				})
 
-			// Wait for any running workflows to complete before retrying
-			time.Sleep(30 * time.Second)
+			// Exponential backoff: 30s, 60s, 120s, 240s, 300s (capped at 5 min)
+			waitDuration := 30 * time.Second * time.Duration(1<<uint(attempt))
+			if waitDuration > 5*time.Minute {
+				waitDuration = 5 * time.Minute
+			}
+			tflog.Info(ctx, "Cluster UPDATE_FAILED, waiting before retry",
+				map[string]interface{}{
+					"clusterId":    data.Id.ValueString(),
+					"attempt":      attempt + 1,
+					"maxRetries":   maxUpdateFailedRetries,
+					"waitDuration": waitDuration.String(),
+				})
+			time.Sleep(waitDuration)
 
 			// Re-send the update request with retry for 409 conflicts
-			retryErr := retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
+			// Use shorter timeout for 409 conflict retries (10 min instead of 3hr)
+			conflictRetryTimeout := 10 * time.Minute
+			retryErr := retry.RetryContext(ctx, conflictRetryTimeout, func() *retry.RetryError {
 				var apiErr error
 				cluster, apiErr = r.platformClient.UpdateClusterWithResponse(
 					ctx,
