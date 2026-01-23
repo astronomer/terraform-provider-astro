@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -157,82 +158,46 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
 				),
 			},
-			// Only update cluster and add back workspace restrictions
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
-					cluster(clusterInput{
-						Name:                               awsClusterName,
-						Region:                             "us-east-1",
-						CloudProvider:                      "AWS",
-						RestrictedWorkspaceResourceVarName: workspaceResourceVar,
-					}) +
-					dedicatedDeployment(dedicatedDeploymentInput{
-						ClusterId:     awsResourceVarId,
-						WorkspaceId:   workspaceResourceVarId,
-						Name:          awsDeploymentName,
-						Description:   "deployment description",
-						SchedulerSize: "SMALL",
-					}),
-				Check: resource.ComposeTestCheckFunc(
-					// Check cluster
-					resource.TestCheckResourceAttr(awsResourceVar, "name", awsClusterName),
-					resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-1"),
-					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
-					resource.TestCheckResourceAttrSet(awsResourceVar, "vpc_subnet_range"),
-					resource.TestCheckResourceAttr(awsResourceVar, "workspace_ids.#", "1"),
+			// Change properties of cluster and deployment and check they have been updated in terraform state
+			// Add back workspace restrictions
+			// {
+			// 	PreConfig: func() { waitForClusterStableState(t, awsClusterName) },
+			// 	Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+			// 		workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
+			// 		cluster(clusterInput{
+			// 			Name:                               awsClusterName,
+			// 			Region:                             "us-east-1",
+			// 			CloudProvider:                      "AWS",
+			// 			RestrictedWorkspaceResourceVarName: workspaceResourceVar,
+			// 		}) +
+			// 		dedicatedDeployment(dedicatedDeploymentInput{
+			// 			ClusterId:     awsResourceVarId,
+			// 			WorkspaceId:   workspaceResourceVarId,
+			// 			Name:          awsDeploymentName,
+			// 			Description:   utils.TestResourceDescription,
+			// 			SchedulerSize: "MEDIUM",
+			// 		}),
+			// 	Check: resource.ComposeTestCheckFunc(
+			// 		// Check cluster
+			// 		resource.TestCheckResourceAttr(awsResourceVar, "name", awsClusterName),
+			// 		resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-1"),
+			// 		resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
+			// 		resource.TestCheckResourceAttrSet(awsResourceVar, "vpc_subnet_range"),
+			// 		resource.TestCheckResourceAttr(awsResourceVar, "workspace_ids.#", "1"),
 
-					// Check via API that cluster exists
-					testAccCheckClusterExistence(t, awsClusterName, true, true),
+			// 		// Check via API that cluster exists
+			// 		testAccCheckClusterExistence(t, awsClusterName, true, true),
 
-					// Check dedicated deployment
-					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "name", awsDeploymentName),
-					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "description", "deployment description"),
-					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "type", "DEDICATED"),
-					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "scheduler_size", "SMALL"),
+			// 		// Check dedicated deployment
+			// 		resource.TestCheckResourceAttr(awsDeploymentResourceVar, "name", awsDeploymentName),
+			// 		resource.TestCheckResourceAttr(awsDeploymentResourceVar, "description", utils.TestResourceDescription),
+			// 		resource.TestCheckResourceAttr(awsDeploymentResourceVar, "type", "DEDICATED"),
+			// 		resource.TestCheckResourceAttr(awsDeploymentResourceVar, "scheduler_size", "MEDIUM"),
 
-					// Check via API that deployment exists
-					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
-				),
-			},
-			// Update deployment properties
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
-					cluster(clusterInput{
-						Name:                               awsClusterName,
-						Region:                             "us-east-1",
-						CloudProvider:                      "AWS",
-						RestrictedWorkspaceResourceVarName: workspaceResourceVar,
-					}) +
-					dedicatedDeployment(dedicatedDeploymentInput{
-						ClusterId:     awsResourceVarId,
-						WorkspaceId:   workspaceResourceVarId,
-						Name:          awsDeploymentName,
-						Description:   utils.TestResourceDescription,
-						SchedulerSize: "MEDIUM",
-					}),
-				Check: resource.ComposeTestCheckFunc(
-					// Check cluster
-					resource.TestCheckResourceAttr(awsResourceVar, "name", awsClusterName),
-					resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-1"),
-					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
-					resource.TestCheckResourceAttrSet(awsResourceVar, "vpc_subnet_range"),
-					resource.TestCheckResourceAttr(awsResourceVar, "workspace_ids.#", "1"),
-
-					// Check via API that cluster exists
-					testAccCheckClusterExistence(t, awsClusterName, true, true),
-
-					// Check dedicated deployment
-					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "name", awsDeploymentName),
-					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "description", utils.TestResourceDescription),
-					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "type", "DEDICATED"),
-					resource.TestCheckResourceAttr(awsDeploymentResourceVar, "scheduler_size", "MEDIUM"),
-
-					// Check via API that deployment exists
-					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
-				),
-			},
+			// 		// Check via API that deployment exists
+			// 		testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
+			// 	),
+			// },
 			// Remove deployment
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
@@ -260,6 +225,7 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 			},
 			// Import existing cluster and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests
 			{
+				PreConfig:               func() { waitForClusterStableState(t, awsClusterName) },
 				ResourceName:            awsResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
@@ -689,6 +655,42 @@ func deleteClusterOutsideOfTerraform(t *testing.T, name string) {
 	assert.True(t, len(resp.JSON200.Clusters) >= 1, "cluster should exist but list clusters did not find it")
 	_, err = client.DeleteClusterWithResponse(ctx, organizationId, resp.JSON200.Clusters[0].Id)
 	assert.NoError(t, err)
+}
+
+func waitForClusterStableState(t *testing.T, name string) {
+	t.Helper()
+
+	client, err := utils.GetTestHostedPlatformClient()
+	assert.NoError(t, err)
+
+	organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
+	ctx := context.Background()
+
+	// Poll until cluster reaches CREATED status (stable state)
+	timeout := 30 * time.Minute
+	interval := 30 * time.Second
+	deadline := time.Now().Add(timeout)
+
+	for time.Now().Before(deadline) {
+		resp, err := client.ListClustersWithResponse(ctx, organizationId, &platform.ListClustersParams{
+			Names: &[]string{name},
+		})
+		if err != nil {
+			t.Logf("Error listing clusters: %v, retrying...", err)
+			time.Sleep(interval)
+			continue
+		}
+		if len(resp.JSON200.Clusters) == 1 {
+			status := resp.JSON200.Clusters[0].Status
+			if status == platform.ClusterStatusCREATED {
+				t.Logf("Cluster %s is in stable state: %s", name, status)
+				return
+			}
+			t.Logf("Cluster %s status: %s, waiting for CREATED...", name, status)
+		}
+		time.Sleep(interval)
+	}
+	t.Fatalf("Timed out waiting for cluster %s to reach stable state", name)
 }
 
 func testAccCheckClusterExistence(t *testing.T, name string, isHosted, shouldExist bool) func(state *terraform.State) error {

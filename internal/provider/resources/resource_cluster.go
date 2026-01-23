@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -377,85 +376,17 @@ func (r *ClusterResource) Update(
 	}
 
 	// Wait for the cluster to be updated (or fail)
-	// Retry if cluster reaches UPDATE_FAILED due to internal workflow conflicts
-	// (The 409 from stagehand may not be propagated to the client, resulting in UPDATE_FAILED status)
-	const maxUpdateFailedRetries = 5
-	var readyCluster any
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING), string(platform.ClusterStatusUPGRADEPENDING)},
+		Target:     []string{string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED), string(platform.ClusterStatusACCESSDENIED)},
+		Refresh:    ClusterResourceRefreshFunc(ctx, r.platformClient, r.organizationId, cluster.JSON200.Id),
+		Timeout:    3 * time.Hour,
+		MinTimeout: 1 * time.Minute,
+	}
 
-	for attempt := 0; attempt <= maxUpdateFailedRetries; attempt++ {
-		stateConf := &retry.StateChangeConf{
-			Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING), string(platform.ClusterStatusUPGRADEPENDING)},
-			Target:     []string{string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED), string(platform.ClusterStatusACCESSDENIED)},
-			Refresh:    ClusterResourceRefreshFunc(ctx, r.platformClient, r.organizationId, cluster.JSON200.Id),
-			Timeout:    3 * time.Hour,
-			MinTimeout: 1 * time.Minute,
-		}
-
-		readyCluster, err = stateConf.WaitForStateContext(ctx)
-
-		// Success - cluster reached CREATED status
-		if err == nil {
-			break
-		}
-
-		// Check if failure is due to UPDATE_FAILED (possible internal workflow conflict)
-		if attempt < maxUpdateFailedRetries && strings.Contains(err.Error(), "cluster mutation failed") {
-			tflog.Info(ctx, "Cluster update failed, possibly due to internal workflow conflict. Retrying...",
-				map[string]interface{}{
-					"clusterId":  data.Id.ValueString(),
-					"attempt":    attempt + 1,
-					"maxRetries": maxUpdateFailedRetries,
-				})
-
-			// Exponential backoff: 30s, 60s, 120s, 240s, 300s (capped at 5 min)
-			waitDuration := 30 * time.Second * time.Duration(1<<uint(attempt))
-			if waitDuration > 5*time.Minute {
-				waitDuration = 5 * time.Minute
-			}
-			tflog.Info(ctx, "Cluster UPDATE_FAILED, waiting before retry",
-				map[string]interface{}{
-					"clusterId":    data.Id.ValueString(),
-					"attempt":      attempt + 1,
-					"maxRetries":   maxUpdateFailedRetries,
-					"waitDuration": waitDuration.String(),
-				})
-			time.Sleep(waitDuration)
-
-			// Re-send the update request with retry for 409 conflicts
-			// Use shorter timeout for 409 conflict retries (10 min instead of 3hr)
-			conflictRetryTimeout := 10 * time.Minute
-			retryErr := retry.RetryContext(ctx, conflictRetryTimeout, func() *retry.RetryError {
-				var apiErr error
-				cluster, apiErr = r.platformClient.UpdateClusterWithResponse(
-					ctx,
-					r.organizationId,
-					data.Id.ValueString(),
-					updateClusterRequest,
-				)
-				if apiErr != nil {
-					tflog.Error(ctx, "Failed to retry cluster update request", map[string]interface{}{"error": apiErr})
-					return retry.NonRetryableError(fmt.Errorf("unable to retry cluster update: %s", apiErr))
-				}
-				statusCode, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
-				if statusCode == http.StatusConflict {
-					// Workflow is already running, retry after a delay
-					tflog.Info(ctx, "cluster workflow in progress during retry, retrying update", map[string]interface{}{"clusterId": data.Id.ValueString()})
-					return retry.RetryableError(fmt.Errorf("workflow is already running for cluster, retrying"))
-				}
-				if diagnostic != nil {
-					return retry.NonRetryableError(fmt.Errorf("%s", diagnostic.Detail()))
-				}
-				return nil
-			})
-			if retryErr != nil {
-				resp.Diagnostics.AddError("Cluster update failed",
-					fmt.Sprintf("Unable to retry cluster update after conflicts: %s", retryErr.Error()))
-				return
-			}
-			continue
-		}
-
-		// Non-retryable error or max retries exceeded
+	// readyCluster is the final state of the cluster after it has reached a target status
+	readyCluster, err := stateConf.WaitForStateContext(ctx)
+	if err != nil {
 		resp.Diagnostics.AddError("Cluster update failed", err.Error())
 		return
 	}
