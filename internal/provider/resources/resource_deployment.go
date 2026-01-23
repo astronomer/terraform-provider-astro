@@ -985,6 +985,11 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 
 	// For ASTRO executor without Remote Execution, require at least one worker_queue named 'default'
 	if data.Executor.ValueString() == string(platform.DeploymentExecutorASTRO) && data.RemoteExecution.IsNull() {
+		// Skip validation if worker_queues is unknown (e.g., provided via a local or variable).
+		// The actual value will be validated at plan/apply time when it's resolved.
+		if data.WorkerQueues.IsUnknown() {
+			return diags
+		}
 		if len(data.WorkerQueues.Elements()) == 0 {
 			diags.AddError(
 				"worker_queues is required for 'ASTRO' executor",
