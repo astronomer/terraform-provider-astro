@@ -39,6 +39,7 @@ const (
 	ApiTokenRoleEntityTypeDAG          ApiTokenRoleEntityType = "DAG"
 	ApiTokenRoleEntityTypeDEPLOYMENT   ApiTokenRoleEntityType = "DEPLOYMENT"
 	ApiTokenRoleEntityTypeORGANIZATION ApiTokenRoleEntityType = "ORGANIZATION"
+	ApiTokenRoleEntityTypeTAG          ApiTokenRoleEntityType = "TAG"
 	ApiTokenRoleEntityTypeWORKSPACE    ApiTokenRoleEntityType = "WORKSPACE"
 )
 
@@ -301,10 +302,10 @@ type ApiTokenType string
 
 // ApiTokenRole defines model for ApiTokenRole.
 type ApiTokenRole struct {
-	// DeploymentId Required when EntityType is DAG. The deployment containing the DAG.
+	// DeploymentId Required when EntityType is DAG or TAG. The deployment containing the DAG.
 	DeploymentId *string `json:"deploymentId,omitempty"`
 
-	// EntityId The ID of the entity. For DAG roles, this is the DAG ID.
+	// EntityId The ID of the entity. For DAG roles, this is the DAG ID. For TAG roles, this is the tag value.
 	EntityId string `json:"entityId"`
 
 	// EntityType The type of the entity.
@@ -439,14 +440,17 @@ type CreateUserInviteRequestRole string
 
 // DagRole defines model for DagRole.
 type DagRole struct {
-	// DagId The DAG ID.
-	DagId string `json:"dagId"`
+	// DagId The DAG ID. Required if Tag is not specified.
+	DagId *string `json:"dagId,omitempty"`
 
 	// DeploymentId The Deployment ID containing the DAG.
 	DeploymentId string `json:"deploymentId"`
 
 	// Role The role name (DAG_VIEWER, DAG_AUTHOR, or custom DAG role).
 	Role string `json:"role"`
+
+	// Tag The DAG tag. Required if DagId is not specified.
+	Tag *string `json:"tag,omitempty"`
 }
 
 // DefaultRole defines model for DefaultRole.
@@ -486,7 +490,7 @@ type Error struct {
 // Invite defines model for Invite.
 type Invite struct {
 	// ExpiresAt The time when the invite is expired in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
-	ExpiresAt string `json:"expiresAt"`
+	ExpiresAt time.Time `json:"expiresAt"`
 
 	// InviteId The invite ID.
 	InviteId string              `json:"inviteId"`
@@ -506,7 +510,7 @@ type Invite struct {
 // Role defines model for Role.
 type Role struct {
 	// CreatedAt The time the role was created.
-	CreatedAt string              `json:"createdAt"`
+	CreatedAt time.Time           `json:"createdAt"`
 	CreatedBy BasicSubjectProfile `json:"createdBy"`
 
 	// Description The role's description.
@@ -525,7 +529,7 @@ type Role struct {
 	ScopeType RoleScopeType `json:"scopeType"`
 
 	// UpdatedAt The time the role was last updated.
-	UpdatedAt string              `json:"updatedAt"`
+	UpdatedAt time.Time           `json:"updatedAt"`
 	UpdatedBy BasicSubjectProfile `json:"updatedBy"`
 }
 
@@ -553,7 +557,7 @@ type RoleTemplateScopeType string
 // RoleWithPermission defines model for RoleWithPermission.
 type RoleWithPermission struct {
 	// CreatedAt The time the role was created.
-	CreatedAt string              `json:"createdAt"`
+	CreatedAt time.Time           `json:"createdAt"`
 	CreatedBy BasicSubjectProfile `json:"createdBy"`
 
 	// Description The role's description.
@@ -575,7 +579,7 @@ type RoleWithPermission struct {
 	ScopeType RoleWithPermissionScopeType `json:"scopeType"`
 
 	// UpdatedAt The time the role was last updated.
-	UpdatedAt string              `json:"updatedAt"`
+	UpdatedAt time.Time           `json:"updatedAt"`
 	UpdatedBy BasicSubjectProfile `json:"updatedBy"`
 }
 

@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"time"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -23,7 +24,7 @@ func (data *UserInvite) ReadFromResponse(ctx context.Context, userInvite *iam.In
 	var diags diag.Diagnostics
 	data.Email = types.StringValue(email)
 	data.Role = types.StringValue(role)
-	data.ExpiresAt = types.StringValue(userInvite.ExpiresAt)
+	data.ExpiresAt = types.StringValue(userInvite.ExpiresAt.Format(time.RFC3339Nano))
 	data.InviteId = types.StringValue(userInvite.InviteId)
 	data.Invitee, diags = SubjectProfileTypesObject(ctx, userInvite.Invitee)
 	if diags.HasError() {

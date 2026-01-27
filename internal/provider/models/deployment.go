@@ -412,7 +412,7 @@ func DeploymentEnvironmentVariableTypesObject(
 	obj := DeploymentEnvironmentVariable{
 		Key:       types.StringValue(envVar.Key),
 		Value:     types.StringPointerValue(envVar.Value),
-		UpdatedAt: types.StringValue(envVar.UpdatedAt),
+		UpdatedAt: types.StringValue(envVar.UpdatedAt.String()),
 		IsSecret:  types.BoolValue(envVar.IsSecret),
 	}
 
