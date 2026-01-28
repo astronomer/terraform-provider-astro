@@ -469,7 +469,9 @@ func (r *ApiTokenResource) Update(
 	}
 
 	tflog.Trace(ctx, fmt.Sprintf("updated an API token resource: %v", data.Id.ValueString()))
-	data.Token = currentState.Token // use current states token as it is not returned in request due to sensitive nature
+	if !currentState.Token.IsNull() {
+		data.Token = currentState.Token // use current states token as it is not returned in request due to sensitive nature
+	}
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
