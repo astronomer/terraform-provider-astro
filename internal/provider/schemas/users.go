@@ -26,6 +26,11 @@ func UsersElementAttributeTypes() map[string]attr.Type {
 				AttrTypes: WorkspaceRoleAttributeTypes(),
 			},
 		},
+		"dag_roles": types.SetType{
+			ElemType: types.ObjectType{
+				AttrTypes: DagRoleAttributeTypes(),
+			},
+		},
 		"created_at": types.StringType,
 		"updated_at": types.StringType,
 	}
