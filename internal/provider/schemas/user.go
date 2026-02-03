@@ -47,6 +47,13 @@ func UserDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 			Computed:            true,
 			MarkdownDescription: "The roles assigned to the deployments",
 		},
+		"dag_roles": datasourceSchema.SetNestedAttribute{
+			NestedObject: datasourceSchema.NestedAttributeObject{
+				Attributes: DataSourceDagRoleSchemaAttributes(),
+			},
+			Computed:            true,
+			MarkdownDescription: "The DAG roles assigned to the user",
+		},
 		"created_at": datasourceSchema.StringAttribute{
 			MarkdownDescription: "User creation timestamp",
 			Computed:            true,

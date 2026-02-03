@@ -49,5 +49,15 @@ func ResourceUserRolesSchemaAttributes() map[string]resourceSchema.Attribute {
 				setvalidator.SizeAtLeast(1),
 			},
 		},
+		"dag_roles": resourceSchema.SetNestedAttribute{
+			NestedObject: resourceSchema.NestedAttributeObject{
+				Attributes: ResourceDagRoleSchemaAttributes(),
+			},
+			Optional:            true,
+			MarkdownDescription: "The DAG roles to assign to the user. Each role grants permissions to a specific DAG or DAGs with a specific tag within a deployment.",
+			Validators: []validator.Set{
+				setvalidator.SizeAtLeast(1),
+			},
+		},
 	}
 }

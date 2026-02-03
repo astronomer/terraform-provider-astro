@@ -38,7 +38,7 @@ output "custom_role" {
 - `name` (String) The custom role's name
 - `permissions` (Set of String) The custom role's permissions
 - `restricted_workspace_ids` (Set of String) The IDs of Workspaces that the custom role is restricted to
-- `scope_type` (String) The custom role's scope (DEPLOYMENT, ORGANIZATION, or WORKSPACE)
+- `scope_type` (String) The custom role's scope (DEPLOYMENT or DAG)
 - `updated_at` (String) The time the custom role was last updated
 - `updated_by` (Attributes) The subject who last updated the custom role (see [below for nested schema](#nestedatt--updated_by))
 

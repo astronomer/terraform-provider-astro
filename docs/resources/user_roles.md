@@ -61,6 +61,47 @@ resource "astro_user_roles" "all_roles" {
   ]
 }
 
+resource "astro_user_roles" "dag_roles" {
+  user_id           = "clzaftcaz006001lhkey6qzzg"
+  organization_role = "ORGANIZATION_MEMBER"
+  workspace_roles = [
+    {
+      workspace_id = "clx42sxw501gl01o0gjenthnh"
+      role         = "WORKSPACE_MEMBER"
+    }
+  ]
+  dag_roles = [
+    {
+      deployment_id = "clyn6kxud003x01mtxmccegnh"
+      dag_id        = "my_dag_id"
+      role          = "DAG_VIEWER"
+    }
+  ]
+}
+
+resource "astro_user_roles" "dag_roles_with_tag" {
+  user_id           = "clzaftcaz006001lhkey6qzzg"
+  organization_role = "ORGANIZATION_MEMBER"
+  workspace_roles = [
+    {
+      workspace_id = "clx42sxw501gl01o0gjenthnh"
+      role         = "WORKSPACE_MEMBER"
+    }
+  ]
+  dag_roles = [
+    {
+      deployment_id = "clyn6kxud003x01mtxmccegnh"
+      tag           = "production"
+      role          = "DAG_AUTHOR"
+    },
+    {
+      deployment_id = "clyn6kxud003x01mtxmccegnh"
+      dag_id        = "specific_dag"
+      role          = "DAG_VIEWER"
+    }
+  ]
+}
+
 # Import an existing user roles
 import {
   id = "clzaftcaz006001lhkey6qzzg" # ID of the existing user
@@ -98,8 +139,23 @@ resource "astro_user_roles" "imported_user_roles" {
 
 ### Optional
 
+- `dag_roles` (Attributes Set) The DAG roles to assign to the user. Each role grants permissions to a specific DAG or DAGs with a specific tag within a deployment. (see [below for nested schema](#nestedatt--dag_roles))
 - `deployment_roles` (Attributes Set) The roles to assign to the deployments (see [below for nested schema](#nestedatt--deployment_roles))
 - `workspace_roles` (Attributes Set) The roles to assign to the workspaces (see [below for nested schema](#nestedatt--workspace_roles))
+
+<a id="nestedatt--dag_roles"></a>
+### Nested Schema for `dag_roles`
+
+Required:
+
+- `deployment_id` (String) The Deployment ID containing the DAG.
+- `role` (String) The DAG role (DAG_VIEWER, DAG_AUTHOR, or custom DAG role).
+
+Optional:
+
+- `dag_id` (String) The DAG ID. Required if tag is not specified.
+- `tag` (String) The DAG tag. Required if dag_id is not specified.
+
 
 <a id="nestedatt--deployment_roles"></a>
 ### Nested Schema for `deployment_roles`

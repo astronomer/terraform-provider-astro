@@ -20,6 +20,7 @@ type User struct {
 	OrganizationRole types.String `tfsdk:"organization_role"`
 	DeploymentRoles  types.Set    `tfsdk:"deployment_roles"`
 	WorkspaceRoles   types.Set    `tfsdk:"workspace_roles"`
+	DagRoles         types.Set    `tfsdk:"dag_roles"`
 	CreatedAt        types.String `tfsdk:"created_at"`
 	UpdatedAt        types.String `tfsdk:"updated_at"`
 }
@@ -41,6 +42,10 @@ func (data *User) ReadFromResponse(ctx context.Context, user *iam.User) diag.Dia
 		return diags
 	}
 	data.WorkspaceRoles, diags = utils.ObjectSet(ctx, user.WorkspaceRoles, schemas.WorkspaceRoleAttributeTypes(), WorkspaceRoleTypesObject)
+	if diags.HasError() {
+		return diags
+	}
+	data.DagRoles, diags = utils.ObjectSet(ctx, user.DagRoles, schemas.DagRoleAttributeTypes(), DagRoleTypesObject)
 	if diags.HasError() {
 		return diags
 	}

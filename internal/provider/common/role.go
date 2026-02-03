@@ -56,6 +56,33 @@ func RequestDeploymentRoles(ctx context.Context, deploymentRolesObjSet types.Set
 	return deploymentRoles, nil
 }
 
+// RequestDagRoles converts a Terraform set to a list of iam.DagRole to be used in create and update requests
+func RequestDagRoles(ctx context.Context, dagRolesObjSet types.Set) ([]iam.DagRole, diag.Diagnostics) {
+	if len(dagRolesObjSet.Elements()) == 0 {
+		return []iam.DagRole{}, nil
+	}
+
+	var roles []models.DagRole
+	diags := dagRolesObjSet.ElementsAs(ctx, &roles, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+	dagRoles := lo.Map(roles, func(role models.DagRole, _ int) iam.DagRole {
+		dagRole := iam.DagRole{
+			DeploymentId: role.DeploymentId.ValueString(),
+			Role:         role.Role.ValueString(),
+		}
+		if !role.DagId.IsNull() && role.DagId.ValueString() != "" {
+			dagRole.DagId = lo.ToPtr(role.DagId.ValueString())
+		}
+		if !role.Tag.IsNull() && role.Tag.ValueString() != "" {
+			dagRole.Tag = lo.ToPtr(role.Tag.ValueString())
+		}
+		return dagRole
+	})
+	return dagRoles, nil
+}
+
 // ValidateRoleMatchesEntityType checks if the role is valid for the entityType
 func ValidateRoleMatchesEntityType(role string, scopeType string) bool {
 	if role == "" || scopeType == "" {
@@ -191,9 +218,81 @@ func GetDuplicateDeploymentIds(deploymentRoles []iam.DeploymentRole) []string {
 	return duplicates
 }
 
+// GetDuplicateDagRoleKeys checks if there are duplicate dag_id+deployment_id or tag+deployment_id combinations in the dag roles
+func GetDuplicateDagRoleKeys(dagRoles []iam.DagRole) []string {
+	keyCount := make(map[string]int)
+	for _, role := range dagRoles {
+		var key string
+		if role.DagId != nil {
+			key = fmt.Sprintf("dag_id:%s:deployment_id:%s", *role.DagId, role.DeploymentId)
+		} else if role.Tag != nil {
+			key = fmt.Sprintf("tag:%s:deployment_id:%s", *role.Tag, role.DeploymentId)
+		}
+		if key != "" {
+			keyCount[key]++
+		}
+	}
+
+	var duplicates []string
+	for key, count := range keyCount {
+		if count > 1 {
+			duplicates = append(duplicates, key)
+		}
+	}
+
+	return duplicates
+}
+
+// ValidateDagRoles validates that each dag role has either dag_id or tag (but not both) and a deployment_id
+func ValidateDagRoles(dagRoles []iam.DagRole) diag.Diagnostics {
+	for _, role := range dagRoles {
+		hasDagId := role.DagId != nil && *role.DagId != ""
+		hasTag := role.Tag != nil && *role.Tag != ""
+
+		if !hasDagId && !hasTag {
+			return diag.Diagnostics{diag.NewErrorDiagnostic(
+				"Invalid DAG role configuration",
+				"Each DAG role must have either 'dag_id' or 'tag' specified",
+			)}
+		}
+
+		if hasDagId && hasTag {
+			return diag.Diagnostics{diag.NewErrorDiagnostic(
+				"Invalid DAG role configuration",
+				"Each DAG role must have either 'dag_id' or 'tag' specified, but not both",
+			)}
+		}
+
+		if role.DeploymentId == "" {
+			return diag.Diagnostics{diag.NewErrorDiagnostic(
+				"Invalid DAG role configuration",
+				"Each DAG role must have a 'deployment_id' specified",
+			)}
+		}
+	}
+
+	duplicateKeys := GetDuplicateDagRoleKeys(dagRoles)
+	if len(duplicateKeys) > 0 {
+		return diag.Diagnostics{diag.NewErrorDiagnostic(
+			"Invalid Configuration: Cannot have multiple DAG roles with the same dag_id/tag and deployment_id combination",
+			fmt.Sprintf("Please provide unique dag_id/tag and deployment_id combinations. The following are duplicated: %v", duplicateKeys),
+		)}
+	}
+
+	return nil
+}
+
 func ValidateRoles(
 	workspaceRoles []iam.WorkspaceRole,
 	deploymentRoles []iam.DeploymentRole,
+) diag.Diagnostics {
+	return ValidateRolesWithDagRoles(workspaceRoles, deploymentRoles, nil)
+}
+
+func ValidateRolesWithDagRoles(
+	workspaceRoles []iam.WorkspaceRole,
+	deploymentRoles []iam.DeploymentRole,
+	dagRoles []iam.DagRole,
 ) diag.Diagnostics {
 	for _, role := range workspaceRoles {
 		if !ValidateRoleMatchesEntityType(string(role.Role), string(iam.RoleScopeTypeWORKSPACE)) {
@@ -227,6 +326,13 @@ func ValidateRoles(
 			"Invalid Configuration: Cannot have multiple roles with the same deployment id",
 			fmt.Sprintf("Please provide unique deployment id for each role. The following deployment ids are duplicated: %v", duplicateDeploymentIds),
 		)}
+	}
+
+	// Validate dag roles if provided
+	if len(dagRoles) > 0 {
+		if diags := ValidateDagRoles(dagRoles); diags.HasError() {
+			return diags
+		}
 	}
 
 	return nil

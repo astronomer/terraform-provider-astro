@@ -52,6 +52,7 @@ Read-Only:
 
 - `avatar_url` (String) User avatar URL
 - `created_at` (String) User creation timestamp
+- `dag_roles` (Attributes Set) The DAG roles assigned to the user (see [below for nested schema](#nestedatt--users--dag_roles))
 - `deployment_roles` (Attributes Set) The roles assigned to the deployments (see [below for nested schema](#nestedatt--users--deployment_roles))
 - `full_name` (String) User full name
 - `organization_role` (String) The role assigned to the organization
@@ -59,6 +60,17 @@ Read-Only:
 - `updated_at` (String) User last updated timestamp
 - `username` (String) User username
 - `workspace_roles` (Attributes Set) The roles assigned to the workspaces (see [below for nested schema](#nestedatt--users--workspace_roles))
+
+<a id="nestedatt--users--dag_roles"></a>
+### Nested Schema for `users.dag_roles`
+
+Read-Only:
+
+- `dag_id` (String) The DAG ID
+- `deployment_id` (String) The Deployment ID containing the DAG
+- `role` (String) The DAG role
+- `tag` (String) The DAG tag
+
 
 <a id="nestedatt--users--deployment_roles"></a>
 ### Nested Schema for `users.deployment_roles`

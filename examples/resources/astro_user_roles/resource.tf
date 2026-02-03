@@ -46,6 +46,47 @@ resource "astro_user_roles" "all_roles" {
   ]
 }
 
+resource "astro_user_roles" "dag_roles" {
+  user_id           = "clzaftcaz006001lhkey6qzzg"
+  organization_role = "ORGANIZATION_MEMBER"
+  workspace_roles = [
+    {
+      workspace_id = "clx42sxw501gl01o0gjenthnh"
+      role         = "WORKSPACE_MEMBER"
+    }
+  ]
+  dag_roles = [
+    {
+      deployment_id = "clyn6kxud003x01mtxmccegnh"
+      dag_id        = "my_dag_id"
+      role          = "DAG_VIEWER"
+    }
+  ]
+}
+
+resource "astro_user_roles" "dag_roles_with_tag" {
+  user_id           = "clzaftcaz006001lhkey6qzzg"
+  organization_role = "ORGANIZATION_MEMBER"
+  workspace_roles = [
+    {
+      workspace_id = "clx42sxw501gl01o0gjenthnh"
+      role         = "WORKSPACE_MEMBER"
+    }
+  ]
+  dag_roles = [
+    {
+      deployment_id = "clyn6kxud003x01mtxmccegnh"
+      tag           = "production"
+      role          = "DAG_AUTHOR"
+    },
+    {
+      deployment_id = "clyn6kxud003x01mtxmccegnh"
+      dag_id        = "specific_dag"
+      role          = "DAG_VIEWER"
+    }
+  ]
+}
+
 # Import an existing user roles
 import {
   id = "clzaftcaz006001lhkey6qzzg" # ID of the existing user

@@ -200,6 +200,14 @@ type userRolesInput struct {
 	OrganizationRole string
 	DeploymentRoles  []utils.Role
 	WorkspaceRoles   []utils.Role
+	DagRoles         []dagRoleInput
+}
+
+type dagRoleInput struct {
+	DeploymentId string
+	DagId        string
+	Tag          string
+	Role         string
 }
 
 func userRoles(input userRolesInput) string {
@@ -220,6 +228,21 @@ func userRoles(input userRolesInput) string {
 		}`, role.EntityId, role.Role)
 	})
 
+	dagRoles := lo.Map(input.DagRoles, func(role dagRoleInput, _ int) string {
+		var dagIdOrTag string
+		if role.DagId != "" {
+			dagIdOrTag = fmt.Sprintf(`dag_id = "%v"`, role.DagId)
+		} else if role.Tag != "" {
+			dagIdOrTag = fmt.Sprintf(`tag = "%v"`, role.Tag)
+		}
+		return fmt.Sprintf(`
+		{
+			deployment_id = "%v"
+			%v
+			role = "%v"
+		}`, role.DeploymentId, dagIdOrTag, role.Role)
+	})
+
 	var deploymentRolesStr string
 	if len(deploymentRoles) > 0 {
 		deploymentRolesStr = fmt.Sprintf("deployment_roles = [%v]", strings.Join(deploymentRoles, ","))
@@ -229,14 +252,21 @@ func userRoles(input userRolesInput) string {
 	if len(workspaceRoles) > 0 {
 		workspaceRolesStr = fmt.Sprintf("workspace_roles = [%v]", strings.Join(workspaceRoles, ","))
 	}
+
+	var dagRolesStr string
+	if len(dagRoles) > 0 {
+		dagRolesStr = fmt.Sprintf("dag_roles = [%v]", strings.Join(dagRoles, ","))
+	}
+
 	return fmt.Sprintf(`
 resource "astro_user_roles" "%v" {
   	user_id = "%v"
   	organization_role = "%v"
   	%s
 	%s
+	%s
 }
-`, userId, userId, input.OrganizationRole, workspaceRolesStr, deploymentRolesStr)
+`, userId, userId, input.OrganizationRole, workspaceRolesStr, deploymentRolesStr, dagRolesStr)
 }
 
 func testAccCheckUserRolesCorrect(t *testing.T, organizationRole string, workspaceRoles, deploymentRoles []utils.Role) func(state *terraform.State) error {
