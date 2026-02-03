@@ -74,6 +74,53 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 					}),
 				ExpectError: regexp.MustCompile("Invalid Configuration: Cannot have multiple roles with the same workspace id"),
 			},
+			// Test failure: dag_roles with neither dag_id nor tag specified
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					userRoles(userRolesInput{
+						OrganizationRole: string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+						WorkspaceRoles: []utils.Role{
+							{
+								Role:     string(iam.WORKSPACEOWNER),
+								EntityId: workspaceId,
+							},
+						},
+						DagRoles: []dagRoleInput{
+							{
+								DeploymentId: deploymentId,
+								Role:         "DAG_VIEWER",
+								// Neither dag_id nor tag specified
+							},
+						},
+					}),
+				ExpectError: regexp.MustCompile("Invalid DAG role configuration"),
+			},
+			// Test failure: duplicate dag_role keys (same dag_id+deployment_id)
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					userRoles(userRolesInput{
+						OrganizationRole: string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+						WorkspaceRoles: []utils.Role{
+							{
+								Role:     string(iam.WORKSPACEOWNER),
+								EntityId: workspaceId,
+							},
+						},
+						DagRoles: []dagRoleInput{
+							{
+								DeploymentId: deploymentId,
+								DagId:        "test_dag_id",
+								Role:         "DAG_VIEWER",
+							},
+							{
+								DeploymentId: deploymentId,
+								DagId:        "test_dag_id",
+								Role:         "DAG_AUTHOR",
+							},
+						},
+					}),
+				ExpectError: regexp.MustCompile("Invalid Configuration: Cannot have multiple DAG roles with the same dag_id/tag and deployment_id combination"),
+			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{
@@ -182,6 +229,108 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 							},
 						},
 					),
+				),
+			},
+			// Create user with dag_roles using dag_id
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					userRoles(userRolesInput{
+						OrganizationRole: string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+						WorkspaceRoles: []utils.Role{
+							{
+								Role:     string(iam.WORKSPACEOWNER),
+								EntityId: workspaceId,
+							},
+						},
+						DagRoles: []dagRoleInput{
+							{
+								DeploymentId: deploymentId,
+								DagId:        "test_dag_id",
+								Role:         "DAG_VIEWER",
+							},
+						},
+					}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfVarName, "user_id", userId),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.UserOrganizationRoleORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
+					resource.TestCheckResourceAttr(tfVarName, "dag_roles.#", "1"),
+				),
+			},
+			// Create user with dag_roles using tag
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					userRoles(userRolesInput{
+						OrganizationRole: string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+						WorkspaceRoles: []utils.Role{
+							{
+								Role:     string(iam.WORKSPACEOWNER),
+								EntityId: workspaceId,
+							},
+						},
+						DagRoles: []dagRoleInput{
+							{
+								DeploymentId: deploymentId,
+								Tag:          "production",
+								Role:         "DAG_AUTHOR",
+							},
+						},
+					}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfVarName, "user_id", userId),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.UserOrganizationRoleORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
+					resource.TestCheckResourceAttr(tfVarName, "dag_roles.#", "1"),
+				),
+			},
+			// Create user with multiple dag_roles (mixed dag_id and tag)
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					userRoles(userRolesInput{
+						OrganizationRole: string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+						WorkspaceRoles: []utils.Role{
+							{
+								Role:     string(iam.WORKSPACEOWNER),
+								EntityId: workspaceId,
+							},
+						},
+						DagRoles: []dagRoleInput{
+							{
+								DeploymentId: deploymentId,
+								DagId:        "test_dag_id",
+								Role:         "DAG_VIEWER",
+							},
+							{
+								DeploymentId: deploymentId,
+								Tag:          "production",
+								Role:         "DAG_AUTHOR",
+							},
+						},
+					}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfVarName, "user_id", userId),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.UserOrganizationRoleORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
+					resource.TestCheckResourceAttr(tfVarName, "dag_roles.#", "2"),
+				),
+			},
+			// Remove dag_roles and verify they are removed
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					userRoles(userRolesInput{
+						OrganizationRole: string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+						WorkspaceRoles: []utils.Role{
+							{
+								Role:     string(iam.WORKSPACEOWNER),
+								EntityId: workspaceId,
+							},
+						},
+					}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfVarName, "user_id", userId),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.UserOrganizationRoleORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
+					resource.TestCheckNoResourceAttr(tfVarName, "dag_roles"),
 				),
 			},
 			// Import existing user_roles and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests

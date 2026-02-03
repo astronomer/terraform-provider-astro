@@ -639,6 +639,48 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile("One or more deployments is not in the organization, cannot set roles for deployments that do not exist"),
 			},
+			// Test DAG entity type without deployment_id
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
+					Name: apiTokenName,
+					Type: string(iam.ApiTokenTypeDEPLOYMENT),
+					Roles: []apiTokenRole{
+						{
+							Role:       "DEPLOYMENT_ADMIN",
+							EntityId:   deploymentId,
+							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+						},
+						{
+							Role:       "DAG_VIEWER",
+							EntityId:   "test_dag_id",
+							EntityType: string(iam.ApiTokenRoleEntityTypeDAG),
+							// Missing deployment_id
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("Role with entity type 'DAG' requires a 'deployment_id'"),
+			},
+			// Test TAG entity type without deployment_id
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
+					Name: apiTokenName,
+					Type: string(iam.ApiTokenTypeDEPLOYMENT),
+					Roles: []apiTokenRole{
+						{
+							Role:       "DEPLOYMENT_ADMIN",
+							EntityId:   deploymentId,
+							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+						},
+						{
+							Role:       "DAG_AUTHOR",
+							EntityId:   "production",
+							EntityType: string(iam.ApiTokenRoleEntityTypeTAG),
+							// Missing deployment_id
+						},
+					},
+				}),
+				ExpectError: regexp.MustCompile("Role with entity type 'TAG' requires a 'deployment_id'"),
+			},
 			// Create the deployment api token
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
@@ -691,6 +733,93 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceVar, "description", "new description"),
+					// Check via API that api token exists
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
+				),
+			},
+			// Add DAG role to deployment token
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
+					Name:        apiTokenName,
+					Description: utils.TestResourceDescription,
+					Type:        string(iam.ApiTokenTypeDEPLOYMENT),
+					Roles: []apiTokenRole{
+						{
+							Role:       "DEPLOYMENT_ADMIN",
+							EntityId:   deploymentId,
+							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+						},
+						{
+							Role:         "DAG_VIEWER",
+							EntityId:     "test_dag_id",
+							EntityType:   string(iam.ApiTokenRoleEntityTypeDAG),
+							DeploymentId: deploymentId,
+						},
+					},
+					ExpiryPeriodInDays: 30,
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "roles.#", "2"),
+					// Check via API that api token exists
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
+				),
+			},
+			// Add TAG role to deployment token
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
+					Name:        apiTokenName,
+					Description: utils.TestResourceDescription,
+					Type:        string(iam.ApiTokenTypeDEPLOYMENT),
+					Roles: []apiTokenRole{
+						{
+							Role:       "DEPLOYMENT_ADMIN",
+							EntityId:   deploymentId,
+							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+						},
+						{
+							Role:         "DAG_AUTHOR",
+							EntityId:     "production",
+							EntityType:   string(iam.ApiTokenRoleEntityTypeTAG),
+							DeploymentId: deploymentId,
+						},
+					},
+					ExpiryPeriodInDays: 30,
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "roles.#", "2"),
+					// Check via API that api token exists
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
+				),
+			},
+			// Add multiple DAG/TAG roles to deployment token
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
+					Name:        apiTokenName,
+					Description: utils.TestResourceDescription,
+					Type:        string(iam.ApiTokenTypeDEPLOYMENT),
+					Roles: []apiTokenRole{
+						{
+							Role:       "DEPLOYMENT_ADMIN",
+							EntityId:   deploymentId,
+							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+						},
+						{
+							Role:         "DAG_VIEWER",
+							EntityId:     "test_dag_id",
+							EntityType:   string(iam.ApiTokenRoleEntityTypeDAG),
+							DeploymentId: deploymentId,
+						},
+						{
+							Role:         "DAG_AUTHOR",
+							EntityId:     "production",
+							EntityType:   string(iam.ApiTokenRoleEntityTypeTAG),
+							DeploymentId: deploymentId,
+						},
+					},
+					ExpiryPeriodInDays: 30,
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "roles.#", "3"),
 					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
 				),
@@ -754,9 +883,10 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 }
 
 type apiTokenRole struct {
-	Role       string
-	EntityId   string
-	EntityType string
+	Role         string
+	EntityId     string
+	EntityType   string
+	DeploymentId string
 }
 
 type apiTokenInput struct {
@@ -774,12 +904,17 @@ func apiToken(input apiTokenInput) string {
 	}
 
 	roles := lo.Map(input.Roles, func(role apiTokenRole, _ int) string {
+		var deploymentIdStr string
+		if role.DeploymentId != "" {
+			deploymentIdStr = fmt.Sprintf(`deployment_id = "%v"`, role.DeploymentId)
+		}
 		return fmt.Sprintf(`
 		{
 			role = "%v"
 			entity_id = "%v"
 			entity_type = "%v"
-		}`, role.Role, role.EntityId, role.EntityType)
+			%v
+		}`, role.Role, role.EntityId, role.EntityType, deploymentIdStr)
 	})
 
 	var rolesString string
