@@ -182,5 +182,10 @@ resource "astro_deployment" "imported_deployment" {
   resource_quota_memory   = "20Gi"
   scheduler_size          = "SMALL"
   workspace_id            = "clnp86ly5000401ndaga21g81"
-  environment_variables   = []
+  // Include all environment variables from the existing deployment
+  environment_variables = [{
+    key       = "MY_VAR"
+    value     = "my_value"
+    is_secret = false
+  }]
 }
