@@ -197,7 +197,12 @@ resource "astro_deployment" "imported_deployment" {
   resource_quota_memory   = "20Gi"
   scheduler_size          = "SMALL"
   workspace_id            = "clnp86ly5000401ndaga21g81"
-  environment_variables   = []
+  // Include all environment variables from the existing deployment
+  environment_variables = [{
+    key       = "MY_VAR"
+    value     = "my_value"
+    is_secret = false
+  }]
 }
 ```
 
@@ -208,7 +213,7 @@ resource "astro_deployment" "imported_deployment" {
 
 - `contact_emails` (Set of String) Deployment contact emails
 - `description` (String) Deployment description
-- `environment_variables` (Attributes Set) Deployment environment variables (see [below for nested schema](#nestedatt--environment_variables))
+- `environment_variables` (Attributes Set) Deployment environment variables. When importing a deployment, you must include all environment variables in your configuration. Any variables not specified will be deleted on the next apply. Secret values must be re-entered as the API does not return them. (see [below for nested schema](#nestedatt--environment_variables))
 - `executor` (String) Deployment executor. Allowed values: `CELERY`, `KUBERNETES`, `ASTRO`.
 - `is_cicd_enforced` (Boolean) Deployment CI/CD enforced
 - `is_dag_deploy_enabled` (Boolean) Whether DAG deploy is enabled - Changing this value may disrupt your deployment. Read more at https://docs.astronomer.io/astro/deploy-dags#enable-or-disable-dag-only-deploys-on-a-deployment

@@ -134,7 +134,7 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: DeploymentEnvironmentVariableResourceAttributes(),
 			},
-			MarkdownDescription: "Deployment environment variables",
+			MarkdownDescription: "Deployment environment variables. When importing a deployment, you must include all environment variables in your configuration. Any variables not specified will be deleted on the next apply. Secret values must be re-entered as the API does not return them.",
 			Required:            true,
 		},
 		"webserver_ingress_hostname": resourceSchema.StringAttribute{
