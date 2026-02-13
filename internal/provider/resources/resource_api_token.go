@@ -539,7 +539,7 @@ func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []iam.
 		if entityType == string(iam.ApiTokenRoleEntityTypeDEPLOYMENT) &&
 			role.EntityType != iam.ApiTokenRoleEntityTypeDEPLOYMENT &&
 			role.EntityType != iam.ApiTokenRoleEntityTypeDAG &&
-			role.EntityType != iam.ApiTokenRoleEntityTypeTAG {
+			role.EntityType != iam.ApiTokenRoleEntityTypeDAGTAG {
 			return diag.Diagnostics{
 				diag.NewErrorDiagnostic(
 					"API Token of type 'DEPLOYMENT' can only have 'DEPLOYMENT', 'DAG', or 'TAG' roles",
@@ -549,7 +549,7 @@ func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []iam.
 		}
 
 		// Validate DAG/TAG roles have deployment_id
-		if role.EntityType == iam.ApiTokenRoleEntityTypeDAG || role.EntityType == iam.ApiTokenRoleEntityTypeTAG {
+		if role.EntityType == iam.ApiTokenRoleEntityTypeDAG || role.EntityType == iam.ApiTokenRoleEntityTypeDAGTAG {
 			if role.DeploymentId == nil || *role.DeploymentId == "" {
 				return diag.Diagnostics{
 					diag.NewErrorDiagnostic(
@@ -561,7 +561,7 @@ func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []iam.
 		}
 
 		// Skip role type validation for DAG/TAG entity types as they use DAG-specific roles
-		if role.EntityType != iam.ApiTokenRoleEntityTypeDAG && role.EntityType != iam.ApiTokenRoleEntityTypeTAG {
+		if role.EntityType != iam.ApiTokenRoleEntityTypeDAG && role.EntityType != iam.ApiTokenRoleEntityTypeDAGTAG {
 			if !common.ValidateRoleMatchesEntityType(role.Role, string(role.EntityType)) {
 				return diag.Diagnostics{
 					diag.NewErrorDiagnostic(
@@ -624,7 +624,7 @@ func RequestApiTokenRoles(ctx context.Context, apiTokenRolesObjSet types.Set) ([
 		}
 		// Set DeploymentId for DAG and TAG entity types
 		if v.EntityType.ValueString() == string(iam.ApiTokenRoleEntityTypeDAG) ||
-			v.EntityType.ValueString() == string(iam.ApiTokenRoleEntityTypeTAG) {
+			v.EntityType.ValueString() == string(iam.ApiTokenRoleEntityTypeDAGTAG) {
 			if !v.DeploymentId.IsNull() && v.DeploymentId.ValueString() != "" {
 				apiTokenRole.DeploymentId = lo.ToPtr(v.DeploymentId.ValueString())
 			}

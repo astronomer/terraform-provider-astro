@@ -94,9 +94,13 @@ func (r *TeamResource) MutateRoles(
 	if diags.HasError() {
 		return diags
 	}
+	dagRoles, diags := common.RequestDagRoles(ctx, data.DagRoles)
+	if diags.HasError() {
+		return diags
+	}
 
 	// Validate the roles
-	diags = common.ValidateRoles(workspaceRoles, deploymentRoles)
+	diags = common.ValidateRolesWithDagRoles(workspaceRoles, deploymentRoles, dagRoles)
 	if diags.HasError() {
 		return diags
 	}
@@ -116,6 +120,7 @@ func (r *TeamResource) MutateRoles(
 		DeploymentRoles:  &deploymentRoles,
 		OrganizationRole: data.OrganizationRole.ValueString(),
 		WorkspaceRoles:   &workspaceRoles,
+		DagRoles:         &dagRoles,
 	}
 	teamRoles, err := r.IamClient.UpdateTeamRolesWithResponse(
 		ctx,
@@ -211,7 +216,7 @@ func (r *TeamResource) Create(
 	teamId := team.JSON200.Id
 
 	// Update team roles
-	if !data.WorkspaceRoles.IsNull() || !data.DeploymentRoles.IsNull() {
+	if !data.WorkspaceRoles.IsNull() || !data.DeploymentRoles.IsNull() || !data.DagRoles.IsNull() {
 		diags = r.MutateRoles(ctx, &data, teamId)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
@@ -406,7 +411,7 @@ func (r *TeamResource) Update(
 	}
 
 	// Update team roles
-	if !data.WorkspaceRoles.IsNull() || !data.DeploymentRoles.IsNull() {
+	if !data.WorkspaceRoles.IsNull() || !data.DeploymentRoles.IsNull() || !data.DagRoles.IsNull() {
 		diags = r.MutateRoles(ctx, &data, data.Id.ValueString())
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)

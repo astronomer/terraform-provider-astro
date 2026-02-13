@@ -64,6 +64,7 @@ resource "astro_team" "imported_team" {
 
 ### Optional
 
+- `dag_roles` (Attributes Set) The DAG roles to assign to the team. Each role grants permissions to a specific DAG or DAGs with a specific tag within a deployment. (see [below for nested schema](#nestedatt--dag_roles))
 - `deployment_roles` (Attributes Set) The roles to assign to the Deployments (see [below for nested schema](#nestedatt--deployment_roles))
 - `description` (String) Team description
 - `member_ids` (Set of String) The IDs of the users to add to the Team
@@ -78,6 +79,20 @@ resource "astro_team" "imported_team" {
 - `roles_count` (Number) Number of roles assigned to the Team
 - `updated_at` (String) Team last updated timestamp
 - `updated_by` (Attributes) Team updater (see [below for nested schema](#nestedatt--updated_by))
+
+<a id="nestedatt--dag_roles"></a>
+### Nested Schema for `dag_roles`
+
+Required:
+
+- `deployment_id` (String) The Deployment ID containing the DAG.
+- `role` (String) The DAG role (DAG_VIEWER, DAG_AUTHOR, or custom DAG role).
+
+Optional:
+
+- `dag_id` (String) The DAG ID. Required if tag is not specified.
+- `tag` (String) The DAG tag. Required if dag_id is not specified.
+
 
 <a id="nestedatt--deployment_roles"></a>
 ### Nested Schema for `deployment_roles`

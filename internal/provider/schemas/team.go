@@ -58,6 +58,13 @@ func TeamDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 			Computed:            true,
 			MarkdownDescription: "The roles assigned to the Deployments",
 		},
+		"dag_roles": datasourceSchema.SetNestedAttribute{
+			NestedObject: datasourceSchema.NestedAttributeObject{
+				Attributes: DataSourceDagRoleSchemaAttributes(),
+			},
+			Computed:            true,
+			MarkdownDescription: "The DAG roles assigned to the team",
+		},
 		"roles_count": datasourceSchema.Int64Attribute{
 			MarkdownDescription: "Number of roles assigned to the Team",
 			Computed:            true,
@@ -135,6 +142,13 @@ func TeamResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			},
 			Optional:            true,
 			MarkdownDescription: "The roles to assign to the Deployments",
+		},
+		"dag_roles": resourceSchema.SetNestedAttribute{
+			NestedObject: resourceSchema.NestedAttributeObject{
+				Attributes: ResourceDagRoleSchemaAttributes(),
+			},
+			Optional:            true,
+			MarkdownDescription: "The DAG roles to assign to the team. Each role grants permissions to a specific DAG or DAGs with a specific tag within a deployment.",
 		},
 		"roles_count": resourceSchema.Int64Attribute{
 			MarkdownDescription: "Number of roles assigned to the Team",

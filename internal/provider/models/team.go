@@ -20,6 +20,7 @@ type TeamDataSource struct {
 	OrganizationRole types.String `tfsdk:"organization_role"`
 	DeploymentRoles  types.Set    `tfsdk:"deployment_roles"`
 	WorkspaceRoles   types.Set    `tfsdk:"workspace_roles"`
+	DagRoles         types.Set    `tfsdk:"dag_roles"`
 	RolesCount       types.Int64  `tfsdk:"roles_count"`
 	CreatedAt        types.String `tfsdk:"created_at"`
 	UpdatedAt        types.String `tfsdk:"updated_at"`
@@ -36,6 +37,7 @@ type TeamResource struct {
 	OrganizationRole types.String `tfsdk:"organization_role"`
 	DeploymentRoles  types.Set    `tfsdk:"deployment_roles"`
 	WorkspaceRoles   types.Set    `tfsdk:"workspace_roles"`
+	DagRoles         types.Set    `tfsdk:"dag_roles"`
 	RolesCount       types.Int64  `tfsdk:"roles_count"`
 	CreatedAt        types.String `tfsdk:"created_at"`
 	UpdatedAt        types.String `tfsdk:"updated_at"`
@@ -63,6 +65,10 @@ func (data *TeamDataSource) ReadFromResponse(ctx context.Context, team *iam.Team
 		return diags
 	}
 	data.WorkspaceRoles, diags = utils.ObjectSet(ctx, team.WorkspaceRoles, schemas.WorkspaceRoleAttributeTypes(), WorkspaceRoleTypesObject)
+	if diags.HasError() {
+		return diags
+	}
+	data.DagRoles, diags = utils.ObjectSet(ctx, team.DagRoles, schemas.DagRoleAttributeTypes(), DagRoleTypesObject)
 	if diags.HasError() {
 		return diags
 	}
@@ -110,6 +116,10 @@ func (data *TeamResource) ReadFromResponse(ctx context.Context, team *iam.Team, 
 		return diags
 	}
 	data.WorkspaceRoles, diags = utils.ObjectSet(ctx, team.WorkspaceRoles, schemas.WorkspaceRoleAttributeTypes(), WorkspaceRoleTypesObject)
+	if diags.HasError() {
+		return diags
+	}
+	data.DagRoles, diags = utils.ObjectSet(ctx, team.DagRoles, schemas.DagRoleAttributeTypes(), DagRoleTypesObject)
 	if diags.HasError() {
 		return diags
 	}

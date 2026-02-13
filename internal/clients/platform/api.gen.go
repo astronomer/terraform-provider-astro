@@ -1261,11 +1261,17 @@ type Cluster struct {
 	CreatedAt time.Time `json:"createdAt"`
 
 	// DbInstanceType The type of database instance that is used for the cluster.
-	DbInstanceType string               `json:"dbInstanceType"`
-	HealthStatus   *ClusterHealthStatus `json:"healthStatus,omitempty"`
+	DbInstanceType string `json:"dbInstanceType"`
+
+	// DrRegion The secondary region for Disaster Recovery for the cluster.
+	DrRegion     string               `json:"drRegion"`
+	HealthStatus *ClusterHealthStatus `json:"healthStatus,omitempty"`
 
 	// Id The cluster's ID.
 	Id string `json:"id"`
+
+	// IsDrEnabled Whether Disaster Recovery is enabled on the cluster
+	IsDrEnabled bool `json:"isDrEnabled"`
 
 	// IsLimited Whether the cluster is limited.
 	IsLimited *bool            `json:"isLimited,omitempty"`
@@ -1516,7 +1522,7 @@ type CreateAwsClusterRequest struct {
 	// Region The cluster's region.
 	Region string `json:"region"`
 
-	// SecondaryVpcCidr The secondary VPC CIDR for pods. For AWS clusters only.
+	// SecondaryVpcCidr Secondary CIDR for pod networking (size: /16 to /20). Recommended: use a /19 within the CGNAT range, eg 100.64.0.0/19. Must not overlap with existing or future VPC CIDRs for peering. For AWS clusters only.
 	SecondaryVpcCidr *string `json:"secondaryVpcCidr,omitempty"`
 
 	// Type The cluster's type.

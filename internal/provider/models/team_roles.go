@@ -16,6 +16,7 @@ type TeamRoles struct {
 	OrganizationRole types.String `tfsdk:"organization_role"`
 	WorkspaceRoles   types.Set    `tfsdk:"workspace_roles"`
 	DeploymentRoles  types.Set    `tfsdk:"deployment_roles"`
+	DagRoles         types.Set    `tfsdk:"dag_roles"`
 }
 
 func (data *TeamRoles) ReadFromResponse(
@@ -31,6 +32,10 @@ func (data *TeamRoles) ReadFromResponse(
 		return diags
 	}
 	data.DeploymentRoles, diags = utils.ObjectSet(ctx, teamRoles.DeploymentRoles, schemas.DeploymentRoleAttributeTypes(), DeploymentRoleTypesObject)
+	if diags.HasError() {
+		return diags
+	}
+	data.DagRoles, diags = utils.ObjectSet(ctx, teamRoles.DagRoles, schemas.DagRoleAttributeTypes(), DagRoleTypesObject)
 	if diags.HasError() {
 		return diags
 	}

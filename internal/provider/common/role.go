@@ -76,7 +76,7 @@ func RequestDagRoles(ctx context.Context, dagRolesObjSet types.Set) ([]iam.DagRo
 			dagRole.DagId = lo.ToPtr(role.DagId.ValueString())
 		}
 		if !role.Tag.IsNull() && role.Tag.ValueString() != "" {
-			dagRole.Tag = lo.ToPtr(role.Tag.ValueString())
+			dagRole.DagTag = lo.ToPtr(role.Tag.ValueString())
 		}
 		return dagRole
 	})
@@ -225,8 +225,8 @@ func GetDuplicateDagRoleKeys(dagRoles []iam.DagRole) []string {
 		var key string
 		if role.DagId != nil {
 			key = fmt.Sprintf("dag_id:%s:deployment_id:%s", *role.DagId, role.DeploymentId)
-		} else if role.Tag != nil {
-			key = fmt.Sprintf("tag:%s:deployment_id:%s", *role.Tag, role.DeploymentId)
+		} else if role.DagTag != nil {
+			key = fmt.Sprintf("tag:%s:deployment_id:%s", *role.DagTag, role.DeploymentId)
 		}
 		if key != "" {
 			keyCount[key]++
@@ -247,7 +247,7 @@ func GetDuplicateDagRoleKeys(dagRoles []iam.DagRole) []string {
 func ValidateDagRoles(dagRoles []iam.DagRole) diag.Diagnostics {
 	for _, role := range dagRoles {
 		hasDagId := role.DagId != nil && *role.DagId != ""
-		hasTag := role.Tag != nil && *role.Tag != ""
+		hasTag := role.DagTag != nil && *role.DagTag != ""
 
 		if !hasDagId && !hasTag {
 			return diag.Diagnostics{diag.NewErrorDiagnostic(

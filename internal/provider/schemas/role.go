@@ -176,7 +176,7 @@ func ResourceApiTokenRoleSchemaAttributes() map[string]resourceSchema.Attribute 
 					string(iam.ApiTokenRoleEntityTypeWORKSPACE),
 					string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
 					string(iam.ApiTokenRoleEntityTypeDAG),
-					string(iam.ApiTokenRoleEntityTypeTAG),
+					string(iam.ApiTokenRoleEntityTypeDAGTAG),
 				),
 			},
 		},

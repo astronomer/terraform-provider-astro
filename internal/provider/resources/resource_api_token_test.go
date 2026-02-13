@@ -674,7 +674,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 						{
 							Role:       "DAG_AUTHOR",
 							EntityId:   "production",
-							EntityType: string(iam.ApiTokenRoleEntityTypeTAG),
+							EntityType: string(iam.ApiTokenRoleEntityTypeDAGTAG),
 							// Missing deployment_id
 						},
 					},
@@ -779,7 +779,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 						{
 							Role:         "DAG_AUTHOR",
 							EntityId:     "production",
-							EntityType:   string(iam.ApiTokenRoleEntityTypeTAG),
+							EntityType:   string(iam.ApiTokenRoleEntityTypeDAGTAG),
 							DeploymentId: deploymentId,
 						},
 					},
@@ -812,7 +812,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 						{
 							Role:         "DAG_AUTHOR",
 							EntityId:     "production",
-							EntityType:   string(iam.ApiTokenRoleEntityTypeTAG),
+							EntityType:   string(iam.ApiTokenRoleEntityTypeDAGTAG),
 							DeploymentId: deploymentId,
 						},
 					},

@@ -61,8 +61,8 @@ func DagRoleTypesObject(
 	} else {
 		obj.DagId = types.StringNull()
 	}
-	if role.Tag != nil {
-		obj.Tag = types.StringValue(*role.Tag)
+	if role.DagTag != nil {
+		obj.Tag = types.StringValue(*role.DagTag)
 	} else {
 		obj.Tag = types.StringNull()
 	}
