@@ -679,7 +679,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 						},
 					},
 				}),
-				ExpectError: regexp.MustCompile("Role with entity type 'TAG' requires a 'deployment_id'"),
+				ExpectError: regexp.MustCompile("Role with entity type 'DAG_TAG' requires a 'deployment_id'"),
 			},
 			// Create the deployment api token
 			{
