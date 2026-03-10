@@ -1,24 +1,40 @@
 name: Import Script Tests
 
 on:
-  pull_request_target:  # For external PRs (runs in base repo context)
-  pull_request:         # For internal PRs (keep for faster feedback)
   push:
-    branches:
-      - main
+    branches: [main]
+  pull_request_target:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 
 # Testing only needs permissions to read the repository contents.
 permissions:
   contents: read
 
 jobs:
-  # Ensure project builds before running testing matrix
+  Authorize:
+    environment: ${{ github.event_name == 'pull_request_target' &&
+      github.event.pull_request.head.repo.full_name != github.repository &&
+      'external' || 'internal' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - run: true
+
   build:
     name: Build
+    needs: Authorize
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
         with:
           go-version-file: 'go.mod'
@@ -41,10 +57,8 @@ jobs:
     needs: build
     if: |
       github.event_name == 'push' ||
-      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
-      (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name != github.repository)
+      github.event_name == 'pull_request_target'
     timeout-minutes: 20
-    environment: ${{ github.event_name == 'pull_request_target' && 'acc-secrets' || null }}
     strategy:
       fail-fast: true
       matrix:
@@ -55,6 +69,7 @@ jobs:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
         with:
           go-version-file: 'go.mod'
