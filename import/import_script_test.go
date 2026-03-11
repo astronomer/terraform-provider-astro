@@ -763,8 +763,7 @@ var _ = Describe("Integration Test", func() {
 			"-resources", "workspace,deployment,cluster,api_token,team,team_roles,user_roles,alert,notification_channel",
 			"-token", token,
 			"-organizationId", organizationId,
-			"-host", "dev",
-			"-runTerraformInit", "true")
+			"-host", "dev")
 
 		// Set the working directory to the directory containing import_script.go
 		cmd.Dir = filepath.Dir(importScriptPath)

@@ -102,8 +102,6 @@ jobs:
           EOF
       - name: Verify Terraform provider override
         working-directory: import
-        env:
-          TF_CLI_CONFIG_FILE: $HOME/.terraformrc
         run: |
           terraform version
           terraform providers
@@ -112,5 +110,4 @@ jobs:
           RUN_IMPORT_SCRIPT_TEST: true
           HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.DEV_HOSTED_ORGANIZATION_API_TOKEN }}
           HOSTED_ORGANIZATION_ID: clx42kkcm01fo01o06agtmshg
-          TF_CLI_CONFIG_FILE: $HOME/.terraformrc
         run: make test-import-script

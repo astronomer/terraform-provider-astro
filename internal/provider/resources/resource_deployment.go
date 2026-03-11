@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/samber/lo"
@@ -593,23 +595,35 @@ func (r *DeploymentResource) Update(
 		}
 	}
 
-	deployment, err := r.platformClient.UpdateDeploymentWithResponse(
-		ctx,
-		r.organizationId,
-		data.Id.ValueString(),
-		updateDeploymentRequest,
-	)
+	var deployment *platform.UpdateDeploymentResponse
+	retryTimeout := 10 * time.Minute
+	err := retry.RetryContext(ctx, retryTimeout, func() *retry.RetryError {
+		var apiErr error
+		deployment, apiErr = r.platformClient.UpdateDeploymentWithResponse(
+			ctx,
+			r.organizationId,
+			data.Id.ValueString(),
+			updateDeploymentRequest,
+		)
+		if apiErr != nil {
+			tflog.Error(ctx, "failed to update deployment", map[string]interface{}{"error": apiErr})
+			return retry.NonRetryableError(fmt.Errorf("unable to update deployment, got error: %s", apiErr))
+		}
+		statusCode, diagnostic := clients.NormalizeAPIError(ctx, deployment.HTTPResponse, deployment.Body)
+		if statusCode == http.StatusConflict {
+			tflog.Info(ctx, "deployment update in progress, retrying", map[string]interface{}{"deploymentId": data.Id.ValueString()})
+			return retry.RetryableError(fmt.Errorf("deployment is currently applying an update, retrying"))
+		}
+		if diagnostic != nil {
+			return retry.NonRetryableError(fmt.Errorf("%s", diagnostic.Detail()))
+		}
+		return nil
+	})
 	if err != nil {
-		tflog.Error(ctx, "failed to update deployment", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to update deployment, got error: %s", err),
+			err.Error(),
 		)
-		return
-	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, deployment.HTTPResponse, deployment.Body)
-	if diagnostic != nil {
-		resp.Diagnostics.Append(diagnostic)
 		return
 	}
 
@@ -639,24 +653,36 @@ func (r *DeploymentResource) Delete(
 		return
 	}
 
-	// delete request
-	deployment, err := r.platformClient.DeleteDeploymentWithResponse(
-		ctx,
-		r.organizationId,
-		data.Id.ValueString(),
-	)
-	if err != nil {
-		tflog.Error(ctx, "failed to delete deployment", map[string]interface{}{"error": err})
+	// delete request - retry on 409 conflict (deployment is applying an update)
+	var deployment *platform.DeleteDeploymentResponse
+	deleteRetryTimeout := 10 * time.Minute
+	deleteErr := retry.RetryContext(ctx, deleteRetryTimeout, func() *retry.RetryError {
+		var apiErr error
+		deployment, apiErr = r.platformClient.DeleteDeploymentWithResponse(
+			ctx,
+			r.organizationId,
+			data.Id.ValueString(),
+		)
+		if apiErr != nil {
+			tflog.Error(ctx, "failed to delete deployment", map[string]interface{}{"error": apiErr})
+			return retry.NonRetryableError(fmt.Errorf("unable to delete deployment, got error: %s", apiErr))
+		}
+		statusCode, diagnostic := clients.NormalizeAPIError(ctx, deployment.HTTPResponse, deployment.Body)
+		if statusCode == http.StatusConflict {
+			tflog.Info(ctx, "deployment update in progress, retrying delete", map[string]interface{}{"deploymentId": data.Id.ValueString()})
+			return retry.RetryableError(fmt.Errorf("deployment is currently applying an update, retrying delete"))
+		}
+		// It is recommended to ignore 404 Resource Not Found errors when deleting a resource
+		if statusCode != http.StatusNotFound && diagnostic != nil {
+			return retry.NonRetryableError(fmt.Errorf("%s", diagnostic.Detail()))
+		}
+		return nil
+	})
+	if deleteErr != nil {
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to delete deployment, got error: %s", err),
+			deleteErr.Error(),
 		)
-		return
-	}
-	statusCode, diagnostic := clients.NormalizeAPIError(ctx, deployment.HTTPResponse, deployment.Body)
-	// It is recommended to ignore 404 Resource Not Found errors when deleting a resource
-	if statusCode != http.StatusNotFound && diagnostic != nil {
-		resp.Diagnostics.Append(diagnostic)
 		return
 	}
 
