@@ -88,23 +88,6 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: go mod download
-      - name: Build provider binary
-        run: go build -o $GITHUB_WORKSPACE/terraform-provider-astro .
-      - name: Configure Terraform dev_overrides
-        run: |
-          cat <<EOF > ~/.terraformrc
-          provider_installation {
-            dev_overrides {
-              "astronomer/astro" = "$GITHUB_WORKSPACE"
-            }
-            direct {}
-          }
-          EOF
-      - name: Verify Terraform provider override
-        working-directory: import
-        run: |
-          terraform version
-          terraform providers
       - name: Run import script tests
         env:
           RUN_IMPORT_SCRIPT_TEST: true

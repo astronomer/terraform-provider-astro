@@ -758,13 +758,35 @@ var _ = Describe("Integration Test", func() {
 			return
 		}
 
+		// Build the local provider binary so terraform plan uses it instead of downloading from the registry.
+		// This is necessary because the CI workflow uses pull_request_target, which runs the workflow
+		// definition from main — meaning any workflow-level dev_overrides setup in the PR branch is ignored.
+		// By building the provider here in the test, we are fully self-sufficient.
+		repoRoot := filepath.Dir(rootDir) // rootDir is import/, repoRoot is one level up
+		providerDir, err := os.MkdirTemp("", "tf-provider-astro")
+		Expect(err).To(BeNil(), "Failed to create temp dir for provider binary")
+		defer os.RemoveAll(providerDir)
+
+		buildCmd := exec.Command("go", "build", "-o", filepath.Join(providerDir, "terraform-provider-astro"), ".")
+		buildCmd.Dir = repoRoot
+		buildOutput, buildErr := buildCmd.CombinedOutput()
+		Expect(buildErr).To(BeNil(), fmt.Sprintf("Failed to build provider binary: %s", string(buildOutput)))
+
+		// Write a .terraformrc pointing dev_overrides at the temp dir containing the local binary.
+		terraformrcPath := filepath.Join(providerDir, ".terraformrc")
+		terraformrcContent := fmt.Sprintf("provider_installation {\n  dev_overrides {\n    \"astronomer/astro\" = %q\n  }\n  direct {}\n}\n", providerDir)
+		Expect(os.WriteFile(terraformrcPath, []byte(terraformrcContent), 0644)).To(BeNil())
+
 		// Run the import_script.go file
 		cmd := exec.Command("go", "run", importScriptPath,
 			"-resources", "workspace,deployment,cluster,api_token,team,team_roles,user_roles,alert,notification_channel",
 			"-token", token,
 			"-organizationId", organizationId,
-			"-host", "dev",
-			"-runTerraformInit", "true")
+			"-host", "dev")
+
+		// Propagate TF_CLI_CONFIG_FILE so all terraform subprocesses inside the import script
+		// use dev_overrides and skip the registry download entirely.
+		cmd.Env = append(os.Environ(), fmt.Sprintf("TF_CLI_CONFIG_FILE=%s", terraformrcPath))
 
 		// Set the working directory to the directory containing import_script.go
 		cmd.Dir = filepath.Dir(importScriptPath)
