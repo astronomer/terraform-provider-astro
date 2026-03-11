@@ -134,12 +134,12 @@ jobs:
           HOSTED_TEAM_ID: clx486hno068301il306nuhsm
           HOSTED_USER_ID: clz3a95hw00j301jj5jfmcgwd
           HOSTED_DUMMY_USER_ID: clzawlsb701vv01ikvsqz5mws
-          HOSTED_DEPLOYMENT_ID: clx4825jb068z01j9931ib5gb
+          HOSTED_DEPLOYMENT_ID: cmmf9dpfu15iv01dw00xbakrg
           HOSTED_DEPLOYMENT_API_TOKEN: ${{ secrets.STAGE_HOSTED_DEPLOYMENT_API_TOKEN }}
           HOSTED_STANDARD_DEPLOYMENT_ID: cm077ee2807g301kpjkqdoc15
           HOSTED_WORKSPACE_ID: clx480rvx068u01j9mp7t7fqh
           HOSTED_API_TOKEN_ID: clxm46ged05b301neuucdqwox
-          HOSTED_ALERT_ID: cmbr12l431mbq01ii1h0nz6y0
+          HOSTED_ALERT_ID: cmmf9prtm15ya01dww674fosf
           HOSTED_NOTIFICATION_CHANNEL_ID: cmbr12fik1m7l01gpln1bgtbb
           HOSTED_DEDICATED_CLUSTER_ID: cm73vsinm07hy01pu4dq1rei2
           HOSTED_CUSTOM_ROLE_ID: cmk64yvat027n01q7f9gn5ghg
@@ -201,12 +201,12 @@ jobs:
           HOSTED_TEAM_ID: clx486hno068301il306nuhsm
           HOSTED_USER_ID: clz3a95hw00j301jj5jfmcgwd
           HOSTED_DUMMY_USER_ID: clzawlsb701vv01ikvsqz5mws
-          HOSTED_DEPLOYMENT_ID: cly6exz4a00zd01k18t5bo1vf
+          HOSTED_DEPLOYMENT_ID: cmmf9dpfu15iv01dw00xbakrg
           HOSTED_DEPLOYMENT_API_TOKEN: ${{ secrets.STAGE_HOSTED_DEPLOYMENT_API_TOKEN }}
           HOSTED_STANDARD_DEPLOYMENT_ID: cm077ee2807g301kpjkqdoc15
           HOSTED_WORKSPACE_ID: clx480rvx068u01j9mp7t7fqh
           HOSTED_API_TOKEN_ID: clxm46ged05b301neuucdqwox
-          HOSTED_ALERT_ID: cmbr12l431mbq01ii1h0nz6y0
+          HOSTED_ALERT_ID: cmmf9prtm15ya01dww674fosf
           HOSTED_NOTIFICATION_CHANNEL_ID: cmbr12fik1m7l01gpln1bgtbb
           HOSTED_DEDICATED_CLUSTER_ID: cm73vsinm07hy01pu4dq1rei2
           HOSTED_CUSTOM_ROLE_ID: cmk64yvat027n01q7f9gn5ghg
