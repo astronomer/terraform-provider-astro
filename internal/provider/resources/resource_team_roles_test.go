@@ -125,7 +125,7 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 1, 0),
 				),
 			},
-			// Create team with dag_roles using dag_id
+			// Test failure: dag_roles without deployment_roles for the same deployment
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),
@@ -139,13 +139,31 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 								Role:         "DAG_VIEWER",
 							},
 						})),
+				ExpectError: regexp.MustCompile("Invalid Configuration: dag_roles requires corresponding deployment_roles"),
+			},
+			// Create team with dag_roles using dag_id
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),
+						fmt.Sprintf(`[{workspace_id = "%s"
+									   role = "WORKSPACE_OWNER"}]`, os.Getenv("HOSTED_WORKSPACE_ID")),
+						fmt.Sprintf(`[{deployment_id = "%s"
+										role = "DEPLOYMENT_ACCESSOR"}]`, os.Getenv("HOSTED_DEPLOYMENT_ID")),
+						teamDagRoles([]dagRoleInput{
+							{
+								DeploymentId: os.Getenv("HOSTED_DEPLOYMENT_ID"),
+								DagId:        "test_dag_id",
+								Role:         "DAG_VIEWER",
+							},
+						})),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
 					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.TeamOrganizationRoleORGANIZATIONMEMBER)),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
+					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "dag_roles.#", "1"),
 					// Check via API that team has correct roles
-					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 0, 1),
+					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 1, 1),
 				),
 			},
 			// Create team with dag_roles using tag
@@ -154,7 +172,8 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),
 						fmt.Sprintf(`[{workspace_id = "%s"
 									   role = "WORKSPACE_OWNER"}]`, os.Getenv("HOSTED_WORKSPACE_ID")),
-						"",
+						fmt.Sprintf(`[{deployment_id = "%s"
+										role = "DEPLOYMENT_ACCESSOR"}]`, os.Getenv("HOSTED_DEPLOYMENT_ID")),
 						teamDagRoles([]dagRoleInput{
 							{
 								DeploymentId: os.Getenv("HOSTED_DEPLOYMENT_ID"),
@@ -166,9 +185,10 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
 					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.TeamOrganizationRoleORGANIZATIONMEMBER)),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
+					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "dag_roles.#", "1"),
 					// Check via API that team has correct roles
-					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 0, 1),
+					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 1, 1),
 				),
 			},
 			// Create team with multiple dag_roles (mixed dag_id and tag)
@@ -177,7 +197,8 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),
 						fmt.Sprintf(`[{workspace_id = "%s"
 									   role = "WORKSPACE_OWNER"}]`, os.Getenv("HOSTED_WORKSPACE_ID")),
-						"",
+						fmt.Sprintf(`[{deployment_id = "%s"
+										role = "DEPLOYMENT_ACCESSOR"}]`, os.Getenv("HOSTED_DEPLOYMENT_ID")),
 						teamDagRoles([]dagRoleInput{
 							{
 								DeploymentId: os.Getenv("HOSTED_DEPLOYMENT_ID"),
@@ -194,12 +215,13 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
 					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.TeamOrganizationRoleORGANIZATIONMEMBER)),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
+					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "dag_roles.#", "2"),
 					// Check via API that team has correct roles
-					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 0, 2),
+					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 1, 2),
 				),
 			},
-			// Remove dag_roles and verify they are removed
+			// Remove dag_roles and deployment_roles and verify they are removed
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),

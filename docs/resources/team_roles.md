@@ -133,8 +133,8 @@ resource "astro_team_roles" "imported_team_roles" {
 
 ### Optional
 
-- `dag_roles` (Attributes Set) The DAG roles to assign to the team. Each role grants permissions to a specific DAG or DAGs with a specific tag within a deployment. (see [below for nested schema](#nestedatt--dag_roles))
-- `deployment_roles` (Attributes Set) The roles to assign to the deployments (see [below for nested schema](#nestedatt--deployment_roles))
+- `dag_roles` (Attributes Set) The DAG roles to assign to the team. Each role grants permissions to a specific DAG or DAGs with a specific tag within a deployment. Each deployment referenced in `dag_roles` must also have a corresponding entry in `deployment_roles` (e.g. with `DEPLOYMENT_ACCESSOR` role). (see [below for nested schema](#nestedatt--dag_roles))
+- `deployment_roles` (Attributes Set) The roles to assign to the deployments. Required for any deployment referenced in `dag_roles`. (see [below for nested schema](#nestedatt--deployment_roles))
 - `workspace_roles` (Attributes Set) The roles to assign to the workspaces (see [below for nested schema](#nestedatt--workspace_roles))
 
 <a id="nestedatt--dag_roles"></a>

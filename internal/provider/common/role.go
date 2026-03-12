@@ -333,6 +333,20 @@ func ValidateRolesWithDagRoles(
 		if diags := ValidateDagRoles(dagRoles); diags.HasError() {
 			return diags
 		}
+
+		dagDeploymentIds := lo.Uniq(lo.Map(dagRoles, func(r iam.DagRole, _ int) string {
+			return r.DeploymentId
+		}))
+		deploymentRoleIds := lo.Map(deploymentRoles, func(r iam.DeploymentRole, _ int) string {
+			return r.DeploymentId
+		})
+		missingIds, _ := lo.Difference(dagDeploymentIds, deploymentRoleIds)
+		if len(missingIds) > 0 {
+			return diag.Diagnostics{diag.NewErrorDiagnostic(
+				"Invalid Configuration: dag_roles requires corresponding deployment_roles",
+				fmt.Sprintf("Each deployment referenced in dag_roles must also have an entry in deployment_roles. Missing deployment_roles for deployment IDs: %v", missingIds),
+			)}
+		}
 	}
 
 	return nil
