@@ -231,7 +231,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 					),
 				),
 			},
-			// Create user with dag_roles using dag_id
+			// Test failure: dag_roles without deployment_roles for the same deployment
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{
@@ -250,10 +250,38 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 							},
 						},
 					}),
+				ExpectError: regexp.MustCompile("dag_roles requires corresponding deployment_roles"),
+			},
+			// Create user with dag_roles using dag_id
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					userRoles(userRolesInput{
+						OrganizationRole: string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+						WorkspaceRoles: []utils.Role{
+							{
+								Role:     string(iam.WORKSPACEOWNER),
+								EntityId: workspaceId,
+							},
+						},
+						DeploymentRoles: []utils.Role{
+							{
+								Role:     "DEPLOYMENT_ACCESSOR",
+								EntityId: deploymentId,
+							},
+						},
+						DagRoles: []dagRoleInput{
+							{
+								DeploymentId: deploymentId,
+								DagId:        "test_dag_id",
+								Role:         "DAG_VIEWER",
+							},
+						},
+					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "user_id", userId),
 					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.UserOrganizationRoleORGANIZATIONOWNER)),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
+					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "dag_roles.#", "1"),
 				),
 			},
@@ -268,6 +296,12 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 								EntityId: workspaceId,
 							},
 						},
+						DeploymentRoles: []utils.Role{
+							{
+								Role:     "DEPLOYMENT_ACCESSOR",
+								EntityId: deploymentId,
+							},
+						},
 						DagRoles: []dagRoleInput{
 							{
 								DeploymentId: deploymentId,
@@ -280,6 +314,7 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 					resource.TestCheckResourceAttr(tfVarName, "user_id", userId),
 					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.UserOrganizationRoleORGANIZATIONOWNER)),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
+					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "dag_roles.#", "1"),
 				),
 			},
@@ -292,6 +327,12 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 							{
 								Role:     string(iam.WORKSPACEOWNER),
 								EntityId: workspaceId,
+							},
+						},
+						DeploymentRoles: []utils.Role{
+							{
+								Role:     "DEPLOYMENT_ACCESSOR",
+								EntityId: deploymentId,
 							},
 						},
 						DagRoles: []dagRoleInput{
@@ -311,10 +352,11 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 					resource.TestCheckResourceAttr(tfVarName, "user_id", userId),
 					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.UserOrganizationRoleORGANIZATIONOWNER)),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
+					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "dag_roles.#", "2"),
 				),
 			},
-			// Remove dag_roles and verify they are removed
+			// Remove dag_roles and deployment_roles and verify they are removed
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					userRoles(userRolesInput{
