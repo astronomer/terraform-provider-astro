@@ -601,7 +601,6 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 }
 
 func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
-	t.Skip("Temporarily skipping: not related to current DAG RBAC changes")
 	namePrefix := utils.GenerateTestResourceName(10)
 
 	scalingSpecDeploymentName := fmt.Sprintf("%v_scaling_spec", namePrefix)
