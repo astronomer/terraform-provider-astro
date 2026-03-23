@@ -47,6 +47,7 @@ Read-Only:
 
 - `created_at` (String) Team creation timestamp
 - `created_by` (Attributes) Team creator (see [below for nested schema](#nestedatt--teams--created_by))
+- `dag_roles` (Attributes Set) The DAG roles assigned to the team (see [below for nested schema](#nestedatt--teams--dag_roles))
 - `deployment_roles` (Attributes Set) The roles assigned to the Deployments (see [below for nested schema](#nestedatt--teams--deployment_roles))
 - `description` (String) Team description
 - `is_idp_managed` (Boolean) Whether the Team is managed by an identity provider
@@ -69,6 +70,17 @@ Read-Only:
 - `id` (String)
 - `subject_type` (String)
 - `username` (String)
+
+
+<a id="nestedatt--teams--dag_roles"></a>
+### Nested Schema for `teams.dag_roles`
+
+Read-Only:
+
+- `dag_id` (String) The DAG ID
+- `deployment_id` (String) The Deployment ID containing the DAG
+- `role` (String) The DAG role
+- `tag` (String) The DAG tag
 
 
 <a id="nestedatt--teams--deployment_roles"></a>

@@ -95,8 +95,17 @@ func (r *teamRolesResource) MutateRoles(
 	if diags.HasError() {
 		return diags
 	}
+	dagRoles, diags := common.RequestDagRoles(ctx, data.DagRoles)
+	if diags.HasError() {
+		return diags
+	}
 
 	// Validate the roles
+	diags = common.ValidateRolesWithDagRoles(workspaceRoles, deploymentRoles, dagRoles)
+	if diags.HasError() {
+		return diags
+	}
+
 	diags = common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 		PlatformClient:  r.platformClient,
 		OrganizationId:  r.organizationId,
@@ -112,6 +121,7 @@ func (r *teamRolesResource) MutateRoles(
 		DeploymentRoles:  &deploymentRoles,
 		OrganizationRole: data.OrganizationRole.ValueString(),
 		WorkspaceRoles:   &workspaceRoles,
+		DagRoles:         &dagRoles,
 	}
 	teamRoles, err := r.iamClient.UpdateTeamRolesWithResponse(
 		ctx,
@@ -210,6 +220,7 @@ func (r *teamRolesResource) Read(
 		OrganizationRole: lo.ToPtr(string(teamRoles.JSON200.OrganizationRole)),
 		WorkspaceRoles:   teamRoles.JSON200.WorkspaceRoles,
 		DeploymentRoles:  teamRoles.JSON200.DeploymentRoles,
+		DagRoles:         teamRoles.JSON200.DagRoles,
 	}
 	diags := data.ReadFromResponse(ctx, teamId, &subjectRoles)
 	if diags.HasError() {
@@ -262,11 +273,12 @@ func (r *teamRolesResource) Delete(
 	// delete request
 	teamId := data.TeamId.ValueString()
 
-	// update request with no workspace roles, no deployment roles and lowest organization role
+	// update request with no workspace roles, no deployment roles, no dag roles and lowest organization role
 	updateTeamRolesRequest := iam.UpdateTeamRolesJSONRequestBody{
 		DeploymentRoles:  nil,
 		OrganizationRole: string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),
 		WorkspaceRoles:   nil,
+		DagRoles:         nil,
 	}
 	teamRoles, err := r.iamClient.UpdateTeamRolesWithResponse(
 		ctx,

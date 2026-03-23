@@ -80,6 +80,44 @@ resource "astro_api_token" "deployment_token_with_custom_role" {
   }]
 }
 
+resource "astro_api_token" "deployment_token_with_dag_role" {
+  name        = "deployment api token with dag role"
+  description = "deployment api token with dag-level permissions"
+  type        = "DEPLOYMENT"
+  roles = [
+    {
+      "role" : "DEPLOYMENT_ADMIN",
+      "entity_id" : "clyn6kxud003x01mtxmccegnh",
+      "entity_type" : "DEPLOYMENT"
+    },
+    {
+      "role" : "DAG_VIEWER",
+      "entity_id" : "my_dag_id",
+      "entity_type" : "DAG",
+      "deployment_id" : "clyn6kxud003x01mtxmccegnh"
+    }
+  ]
+}
+
+resource "astro_api_token" "deployment_token_with_tag_role" {
+  name        = "deployment api token with tag role"
+  description = "deployment api token with tag-level permissions"
+  type        = "DEPLOYMENT"
+  roles = [
+    {
+      "role" : "DEPLOYMENT_ADMIN",
+      "entity_id" : "clyn6kxud003x01mtxmccegnh",
+      "entity_type" : "DEPLOYMENT"
+    },
+    {
+      "role" : "DAG_AUTHOR",
+      "entity_id" : "production",
+      "entity_type" : "TAG",
+      "deployment_id" : "clyn6kxud003x01mtxmccegnh"
+    }
+  ]
+}
+
 # Import an existing api token
 import {
   id = "clxm46ged05b301neuucdqwox" // ID of the existing api token

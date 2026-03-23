@@ -639,17 +639,16 @@ func (r *DeploymentResource) Delete(
 		return
 	}
 
-	// delete request
-	deployment, err := r.platformClient.DeleteDeploymentWithResponse(
+	deployment, deleteErr := r.platformClient.DeleteDeploymentWithResponse(
 		ctx,
 		r.organizationId,
 		data.Id.ValueString(),
 	)
-	if err != nil {
-		tflog.Error(ctx, "failed to delete deployment", map[string]interface{}{"error": err})
+	if deleteErr != nil {
+		tflog.Error(ctx, "failed to delete deployment", map[string]interface{}{"error": deleteErr})
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to delete deployment, got error: %s", err),
+			fmt.Sprintf("Unable to delete deployment, got error: %s", deleteErr),
 		)
 		return
 	}

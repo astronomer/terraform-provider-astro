@@ -44,7 +44,17 @@ func ResourceTeamRolesSchemaAttributes() map[string]resourceSchema.Attribute {
 				Attributes: ResourceDeploymentRoleSchemaAttributes(),
 			},
 			Optional:            true,
-			MarkdownDescription: "The roles to assign to the deployments",
+			MarkdownDescription: "The roles to assign to the deployments. Required for any deployment referenced in `dag_roles`.",
+			Validators: []validator.Set{
+				setvalidator.SizeAtLeast(1),
+			},
+		},
+		"dag_roles": resourceSchema.SetNestedAttribute{
+			NestedObject: resourceSchema.NestedAttributeObject{
+				Attributes: ResourceDagRoleSchemaAttributes(),
+			},
+			Optional:            true,
+			MarkdownDescription: "The DAG roles to assign to the team. Each role grants permissions to a specific DAG or DAGs with a specific tag within a deployment. Each deployment referenced in `dag_roles` must also have a corresponding entry in `deployment_roles` (e.g. with `DEPLOYMENT_ACCESSOR` role).",
 			Validators: []validator.Set{
 				setvalidator.SizeAtLeast(1),
 			},

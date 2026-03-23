@@ -50,6 +50,47 @@ resource "astro_team_roles" "all_roles" {
   ]
 }
 
+resource "astro_team_roles" "dag_roles" {
+  team_id           = "clnp86ly5000401ndaga21g81"
+  organization_role = "ORGANIZATION_MEMBER"
+  workspace_roles = [
+    {
+      workspace_id = "clwp86ly5000401ndaga21g85"
+      role         = "WORKSPACE_MEMBER"
+    }
+  ]
+  dag_roles = [
+    {
+      deployment_id = "cldp86ly5000401ndaga21g86"
+      dag_id        = "my_dag_id"
+      role          = "DAG_VIEWER"
+    }
+  ]
+}
+
+resource "astro_team_roles" "dag_roles_with_tag" {
+  team_id           = "clnp86ly5000401ndaga21g81"
+  organization_role = "ORGANIZATION_MEMBER"
+  workspace_roles = [
+    {
+      workspace_id = "clwp86ly5000401ndaga21g85"
+      role         = "WORKSPACE_MEMBER"
+    }
+  ]
+  dag_roles = [
+    {
+      deployment_id = "cldp86ly5000401ndaga21g86"
+      tag           = "production"
+      role          = "DAG_AUTHOR"
+    },
+    {
+      deployment_id = "cldp86ly5000401ndaga21g86"
+      dag_id        = "specific_dag"
+      role          = "DAG_VIEWER"
+    }
+  ]
+}
+
 // Import existing team roles
 import {
   id = "clnp86ly5000401ndaga21g81" // ID of the existing team

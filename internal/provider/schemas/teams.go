@@ -31,6 +31,11 @@ func TeamsElementAttributeTypes() map[string]attr.Type {
 				AttrTypes: WorkspaceRoleAttributeTypes(),
 			},
 		},
+		"dag_roles": types.SetType{
+			ElemType: types.ObjectType{
+				AttrTypes: DagRoleAttributeTypes(),
+			},
+		},
 		"roles_count": types.Int64Type,
 		"created_at":  types.StringType,
 		"updated_at":  types.StringType,

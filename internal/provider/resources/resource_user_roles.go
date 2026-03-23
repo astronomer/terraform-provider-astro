@@ -94,9 +94,13 @@ func (r *UserRolesResource) MutateRoles(
 	if diags.HasError() {
 		return diags
 	}
+	dagRoles, diags := common.RequestDagRoles(ctx, data.DagRoles)
+	if diags.HasError() {
+		return diags
+	}
 
 	// Validate the roles
-	diags = common.ValidateRoles(workspaceRoles, deploymentRoles)
+	diags = common.ValidateRolesWithDagRoles(workspaceRoles, deploymentRoles, dagRoles)
 	if diags.HasError() {
 		return diags
 	}
@@ -116,6 +120,7 @@ func (r *UserRolesResource) MutateRoles(
 		DeploymentRoles:  &deploymentRoles,
 		OrganizationRole: lo.ToPtr(data.OrganizationRole.ValueString()),
 		WorkspaceRoles:   &workspaceRoles,
+		DagRoles:         &dagRoles,
 	}
 	userRoles, err := r.iamClient.UpdateUserRolesWithResponse(
 		ctx,
@@ -233,6 +238,7 @@ func (r *UserRolesResource) Read(
 		OrganizationRole: lo.ToPtr(string(*userRoles.JSON200.OrganizationRole)),
 		WorkspaceRoles:   userRoles.JSON200.WorkspaceRoles,
 		DeploymentRoles:  userRoles.JSON200.DeploymentRoles,
+		DagRoles:         userRoles.JSON200.DagRoles,
 	}
 	diags := data.ReadFromResponse(ctx, userId, &subjectRoles)
 	if diags.HasError() {
@@ -285,11 +291,12 @@ func (r *UserRolesResource) Delete(
 	// delete request
 	userId := data.UserId.ValueString()
 
-	// update request with no workspace roles, no deployment roles and lowest organization role
+	// update request with no workspace roles, no deployment roles, no dag roles and lowest organization role
 	updateUserRolesRequest := iam.UpdateUserRolesJSONRequestBody{
 		DeploymentRoles:  nil,
 		OrganizationRole: lo.ToPtr(string(iam.UserOrganizationRoleORGANIZATIONMEMBER)),
 		WorkspaceRoles:   nil,
+		DagRoles:         nil,
 	}
 	userRoles, err := r.iamClient.UpdateUserRolesWithResponse(
 		ctx,

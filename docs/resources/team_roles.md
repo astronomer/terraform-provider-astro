@@ -65,6 +65,47 @@ resource "astro_team_roles" "all_roles" {
   ]
 }
 
+resource "astro_team_roles" "dag_roles" {
+  team_id           = "clnp86ly5000401ndaga21g81"
+  organization_role = "ORGANIZATION_MEMBER"
+  workspace_roles = [
+    {
+      workspace_id = "clwp86ly5000401ndaga21g85"
+      role         = "WORKSPACE_MEMBER"
+    }
+  ]
+  dag_roles = [
+    {
+      deployment_id = "cldp86ly5000401ndaga21g86"
+      dag_id        = "my_dag_id"
+      role          = "DAG_VIEWER"
+    }
+  ]
+}
+
+resource "astro_team_roles" "dag_roles_with_tag" {
+  team_id           = "clnp86ly5000401ndaga21g81"
+  organization_role = "ORGANIZATION_MEMBER"
+  workspace_roles = [
+    {
+      workspace_id = "clwp86ly5000401ndaga21g85"
+      role         = "WORKSPACE_MEMBER"
+    }
+  ]
+  dag_roles = [
+    {
+      deployment_id = "cldp86ly5000401ndaga21g86"
+      tag           = "production"
+      role          = "DAG_AUTHOR"
+    },
+    {
+      deployment_id = "cldp86ly5000401ndaga21g86"
+      dag_id        = "specific_dag"
+      role          = "DAG_VIEWER"
+    }
+  ]
+}
+
 // Import existing team roles
 import {
   id = "clnp86ly5000401ndaga21g81" // ID of the existing team
@@ -92,8 +133,23 @@ resource "astro_team_roles" "imported_team_roles" {
 
 ### Optional
 
-- `deployment_roles` (Attributes Set) The roles to assign to the deployments (see [below for nested schema](#nestedatt--deployment_roles))
+- `dag_roles` (Attributes Set) The DAG roles to assign to the team. Each role grants permissions to a specific DAG or DAGs with a specific tag within a deployment. Each deployment referenced in `dag_roles` must also have a corresponding entry in `deployment_roles` (e.g. with `DEPLOYMENT_ACCESSOR` role). (see [below for nested schema](#nestedatt--dag_roles))
+- `deployment_roles` (Attributes Set) The roles to assign to the deployments. Required for any deployment referenced in `dag_roles`. (see [below for nested schema](#nestedatt--deployment_roles))
 - `workspace_roles` (Attributes Set) The roles to assign to the workspaces (see [below for nested schema](#nestedatt--workspace_roles))
+
+<a id="nestedatt--dag_roles"></a>
+### Nested Schema for `dag_roles`
+
+Required:
+
+- `deployment_id` (String) The Deployment ID containing the DAG.
+- `role` (String) The DAG role (DAG_VIEWER, DAG_AUTHOR, or custom DAG role).
+
+Optional:
+
+- `dag_id` (String) The DAG ID. Required if tag is not specified.
+- `tag` (String) The DAG tag. Required if dag_id is not specified.
+
 
 <a id="nestedatt--deployment_roles"></a>
 ### Nested Schema for `deployment_roles`

@@ -87,6 +87,7 @@ Read-Only:
 
 Read-Only:
 
+- `deployment_id` (String) The Deployment ID for DAG and TAG entity types
 - `entity_id` (String) The ID of the entity to assign the role to
 - `entity_type` (String) The type of entity to assign the role to
 - `role` (String) The role to assign to the entity

@@ -95,6 +95,44 @@ resource "astro_api_token" "deployment_token_with_custom_role" {
   }]
 }
 
+resource "astro_api_token" "deployment_token_with_dag_role" {
+  name        = "deployment api token with dag role"
+  description = "deployment api token with dag-level permissions"
+  type        = "DEPLOYMENT"
+  roles = [
+    {
+      "role" : "DEPLOYMENT_ADMIN",
+      "entity_id" : "clyn6kxud003x01mtxmccegnh",
+      "entity_type" : "DEPLOYMENT"
+    },
+    {
+      "role" : "DAG_VIEWER",
+      "entity_id" : "my_dag_id",
+      "entity_type" : "DAG",
+      "deployment_id" : "clyn6kxud003x01mtxmccegnh"
+    }
+  ]
+}
+
+resource "astro_api_token" "deployment_token_with_tag_role" {
+  name        = "deployment api token with tag role"
+  description = "deployment api token with tag-level permissions"
+  type        = "DEPLOYMENT"
+  roles = [
+    {
+      "role" : "DEPLOYMENT_ADMIN",
+      "entity_id" : "clyn6kxud003x01mtxmccegnh",
+      "entity_type" : "DEPLOYMENT"
+    },
+    {
+      "role" : "DAG_AUTHOR",
+      "entity_id" : "production",
+      "entity_type" : "TAG",
+      "deployment_id" : "clyn6kxud003x01mtxmccegnh"
+    }
+  ]
+}
+
 # Import an existing api token
 import {
   id = "clxm46ged05b301neuucdqwox" // ID of the existing api token
@@ -144,9 +182,13 @@ resource "astro_api_token" "imported_api_token" {
 
 Required:
 
-- `entity_id` (String) The ID of the entity to assign the role to
+- `entity_id` (String) The ID of the entity to assign the role to. For DAG entity type, this is the dag_id. For TAG entity type, this is the tag value.
 - `entity_type` (String) The type of entity to assign the role to
 - `role` (String) The role to assign to the entity
+
+Optional:
+
+- `deployment_id` (String) The Deployment ID. Required for DAG and TAG entity types.
 
 
 <a id="nestedatt--created_by"></a>

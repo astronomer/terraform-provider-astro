@@ -49,7 +49,7 @@ func CustomRoleDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			Computed:            true,
 		},
 		"scope_type": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The custom role's scope (DEPLOYMENT, ORGANIZATION, or WORKSPACE)",
+			MarkdownDescription: "The custom role's scope (DEPLOYMENT or DAG)",
 			Computed:            true,
 		},
 		"restricted_workspace_ids": datasourceSchema.SetAttribute{

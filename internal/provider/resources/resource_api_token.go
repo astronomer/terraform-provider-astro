@@ -536,21 +536,39 @@ func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []iam.
 			}
 		}
 
-		if entityType == string(iam.ApiTokenRoleEntityTypeDEPLOYMENT) && role.EntityType != iam.ApiTokenRoleEntityTypeDEPLOYMENT {
+		if entityType == string(iam.ApiTokenRoleEntityTypeDEPLOYMENT) &&
+			role.EntityType != iam.ApiTokenRoleEntityTypeDEPLOYMENT &&
+			role.EntityType != iam.ApiTokenRoleEntityTypeDAG &&
+			role.EntityType != iam.ApiTokenRoleEntityTypeDAGTAG {
 			return diag.Diagnostics{
 				diag.NewErrorDiagnostic(
-					"API Token of type 'DEPLOYMENT' cannot have an 'ORGANIZATION' or 'WORKSPACE' role",
+					"API Token of type 'DEPLOYMENT' can only have 'DEPLOYMENT', 'DAG', or 'TAG' roles",
 					"Please remove the 'ORGANIZATION' or 'WORKSPACE' role from the 'roles' list",
 				),
 			}
 		}
 
-		if !common.ValidateRoleMatchesEntityType(role.Role, string(role.EntityType)) {
-			return diag.Diagnostics{
-				diag.NewErrorDiagnostic(
-					fmt.Sprintf("Role '%s' is not valid for token type '%s'", role.Role, role.EntityType),
-					fmt.Sprintf("Please provide a valid role for the token type '%s'", role.EntityType),
-				),
+		// Validate DAG/TAG roles have deployment_id
+		if role.EntityType == iam.ApiTokenRoleEntityTypeDAG || role.EntityType == iam.ApiTokenRoleEntityTypeDAGTAG {
+			if role.DeploymentId == nil || *role.DeploymentId == "" {
+				return diag.Diagnostics{
+					diag.NewErrorDiagnostic(
+						fmt.Sprintf("Role with entity type '%s' requires a 'deployment_id'", role.EntityType),
+						"Please provide a 'deployment_id' for DAG and TAG entity types",
+					),
+				}
+			}
+		}
+
+		// Skip role type validation for DAG/TAG entity types as they use DAG-specific roles
+		if role.EntityType != iam.ApiTokenRoleEntityTypeDAG && role.EntityType != iam.ApiTokenRoleEntityTypeDAGTAG {
+			if !common.ValidateRoleMatchesEntityType(role.Role, string(role.EntityType)) {
+				return diag.Diagnostics{
+					diag.NewErrorDiagnostic(
+						fmt.Sprintf("Role '%s' is not valid for token type '%s'", role.Role, role.EntityType),
+						fmt.Sprintf("Please provide a valid role for the token type '%s'", role.EntityType),
+					),
+				}
 			}
 		}
 
@@ -599,11 +617,19 @@ func RequestApiTokenRoles(ctx context.Context, apiTokenRolesObjSet types.Set) ([
 		return nil, diags
 	}
 	apiTokenRoles := lo.Map(roles, func(v models.ApiTokenRole, _ int) iam.ApiTokenRole {
-		return iam.ApiTokenRole{
+		apiTokenRole := iam.ApiTokenRole{
 			Role:       v.Role.ValueString(),
 			EntityId:   v.EntityId.ValueString(),
 			EntityType: iam.ApiTokenRoleEntityType(v.EntityType.ValueString()),
 		}
+		// Set DeploymentId for DAG and TAG entity types
+		if v.EntityType.ValueString() == string(iam.ApiTokenRoleEntityTypeDAG) ||
+			v.EntityType.ValueString() == string(iam.ApiTokenRoleEntityTypeDAGTAG) {
+			if !v.DeploymentId.IsNull() && v.DeploymentId.ValueString() != "" {
+				apiTokenRole.DeploymentId = lo.ToPtr(v.DeploymentId.ValueString())
+			}
+		}
+		return apiTokenRole
 	})
 
 	return apiTokenRoles, nil

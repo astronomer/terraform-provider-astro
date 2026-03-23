@@ -41,10 +41,39 @@ func DeploymentRoleTypesObject(
 	return types.ObjectValueFrom(ctx, schemas.DeploymentRoleAttributeTypes(), obj)
 }
 
+type DagRole struct {
+	DagId        types.String `tfsdk:"dag_id"`
+	DeploymentId types.String `tfsdk:"deployment_id"`
+	Role         types.String `tfsdk:"role"`
+	Tag          types.String `tfsdk:"tag"`
+}
+
+func DagRoleTypesObject(
+	ctx context.Context,
+	role iam.DagRole,
+) (types.Object, diag.Diagnostics) {
+	obj := DagRole{
+		DeploymentId: types.StringValue(role.DeploymentId),
+		Role:         types.StringValue(role.Role),
+	}
+	if role.DagId != nil {
+		obj.DagId = types.StringValue(*role.DagId)
+	} else {
+		obj.DagId = types.StringNull()
+	}
+	if role.DagTag != nil {
+		obj.Tag = types.StringValue(*role.DagTag)
+	} else {
+		obj.Tag = types.StringNull()
+	}
+	return types.ObjectValueFrom(ctx, schemas.DagRoleAttributeTypes(), obj)
+}
+
 type ApiTokenRole struct {
-	EntityId   types.String `tfsdk:"entity_id"`
-	EntityType types.String `tfsdk:"entity_type"`
-	Role       types.String `tfsdk:"role"`
+	EntityId     types.String `tfsdk:"entity_id"`
+	EntityType   types.String `tfsdk:"entity_type"`
+	Role         types.String `tfsdk:"role"`
+	DeploymentId types.String `tfsdk:"deployment_id"`
 }
 
 func ApiTokenRoleTypesObject(
@@ -55,6 +84,11 @@ func ApiTokenRoleTypesObject(
 		EntityId:   types.StringValue(role.EntityId),
 		EntityType: types.StringValue(string(role.EntityType)),
 		Role:       types.StringValue(role.Role),
+	}
+	if role.DeploymentId != nil {
+		obj.DeploymentId = types.StringValue(*role.DeploymentId)
+	} else {
+		obj.DeploymentId = types.StringNull()
 	}
 	return types.ObjectValueFrom(ctx, schemas.ApiTokenRoleAttributeTypes(), obj)
 }

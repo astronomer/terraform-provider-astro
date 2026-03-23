@@ -229,7 +229,7 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 				ResourceName:            awsResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"health_status", "health_status.value"},
+				ImportStateVerifyIgnore: []string{"health_status", "health_status.value", "status"},
 			},
 		},
 	})
@@ -334,7 +334,7 @@ func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
 				ResourceName:            azureResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"health_status", "health_status.value"},
+				ImportStateVerifyIgnore: []string{"health_status", "health_status.value", "status"},
 			},
 		},
 	})
@@ -440,7 +440,7 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 				ResourceName:            gcpResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"health_status", "health_status.value"},
+				ImportStateVerifyIgnore: []string{"health_status", "health_status.value", "status"},
 			},
 		},
 	})

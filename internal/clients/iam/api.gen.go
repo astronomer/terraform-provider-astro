@@ -37,9 +37,9 @@ const (
 // Defines values for ApiTokenRoleEntityType.
 const (
 	ApiTokenRoleEntityTypeDAG          ApiTokenRoleEntityType = "DAG"
+	ApiTokenRoleEntityTypeDAGTAG       ApiTokenRoleEntityType = "DAG_TAG"
 	ApiTokenRoleEntityTypeDEPLOYMENT   ApiTokenRoleEntityType = "DEPLOYMENT"
 	ApiTokenRoleEntityTypeORGANIZATION ApiTokenRoleEntityType = "ORGANIZATION"
-	ApiTokenRoleEntityTypeTAG          ApiTokenRoleEntityType = "TAG"
 	ApiTokenRoleEntityTypeWORKSPACE    ApiTokenRoleEntityType = "WORKSPACE"
 )
 
@@ -443,14 +443,14 @@ type DagRole struct {
 	// DagId The DAG ID. Required if Tag is not specified.
 	DagId *string `json:"dagId,omitempty"`
 
+	// DagTag The DAG tag. Required if DagId is not specified.
+	DagTag *string `json:"dagTag,omitempty"`
+
 	// DeploymentId The Deployment ID containing the DAG.
 	DeploymentId string `json:"deploymentId"`
 
 	// Role The role name (DAG_VIEWER, DAG_AUTHOR, or custom DAG role).
 	Role string `json:"role"`
-
-	// Tag The DAG tag. Required if DagId is not specified.
-	Tag *string `json:"tag,omitempty"`
 }
 
 // DefaultRole defines model for DefaultRole.
@@ -624,6 +624,9 @@ type Team struct {
 	// CreatedAt The time when the Team was created in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
 	CreatedAt time.Time            `json:"createdAt"`
 	CreatedBy *BasicSubjectProfile `json:"createdBy,omitempty"`
+
+	// DagRoles The Team's role in each DAG it belongs to.
+	DagRoles *[]DagRole `json:"dagRoles,omitempty"`
 
 	// DeploymentRoles The Team's role in each Deployment it belongs to.
 	DeploymentRoles *[]DeploymentRole `json:"deploymentRoles,omitempty"`
@@ -919,6 +922,12 @@ type ListApiTokensParams struct {
 	// DeploymentId The ID of the Deployment to list API tokens for.
 	DeploymentId *string `form:"deploymentId,omitempty" json:"deploymentId,omitempty"`
 
+	// DagId The ID of the DAG to list API tokens for.
+	DagId *string `form:"dagId,omitempty" json:"dagId,omitempty"`
+
+	// DagTags The tags of the DAG to list API tokens for.
+	DagTags *[]string `form:"dagTags,omitempty" json:"dagTags,omitempty"`
+
 	// IncludeOnlyOrganizationTokens Whether to show only Organization API tokens.
 	IncludeOnlyOrganizationTokens *bool `form:"includeOnlyOrganizationTokens,omitempty" json:"includeOnlyOrganizationTokens,omitempty"`
 
@@ -948,6 +957,12 @@ type ListUsersParams struct {
 
 	// DeploymentId The ID of the Deployment to filter the list of users for. When specified, the API returns only users belonging to the specified Deployment.
 	DeploymentId *string `form:"deploymentId,omitempty" json:"deploymentId,omitempty"`
+
+	// DagId The ID of the DAG to filter the list of users for. When specified, the API returns users belonging to the specified DAG.
+	DagId *string `form:"dagId,omitempty" json:"dagId,omitempty"`
+
+	// DagTags The Tags of the DAG to filter the list of users for. When specified, the API returns users belonging to the specified DAG tags.
+	DagTags *[]string `form:"dagTags,omitempty" json:"dagTags,omitempty"`
 
 	// Offset Offset for pagination
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
@@ -2674,6 +2689,38 @@ func NewListApiTokensRequest(server string, organizationId string, params *ListA
 
 		}
 
+		if params.DagId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "dagId", runtime.ParamLocationQuery, *params.DagId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.DagTags != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "dagTags", runtime.ParamLocationQuery, *params.DagTags); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.IncludeOnlyOrganizationTokens != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "includeOnlyOrganizationTokens", runtime.ParamLocationQuery, *params.IncludeOnlyOrganizationTokens); err != nil {
@@ -3091,6 +3138,38 @@ func NewListUsersRequest(server string, organizationId string, params *ListUsers
 		if params.DeploymentId != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "deploymentId", runtime.ParamLocationQuery, *params.DeploymentId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.DagId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "dagId", runtime.ParamLocationQuery, *params.DagId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.DagTags != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "dagTags", runtime.ParamLocationQuery, *params.DagTags); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
