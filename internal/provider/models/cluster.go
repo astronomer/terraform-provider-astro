@@ -34,6 +34,12 @@ type ClusterResource struct {
 	NodePools           types.Set      `tfsdk:"node_pools"`
 	WorkspaceIds        types.Set      `tfsdk:"workspace_ids"`
 	IsLimited           types.Bool     `tfsdk:"is_limited"`
+	IsDrEnabled         types.Bool     `tfsdk:"is_dr_enabled"`
+	DrRegion            types.String   `tfsdk:"dr_region"`
+	DrVpcSubnetRange    types.String   `tfsdk:"dr_vpc_subnet_range"`
+	DrSecondaryVpcCidr           types.String   `tfsdk:"dr_secondary_vpc_cidr"`
+	EnableReplicationTimeControl types.Bool     `tfsdk:"enable_replication_time_control"`
+	IsFailedOver                 types.Bool     `tfsdk:"is_failed_over"`
 	Timeouts            timeouts.Value `tfsdk:"timeouts"` // To allow users to set timeouts for the resource.
 }
 
@@ -60,6 +66,9 @@ type ClusterDataSource struct {
 	WorkspaceIds        types.Set    `tfsdk:"workspace_ids"`
 	Tags                types.Set    `tfsdk:"tags"`
 	IsLimited           types.Bool   `tfsdk:"is_limited"`
+	IsDrEnabled         types.Bool   `tfsdk:"is_dr_enabled"`
+	DrRegion            types.String `tfsdk:"dr_region"`
+	IsFailedOver        types.Bool   `tfsdk:"is_failed_over"`
 }
 
 type ClusterTag struct {
@@ -134,6 +143,15 @@ func (data *ClusterResource) ReadFromResponse(
 		return diags
 	}
 	data.IsLimited = types.BoolPointerValue(cluster.IsLimited)
+	data.IsDrEnabled = types.BoolValue(cluster.IsDrEnabled)
+	if cluster.DrRegion != "" {
+		data.DrRegion = types.StringValue(cluster.DrRegion)
+	} else {
+		data.DrRegion = types.StringNull()
+	}
+	data.IsFailedOver = types.BoolValue(cluster.IsFailedOver)
+	// DrVpcSubnetRange and DrSecondaryVpcCidr are write-only (create-time) fields
+	// not returned by the API, so we preserve the plan/state value via UseStateForUnknown.
 
 	return nil
 }
@@ -179,6 +197,13 @@ func (data *ClusterDataSource) ReadFromResponse(
 		return diags
 	}
 	data.IsLimited = types.BoolPointerValue(cluster.IsLimited)
+	data.IsDrEnabled = types.BoolValue(cluster.IsDrEnabled)
+	if cluster.DrRegion != "" {
+		data.DrRegion = types.StringValue(cluster.DrRegion)
+	} else {
+		data.DrRegion = types.StringNull()
+	}
+	data.IsFailedOver = types.BoolValue(cluster.IsFailedOver)
 
 	return nil
 }

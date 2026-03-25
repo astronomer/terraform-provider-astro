@@ -36,6 +36,18 @@ resource "astro_cluster" "azure_example" {
   workspace_ids    = ["clv4wcf6f003u01m3zp7gsvzg"]
 }
 
+resource "astro_cluster" "aws_dr_example" {
+  type                = "DEDICATED"
+  name                = "my dr-enabled cluster"
+  region              = "us-east-1"
+  cloud_provider      = "AWS"
+  vpc_subnet_range    = "172.20.0.0/20"
+  workspace_ids       = []
+  is_dr_enabled       = true
+  dr_region           = "us-west-2"
+  dr_vpc_subnet_range = "172.21.0.0/20"
+}
+
 resource "astro_cluster" "gcp_example" {
   type                  = "DEDICATED"
   name                  = "my first gcp cluster"

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -161,6 +162,48 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 			MarkdownDescription: "Whether the cluster is limited",
 			Computed:            true,
 		},
+		"is_dr_enabled": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether Disaster Recovery is enabled on the cluster. Only supported for AWS clusters. If changed, the cluster will be recreated.",
+			Optional:            true,
+			Computed:            true,
+			PlanModifiers: []planmodifier.Bool{
+				boolplanmodifier.RequiresReplaceIfConfigured(),
+			},
+		},
+		"dr_region": resourceSchema.StringAttribute{
+			MarkdownDescription: "The secondary region for Disaster Recovery. Required when `is_dr_enabled` is true. If changed, the cluster will be recreated.",
+			Optional:            true,
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplaceIfConfigured(),
+			},
+		},
+		"dr_vpc_subnet_range": resourceSchema.StringAttribute{
+			MarkdownDescription: "The VPC subnet range for the Disaster Recovery region. Only valid when `is_dr_enabled` is true. If changed, the cluster will be recreated.",
+			Optional:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplaceIfConfigured(),
+			},
+		},
+		"dr_secondary_vpc_cidr": resourceSchema.StringAttribute{
+			MarkdownDescription: "Secondary CIDR for pod networking in the DR region (AWS only). If changed, the cluster will be recreated.",
+			Optional:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplaceIfConfigured(),
+			},
+		},
+		"enable_replication_time_control": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether to enable S3 Replication Time Control for Disaster Recovery. Only valid when `is_dr_enabled` is true (AWS only).",
+			Optional:            true,
+		},
+		"is_failed_over": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether the cluster is currently failed over to the DR region. Set to `true` to trigger failover; set to `false` to fail back.",
+			Optional:            true,
+			Computed:            true,
+			PlanModifiers: []planmodifier.Bool{
+				boolplanmodifier.UseStateForUnknown(),
+			},
+		},
 		"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 			Create: true,
 			Update: true,
@@ -264,6 +307,18 @@ func ClusterDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 		},
 		"is_limited": datasourceSchema.BoolAttribute{
 			MarkdownDescription: "Whether the cluster is limited",
+			Computed:            true,
+		},
+		"is_dr_enabled": datasourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether Disaster Recovery is enabled on the cluster",
+			Computed:            true,
+		},
+		"dr_region": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The secondary region for Disaster Recovery",
+			Computed:            true,
+		},
+		"is_failed_over": datasourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether the cluster is currently failed over to the DR region",
 			Computed:            true,
 		},
 	}
