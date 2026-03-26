@@ -14,33 +14,33 @@ import (
 
 // ClusterResource describes the resource data model.
 type ClusterResource struct {
-	Id                  types.String   `tfsdk:"id"`
-	Name                types.String   `tfsdk:"name"`
-	CloudProvider       types.String   `tfsdk:"cloud_provider"`
-	DbInstanceType      types.String   `tfsdk:"db_instance_type"`
-	HealthStatus        types.Object   `tfsdk:"health_status"`
-	Region              types.String   `tfsdk:"region"`
-	PodSubnetRange      types.String   `tfsdk:"pod_subnet_range"`
-	ServicePeeringRange types.String   `tfsdk:"service_peering_range"`
-	ServiceSubnetRange  types.String   `tfsdk:"service_subnet_range"`
-	VpcSubnetRange      types.String   `tfsdk:"vpc_subnet_range"`
-	Metadata            types.Object   `tfsdk:"metadata"`
-	Status              types.String   `tfsdk:"status"`
-	CreatedAt           types.String   `tfsdk:"created_at"`
-	UpdatedAt           types.String   `tfsdk:"updated_at"`
-	Type                types.String   `tfsdk:"type"`
-	TenantId            types.String   `tfsdk:"tenant_id"`
-	ProviderAccount     types.String   `tfsdk:"provider_account"`
-	NodePools           types.Set      `tfsdk:"node_pools"`
-	WorkspaceIds        types.Set      `tfsdk:"workspace_ids"`
-	IsLimited           types.Bool     `tfsdk:"is_limited"`
-	IsDrEnabled         types.Bool     `tfsdk:"is_dr_enabled"`
-	DrRegion            types.String   `tfsdk:"dr_region"`
-	DrVpcSubnetRange    types.String   `tfsdk:"dr_vpc_subnet_range"`
+	Id                           types.String   `tfsdk:"id"`
+	Name                         types.String   `tfsdk:"name"`
+	CloudProvider                types.String   `tfsdk:"cloud_provider"`
+	DbInstanceType               types.String   `tfsdk:"db_instance_type"`
+	HealthStatus                 types.Object   `tfsdk:"health_status"`
+	Region                       types.String   `tfsdk:"region"`
+	PodSubnetRange               types.String   `tfsdk:"pod_subnet_range"`
+	ServicePeeringRange          types.String   `tfsdk:"service_peering_range"`
+	ServiceSubnetRange           types.String   `tfsdk:"service_subnet_range"`
+	VpcSubnetRange               types.String   `tfsdk:"vpc_subnet_range"`
+	Metadata                     types.Object   `tfsdk:"metadata"`
+	Status                       types.String   `tfsdk:"status"`
+	CreatedAt                    types.String   `tfsdk:"created_at"`
+	UpdatedAt                    types.String   `tfsdk:"updated_at"`
+	Type                         types.String   `tfsdk:"type"`
+	TenantId                     types.String   `tfsdk:"tenant_id"`
+	ProviderAccount              types.String   `tfsdk:"provider_account"`
+	NodePools                    types.Set      `tfsdk:"node_pools"`
+	WorkspaceIds                 types.Set      `tfsdk:"workspace_ids"`
+	IsLimited                    types.Bool     `tfsdk:"is_limited"`
+	IsDrEnabled                  types.Bool     `tfsdk:"is_dr_enabled"`
+	DrRegion                     types.String   `tfsdk:"dr_region"`
+	DrVpcSubnetRange             types.String   `tfsdk:"dr_vpc_subnet_range"`
 	DrSecondaryVpcCidr           types.String   `tfsdk:"dr_secondary_vpc_cidr"`
 	EnableReplicationTimeControl types.Bool     `tfsdk:"enable_replication_time_control"`
 	IsFailedOver                 types.Bool     `tfsdk:"is_failed_over"`
-	Timeouts            timeouts.Value `tfsdk:"timeouts"` // To allow users to set timeouts for the resource.
+	Timeouts                     timeouts.Value `tfsdk:"timeouts"` // To allow users to set timeouts for the resource.
 }
 
 // ClusterDataSource describes the data source data model.
