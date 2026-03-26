@@ -94,14 +94,13 @@ func (r *ClusterResource) Create(
 	switch platform.ClusterCloudProvider(data.CloudProvider.ValueString()) {
 	case platform.ClusterCloudProviderAWS:
 		createAwsDedicatedClusterRequest := platform.CreateAwsClusterRequest{
-			CloudProvider:      platform.CreateAwsClusterRequestCloudProvider(data.CloudProvider.ValueString()),
-			Name:               data.Name.ValueString(),
-			NodePools:          nil,
-			ProviderAccount:    data.ProviderAccount.ValueStringPointer(),
-			Region:             data.Region.ValueString(),
-			Type:               platform.CreateAwsClusterRequestType(data.Type.ValueString()),
-			VpcSubnetRange:     data.VpcSubnetRange.ValueString(),
-			IsDrEnabled:                  data.IsDrEnabled.ValueBoolPointer(),
+			CloudProvider:                platform.CreateAwsClusterRequestCloudProvider(data.CloudProvider.ValueString()),
+			Name:                         data.Name.ValueString(),
+			NodePools:                    nil,
+			ProviderAccount:              data.ProviderAccount.ValueStringPointer(),
+			Region:                       data.Region.ValueString(),
+			Type:                         platform.CreateAwsClusterRequestType(data.Type.ValueString()),
+			VpcSubnetRange:               data.VpcSubnetRange.ValueString(),
 			DrRegion:                     data.DrRegion.ValueStringPointer(),
 			DrVpcSubnetRange:             data.DrVpcSubnetRange.ValueStringPointer(),
 			DrSecondaryVpcCidr:           data.DrSecondaryVpcCidr.ValueStringPointer(),
@@ -318,8 +317,15 @@ func (r *ClusterResource) Update(
 		Name:         data.Name.ValueString(),
 		NodePools:    nil,
 		WorkspaceIds: nil,
-		EnableReplicationTimeControl: data.EnableReplicationTimeControl.ValueBoolPointer(),
-		IsFailedOver:                 data.IsFailedOver.ValueBoolPointer(),
+	}
+	// Set EnableDr to false if the user explicitly set is_dr_enabled to false
+	if !data.IsDrEnabled.IsNull() && !data.IsDrEnabled.ValueBool() {
+		enableDr := false
+		updateDedicatedClusterRequest.EnableDr = &enableDr
+	}
+	// Set IsFailedOver if specified
+	if !data.IsFailedOver.IsNull() {
+		updateDedicatedClusterRequest.IsFailedOver = data.IsFailedOver.ValueBoolPointer()
 	}
 
 	// workspaceIds
@@ -509,7 +515,7 @@ func (r *ClusterResource) ValidateConfig(
 	}
 
 	// Cloud provider specific validation
-	switch platform.ClusterCloudProvider(data.Type.ValueString()) {
+	switch platform.ClusterCloudProvider(data.CloudProvider.ValueString()) {
 	case platform.ClusterCloudProviderAWS:
 		resp.Diagnostics.Append(validateAwsConfig(ctx, &data)...)
 	case platform.ClusterCloudProviderAZURE:

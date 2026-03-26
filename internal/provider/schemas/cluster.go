@@ -175,14 +175,17 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 		"dr_vpc_subnet_range": resourceSchema.StringAttribute{
 			MarkdownDescription: "The VPC subnet range for the Disaster Recovery region. Only valid when `is_dr_enabled` is true. Cannot be changed once set.",
 			Optional:            true,
+			Computed:            true,
 		},
 		"dr_secondary_vpc_cidr": resourceSchema.StringAttribute{
 			MarkdownDescription: "Secondary CIDR for pod networking in the DR region (AWS only). Cannot be changed once set.",
 			Optional:            true,
+			Computed:            true,
 		},
 		"enable_replication_time_control": resourceSchema.BoolAttribute{
 			MarkdownDescription: "Whether to enable S3 Replication Time Control for Disaster Recovery. Only valid when `is_dr_enabled` is true (AWS only).",
 			Optional:            true,
+			Computed:            true,
 		},
 		"is_failed_over": resourceSchema.BoolAttribute{
 			MarkdownDescription: "Whether the cluster is currently failed over to the DR region. Set to `true` to trigger failover; set to `false` to fail back.",

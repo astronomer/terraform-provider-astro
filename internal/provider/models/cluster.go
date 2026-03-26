@@ -149,9 +149,10 @@ func (data *ClusterResource) ReadFromResponse(
 	} else {
 		data.DrRegion = types.StringNull()
 	}
-	data.IsFailedOver = types.BoolValue(cluster.IsFailedOver)
-	// DrVpcSubnetRange and DrSecondaryVpcCidr are write-only (create-time) fields
-	// not returned by the API, so we preserve the plan/state value via UseStateForUnknown.
+	data.IsFailedOver = types.BoolPointerValue(cluster.IsFailedOver)
+	data.DrVpcSubnetRange = types.StringPointerValue(cluster.DrVpcSubnetRange)
+	data.DrSecondaryVpcCidr = types.StringPointerValue(cluster.DrSecondaryVpcCidr)
+	data.EnableReplicationTimeControl = types.BoolPointerValue(cluster.EnableReplicationTimeControl)
 
 	return nil
 }
@@ -203,7 +204,7 @@ func (data *ClusterDataSource) ReadFromResponse(
 	} else {
 		data.DrRegion = types.StringNull()
 	}
-	data.IsFailedOver = types.BoolValue(cluster.IsFailedOver)
+	data.IsFailedOver = types.BoolPointerValue(cluster.IsFailedOver)
 
 	return nil
 }
