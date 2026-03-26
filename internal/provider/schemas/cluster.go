@@ -163,34 +163,22 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 			Computed:            true,
 		},
 		"is_dr_enabled": resourceSchema.BoolAttribute{
-			MarkdownDescription: "Whether Disaster Recovery is enabled on the cluster. Only supported for AWS clusters. If changed, the cluster will be recreated.",
+			MarkdownDescription: "Whether Disaster Recovery is enabled on the cluster. Only supported for AWS clusters. Can only be enabled at cluster creation time. Can be set to `false` to disable DR on an existing cluster.",
 			Optional:            true,
 			Computed:            true,
-			PlanModifiers: []planmodifier.Bool{
-				boolplanmodifier.RequiresReplaceIfConfigured(),
-			},
 		},
 		"dr_region": resourceSchema.StringAttribute{
-			MarkdownDescription: "The secondary region for Disaster Recovery. Required when `is_dr_enabled` is true. If changed, the cluster will be recreated.",
+			MarkdownDescription: "The secondary region for Disaster Recovery. Required when `is_dr_enabled` is true. Cannot be changed once set.",
 			Optional:            true,
 			Computed:            true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.RequiresReplaceIfConfigured(),
-			},
 		},
 		"dr_vpc_subnet_range": resourceSchema.StringAttribute{
-			MarkdownDescription: "The VPC subnet range for the Disaster Recovery region. Only valid when `is_dr_enabled` is true. If changed, the cluster will be recreated.",
+			MarkdownDescription: "The VPC subnet range for the Disaster Recovery region. Only valid when `is_dr_enabled` is true. Cannot be changed once set.",
 			Optional:            true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.RequiresReplaceIfConfigured(),
-			},
 		},
 		"dr_secondary_vpc_cidr": resourceSchema.StringAttribute{
-			MarkdownDescription: "Secondary CIDR for pod networking in the DR region (AWS only). If changed, the cluster will be recreated.",
+			MarkdownDescription: "Secondary CIDR for pod networking in the DR region (AWS only). Cannot be changed once set.",
 			Optional:            true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.RequiresReplaceIfConfigured(),
-			},
 		},
 		"enable_replication_time_control": resourceSchema.BoolAttribute{
 			MarkdownDescription: "Whether to enable S3 Replication Time Control for Disaster Recovery. Only valid when `is_dr_enabled` is true (AWS only).",
