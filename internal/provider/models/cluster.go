@@ -143,16 +143,26 @@ func (data *ClusterResource) ReadFromResponse(
 		return diags
 	}
 	data.IsLimited = types.BoolPointerValue(cluster.IsLimited)
-	data.IsDrEnabled = types.BoolValue(cluster.IsDrEnabled)
-	if cluster.DrRegion != "" {
-		data.DrRegion = types.StringValue(cluster.DrRegion)
+	// DR fields - only set when DR is enabled
+	if cluster.IsDrEnabled {
+		data.IsDrEnabled = types.BoolValue(true)
+		if cluster.DrRegion != "" {
+			data.DrRegion = types.StringValue(cluster.DrRegion)
+		} else {
+			data.DrRegion = types.StringNull()
+		}
+		data.IsFailedOver = types.BoolPointerValue(cluster.IsFailedOver)
+		data.DrVpcSubnetRange = types.StringPointerValue(cluster.DrVpcSubnetRange)
+		data.DrSecondaryVpcCidr = types.StringPointerValue(cluster.DrSecondaryVpcCidr)
+		data.EnableReplicationTimeControl = types.BoolPointerValue(cluster.EnableReplicationTimeControl)
 	} else {
+		data.IsDrEnabled = types.BoolValue(false)
 		data.DrRegion = types.StringNull()
+		data.IsFailedOver = types.BoolNull()
+		data.DrVpcSubnetRange = types.StringNull()
+		data.DrSecondaryVpcCidr = types.StringNull()
+		data.EnableReplicationTimeControl = types.BoolNull()
 	}
-	data.IsFailedOver = types.BoolPointerValue(cluster.IsFailedOver)
-	data.DrVpcSubnetRange = types.StringPointerValue(cluster.DrVpcSubnetRange)
-	data.DrSecondaryVpcCidr = types.StringPointerValue(cluster.DrSecondaryVpcCidr)
-	data.EnableReplicationTimeControl = types.BoolPointerValue(cluster.EnableReplicationTimeControl)
 
 	return nil
 }
@@ -198,13 +208,20 @@ func (data *ClusterDataSource) ReadFromResponse(
 		return diags
 	}
 	data.IsLimited = types.BoolPointerValue(cluster.IsLimited)
-	data.IsDrEnabled = types.BoolValue(cluster.IsDrEnabled)
-	if cluster.DrRegion != "" {
-		data.DrRegion = types.StringValue(cluster.DrRegion)
+	// DR fields - only set when DR is enabled
+	if cluster.IsDrEnabled {
+		data.IsDrEnabled = types.BoolValue(true)
+		if cluster.DrRegion != "" {
+			data.DrRegion = types.StringValue(cluster.DrRegion)
+		} else {
+			data.DrRegion = types.StringNull()
+		}
+		data.IsFailedOver = types.BoolPointerValue(cluster.IsFailedOver)
 	} else {
+		data.IsDrEnabled = types.BoolValue(false)
 		data.DrRegion = types.StringNull()
+		data.IsFailedOver = types.BoolNull()
 	}
-	data.IsFailedOver = types.BoolPointerValue(cluster.IsFailedOver)
 
 	return nil
 }
