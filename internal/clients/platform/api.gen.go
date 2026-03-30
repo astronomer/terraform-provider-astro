@@ -5388,7 +5388,7 @@ func (t UpdateAlertRequest) AsUpdateDagDurationAlertRequest() (UpdateDagDuration
 // FromUpdateDagDurationAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateDagDurationAlertRequest
 func (t *UpdateAlertRequest) FromUpdateDagDurationAlertRequest(v UpdateDagDurationAlertRequest) error {
 	typeVal := UpdateDagDurationAlertRequestType("DAG_DURATION")
-    v.Type = &typeVal
+	v.Type = &typeVal
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5397,7 +5397,7 @@ func (t *UpdateAlertRequest) FromUpdateDagDurationAlertRequest(v UpdateDagDurati
 // MergeUpdateDagDurationAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateDagDurationAlertRequest
 func (t *UpdateAlertRequest) MergeUpdateDagDurationAlertRequest(v UpdateDagDurationAlertRequest) error {
 	typeVal := UpdateDagDurationAlertRequestType("DAG_DURATION")
-    v.Type = &typeVal
+	v.Type = &typeVal
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5418,7 +5418,7 @@ func (t UpdateAlertRequest) AsUpdateDagFailureAlertRequest() (UpdateDagFailureAl
 // FromUpdateDagFailureAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateDagFailureAlertRequest
 func (t *UpdateAlertRequest) FromUpdateDagFailureAlertRequest(v UpdateDagFailureAlertRequest) error {
 	typeVal := UpdateDagFailureAlertRequestType("DAG_FAILURE")
-    v.Type = &typeVal
+	v.Type = &typeVal
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5427,7 +5427,7 @@ func (t *UpdateAlertRequest) FromUpdateDagFailureAlertRequest(v UpdateDagFailure
 // MergeUpdateDagFailureAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateDagFailureAlertRequest
 func (t *UpdateAlertRequest) MergeUpdateDagFailureAlertRequest(v UpdateDagFailureAlertRequest) error {
 	typeVal := UpdateDagFailureAlertRequestType("DAG_FAILURE")
-    v.Type = &typeVal
+	v.Type = &typeVal
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5478,7 +5478,7 @@ func (t UpdateAlertRequest) AsUpdateDagTimelinessAlertRequest() (UpdateDagTimeli
 // FromUpdateDagTimelinessAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateDagTimelinessAlertRequest
 func (t *UpdateAlertRequest) FromUpdateDagTimelinessAlertRequest(v UpdateDagTimelinessAlertRequest) error {
 	typeVal := UpdateDagTimelinessAlertRequestType("DAG_TIMELINESS")
-    v.Type = &typeVal
+	v.Type = &typeVal
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5487,7 +5487,7 @@ func (t *UpdateAlertRequest) FromUpdateDagTimelinessAlertRequest(v UpdateDagTime
 // MergeUpdateDagTimelinessAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateDagTimelinessAlertRequest
 func (t *UpdateAlertRequest) MergeUpdateDagTimelinessAlertRequest(v UpdateDagTimelinessAlertRequest) error {
 	typeVal := UpdateDagTimelinessAlertRequestType("DAG_TIMELINESS")
-    v.Type = &typeVal
+	v.Type = &typeVal
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
