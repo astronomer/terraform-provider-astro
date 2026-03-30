@@ -92,6 +92,12 @@ resource "astro_cluster" "imported_cluster" {
 
 ### Optional
 
+- `dr_region` (String) The secondary region for Disaster Recovery. Required when `is_dr_enabled` is true. Cannot be changed once set.
+- `dr_secondary_vpc_cidr` (String) Secondary CIDR for pod networking in the DR region (AWS only). Cannot be changed once set.
+- `dr_vpc_subnet_range` (String) The VPC subnet range for the Disaster Recovery region. Only valid when `is_dr_enabled` is true. Cannot be changed once set.
+- `enable_replication_time_control` (Boolean) Whether to enable S3 Replication Time Control for Disaster Recovery. Only valid when `is_dr_enabled` is true (AWS only).
+- `is_dr_enabled` (Boolean) Whether Disaster Recovery is enabled on the cluster. Only supported for AWS clusters. Can only be enabled at cluster creation time. Can be set to `false` to disable DR on an existing cluster.
+- `is_failed_over` (Boolean) Whether the cluster is currently failed over to the DR region. Set to `true` to trigger failover; set to `false` to fail back.
 - `pod_subnet_range` (String) Cluster pod subnet range - required for 'GCP' clusters. If changed, the cluster will be recreated.
 - `service_peering_range` (String) Cluster service peering range - required for 'GCP' clusters. If changed, the cluster will be recreated.
 - `service_subnet_range` (String) Cluster service subnet range - required for 'GCP' clusters. If changed, the cluster will be recreated.

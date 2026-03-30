@@ -53,7 +53,10 @@ Read-Only:
 - `cloud_provider` (String) Cluster cloud provider. Allowed values: `AWS`, `GCP`, `AZURE`.
 - `created_at` (String) Cluster creation timestamp
 - `db_instance_type` (String) Cluster database instance type
+- `dr_region` (String) The secondary region for Disaster Recovery
 - `health_status` (Attributes) Cluster health status (see [below for nested schema](#nestedatt--clusters--health_status))
+- `is_dr_enabled` (Boolean) Whether Disaster Recovery is enabled on the cluster
+- `is_failed_over` (Boolean) Whether the cluster is currently failed over to the DR region
 - `is_limited` (Boolean) Whether the cluster is limited
 - `metadata` (Attributes) Cluster metadata (see [below for nested schema](#nestedatt--clusters--metadata))
 - `name` (String) Cluster name
