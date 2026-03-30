@@ -37,6 +37,8 @@ func TestAcc_DataSourceCluster(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceVar, "node_pools.0.id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "node_pools.0.name"),
 					resource.TestCheckResourceAttrSet(resourceVar, "metadata.external_ips.0"),
+					// Check DR fields are present
+					resource.TestCheckResourceAttrSet(resourceVar, "is_dr_enabled"),
 				),
 			},
 		},
