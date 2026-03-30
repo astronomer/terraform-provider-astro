@@ -4761,7 +4761,7 @@ func (t CreateAlertRequest) AsCreateDagDurationAlertRequest() (CreateDagDuration
 
 // FromCreateDagDurationAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateDagDurationAlertRequest
 func (t *CreateAlertRequest) FromCreateDagDurationAlertRequest(v CreateDagDurationAlertRequest) error {
-	v.Type = "CreateDagDurationAlertRequest"
+	v.Type = "DAG_DURATION"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4769,7 +4769,7 @@ func (t *CreateAlertRequest) FromCreateDagDurationAlertRequest(v CreateDagDurati
 
 // MergeCreateDagDurationAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateDagDurationAlertRequest
 func (t *CreateAlertRequest) MergeCreateDagDurationAlertRequest(v CreateDagDurationAlertRequest) error {
-	v.Type = "CreateDagDurationAlertRequest"
+	v.Type = "DAG_DURATION"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4789,7 +4789,7 @@ func (t CreateAlertRequest) AsCreateDagFailureAlertRequest() (CreateDagFailureAl
 
 // FromCreateDagFailureAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateDagFailureAlertRequest
 func (t *CreateAlertRequest) FromCreateDagFailureAlertRequest(v CreateDagFailureAlertRequest) error {
-	v.Type = "CreateDagFailureAlertRequest"
+	v.Type = "DAG_FAILURE"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4797,7 +4797,7 @@ func (t *CreateAlertRequest) FromCreateDagFailureAlertRequest(v CreateDagFailure
 
 // MergeCreateDagFailureAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateDagFailureAlertRequest
 func (t *CreateAlertRequest) MergeCreateDagFailureAlertRequest(v CreateDagFailureAlertRequest) error {
-	v.Type = "CreateDagFailureAlertRequest"
+	v.Type = "DAG_FAILURE"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4817,7 +4817,7 @@ func (t CreateAlertRequest) AsCreateDagSuccessAlertRequest() (CreateDagSuccessAl
 
 // FromCreateDagSuccessAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateDagSuccessAlertRequest
 func (t *CreateAlertRequest) FromCreateDagSuccessAlertRequest(v CreateDagSuccessAlertRequest) error {
-	v.Type = "CreateDagSuccessAlertRequest"
+	v.Type = "DAG_SUCCESS"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4825,7 +4825,7 @@ func (t *CreateAlertRequest) FromCreateDagSuccessAlertRequest(v CreateDagSuccess
 
 // MergeCreateDagSuccessAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateDagSuccessAlertRequest
 func (t *CreateAlertRequest) MergeCreateDagSuccessAlertRequest(v CreateDagSuccessAlertRequest) error {
-	v.Type = "CreateDagSuccessAlertRequest"
+	v.Type = "DAG_SUCCESS"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4845,7 +4845,7 @@ func (t CreateAlertRequest) AsCreateDagTimelinessAlertRequest() (CreateDagTimeli
 
 // FromCreateDagTimelinessAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateDagTimelinessAlertRequest
 func (t *CreateAlertRequest) FromCreateDagTimelinessAlertRequest(v CreateDagTimelinessAlertRequest) error {
-	v.Type = "CreateDagTimelinessAlertRequest"
+	v.Type = "DAG_TIMELINESS"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4853,7 +4853,7 @@ func (t *CreateAlertRequest) FromCreateDagTimelinessAlertRequest(v CreateDagTime
 
 // MergeCreateDagTimelinessAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateDagTimelinessAlertRequest
 func (t *CreateAlertRequest) MergeCreateDagTimelinessAlertRequest(v CreateDagTimelinessAlertRequest) error {
-	v.Type = "CreateDagTimelinessAlertRequest"
+	v.Type = "DAG_TIMELINESS"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4873,7 +4873,7 @@ func (t CreateAlertRequest) AsCreateTaskDurationAlertRequest() (CreateTaskDurati
 
 // FromCreateTaskDurationAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateTaskDurationAlertRequest
 func (t *CreateAlertRequest) FromCreateTaskDurationAlertRequest(v CreateTaskDurationAlertRequest) error {
-	v.Type = "CreateTaskDurationAlertRequest"
+	v.Type = "TASK_DURATION"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4881,7 +4881,7 @@ func (t *CreateAlertRequest) FromCreateTaskDurationAlertRequest(v CreateTaskDura
 
 // MergeCreateTaskDurationAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateTaskDurationAlertRequest
 func (t *CreateAlertRequest) MergeCreateTaskDurationAlertRequest(v CreateTaskDurationAlertRequest) error {
-	v.Type = "CreateTaskDurationAlertRequest"
+	v.Type = "TASK_DURATION"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4901,7 +4901,7 @@ func (t CreateAlertRequest) AsCreateTaskFailureAlertRequest() (CreateTaskFailure
 
 // FromCreateTaskFailureAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateTaskFailureAlertRequest
 func (t *CreateAlertRequest) FromCreateTaskFailureAlertRequest(v CreateTaskFailureAlertRequest) error {
-	v.Type = "CreateTaskFailureAlertRequest"
+	v.Type = "TASK_FAILURE"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4909,7 +4909,7 @@ func (t *CreateAlertRequest) FromCreateTaskFailureAlertRequest(v CreateTaskFailu
 
 // MergeCreateTaskFailureAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateTaskFailureAlertRequest
 func (t *CreateAlertRequest) MergeCreateTaskFailureAlertRequest(v CreateTaskFailureAlertRequest) error {
-	v.Type = "CreateTaskFailureAlertRequest"
+	v.Type = "TASK_FAILURE"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4934,17 +4934,17 @@ func (t CreateAlertRequest) ValueByDiscriminator() (interface{}, error) {
 		return nil, err
 	}
 	switch discriminator {
-	case "CreateDagDurationAlertRequest":
+	case "DAG_DURATION":
 		return t.AsCreateDagDurationAlertRequest()
-	case "CreateDagFailureAlertRequest":
+	case "DAG_FAILURE":
 		return t.AsCreateDagFailureAlertRequest()
-	case "CreateDagSuccessAlertRequest":
+	case "DAG_SUCCESS":
 		return t.AsCreateDagSuccessAlertRequest()
-	case "CreateDagTimelinessAlertRequest":
+	case "DAG_TIMELINESS":
 		return t.AsCreateDagTimelinessAlertRequest()
-	case "CreateTaskDurationAlertRequest":
+	case "TASK_DURATION":
 		return t.AsCreateTaskDurationAlertRequest()
-	case "CreateTaskFailureAlertRequest":
+	case "TASK_FAILURE":
 		return t.AsCreateTaskFailureAlertRequest()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
@@ -5208,7 +5208,7 @@ func (t CreateNotificationChannelRequest) AsCreateDagTriggerNotificationChannelR
 
 // FromCreateDagTriggerNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreateDagTriggerNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) FromCreateDagTriggerNotificationChannelRequest(v CreateDagTriggerNotificationChannelRequest) error {
-	v.Type = "CreateDagTriggerNotificationChannelRequest"
+	v.Type = "DAG_TRIGGER"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5216,7 +5216,7 @@ func (t *CreateNotificationChannelRequest) FromCreateDagTriggerNotificationChann
 
 // MergeCreateDagTriggerNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateDagTriggerNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreateDagTriggerNotificationChannelRequest(v CreateDagTriggerNotificationChannelRequest) error {
-	v.Type = "CreateDagTriggerNotificationChannelRequest"
+	v.Type = "DAG_TRIGGER"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5236,7 +5236,7 @@ func (t CreateNotificationChannelRequest) AsCreateEmailNotificationChannelReques
 
 // FromCreateEmailNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreateEmailNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) FromCreateEmailNotificationChannelRequest(v CreateEmailNotificationChannelRequest) error {
-	v.Type = "CreateEmailNotificationChannelRequest"
+	v.Type = "EMAIL"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5244,7 +5244,7 @@ func (t *CreateNotificationChannelRequest) FromCreateEmailNotificationChannelReq
 
 // MergeCreateEmailNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateEmailNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreateEmailNotificationChannelRequest(v CreateEmailNotificationChannelRequest) error {
-	v.Type = "CreateEmailNotificationChannelRequest"
+	v.Type = "EMAIL"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5264,7 +5264,7 @@ func (t CreateNotificationChannelRequest) AsCreateOpsgenieNotificationChannelReq
 
 // FromCreateOpsgenieNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreateOpsgenieNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) FromCreateOpsgenieNotificationChannelRequest(v CreateOpsgenieNotificationChannelRequest) error {
-	v.Type = "CreateOpsgenieNotificationChannelRequest"
+	v.Type = "OPSGENIE"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5272,7 +5272,7 @@ func (t *CreateNotificationChannelRequest) FromCreateOpsgenieNotificationChannel
 
 // MergeCreateOpsgenieNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateOpsgenieNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreateOpsgenieNotificationChannelRequest(v CreateOpsgenieNotificationChannelRequest) error {
-	v.Type = "CreateOpsgenieNotificationChannelRequest"
+	v.Type = "OPSGENIE"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5292,7 +5292,7 @@ func (t CreateNotificationChannelRequest) AsCreatePagerDutyNotificationChannelRe
 
 // FromCreatePagerDutyNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreatePagerDutyNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) FromCreatePagerDutyNotificationChannelRequest(v CreatePagerDutyNotificationChannelRequest) error {
-	v.Type = "CreatePagerDutyNotificationChannelRequest"
+	v.Type = "PAGERDUTY"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5300,7 +5300,7 @@ func (t *CreateNotificationChannelRequest) FromCreatePagerDutyNotificationChanne
 
 // MergeCreatePagerDutyNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreatePagerDutyNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreatePagerDutyNotificationChannelRequest(v CreatePagerDutyNotificationChannelRequest) error {
-	v.Type = "CreatePagerDutyNotificationChannelRequest"
+	v.Type = "PAGERDUTY"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5320,7 +5320,7 @@ func (t CreateNotificationChannelRequest) AsCreateSlackNotificationChannelReques
 
 // FromCreateSlackNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreateSlackNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) FromCreateSlackNotificationChannelRequest(v CreateSlackNotificationChannelRequest) error {
-	v.Type = "CreateSlackNotificationChannelRequest"
+	v.Type = "SLACK"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5328,7 +5328,7 @@ func (t *CreateNotificationChannelRequest) FromCreateSlackNotificationChannelReq
 
 // MergeCreateSlackNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateSlackNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreateSlackNotificationChannelRequest(v CreateSlackNotificationChannelRequest) error {
-	v.Type = "CreateSlackNotificationChannelRequest"
+	v.Type = "SLACK"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5353,15 +5353,15 @@ func (t CreateNotificationChannelRequest) ValueByDiscriminator() (interface{}, e
 		return nil, err
 	}
 	switch discriminator {
-	case "CreateDagTriggerNotificationChannelRequest":
+	case "DAG_TRIGGER":
 		return t.AsCreateDagTriggerNotificationChannelRequest()
-	case "CreateEmailNotificationChannelRequest":
+	case "EMAIL":
 		return t.AsCreateEmailNotificationChannelRequest()
-	case "CreateOpsgenieNotificationChannelRequest":
+	case "OPSGENIE":
 		return t.AsCreateOpsgenieNotificationChannelRequest()
-	case "CreatePagerDutyNotificationChannelRequest":
+	case "PAGERDUTY":
 		return t.AsCreatePagerDutyNotificationChannelRequest()
-	case "CreateSlackNotificationChannelRequest":
+	case "SLACK":
 		return t.AsCreateSlackNotificationChannelRequest()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
@@ -5387,7 +5387,7 @@ func (t UpdateAlertRequest) AsUpdateDagDurationAlertRequest() (UpdateDagDuration
 
 // FromUpdateDagDurationAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateDagDurationAlertRequest
 func (t *UpdateAlertRequest) FromUpdateDagDurationAlertRequest(v UpdateDagDurationAlertRequest) error {
-	v.Type = "UpdateDagDurationAlertRequest"
+	v.Type = "DAG_DURATION"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5395,7 +5395,7 @@ func (t *UpdateAlertRequest) FromUpdateDagDurationAlertRequest(v UpdateDagDurati
 
 // MergeUpdateDagDurationAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateDagDurationAlertRequest
 func (t *UpdateAlertRequest) MergeUpdateDagDurationAlertRequest(v UpdateDagDurationAlertRequest) error {
-	v.Type = "UpdateDagDurationAlertRequest"
+	v.Type = "DAG_DURATION"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5415,7 +5415,7 @@ func (t UpdateAlertRequest) AsUpdateDagFailureAlertRequest() (UpdateDagFailureAl
 
 // FromUpdateDagFailureAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateDagFailureAlertRequest
 func (t *UpdateAlertRequest) FromUpdateDagFailureAlertRequest(v UpdateDagFailureAlertRequest) error {
-	v.Type = "UpdateDagFailureAlertRequest"
+	v.Type = "DAG_FAILURE"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5423,7 +5423,7 @@ func (t *UpdateAlertRequest) FromUpdateDagFailureAlertRequest(v UpdateDagFailure
 
 // MergeUpdateDagFailureAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateDagFailureAlertRequest
 func (t *UpdateAlertRequest) MergeUpdateDagFailureAlertRequest(v UpdateDagFailureAlertRequest) error {
-	v.Type = "UpdateDagFailureAlertRequest"
+	v.Type = "DAG_FAILURE"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5443,7 +5443,7 @@ func (t UpdateAlertRequest) AsUpdateDagSuccessAlertRequest() (UpdateDagSuccessAl
 
 // FromUpdateDagSuccessAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateDagSuccessAlertRequest
 func (t *UpdateAlertRequest) FromUpdateDagSuccessAlertRequest(v UpdateDagSuccessAlertRequest) error {
-	v.Type = "UpdateDagSuccessAlertRequest"
+	v.Type = "DAG_SUCCESS"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5451,7 +5451,7 @@ func (t *UpdateAlertRequest) FromUpdateDagSuccessAlertRequest(v UpdateDagSuccess
 
 // MergeUpdateDagSuccessAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateDagSuccessAlertRequest
 func (t *UpdateAlertRequest) MergeUpdateDagSuccessAlertRequest(v UpdateDagSuccessAlertRequest) error {
-	v.Type = "UpdateDagSuccessAlertRequest"
+	v.Type = "DAG_SUCCESS"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5471,7 +5471,7 @@ func (t UpdateAlertRequest) AsUpdateDagTimelinessAlertRequest() (UpdateDagTimeli
 
 // FromUpdateDagTimelinessAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateDagTimelinessAlertRequest
 func (t *UpdateAlertRequest) FromUpdateDagTimelinessAlertRequest(v UpdateDagTimelinessAlertRequest) error {
-	v.Type = "UpdateDagTimelinessAlertRequest"
+	v.Type = "DAG_TIMELINESS"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5479,7 +5479,7 @@ func (t *UpdateAlertRequest) FromUpdateDagTimelinessAlertRequest(v UpdateDagTime
 
 // MergeUpdateDagTimelinessAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateDagTimelinessAlertRequest
 func (t *UpdateAlertRequest) MergeUpdateDagTimelinessAlertRequest(v UpdateDagTimelinessAlertRequest) error {
-	v.Type = "UpdateDagTimelinessAlertRequest"
+	v.Type = "DAG_TIMELINESS"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5499,7 +5499,7 @@ func (t UpdateAlertRequest) AsUpdateTaskDurationAlertRequest() (UpdateTaskDurati
 
 // FromUpdateTaskDurationAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateTaskDurationAlertRequest
 func (t *UpdateAlertRequest) FromUpdateTaskDurationAlertRequest(v UpdateTaskDurationAlertRequest) error {
-	v.Type = "UpdateTaskDurationAlertRequest"
+	v.Type = "TASK_DURATION"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5507,7 +5507,7 @@ func (t *UpdateAlertRequest) FromUpdateTaskDurationAlertRequest(v UpdateTaskDura
 
 // MergeUpdateTaskDurationAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateTaskDurationAlertRequest
 func (t *UpdateAlertRequest) MergeUpdateTaskDurationAlertRequest(v UpdateTaskDurationAlertRequest) error {
-	v.Type = "UpdateTaskDurationAlertRequest"
+	v.Type = "TASK_DURATION"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5527,7 +5527,7 @@ func (t UpdateAlertRequest) AsUpdateTaskFailureAlertRequest() (UpdateTaskFailure
 
 // FromUpdateTaskFailureAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateTaskFailureAlertRequest
 func (t *UpdateAlertRequest) FromUpdateTaskFailureAlertRequest(v UpdateTaskFailureAlertRequest) error {
-	v.Type = "UpdateTaskFailureAlertRequest"
+	v.Type = "TASK_FAILURE"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5535,7 +5535,7 @@ func (t *UpdateAlertRequest) FromUpdateTaskFailureAlertRequest(v UpdateTaskFailu
 
 // MergeUpdateTaskFailureAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateTaskFailureAlertRequest
 func (t *UpdateAlertRequest) MergeUpdateTaskFailureAlertRequest(v UpdateTaskFailureAlertRequest) error {
-	v.Type = "UpdateTaskFailureAlertRequest"
+	v.Type = "TASK_FAILURE"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5560,17 +5560,17 @@ func (t UpdateAlertRequest) ValueByDiscriminator() (interface{}, error) {
 		return nil, err
 	}
 	switch discriminator {
-	case "UpdateDagDurationAlertRequest":
+	case "DAG_DURATION":
 		return t.AsUpdateDagDurationAlertRequest()
-	case "UpdateDagFailureAlertRequest":
+	case "DAG_FAILURE":
 		return t.AsUpdateDagFailureAlertRequest()
-	case "UpdateDagSuccessAlertRequest":
+	case "DAG_SUCCESS":
 		return t.AsUpdateDagSuccessAlertRequest()
-	case "UpdateDagTimelinessAlertRequest":
+	case "DAG_TIMELINESS":
 		return t.AsUpdateDagTimelinessAlertRequest()
-	case "UpdateTaskDurationAlertRequest":
+	case "TASK_DURATION":
 		return t.AsUpdateTaskDurationAlertRequest()
-	case "UpdateTaskFailureAlertRequest":
+	case "TASK_FAILURE":
 		return t.AsUpdateTaskFailureAlertRequest()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
@@ -5804,7 +5804,7 @@ func (t UpdateNotificationChannelRequest) AsUpdateDagTriggerNotificationChannelR
 
 // FromUpdateDagTriggerNotificationChannelRequest overwrites any union data inside the UpdateNotificationChannelRequest as the provided UpdateDagTriggerNotificationChannelRequest
 func (t *UpdateNotificationChannelRequest) FromUpdateDagTriggerNotificationChannelRequest(v UpdateDagTriggerNotificationChannelRequest) error {
-	v.Type = "UpdateDagTriggerNotificationChannelRequest"
+	v.Type = "DAG_TRIGGER"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5812,7 +5812,7 @@ func (t *UpdateNotificationChannelRequest) FromUpdateDagTriggerNotificationChann
 
 // MergeUpdateDagTriggerNotificationChannelRequest performs a merge with any union data inside the UpdateNotificationChannelRequest, using the provided UpdateDagTriggerNotificationChannelRequest
 func (t *UpdateNotificationChannelRequest) MergeUpdateDagTriggerNotificationChannelRequest(v UpdateDagTriggerNotificationChannelRequest) error {
-	v.Type = "UpdateDagTriggerNotificationChannelRequest"
+	v.Type = "DAG_TRIGGER"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5832,7 +5832,7 @@ func (t UpdateNotificationChannelRequest) AsUpdateEmailNotificationChannelReques
 
 // FromUpdateEmailNotificationChannelRequest overwrites any union data inside the UpdateNotificationChannelRequest as the provided UpdateEmailNotificationChannelRequest
 func (t *UpdateNotificationChannelRequest) FromUpdateEmailNotificationChannelRequest(v UpdateEmailNotificationChannelRequest) error {
-	v.Type = "UpdateEmailNotificationChannelRequest"
+	v.Type = "EMAIL"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5840,7 +5840,7 @@ func (t *UpdateNotificationChannelRequest) FromUpdateEmailNotificationChannelReq
 
 // MergeUpdateEmailNotificationChannelRequest performs a merge with any union data inside the UpdateNotificationChannelRequest, using the provided UpdateEmailNotificationChannelRequest
 func (t *UpdateNotificationChannelRequest) MergeUpdateEmailNotificationChannelRequest(v UpdateEmailNotificationChannelRequest) error {
-	v.Type = "UpdateEmailNotificationChannelRequest"
+	v.Type = "EMAIL"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5860,7 +5860,7 @@ func (t UpdateNotificationChannelRequest) AsUpdateOpsgenieNotificationChannelReq
 
 // FromUpdateOpsgenieNotificationChannelRequest overwrites any union data inside the UpdateNotificationChannelRequest as the provided UpdateOpsgenieNotificationChannelRequest
 func (t *UpdateNotificationChannelRequest) FromUpdateOpsgenieNotificationChannelRequest(v UpdateOpsgenieNotificationChannelRequest) error {
-	v.Type = "UpdateOpsgenieNotificationChannelRequest"
+	v.Type = "OPSGENIE"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5868,7 +5868,7 @@ func (t *UpdateNotificationChannelRequest) FromUpdateOpsgenieNotificationChannel
 
 // MergeUpdateOpsgenieNotificationChannelRequest performs a merge with any union data inside the UpdateNotificationChannelRequest, using the provided UpdateOpsgenieNotificationChannelRequest
 func (t *UpdateNotificationChannelRequest) MergeUpdateOpsgenieNotificationChannelRequest(v UpdateOpsgenieNotificationChannelRequest) error {
-	v.Type = "UpdateOpsgenieNotificationChannelRequest"
+	v.Type = "OPSGENIE"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5888,7 +5888,7 @@ func (t UpdateNotificationChannelRequest) AsUpdatePagerDutyNotificationChannelRe
 
 // FromUpdatePagerDutyNotificationChannelRequest overwrites any union data inside the UpdateNotificationChannelRequest as the provided UpdatePagerDutyNotificationChannelRequest
 func (t *UpdateNotificationChannelRequest) FromUpdatePagerDutyNotificationChannelRequest(v UpdatePagerDutyNotificationChannelRequest) error {
-	v.Type = "UpdatePagerDutyNotificationChannelRequest"
+	v.Type = "PAGERDUTY"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5896,7 +5896,7 @@ func (t *UpdateNotificationChannelRequest) FromUpdatePagerDutyNotificationChanne
 
 // MergeUpdatePagerDutyNotificationChannelRequest performs a merge with any union data inside the UpdateNotificationChannelRequest, using the provided UpdatePagerDutyNotificationChannelRequest
 func (t *UpdateNotificationChannelRequest) MergeUpdatePagerDutyNotificationChannelRequest(v UpdatePagerDutyNotificationChannelRequest) error {
-	v.Type = "UpdatePagerDutyNotificationChannelRequest"
+	v.Type = "PAGERDUTY"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5916,7 +5916,7 @@ func (t UpdateNotificationChannelRequest) AsUpdateSlackNotificationChannelReques
 
 // FromUpdateSlackNotificationChannelRequest overwrites any union data inside the UpdateNotificationChannelRequest as the provided UpdateSlackNotificationChannelRequest
 func (t *UpdateNotificationChannelRequest) FromUpdateSlackNotificationChannelRequest(v UpdateSlackNotificationChannelRequest) error {
-	v.Type = "UpdateSlackNotificationChannelRequest"
+	v.Type = "SLACK"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5924,7 +5924,7 @@ func (t *UpdateNotificationChannelRequest) FromUpdateSlackNotificationChannelReq
 
 // MergeUpdateSlackNotificationChannelRequest performs a merge with any union data inside the UpdateNotificationChannelRequest, using the provided UpdateSlackNotificationChannelRequest
 func (t *UpdateNotificationChannelRequest) MergeUpdateSlackNotificationChannelRequest(v UpdateSlackNotificationChannelRequest) error {
-	v.Type = "UpdateSlackNotificationChannelRequest"
+	v.Type = "SLACK"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5949,15 +5949,15 @@ func (t UpdateNotificationChannelRequest) ValueByDiscriminator() (interface{}, e
 		return nil, err
 	}
 	switch discriminator {
-	case "UpdateDagTriggerNotificationChannelRequest":
+	case "DAG_TRIGGER":
 		return t.AsUpdateDagTriggerNotificationChannelRequest()
-	case "UpdateEmailNotificationChannelRequest":
+	case "EMAIL":
 		return t.AsUpdateEmailNotificationChannelRequest()
-	case "UpdateOpsgenieNotificationChannelRequest":
+	case "OPSGENIE":
 		return t.AsUpdateOpsgenieNotificationChannelRequest()
-	case "UpdatePagerDutyNotificationChannelRequest":
+	case "PAGERDUTY":
 		return t.AsUpdatePagerDutyNotificationChannelRequest()
-	case "UpdateSlackNotificationChannelRequest":
+	case "SLACK":
 		return t.AsUpdateSlackNotificationChannelRequest()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
