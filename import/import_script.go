@@ -612,7 +612,6 @@ func handleAgentTokens(ctx context.Context, platformClient *platform.ClientWithR
 		}
 	}
 
-	//
 	if len(remoteExecutionDeploymentIds) == 0 {
 		log.Printf("No Remote Execution deployments found for organization %s, skipping agent tokens import", organizationId)
 		return "", nil
@@ -620,7 +619,7 @@ func handleAgentTokens(ctx context.Context, platformClient *platform.ClientWithR
 
 	agentTokenIds := map[string]string{}
 	for _, deploymentId := range remoteExecutionDeploymentIds {
-		// Fetch Agent tokens
+		// Fetch Agent tokens for each deployment using remote execution, since agent tokens are a sub-resource of a deployment
 		agentTokensResp, err := iamClient.ListAgentTokensWithResponse(ctx, organizationId, deploymentId, nil)
 		if err != nil {
 			return "", fmt.Errorf("failed to list API tokens: %v", err)
