@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -192,7 +192,7 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 			Optional:            true,
 			Computed:            true,
 			PlanModifiers: []planmodifier.Bool{
-				boolplanmodifier.UseStateForUnknown(),
+				nullWhenDrDisabledBoolPlanModifier{},
 			},
 		},
 		"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
@@ -571,4 +571,43 @@ func ClusterHealthStatusDetailDataSourceAttributes() map[string]datasourceSchema
 			Computed:            true,
 		},
 	}
+}
+
+// nullWhenDrDisabledBoolPlanModifier sets the planned value to null when is_dr_enabled
+// is planned as false, and uses the state value when the config value is unknown
+// (like UseStateForUnknown but DR-aware).
+type nullWhenDrDisabledBoolPlanModifier struct{}
+
+func (m nullWhenDrDisabledBoolPlanModifier) Description(_ context.Context) string {
+	return "Sets value to null when DR is disabled, otherwise uses state for unknown."
+}
+
+func (m nullWhenDrDisabledBoolPlanModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (m nullWhenDrDisabledBoolPlanModifier) PlanModifyBool(ctx context.Context, req planmodifier.BoolRequest, resp *planmodifier.BoolResponse) {
+	// Check if is_dr_enabled is being set to false in the plan
+	var isDrEnabled types.Bool
+	diags := req.Plan.GetAttribute(ctx, path.Root("is_dr_enabled"), &isDrEnabled)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// If DR is being disabled, plan this attribute as null
+	if !isDrEnabled.IsNull() && !isDrEnabled.IsUnknown() && !isDrEnabled.ValueBool() {
+		resp.PlanValue = types.BoolNull()
+		return
+	}
+
+	// Otherwise, behave like UseStateForUnknown
+	// Handle both unknown (computed) and null (not set in config) config values
+	if !req.ConfigValue.IsUnknown() && !req.ConfigValue.IsNull() {
+		return
+	}
+	if req.State.Raw.IsNull() {
+		return
+	}
+	resp.PlanValue = req.StateValue
 }

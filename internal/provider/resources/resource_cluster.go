@@ -319,12 +319,12 @@ func (r *ClusterResource) Update(
 		WorkspaceIds: nil,
 	}
 	// Set EnableDr to false if the user explicitly set is_dr_enabled to false
-	if !data.IsDrEnabled.IsNull() && !data.IsDrEnabled.ValueBool() {
+	if !data.IsDrEnabled.IsNull() && !data.IsDrEnabled.IsUnknown() && !data.IsDrEnabled.ValueBool() {
 		enableDr := false
 		updateDedicatedClusterRequest.EnableDr = &enableDr
 	}
-	// Set IsFailedOver if specified
-	if !data.IsFailedOver.IsNull() {
+	// Set IsFailedOver if specified (must be an explicit value, not null or unknown)
+	if !data.IsFailedOver.IsNull() && !data.IsFailedOver.IsUnknown() {
 		updateDedicatedClusterRequest.IsFailedOver = data.IsFailedOver.ValueBoolPointer()
 	}
 
