@@ -16,7 +16,7 @@ import (
 
 func TestAcc_ResourceAgentToken(t *testing.T) {
 	namePrefix := utils.GenerateTestResourceName(10)
-	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
+	deploymentId := os.Getenv("REMOTE_EXECUTION_DEPLOYMENT_ID")
 
 	tokenName := fmt.Sprintf("%v_agent", namePrefix)
 	resourceVar := fmt.Sprintf("astro_agent_token.%v", tokenName)
@@ -73,7 +73,7 @@ func TestAcc_ResourceAgentToken(t *testing.T) {
 
 func TestAcc_ResourceAgentTokenNoExpiry(t *testing.T) {
 	namePrefix := utils.GenerateTestResourceName(10)
-	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
+	deploymentId := os.Getenv("REMOTE_EXECUTION_DEPLOYMENT_ID")
 
 	tokenName := fmt.Sprintf("%v_agent_no_expiry", namePrefix)
 	resourceVar := fmt.Sprintf("astro_agent_token.%v", tokenName)
