@@ -46,7 +46,13 @@ func ClustersElementAttributeTypes() map[string]attr.Type {
 				AttrTypes: ClusterTagAttributeTypes(),
 			},
 		},
-		"is_limited": types.BoolType,
+		"is_limited":                      types.BoolType,
+		"is_dr_enabled":                   types.BoolType,
+		"dr_region":                       types.StringType,
+		"dr_vpc_subnet_range":             types.StringType,
+		"dr_secondary_vpc_cidr":           types.StringType,
+		"enable_replication_time_control": types.BoolType,
+		"is_failed_over":                  types.BoolType,
 	}
 }
 

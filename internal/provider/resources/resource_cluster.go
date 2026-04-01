@@ -94,13 +94,17 @@ func (r *ClusterResource) Create(
 	switch platform.ClusterCloudProvider(data.CloudProvider.ValueString()) {
 	case platform.ClusterCloudProviderAWS:
 		createAwsDedicatedClusterRequest := platform.CreateAwsClusterRequest{
-			CloudProvider:   platform.CreateAwsClusterRequestCloudProvider(data.CloudProvider.ValueString()),
-			Name:            data.Name.ValueString(),
-			NodePools:       nil,
-			ProviderAccount: data.ProviderAccount.ValueStringPointer(),
-			Region:          data.Region.ValueString(),
-			Type:            platform.CreateAwsClusterRequestType(data.Type.ValueString()),
-			VpcSubnetRange:  data.VpcSubnetRange.ValueString(),
+			CloudProvider:                platform.CreateAwsClusterRequestCloudProvider(data.CloudProvider.ValueString()),
+			Name:                         data.Name.ValueString(),
+			NodePools:                    nil,
+			ProviderAccount:              data.ProviderAccount.ValueStringPointer(),
+			Region:                       data.Region.ValueString(),
+			Type:                         platform.CreateAwsClusterRequestType(data.Type.ValueString()),
+			VpcSubnetRange:               data.VpcSubnetRange.ValueString(),
+			DrRegion:                     data.DrRegion.ValueStringPointer(),
+			DrVpcSubnetRange:             data.DrVpcSubnetRange.ValueStringPointer(),
+			DrSecondaryVpcCidr:           data.DrSecondaryVpcCidr.ValueStringPointer(),
+			EnableReplicationTimeControl: data.EnableReplicationTimeControl.ValueBoolPointer(),
 		}
 
 		// workspaceIds
@@ -212,8 +216,8 @@ func (r *ClusterResource) Create(
 
 	// Wait for the cluster to be created (or fail)
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING), string(platform.ClusterStatusUPGRADEPENDING)},
-		Target:     []string{string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED), string(platform.ClusterStatusACCESSDENIED)},
+		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING), string(platform.ClusterStatusUPGRADEPENDING), string(platform.ClusterStatusFAILINGOVER)},
+		Target:     []string{string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED), string(platform.ClusterStatusACCESSDENIED), string(platform.ClusterStatusFAILOVERFAILED)},
 		Refresh:    ClusterResourceRefreshFunc(ctx, r.platformClient, r.organizationId, cluster.JSON200.Id),
 		Timeout:    3 * time.Hour,
 		MinTimeout: 1 * time.Minute,
@@ -314,6 +318,15 @@ func (r *ClusterResource) Update(
 		NodePools:    nil,
 		WorkspaceIds: nil,
 	}
+	// Set EnableDr to false if the user explicitly set is_dr_enabled to false
+	if !data.IsDrEnabled.IsNull() && !data.IsDrEnabled.IsUnknown() && !data.IsDrEnabled.ValueBool() {
+		enableDr := false
+		updateDedicatedClusterRequest.EnableDr = &enableDr
+	}
+	// Set IsFailedOver if specified (must be an explicit value, not null or unknown)
+	if !data.IsFailedOver.IsNull() && !data.IsFailedOver.IsUnknown() {
+		updateDedicatedClusterRequest.IsFailedOver = data.IsFailedOver.ValueBoolPointer()
+	}
 
 	// workspaceIds
 	workspaceIds, diags := utils.TypesSetToStringSlice(ctx, data.WorkspaceIds)
@@ -377,8 +390,8 @@ func (r *ClusterResource) Update(
 
 	// Wait for the cluster to be updated (or fail)
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING), string(platform.ClusterStatusUPGRADEPENDING)},
-		Target:     []string{string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED), string(platform.ClusterStatusACCESSDENIED)},
+		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING), string(platform.ClusterStatusUPGRADEPENDING), string(platform.ClusterStatusFAILINGOVER)},
+		Target:     []string{string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED), string(platform.ClusterStatusACCESSDENIED), string(platform.ClusterStatusFAILOVERFAILED)},
 		Refresh:    ClusterResourceRefreshFunc(ctx, r.platformClient, r.organizationId, cluster.JSON200.Id),
 		Timeout:    3 * time.Hour,
 		MinTimeout: 1 * time.Minute,
@@ -463,7 +476,7 @@ func (r *ClusterResource) Delete(
 
 	// Wait for the cluster to be deleted
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING), string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED), string(platform.ClusterStatusUPGRADEPENDING)},
+		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING), string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED), string(platform.ClusterStatusUPGRADEPENDING), string(platform.ClusterStatusFAILINGOVER), string(platform.ClusterStatusFAILOVERFAILED)},
 		Target:     []string{"DELETED"},
 		Refresh:    ClusterResourceRefreshFunc(ctx, r.platformClient, r.organizationId, data.Id.ValueString()),
 		Timeout:    1 * time.Hour,
@@ -502,7 +515,7 @@ func (r *ClusterResource) ValidateConfig(
 	}
 
 	// Cloud provider specific validation
-	switch platform.ClusterCloudProvider(data.Type.ValueString()) {
+	switch platform.ClusterCloudProvider(data.CloudProvider.ValueString()) {
 	case platform.ClusterCloudProviderAWS:
 		resp.Diagnostics.Append(validateAwsConfig(ctx, &data)...)
 	case platform.ClusterCloudProviderAZURE:
@@ -540,6 +553,37 @@ func validateAwsConfig(ctx context.Context, data *models.ClusterResource) diag.D
 			"Please remove service_subnet_range",
 		)
 	}
+
+	// DR validation
+	if !data.IsDrEnabled.IsNull() && data.IsDrEnabled.ValueBool() {
+		if data.DrRegion.IsNull() || data.DrRegion.IsUnknown() {
+			diags.AddError(
+				"dr_region is required when is_dr_enabled is true",
+				"Please set dr_region to the secondary region for Disaster Recovery",
+			)
+		}
+	}
+	if !data.IsDrEnabled.IsNull() && !data.IsDrEnabled.ValueBool() {
+		if !data.DrVpcSubnetRange.IsNull() {
+			diags.AddError(
+				"dr_vpc_subnet_range is only valid when is_dr_enabled is true",
+				"Please remove dr_vpc_subnet_range or set is_dr_enabled to true",
+			)
+		}
+		if !data.DrSecondaryVpcCidr.IsNull() {
+			diags.AddError(
+				"dr_secondary_vpc_cidr is only valid when is_dr_enabled is true",
+				"Please remove dr_secondary_vpc_cidr or set is_dr_enabled to true",
+			)
+		}
+		if !data.EnableReplicationTimeControl.IsNull() {
+			diags.AddError(
+				"enable_replication_time_control is only valid when is_dr_enabled is true",
+				"Please remove enable_replication_time_control or set is_dr_enabled to true",
+			)
+		}
+	}
+
 	return diags
 }
 
@@ -565,6 +609,39 @@ func validateAzureConfig(ctx context.Context, data *models.ClusterResource) diag
 			"Please remove service_subnet_range",
 		)
 	}
+
+	// DR is not supported for Azure clusters
+	if !data.IsDrEnabled.IsNull() && data.IsDrEnabled.ValueBool() {
+		diags.AddError(
+			"Disaster Recovery is not supported for 'AZURE' clusters",
+			"Please remove is_dr_enabled, dr_region, dr_vpc_subnet_range, and dr_secondary_vpc_cidr",
+		)
+	}
+	if !data.DrRegion.IsNull() {
+		diags.AddError(
+			"dr_region is not allowed for 'AZURE' cluster",
+			"Please remove dr_region",
+		)
+	}
+	if !data.DrVpcSubnetRange.IsNull() {
+		diags.AddError(
+			"dr_vpc_subnet_range is not allowed for 'AZURE' cluster",
+			"Please remove dr_vpc_subnet_range",
+		)
+	}
+	if !data.DrSecondaryVpcCidr.IsNull() {
+		diags.AddError(
+			"dr_secondary_vpc_cidr is not allowed for 'AZURE' cluster",
+			"Please remove dr_secondary_vpc_cidr",
+		)
+	}
+	if !data.EnableReplicationTimeControl.IsNull() {
+		diags.AddError(
+			"enable_replication_time_control is not allowed for 'AZURE' cluster",
+			"Please remove enable_replication_time_control",
+		)
+	}
+
 	return diags
 }
 
@@ -594,9 +671,42 @@ func validateGcpConfig(ctx context.Context, data *models.ClusterResource) diag.D
 	// Unallowed values
 	if !data.TenantId.IsNull() {
 		diags.AddError(
-			"tenant_id is not allowed for 'AWS' cluster",
+			"tenant_id is not allowed for 'GCP' cluster",
 			"Please remove tenant_id",
 		)
 	}
+
+	// DR is not supported for GCP clusters
+	if !data.IsDrEnabled.IsNull() && data.IsDrEnabled.ValueBool() {
+		diags.AddError(
+			"Disaster Recovery is not supported for 'GCP' clusters",
+			"Please remove is_dr_enabled, dr_region, dr_vpc_subnet_range, and dr_secondary_vpc_cidr",
+		)
+	}
+	if !data.DrRegion.IsNull() {
+		diags.AddError(
+			"dr_region is not allowed for 'GCP' cluster",
+			"Please remove dr_region",
+		)
+	}
+	if !data.DrVpcSubnetRange.IsNull() {
+		diags.AddError(
+			"dr_vpc_subnet_range is not allowed for 'GCP' cluster",
+			"Please remove dr_vpc_subnet_range",
+		)
+	}
+	if !data.DrSecondaryVpcCidr.IsNull() {
+		diags.AddError(
+			"dr_secondary_vpc_cidr is not allowed for 'GCP' cluster",
+			"Please remove dr_secondary_vpc_cidr",
+		)
+	}
+	if !data.EnableReplicationTimeControl.IsNull() {
+		diags.AddError(
+			"enable_replication_time_control is not allowed for 'GCP' cluster",
+			"Please remove enable_replication_time_control",
+		)
+	}
+
 	return diags
 }

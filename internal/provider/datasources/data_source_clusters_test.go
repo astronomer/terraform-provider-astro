@@ -99,6 +99,12 @@ func checkClusters(tfVarName string) resource.TestCheckFunc {
 			return fmt.Errorf("expected 'node_pools.0.name' to be set")
 		}
 
+		// Check DR fields are present in the schema
+		isDrEnabled := fmt.Sprintf("clusters.%d.is_dr_enabled", clustersIdx)
+		if _, ok := instanceState.Attributes[isDrEnabled]; !ok {
+			return fmt.Errorf("expected 'is_dr_enabled' to be present")
+		}
+
 		return nil
 	}
 }

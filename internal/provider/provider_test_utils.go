@@ -80,5 +80,6 @@ provider "astro" {
 	organization_id = "%v"
 	host = "%v"
 	token = "%v"
-}`, orgId, os.Getenv("ASTRO_API_HOST"), token)
+}
+`, orgId, os.Getenv("ASTRO_API_HOST"), token)
 }

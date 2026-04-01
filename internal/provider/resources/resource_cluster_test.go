@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -91,6 +92,8 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
 					resource.TestCheckResourceAttrSet(awsResourceVar, "vpc_subnet_range"),
 					resource.TestCheckResourceAttr(awsResourceVar, "workspace_ids.#", "1"),
+					// Check DR fields are not set for non-DR cluster
+					resource.TestCheckResourceAttr(awsResourceVar, "is_dr_enabled", "false"),
 
 					// Check via API that cluster exists
 					testAccCheckClusterExistence(t, awsClusterName, true, true),
@@ -144,6 +147,8 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
 					resource.TestCheckResourceAttrSet(awsResourceVar, "vpc_subnet_range"),
 					resource.TestCheckResourceAttr(awsResourceVar, "workspace_ids.#", "0"),
+					// Check DR fields are not set for non-DR cluster
+					resource.TestCheckResourceAttr(awsResourceVar, "is_dr_enabled", "false"),
 
 					// Check via API that cluster exists
 					testAccCheckClusterExistence(t, awsClusterName, true, true),
@@ -299,6 +304,8 @@ func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(azureResourceVar, "cloud_provider", "AZURE"),
 					resource.TestCheckResourceAttrSet(azureResourceVar, "vpc_subnet_range"),
 					resource.TestCheckResourceAttr(azureResourceVar, "workspace_ids.#", "1"),
+					// Check DR fields are not set for Azure cluster
+					resource.TestCheckResourceAttr(azureResourceVar, "is_dr_enabled", "false"),
 
 					// Check via API that cluster exists
 					testAccCheckClusterExistence(t, azureClusterName, true, true),
@@ -406,6 +413,8 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttrSet(gcpResourceVar, "service_peering_range"),
 					resource.TestCheckResourceAttrSet(gcpResourceVar, "service_subnet_range"),
 					resource.TestCheckResourceAttr(gcpResourceVar, "workspace_ids.#", "1"),
+					// Check DR fields are not set for GCP cluster
+					resource.TestCheckResourceAttr(gcpResourceVar, "is_dr_enabled", "false"),
 
 					// Check via API that cluster exists
 					testAccCheckClusterExistence(t, gcpClusterName, true, true),
@@ -490,6 +499,185 @@ func TestAcc_ResourceClusterRemovedOutsideOfTerraform(t *testing.T) {
 					// Check via API that workspace exists
 					testAccCheckClusterExistence(t, clusterName, true, true),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_ResourceClusterAwsWithDr(t *testing.T) {
+	if os.Getenv(SKIP_CLUSTER_RESOURCE_TESTS) == "True" {
+		t.Skip(SKIP_CLUSTER_RESOURCE_TESTS_REASON)
+	}
+	namePrefix := utils.GenerateTestResourceName(10)
+
+	awsClusterName := fmt.Sprintf("%v_aws_dr", namePrefix)
+	awsResourceVar := fmt.Sprintf("astro_cluster.%v", awsClusterName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckClusterExistence(t, awsClusterName, true, false),
+		Steps: []resource.TestStep{
+			// Create AWS cluster with DR enabled
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					cluster(clusterInput{
+						Name:          awsClusterName,
+						Region:        "us-east-1",
+						CloudProvider: "AWS",
+						IsDrEnabled:   true,
+						DrRegion:      "us-west-2",
+					}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(awsResourceVar, "name", awsClusterName),
+					resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-1"),
+					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
+					resource.TestCheckResourceAttrSet(awsResourceVar, "vpc_subnet_range"),
+					// Check DR fields
+					resource.TestCheckResourceAttr(awsResourceVar, "is_dr_enabled", "true"),
+					resource.TestCheckResourceAttr(awsResourceVar, "dr_region", "us-west-2"),
+					resource.TestCheckResourceAttrSet(awsResourceVar, "is_failed_over"),
+
+					testAccCheckClusterExistence(t, awsClusterName, true, true),
+				),
+			},
+			// Import existing DR cluster
+			{
+				PreConfig:               func() { waitForClusterStableState(t, awsClusterName) },
+				ResourceName:            awsResourceVar,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"health_status", "health_status.value", "status"},
+			},
+		},
+	})
+}
+
+func TestAcc_ResourceClusterDrValidation(t *testing.T) {
+	if os.Getenv(SKIP_CLUSTER_RESOURCE_TESTS) == "True" {
+		t.Skip(SKIP_CLUSTER_RESOURCE_TESTS_REASON)
+	}
+	namePrefix := utils.GenerateTestResourceName(10)
+	clusterName := fmt.Sprintf("%v_dr_validate", namePrefix)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		Steps: []resource.TestStep{
+			// Test: DR enabled on AWS without dr_region should fail
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "us-east-1"
+	cloud_provider = "AWS"
+	vpc_subnet_range = "172.20.0.0/20"
+	is_dr_enabled = true
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				ExpectError: regexp.MustCompile(`dr_region is required when is_dr_enabled is true`),
+			},
+			// Test: DR enabled on Azure should fail
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "westus2"
+	cloud_provider = "AZURE"
+	vpc_subnet_range = "172.20.0.0/20"
+	is_dr_enabled = true
+	dr_region = "eastus2"
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				ExpectError: regexp.MustCompile(`Disaster Recovery is not supported for 'AZURE' clusters`),
+			},
+			// Test: DR enabled on GCP should fail
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "us-central1"
+	cloud_provider = "GCP"
+	vpc_subnet_range = "172.20.0.0/20"
+	pod_subnet_range = "172.21.0.0/19"
+	service_peering_range = "172.23.0.0/20"
+	service_subnet_range = "172.22.0.0/22"
+	is_dr_enabled = true
+	dr_region = "us-east1"
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				ExpectError: regexp.MustCompile(`Disaster Recovery is not supported for 'GCP' clusters`),
+			},
+			// Test: dr_region on Azure should fail
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "westus2"
+	cloud_provider = "AZURE"
+	vpc_subnet_range = "172.20.0.0/20"
+	dr_region = "eastus2"
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				ExpectError: regexp.MustCompile(`dr_region is not allowed for 'AZURE' cluster`),
+			},
+			// Test: dr_region on GCP should fail
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "us-central1"
+	cloud_provider = "GCP"
+	vpc_subnet_range = "172.20.0.0/20"
+	pod_subnet_range = "172.21.0.0/19"
+	service_peering_range = "172.23.0.0/20"
+	service_subnet_range = "172.22.0.0/22"
+	dr_region = "us-east1"
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				ExpectError: regexp.MustCompile(`dr_region is not allowed for 'GCP' cluster`),
+			},
+			// Test: DR sub-fields without DR enabled on AWS should fail
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "us-east-1"
+	cloud_provider = "AWS"
+	vpc_subnet_range = "172.20.0.0/20"
+	is_dr_enabled = false
+	dr_vpc_subnet_range = "172.24.0.0/20"
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				ExpectError: regexp.MustCompile(`dr_vpc_subnet_range is only valid when is_dr_enabled is true`),
+			},
+			// Test: enable_replication_time_control without DR enabled on AWS should fail
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "us-east-1"
+	cloud_provider = "AWS"
+	vpc_subnet_range = "172.20.0.0/20"
+	is_dr_enabled = false
+	enable_replication_time_control = true
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				ExpectError: regexp.MustCompile(`enable_replication_time_control is only valid when is_dr_enabled is true`),
 			},
 		},
 	})
@@ -601,6 +789,11 @@ type clusterInput struct {
 	Region                             string
 	CloudProvider                      string
 	RestrictedWorkspaceResourceVarName string
+	IsDrEnabled                        bool
+	DrRegion                           string
+	DrVpcSubnetRange                   string
+	DrSecondaryVpcCidr                 string
+	EnableReplicationTimeControl       bool
 }
 
 func cluster(input clusterInput) string {
@@ -615,6 +808,24 @@ func cluster(input clusterInput) string {
 	service_peering_range = "172.23.0.0/20"
 	service_subnet_range =  "172.22.0.0/22"`
 	}
+	drFields := ""
+	if input.IsDrEnabled {
+		drFields = fmt.Sprintf(`
+	is_dr_enabled = true
+	dr_region = "%v"`, input.DrRegion)
+		if input.DrVpcSubnetRange != "" {
+			drFields += fmt.Sprintf(`
+	dr_vpc_subnet_range = "%v"`, input.DrVpcSubnetRange)
+		}
+		if input.DrSecondaryVpcCidr != "" {
+			drFields += fmt.Sprintf(`
+	dr_secondary_vpc_cidr = "%v"`, input.DrSecondaryVpcCidr)
+		}
+		if input.EnableReplicationTimeControl {
+			drFields += `
+	enable_replication_time_control = true`
+		}
+	}
 	return fmt.Sprintf(`resource "astro_cluster" "%v" {
 	name = "%s"
 	type = "DEDICATED"
@@ -622,9 +833,10 @@ func cluster(input clusterInput) string {
 	cloud_provider = "%v"
 	vpc_subnet_range = "172.20.0.0/20"
 	%v
+	%v
 	workspace_ids = [%v]
 }
-`, input.Name, input.Name, input.Region, input.CloudProvider, gcpNetworkFields, workspaceId)
+`, input.Name, input.Name, input.Region, input.CloudProvider, gcpNetworkFields, drFields, workspaceId)
 }
 
 func clusterWithVariableName(input clusterInput) string {
