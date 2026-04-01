@@ -308,6 +308,18 @@ func ClusterDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 			MarkdownDescription: "The secondary region for Disaster Recovery",
 			Computed:            true,
 		},
+		"dr_vpc_subnet_range": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The VPC subnet range for the Disaster Recovery region",
+			Computed:            true,
+		},
+		"dr_secondary_vpc_cidr": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Secondary CIDR for pod networking in the DR region (AWS only)",
+			Computed:            true,
+		},
+		"enable_replication_time_control": datasourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether S3 Replication Time Control is enabled for Disaster Recovery (AWS only)",
+			Computed:            true,
+		},
 		"is_failed_over": datasourceSchema.BoolAttribute{
 			MarkdownDescription: "Whether the cluster is currently failed over to the DR region",
 			Computed:            true,

@@ -66,9 +66,12 @@ type ClusterDataSource struct {
 	WorkspaceIds        types.Set    `tfsdk:"workspace_ids"`
 	Tags                types.Set    `tfsdk:"tags"`
 	IsLimited           types.Bool   `tfsdk:"is_limited"`
-	IsDrEnabled         types.Bool   `tfsdk:"is_dr_enabled"`
-	DrRegion            types.String `tfsdk:"dr_region"`
-	IsFailedOver        types.Bool   `tfsdk:"is_failed_over"`
+	IsDrEnabled                  types.Bool   `tfsdk:"is_dr_enabled"`
+	DrRegion                     types.String `tfsdk:"dr_region"`
+	DrVpcSubnetRange             types.String `tfsdk:"dr_vpc_subnet_range"`
+	DrSecondaryVpcCidr           types.String `tfsdk:"dr_secondary_vpc_cidr"`
+	EnableReplicationTimeControl types.Bool   `tfsdk:"enable_replication_time_control"`
+	IsFailedOver                 types.Bool   `tfsdk:"is_failed_over"`
 }
 
 type ClusterTag struct {
@@ -217,10 +220,16 @@ func (data *ClusterDataSource) ReadFromResponse(
 			data.DrRegion = types.StringNull()
 		}
 		data.IsFailedOver = types.BoolPointerValue(cluster.IsFailedOver)
+		data.DrVpcSubnetRange = types.StringPointerValue(cluster.DrVpcSubnetRange)
+		data.DrSecondaryVpcCidr = types.StringPointerValue(cluster.DrSecondaryVpcCidr)
+		data.EnableReplicationTimeControl = types.BoolPointerValue(cluster.EnableReplicationTimeControl)
 	} else {
 		data.IsDrEnabled = types.BoolValue(false)
 		data.DrRegion = types.StringNull()
 		data.IsFailedOver = types.BoolNull()
+		data.DrVpcSubnetRange = types.StringNull()
+		data.DrSecondaryVpcCidr = types.StringNull()
+		data.EnableReplicationTimeControl = types.BoolNull()
 	}
 
 	return nil
