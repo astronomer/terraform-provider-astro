@@ -57,7 +57,7 @@ func main() {
 
 	// validate the resources argument
 	resources := strings.Split(strings.ToLower(*resourcesPtr), ",")
-	acceptedResources := []string{"workspace", "deployment", "cluster", "api_token", "team", "team_roles", "user_roles", "alert", "notification_channel"}
+	acceptedResources := []string{"workspace", "deployment", "cluster", "api_token", "agent_token", "team", "team_roles", "user_roles", "alert", "notification_channel"}
 	for _, resource := range resources {
 		if !lo.Contains(acceptedResources, resource) {
 			log.Fatalf("Invalid resource: %s is not accepted. The only accepted resources are %s", resource, acceptedResources)
@@ -143,6 +143,7 @@ provider "astro" {
 		"workspace":            handleWorkspaces,
 		"deployment":           handleDeployments,
 		"cluster":              handleClusters,
+		"agent_token":          handleAgentTokens,
 		"api_token":            handleApiTokens,
 		"team":                 handleTeams,
 		"team_roles":           handleTeamRoles,
@@ -577,6 +578,88 @@ import {
 }`, apiTokenId, apiTokenId)
 
 		importString += apiTokenImportString + "\n"
+	}
+
+	return importString, nil
+}
+
+func handleAgentTokens(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
+	log.Printf("Importing Agent tokens for organization %s", organizationId)
+
+	// First, list deployments in the organization configured with Remote Execution, if any, then, import the agent tokens
+	deploymentsResp, err := platformClient.ListDeploymentsWithResponse(ctx, organizationId, &platform.ListDeploymentsParams{Limit: lo.ToPtr(1000)})
+	if err != nil {
+		return "", fmt.Errorf("failed to list deployments: %v", err)
+	}
+
+	if deploymentsResp.StatusCode() != http.StatusOK {
+		return "", fmt.Errorf("unexpected status code: %d, body: %s", deploymentsResp.StatusCode(), string(deploymentsResp.Body))
+	}
+
+	if deploymentsResp.JSON200 == nil {
+		return "", fmt.Errorf("failed to list API tokens, JSON200 resp is nil, organizationId: %v", organizationId)
+	}
+
+	_, diagnostic := clients.NormalizeAPIError(ctx, deploymentsResp.HTTPResponse, deploymentsResp.Body)
+	if diagnostic != nil {
+		log.Printf("API Error diagnostic: %+v", diagnostic)
+	}
+
+	remoteExecutionDeploymentIds := []string{}
+	for _, deployment := range deploymentsResp.JSON200.Deployments {
+		if deployment.RemoteExecution != nil && deployment.RemoteExecution.Enabled == true {
+			remoteExecutionDeploymentIds = append(remoteExecutionDeploymentIds, deployment.Id)
+		}
+	}
+
+	if len(remoteExecutionDeploymentIds) == 0 {
+		log.Printf("No Remote Execution deployments found for organization %s, skipping agent tokens import", organizationId)
+		return "", nil
+	}
+
+	agentTokenIds := map[string]string{}
+	for _, deploymentId := range remoteExecutionDeploymentIds {
+		// Fetch Agent tokens for each deployment using remote execution, since agent tokens are a sub-resource of a deployment
+		agentTokensResp, err := iamClient.ListAgentTokensWithResponse(ctx, organizationId, deploymentId, nil)
+		if err != nil {
+			return "", fmt.Errorf("failed to list API tokens: %v", err)
+		}
+
+		if agentTokensResp.StatusCode() != http.StatusOK {
+			return "", fmt.Errorf("unexpected status code: %d, body: %s", agentTokensResp.StatusCode(), string(agentTokensResp.Body))
+		}
+
+		if agentTokensResp.JSON200 == nil {
+			return "", fmt.Errorf("failed to list API tokens, JSON200 resp is nil, organizationId: %v", organizationId)
+		}
+
+		_, diagnostic := clients.NormalizeAPIError(ctx, agentTokensResp.HTTPResponse, agentTokensResp.Body)
+		if diagnostic != nil {
+			log.Printf("API Error diagnostic: %+v", diagnostic)
+		}
+
+		agentTokens := agentTokensResp.JSON200.Tokens
+		if agentTokens == nil {
+			return "", fmt.Errorf("API tokens list is nil")
+		}
+
+		lo.ForEach(agentTokens, func(agentToken iam.ApiToken, _ int) {
+			// Since agent token is a sub-resource of a deployment, the import needs to use a composite key like "$deployment_id/$agent_token_id"
+			agentTokenIds[agentToken.Id] = fmt.Sprintf("%s/%s", deploymentId, agentToken.Id)
+		})
+	}
+
+	log.Printf("Importing Agent Tokens: %v", agentTokenIds)
+
+	var importString string
+	for agentTokenId, compositeKey := range agentTokenIds {
+		agentTokenImportString := fmt.Sprintf(`
+import {
+	id = "%v"
+	to = astro_agent_token.agent_token_%v
+}`, compositeKey, agentTokenId)
+
+		importString += agentTokenImportString + "\n"
 	}
 
 	return importString, nil
