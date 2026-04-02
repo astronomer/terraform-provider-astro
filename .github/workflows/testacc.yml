@@ -143,8 +143,8 @@ jobs:
           HOSTED_NOTIFICATION_CHANNEL_ID: cmbr12fik1m7l01gpln1bgtbb
           HOSTED_DEDICATED_CLUSTER_ID: cm73vsinm07hy01pu4dq1rei2
           HOSTED_CUSTOM_ROLE_ID: cmk64yvat027n01q7f9gn5ghg
-          REMOTE_EXECUTION_DEPLOYMENT_ID: cmng0suky152501ilj9cjlmz3
           SKIP_CLUSTER_RESOURCE_TESTS: ${{ env.SKIP_CLUSTER_RESOURCE_TESTS }}
+          REMOTE_EXECUTION_DEPLOYMENT_ID: cmng0suky152501ilj9cjlmz3
           TESTARGS: "-failfast"
         run: make testacc
 
