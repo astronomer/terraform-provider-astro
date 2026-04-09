@@ -28,6 +28,16 @@ func TestAcc_ResourceUserRoles(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					userRoles(userRolesInput{OrganizationRole: ""}),
+				ExpectError: regexp.MustCompile("Attribute organization_role value must be one of"),
+			},
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					userRoles(userRolesInput{OrganizationRole: "ORGANIZATION_NOT_A_ROLE"}),
+				ExpectError: regexp.MustCompile("Attribute organization_role value must be one of"),
+			},
 			// Test failure: check for mismatch in role and entity type
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +

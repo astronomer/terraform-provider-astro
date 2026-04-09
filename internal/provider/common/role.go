@@ -89,7 +89,13 @@ func ValidateRoleMatchesEntityType(role string, scopeType string) bool {
 		return false
 	}
 
-	organizationRoles := []string{string(iam.UserOrganizationRoleORGANIZATIONBILLINGADMIN), string(iam.UserOrganizationRoleORGANIZATIONMEMBER), string(iam.UserOrganizationRoleORGANIZATIONOWNER)}
+	organizationRoles := []string{
+		string(iam.UserOrganizationRoleORGANIZATIONBILLINGADMIN),
+		string(iam.UserOrganizationRoleORGANIZATIONMEMBER),
+		string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+		string(iam.UserOrganizationRoleORGANIZATIONOBSERVEADMIN),
+		string(iam.UserOrganizationRoleORGANIZATIONOBSERVEMEMBER),
+	}
 	workspaceRoles := []string{string(iam.WORKSPACEACCESSOR), string(iam.WORKSPACEAUTHOR), string(iam.WORKSPACEMEMBER), string(iam.WORKSPACEOWNER), string(iam.WORKSPACEOPERATOR)}
 	deploymentRoles := []string{"DEPLOYMENT_ADMIN"}
 	var nonEntityRoles []string

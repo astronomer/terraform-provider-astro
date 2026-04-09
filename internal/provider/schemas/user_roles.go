@@ -26,6 +26,8 @@ func ResourceUserRolesSchemaAttributes() map[string]resourceSchema.Attribute {
 					string(iam.UserOrganizationRoleORGANIZATIONOWNER),
 					string(iam.UserOrganizationRoleORGANIZATIONMEMBER),
 					string(iam.UserOrganizationRoleORGANIZATIONBILLINGADMIN),
+					string(iam.UserOrganizationRoleORGANIZATIONOBSERVEADMIN),
+					string(iam.UserOrganizationRoleORGANIZATIONOBSERVEMEMBER),
 				),
 			},
 		},
