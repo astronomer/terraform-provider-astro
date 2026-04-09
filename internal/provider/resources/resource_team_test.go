@@ -267,6 +267,22 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					testAccCheckTeamExistence(t, teamName, true),
 				),
 			},
+			// Update organization_role when no workspace or deployment roles are configured
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + team(teamInput{
+					Name:             teamName,
+					Description:      "updated to null members",
+					MemberIds:        []string{},
+					IncludeMemberIds: false,
+					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONMEMBER),
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "organization_role", string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONMEMBER)),
+					resource.TestCheckNoResourceAttr(resourceVar, "workspace_roles"),
+					resource.TestCheckNoResourceAttr(resourceVar, "deployment_roles"),
+					testAccCheckTeamExistence(t, teamName, true),
+				),
+			},
 			// Import existing team and check it is correctly imported
 			{
 				ResourceName:            resourceVar,

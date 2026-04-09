@@ -410,14 +410,13 @@ func (r *TeamResource) Update(
 		return
 	}
 
-	// Update team roles
-	if !data.WorkspaceRoles.IsNull() || !data.DeploymentRoles.IsNull() || !data.DagRoles.IsNull() {
+	// Always call MutateRoles to ensure organization_role is updated (updateTeam API only accepts name/description)
+	if !data.OrganizationRole.IsNull() || !data.WorkspaceRoles.IsNull() || !data.DeploymentRoles.IsNull() || !data.DagRoles.IsNull() {
 		diags = r.MutateRoles(ctx, &data, data.Id.ValueString())
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
 		}
-
 	}
 
 	// Get Team and use this as data since it will have the correct roles
