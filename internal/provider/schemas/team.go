@@ -126,6 +126,8 @@ func TeamResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 				stringvalidator.OneOf(string(iam.TeamOrganizationRoleORGANIZATIONOWNER),
 					string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),
 					string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN),
+					string(iam.TeamOrganizationRoleORGANIZATIONOBSERVEADMIN),
+					string(iam.TeamOrganizationRoleORGANIZATIONOBSERVEMEMBER),
 				),
 			},
 		},

@@ -36,7 +36,9 @@ func ClusterResourceRefreshFunc(ctx context.Context, platformClient *platform.Cl
 				return cluster.JSON200, string(cluster.JSON200.Status), nil
 			case platform.ClusterStatusUPDATEFAILED, platform.ClusterStatusCREATEFAILED:
 				return cluster.JSON200, string(cluster.JSON200.Status), fmt.Errorf("cluster mutation failed for cluster '%v'", cluster.JSON200.Id)
-			case platform.ClusterStatusCREATING, platform.ClusterStatusUPDATING, platform.ClusterStatusUPGRADEPENDING:
+			case platform.ClusterStatusFAILOVERFAILED:
+				return cluster.JSON200, string(cluster.JSON200.Status), fmt.Errorf("cluster failover failed for cluster '%v'", cluster.JSON200.Id)
+			case platform.ClusterStatusCREATING, platform.ClusterStatusUPDATING, platform.ClusterStatusUPGRADEPENDING, platform.ClusterStatusFAILINGOVER:
 				return cluster.JSON200, string(cluster.JSON200.Status), nil
 			case platform.ClusterStatusACCESSDENIED:
 				return cluster.JSON200, string(cluster.JSON200.Status), fmt.Errorf("access denied for cluster '%v'", cluster.JSON200.Id)

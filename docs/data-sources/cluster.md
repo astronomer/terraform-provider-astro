@@ -35,7 +35,13 @@ output "cluster" {
 - `cloud_provider` (String) Cluster cloud provider. Allowed values: `AWS`, `GCP`, `AZURE`.
 - `created_at` (String) Cluster creation timestamp
 - `db_instance_type` (String) Cluster database instance type
+- `dr_region` (String) The secondary region for Disaster Recovery
+- `dr_secondary_vpc_cidr` (String) Secondary CIDR for pod networking in the DR region (AWS only)
+- `dr_vpc_subnet_range` (String) The VPC subnet range for the Disaster Recovery region
+- `enable_replication_time_control` (Boolean) Whether S3 Replication Time Control is enabled for Disaster Recovery (AWS only)
 - `health_status` (Attributes) Cluster health status (see [below for nested schema](#nestedatt--health_status))
+- `is_dr_enabled` (Boolean) Whether Disaster Recovery is enabled on the cluster
+- `is_failed_over` (Boolean) Whether the cluster is currently failed over to the DR region
 - `is_limited` (Boolean) Whether the cluster is limited
 - `metadata` (Attributes) Cluster metadata (see [below for nested schema](#nestedatt--metadata))
 - `name` (String) Cluster name

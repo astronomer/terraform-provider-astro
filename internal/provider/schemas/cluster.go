@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -161,6 +162,39 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 			MarkdownDescription: "Whether the cluster is limited",
 			Computed:            true,
 		},
+		"is_dr_enabled": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether Disaster Recovery is enabled on the cluster. Only supported for AWS clusters. Can only be enabled at cluster creation time. Can be set to `false` to disable DR on an existing cluster.",
+			Optional:            true,
+			Computed:            true,
+		},
+		"dr_region": resourceSchema.StringAttribute{
+			MarkdownDescription: "The secondary region for Disaster Recovery. Required when `is_dr_enabled` is true. Cannot be changed once set.",
+			Optional:            true,
+			Computed:            true,
+		},
+		"dr_vpc_subnet_range": resourceSchema.StringAttribute{
+			MarkdownDescription: "The VPC subnet range for the Disaster Recovery region. Only valid when `is_dr_enabled` is true. Cannot be changed once set.",
+			Optional:            true,
+			Computed:            true,
+		},
+		"dr_secondary_vpc_cidr": resourceSchema.StringAttribute{
+			MarkdownDescription: "Secondary CIDR for pod networking in the DR region (AWS only). Cannot be changed once set.",
+			Optional:            true,
+			Computed:            true,
+		},
+		"enable_replication_time_control": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether to enable S3 Replication Time Control for Disaster Recovery. Only valid when `is_dr_enabled` is true (AWS only).",
+			Optional:            true,
+			Computed:            true,
+		},
+		"is_failed_over": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether the cluster is currently failed over to the DR region. Set to `true` to trigger failover; set to `false` to fail back.",
+			Optional:            true,
+			Computed:            true,
+			PlanModifiers: []planmodifier.Bool{
+				nullWhenDrDisabledBoolPlanModifier{},
+			},
+		},
 		"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 			Create: true,
 			Update: true,
@@ -264,6 +298,30 @@ func ClusterDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 		},
 		"is_limited": datasourceSchema.BoolAttribute{
 			MarkdownDescription: "Whether the cluster is limited",
+			Computed:            true,
+		},
+		"is_dr_enabled": datasourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether Disaster Recovery is enabled on the cluster",
+			Computed:            true,
+		},
+		"dr_region": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The secondary region for Disaster Recovery",
+			Computed:            true,
+		},
+		"dr_vpc_subnet_range": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The VPC subnet range for the Disaster Recovery region",
+			Computed:            true,
+		},
+		"dr_secondary_vpc_cidr": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Secondary CIDR for pod networking in the DR region (AWS only)",
+			Computed:            true,
+		},
+		"enable_replication_time_control": datasourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether S3 Replication Time Control is enabled for Disaster Recovery (AWS only)",
+			Computed:            true,
+		},
+		"is_failed_over": datasourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether the cluster is currently failed over to the DR region",
 			Computed:            true,
 		},
 	}
@@ -525,4 +583,43 @@ func ClusterHealthStatusDetailDataSourceAttributes() map[string]datasourceSchema
 			Computed:            true,
 		},
 	}
+}
+
+// nullWhenDrDisabledBoolPlanModifier sets the planned value to null when is_dr_enabled
+// is planned as false, and uses the state value when the config value is unknown
+// (like UseStateForUnknown but DR-aware).
+type nullWhenDrDisabledBoolPlanModifier struct{}
+
+func (m nullWhenDrDisabledBoolPlanModifier) Description(_ context.Context) string {
+	return "Sets value to null when DR is disabled, otherwise uses state for unknown."
+}
+
+func (m nullWhenDrDisabledBoolPlanModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (m nullWhenDrDisabledBoolPlanModifier) PlanModifyBool(ctx context.Context, req planmodifier.BoolRequest, resp *planmodifier.BoolResponse) {
+	// Check if is_dr_enabled is being set to false in the plan
+	var isDrEnabled types.Bool
+	diags := req.Plan.GetAttribute(ctx, path.Root("is_dr_enabled"), &isDrEnabled)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// If DR is being disabled, plan this attribute as null
+	if !isDrEnabled.IsNull() && !isDrEnabled.IsUnknown() && !isDrEnabled.ValueBool() {
+		resp.PlanValue = types.BoolNull()
+		return
+	}
+
+	// Otherwise, behave like UseStateForUnknown
+	// Handle both unknown (computed) and null (not set in config) config values
+	if !req.ConfigValue.IsUnknown() && !req.ConfigValue.IsNull() {
+		return
+	}
+	if req.State.Raw.IsNull() {
+		return
+	}
+	resp.PlanValue = req.StateValue
 }
