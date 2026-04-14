@@ -153,6 +153,24 @@ const (
 	WORKSPACEOWNER    WorkspaceRoleRole = "WORKSPACE_OWNER"
 )
 
+// Defines values for ListAgentTokensParamsSorts.
+const (
+	ListAgentTokensParamsSortsCreatedAtAsc     ListAgentTokensParamsSorts = "createdAt:asc"
+	ListAgentTokensParamsSortsCreatedAtDesc    ListAgentTokensParamsSorts = "createdAt:desc"
+	ListAgentTokensParamsSortsCreatedByIdAsc   ListAgentTokensParamsSorts = "createdById:asc"
+	ListAgentTokensParamsSortsCreatedByIdDesc  ListAgentTokensParamsSorts = "createdById:desc"
+	ListAgentTokensParamsSortsDescriptionAsc   ListAgentTokensParamsSorts = "description:asc"
+	ListAgentTokensParamsSortsDescriptionDesc  ListAgentTokensParamsSorts = "description:desc"
+	ListAgentTokensParamsSortsNameAsc          ListAgentTokensParamsSorts = "name:asc"
+	ListAgentTokensParamsSortsNameDesc         ListAgentTokensParamsSorts = "name:desc"
+	ListAgentTokensParamsSortsTokenStartAtAsc  ListAgentTokensParamsSorts = "tokenStartAt:asc"
+	ListAgentTokensParamsSortsTokenStartAtDesc ListAgentTokensParamsSorts = "tokenStartAt:desc"
+	ListAgentTokensParamsSortsUpdatedAtAsc     ListAgentTokensParamsSorts = "updatedAt:asc"
+	ListAgentTokensParamsSortsUpdatedAtDesc    ListAgentTokensParamsSorts = "updatedAt:desc"
+	ListAgentTokensParamsSortsUpdatedByIdAsc   ListAgentTokensParamsSorts = "updatedById:asc"
+	ListAgentTokensParamsSortsUpdatedByIdDesc  ListAgentTokensParamsSorts = "updatedById:desc"
+)
+
 // Defines values for ListRoleTemplatesParamsScopeTypes.
 const (
 	ListRoleTemplatesParamsScopeTypesDAG          ListRoleTemplatesParamsScopeTypes = "DAG"
@@ -229,16 +247,16 @@ const (
 
 // Defines values for ListUsersParamsSorts.
 const (
-	CreatedAtAsc  ListUsersParamsSorts = "createdAt:asc"
-	CreatedAtDesc ListUsersParamsSorts = "createdAt:desc"
-	FullNameAsc   ListUsersParamsSorts = "fullName:asc"
-	FullNameDesc  ListUsersParamsSorts = "fullName:desc"
-	IdAsc         ListUsersParamsSorts = "id:asc"
-	IdDesc        ListUsersParamsSorts = "id:desc"
-	UpdatedAtAsc  ListUsersParamsSorts = "updatedAt:asc"
-	UpdatedAtDesc ListUsersParamsSorts = "updatedAt:desc"
-	UsernameAsc   ListUsersParamsSorts = "username:asc"
-	UsernameDesc  ListUsersParamsSorts = "username:desc"
+	ListUsersParamsSortsCreatedAtAsc  ListUsersParamsSorts = "createdAt:asc"
+	ListUsersParamsSortsCreatedAtDesc ListUsersParamsSorts = "createdAt:desc"
+	ListUsersParamsSortsFullNameAsc   ListUsersParamsSorts = "fullName:asc"
+	ListUsersParamsSortsFullNameDesc  ListUsersParamsSorts = "fullName:desc"
+	ListUsersParamsSortsIdAsc         ListUsersParamsSorts = "id:asc"
+	ListUsersParamsSortsIdDesc        ListUsersParamsSorts = "id:desc"
+	ListUsersParamsSortsUpdatedAtAsc  ListUsersParamsSorts = "updatedAt:asc"
+	ListUsersParamsSortsUpdatedAtDesc ListUsersParamsSorts = "updatedAt:desc"
+	ListUsersParamsSortsUsernameAsc   ListUsersParamsSorts = "username:asc"
+	ListUsersParamsSortsUsernameDesc  ListUsersParamsSorts = "username:desc"
 )
 
 // AddTeamMembersRequest defines model for AddTeamMembersRequest.
@@ -356,6 +374,18 @@ type BasicSubjectProfile struct {
 
 // BasicSubjectProfileSubjectType The subject type.
 type BasicSubjectProfileSubjectType string
+
+// CreateAgentTokenRequest defines model for CreateAgentTokenRequest.
+type CreateAgentTokenRequest struct {
+	// Description The description for the API token.
+	Description *string `json:"description,omitempty"`
+
+	// Name The name of the API token.
+	Name string `json:"name"`
+
+	// TokenExpiryPeriodInDays The expiry period of the API token in days. If not specified, the token will never expire.
+	TokenExpiryPeriodInDays *int `json:"tokenExpiryPeriodInDays,omitempty"`
+}
 
 // CreateApiTokenRequest defines model for CreateApiTokenRequest.
 type CreateApiTokenRequest struct {
@@ -848,6 +878,21 @@ type WorkspaceRole struct {
 // WorkspaceRoleRole The role of the subject in the Workspace.
 type WorkspaceRoleRole string
 
+// ListAgentTokensParams defines parameters for ListAgentTokens.
+type ListAgentTokensParams struct {
+	// Offset The number of results to skip before returning values.
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Limit The maximum number of results to return.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Sorts A list of field names to sort by, and whether to show results as ascending or descending. Formatted as `<fieldName>:asc` or `<fieldName>:desc`.
+	Sorts *[]ListAgentTokensParamsSorts `form:"sorts,omitempty" json:"sorts,omitempty"`
+}
+
+// ListAgentTokensParamsSorts defines parameters for ListAgentTokens.
+type ListAgentTokensParamsSorts string
+
 // ListRoleTemplatesParams defines parameters for ListRoleTemplates.
 type ListRoleTemplatesParams struct {
 	// ScopeTypes Filter role templates based on the scope of permissions they include.
@@ -977,6 +1022,9 @@ type ListUsersParams struct {
 // ListUsersParamsSorts defines parameters for ListUsers.
 type ListUsersParamsSorts string
 
+// CreateAgentTokenJSONRequestBody defines body for CreateAgentToken for application/json ContentType.
+type CreateAgentTokenJSONRequestBody = CreateAgentTokenRequest
+
 // CreateUserInviteJSONRequestBody defines body for CreateUserInvite for application/json ContentType.
 type CreateUserInviteJSONRequestBody = CreateUserInviteRequest
 
@@ -1083,6 +1131,20 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// ListAgentTokens request
+	ListAgentTokens(ctx context.Context, organizationId string, deploymentId string, params *ListAgentTokensParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateAgentTokenWithBody request with any body
+	CreateAgentTokenWithBody(ctx context.Context, organizationId string, deploymentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateAgentToken(ctx context.Context, organizationId string, deploymentId string, body CreateAgentTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteAgentToken request
+	DeleteAgentToken(ctx context.Context, organizationId string, deploymentId string, agentTokenId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAgentToken request
+	GetAgentToken(ctx context.Context, organizationId string, deploymentId string, agentTokenId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateUserInviteWithBody request with any body
 	CreateUserInviteWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1185,6 +1247,66 @@ type ClientInterface interface {
 	UpdateUserRolesWithBody(ctx context.Context, organizationId string, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateUserRoles(ctx context.Context, organizationId string, userId string, body UpdateUserRolesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) ListAgentTokens(ctx context.Context, organizationId string, deploymentId string, params *ListAgentTokensParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAgentTokensRequest(c.Server, organizationId, deploymentId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAgentTokenWithBody(ctx context.Context, organizationId string, deploymentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAgentTokenRequestWithBody(c.Server, organizationId, deploymentId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAgentToken(ctx context.Context, organizationId string, deploymentId string, body CreateAgentTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAgentTokenRequest(c.Server, organizationId, deploymentId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteAgentToken(ctx context.Context, organizationId string, deploymentId string, agentTokenId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteAgentTokenRequest(c.Server, organizationId, deploymentId, agentTokenId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAgentToken(ctx context.Context, organizationId string, deploymentId string, agentTokenId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAgentTokenRequest(c.Server, organizationId, deploymentId, agentTokenId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) CreateUserInviteWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1641,6 +1763,251 @@ func (c *Client) UpdateUserRoles(ctx context.Context, organizationId string, use
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// NewListAgentTokensRequest generates requests for ListAgentTokens
+func NewListAgentTokensRequest(server string, organizationId string, deploymentId string, params *ListAgentTokensParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "deploymentId", runtime.ParamLocationPath, deploymentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/deployments/%s/agent-tokens", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Sorts != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sorts", runtime.ParamLocationQuery, *params.Sorts); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateAgentTokenRequest calls the generic CreateAgentToken builder with application/json body
+func NewCreateAgentTokenRequest(server string, organizationId string, deploymentId string, body CreateAgentTokenJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateAgentTokenRequestWithBody(server, organizationId, deploymentId, "application/json", bodyReader)
+}
+
+// NewCreateAgentTokenRequestWithBody generates requests for CreateAgentToken with any type of body
+func NewCreateAgentTokenRequestWithBody(server string, organizationId string, deploymentId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "deploymentId", runtime.ParamLocationPath, deploymentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/deployments/%s/agent-tokens", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteAgentTokenRequest generates requests for DeleteAgentToken
+func NewDeleteAgentTokenRequest(server string, organizationId string, deploymentId string, agentTokenId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "deploymentId", runtime.ParamLocationPath, deploymentId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "agentTokenId", runtime.ParamLocationPath, agentTokenId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/deployments/%s/agent-tokens/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAgentTokenRequest generates requests for GetAgentToken
+func NewGetAgentTokenRequest(server string, organizationId string, deploymentId string, agentTokenId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "deploymentId", runtime.ParamLocationPath, deploymentId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "agentTokenId", runtime.ParamLocationPath, agentTokenId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/deployments/%s/agent-tokens/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 // NewCreateUserInviteRequest calls the generic CreateUserInvite builder with application/json body
@@ -3380,6 +3747,20 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// ListAgentTokensWithResponse request
+	ListAgentTokensWithResponse(ctx context.Context, organizationId string, deploymentId string, params *ListAgentTokensParams, reqEditors ...RequestEditorFn) (*ListAgentTokensResponse, error)
+
+	// CreateAgentTokenWithBodyWithResponse request with any body
+	CreateAgentTokenWithBodyWithResponse(ctx context.Context, organizationId string, deploymentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAgentTokenResponse, error)
+
+	CreateAgentTokenWithResponse(ctx context.Context, organizationId string, deploymentId string, body CreateAgentTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAgentTokenResponse, error)
+
+	// DeleteAgentTokenWithResponse request
+	DeleteAgentTokenWithResponse(ctx context.Context, organizationId string, deploymentId string, agentTokenId string, reqEditors ...RequestEditorFn) (*DeleteAgentTokenResponse, error)
+
+	// GetAgentTokenWithResponse request
+	GetAgentTokenWithResponse(ctx context.Context, organizationId string, deploymentId string, agentTokenId string, reqEditors ...RequestEditorFn) (*GetAgentTokenResponse, error)
+
 	// CreateUserInviteWithBodyWithResponse request with any body
 	CreateUserInviteWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserInviteResponse, error)
 
@@ -3482,6 +3863,113 @@ type ClientWithResponsesInterface interface {
 	UpdateUserRolesWithBodyWithResponse(ctx context.Context, organizationId string, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserRolesResponse, error)
 
 	UpdateUserRolesWithResponse(ctx context.Context, organizationId string, userId string, body UpdateUserRolesJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserRolesResponse, error)
+}
+
+type ListAgentTokensResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApiTokensPaginated
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAgentTokensResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAgentTokensResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateAgentTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApiToken
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateAgentTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateAgentTokenResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteAgentTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteAgentTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteAgentTokenResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAgentTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApiToken
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAgentTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAgentTokenResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type CreateUserInviteResponse struct {
@@ -4206,6 +4694,50 @@ func (r UpdateUserRolesResponse) StatusCode() int {
 	return 0
 }
 
+// ListAgentTokensWithResponse request returning *ListAgentTokensResponse
+func (c *ClientWithResponses) ListAgentTokensWithResponse(ctx context.Context, organizationId string, deploymentId string, params *ListAgentTokensParams, reqEditors ...RequestEditorFn) (*ListAgentTokensResponse, error) {
+	rsp, err := c.ListAgentTokens(ctx, organizationId, deploymentId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAgentTokensResponse(rsp)
+}
+
+// CreateAgentTokenWithBodyWithResponse request with arbitrary body returning *CreateAgentTokenResponse
+func (c *ClientWithResponses) CreateAgentTokenWithBodyWithResponse(ctx context.Context, organizationId string, deploymentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAgentTokenResponse, error) {
+	rsp, err := c.CreateAgentTokenWithBody(ctx, organizationId, deploymentId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAgentTokenResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateAgentTokenWithResponse(ctx context.Context, organizationId string, deploymentId string, body CreateAgentTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAgentTokenResponse, error) {
+	rsp, err := c.CreateAgentToken(ctx, organizationId, deploymentId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAgentTokenResponse(rsp)
+}
+
+// DeleteAgentTokenWithResponse request returning *DeleteAgentTokenResponse
+func (c *ClientWithResponses) DeleteAgentTokenWithResponse(ctx context.Context, organizationId string, deploymentId string, agentTokenId string, reqEditors ...RequestEditorFn) (*DeleteAgentTokenResponse, error) {
+	rsp, err := c.DeleteAgentToken(ctx, organizationId, deploymentId, agentTokenId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteAgentTokenResponse(rsp)
+}
+
+// GetAgentTokenWithResponse request returning *GetAgentTokenResponse
+func (c *ClientWithResponses) GetAgentTokenWithResponse(ctx context.Context, organizationId string, deploymentId string, agentTokenId string, reqEditors ...RequestEditorFn) (*GetAgentTokenResponse, error) {
+	rsp, err := c.GetAgentToken(ctx, organizationId, deploymentId, agentTokenId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAgentTokenResponse(rsp)
+}
+
 // CreateUserInviteWithBodyWithResponse request with arbitrary body returning *CreateUserInviteResponse
 func (c *ClientWithResponses) CreateUserInviteWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserInviteResponse, error) {
 	rsp, err := c.CreateUserInviteWithBody(ctx, organizationId, contentType, body, reqEditors...)
@@ -4535,6 +5067,243 @@ func (c *ClientWithResponses) UpdateUserRolesWithResponse(ctx context.Context, o
 		return nil, err
 	}
 	return ParseUpdateUserRolesResponse(rsp)
+}
+
+// ParseListAgentTokensResponse parses an HTTP response from a ListAgentTokensWithResponse call
+func ParseListAgentTokensResponse(rsp *http.Response) (*ListAgentTokensResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAgentTokensResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApiTokensPaginated
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateAgentTokenResponse parses an HTTP response from a CreateAgentTokenWithResponse call
+func ParseCreateAgentTokenResponse(rsp *http.Response) (*CreateAgentTokenResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateAgentTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApiToken
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteAgentTokenResponse parses an HTTP response from a DeleteAgentTokenWithResponse call
+func ParseDeleteAgentTokenResponse(rsp *http.Response) (*DeleteAgentTokenResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteAgentTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAgentTokenResponse parses an HTTP response from a GetAgentTokenWithResponse call
+func ParseGetAgentTokenResponse(rsp *http.Response) (*GetAgentTokenResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAgentTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApiToken
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseCreateUserInviteResponse parses an HTTP response from a CreateUserInviteWithResponse call
