@@ -14,9 +14,17 @@ resource "astro_user_roles" "workspace_roles" {
   ]
 }
 
+# deployment_roles: include workspace_roles for each deployment's parent workspace
+# (any valid workspace role) so Terraform state matches stored roles.
 resource "astro_user_roles" "deployment_roles" {
   user_id           = "clzaftcaz006001lhkey6qzzg"
   organization_role = "ORGANIZATION_MEMBER"
+  workspace_roles = [
+    {
+      workspace_id = "clx42sxw501gl01o0gjenthnh"
+      role         = "WORKSPACE_MEMBER"
+    }
+  ]
   deployment_roles = [
     {
       deployment_id = "clyn6kxud003x01mtxmccegnh"
@@ -55,6 +63,12 @@ resource "astro_user_roles" "dag_roles" {
       role         = "WORKSPACE_MEMBER"
     }
   ]
+  deployment_roles = [
+    {
+      deployment_id = "clyn6kxud003x01mtxmccegnh"
+      role          = "DEPLOYMENT_ACCESSOR"
+    }
+  ]
   dag_roles = [
     {
       deployment_id = "clyn6kxud003x01mtxmccegnh"
@@ -71,6 +85,12 @@ resource "astro_user_roles" "dag_roles_with_tag" {
     {
       workspace_id = "clx42sxw501gl01o0gjenthnh"
       role         = "WORKSPACE_MEMBER"
+    }
+  ]
+  deployment_roles = [
+    {
+      deployment_id = "clyn6kxud003x01mtxmccegnh"
+      role          = "DEPLOYMENT_ACCESSOR"
     }
   ]
   dag_roles = [
