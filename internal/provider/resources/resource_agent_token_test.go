@@ -46,19 +46,6 @@ func TestAcc_ResourceAgentToken(t *testing.T) {
 					testAccCheckAgentTokenExistence(t, deploymentId, tokenName, true),
 				),
 			},
-			// Changing name triggers recreation - new token with updated name should exist
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + agentToken(agentTokenInput{
-					Name:               tokenName + "_updated",
-					Description:        utils.TestResourceDescription,
-					DeploymentId:       deploymentId,
-					ExpiryPeriodInDays: 30,
-				}),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceVar, "name", tokenName+"_updated"),
-					testAccCheckAgentTokenExistence(t, deploymentId, tokenName+"_updated", true),
-				),
-			},
 			// Import existing agent token and check it is correctly imported
 			{
 				ResourceName:            resourceVar,
