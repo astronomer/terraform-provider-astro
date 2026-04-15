@@ -128,6 +128,7 @@ func (p *AstroProvider) Resources(ctx context.Context) []func() resource.Resourc
 		resources.NewApiTokenResource,
 		resources.NewAgentTokenResource,
 		resources.NewTeamResource,
+		resources.NewTeamMembershipResource,
 		resources.NewUserRolesResource,
 		resources.NewUserInviteResource,
 		resources.NewAlertResource,
