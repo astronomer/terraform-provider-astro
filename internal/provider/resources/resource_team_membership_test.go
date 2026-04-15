@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"testing"
-
 	"regexp"
+	"testing"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
@@ -57,6 +56,17 @@ func TestAcc_ResourceTeamMembership(t *testing.T) {
 				ImportState:       true,
 				ImportStateIdFunc: testAccTeamMembershipImportStateIdFunc(tfVarName),
 				ImportStateVerify: true,
+			},
+			// Drift detection: remove member outside Terraform, verify it is re-added on next apply
+			{
+				PreConfig: func() {
+					removeMemberOutsideOfTerraform(t, teamName, userId)
+				},
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					teamMembershipWithTeamResource(teamName, userId),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTeamMembershipExists(t, teamName, userId),
+				),
 			},
 		},
 	})
@@ -172,6 +182,29 @@ func checkTeamMembership(t *testing.T, teamName, userId string, shouldExist bool
 		return fmt.Errorf("user %s is not a member of team %q", userId, teamName)
 	}
 	return nil
+}
+
+// removeMemberOutsideOfTerraform removes userId from the named team via the API,
+// simulating an out-of-band change to verify drift detection in Read.
+func removeMemberOutsideOfTerraform(t *testing.T, teamName, userId string) {
+	t.Helper()
+
+	iamClient, err := utils.GetTestHostedIamClient()
+	assert.NoError(t, err)
+
+	organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
+	ctx := context.Background()
+
+	teamsResp, err := iamClient.ListTeamsWithResponse(ctx, organizationId, &iam.ListTeamsParams{
+		Names: &[]string{teamName},
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, teamsResp.JSON200)
+	assert.NotEmpty(t, teamsResp.JSON200.Teams, "team %q not found", teamName)
+
+	teamId := teamsResp.JSON200.Teams[0].Id
+	_, err = iamClient.RemoveTeamMemberWithResponse(ctx, organizationId, teamId, userId)
+	assert.NoError(t, err)
 }
 
 // testAccCuidValidatorError returns a regexp that matches the CUID validator error message.

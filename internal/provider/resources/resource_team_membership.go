@@ -127,38 +127,55 @@ func (r *teamMembershipResource) Read(
 	teamId := data.TeamId.ValueString()
 	userId := data.UserId.ValueString()
 
-	membersResp, err := r.iamClient.ListTeamMembersWithResponse(
-		ctx,
-		r.organizationId,
-		teamId,
-		nil,
-	)
-	if err != nil {
-		tflog.Error(ctx, "failed to list team members", map[string]interface{}{"error": err})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to list team members, got error: %s", err),
+	// Page through all members to handle teams with more than the default page size.
+	pageSize := 1000
+	offset := 0
+	for {
+		params := &iam.ListTeamMembersParams{
+			Limit:  &pageSize,
+			Offset: &offset,
+		}
+		membersResp, err := r.iamClient.ListTeamMembersWithResponse(
+			ctx,
+			r.organizationId,
+			teamId,
+			params,
 		)
-		return
-	}
-	statusCode, diagnostic := clients.NormalizeAPIError(ctx, membersResp.HTTPResponse, membersResp.Body)
-	if statusCode == http.StatusNotFound {
-		resp.State.RemoveResource(ctx)
-		return
-	}
-	if diagnostic != nil {
-		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-
-	// Check if user is still a member
-	for _, m := range membersResp.JSON200.TeamMembers {
-		if m.UserId == userId {
-			data.ID = membershipID(teamId, userId)
-			tflog.Trace(ctx, fmt.Sprintf("read team_membership %v/%v", teamId, userId))
-			resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		if err != nil {
+			tflog.Error(ctx, "failed to list team members", map[string]interface{}{"error": err})
+			resp.Diagnostics.AddError(
+				"Client Error",
+				fmt.Sprintf("Unable to list team members, got error: %s", err),
+			)
 			return
 		}
+		statusCode, diagnostic := clients.NormalizeAPIError(ctx, membersResp.HTTPResponse, membersResp.Body)
+		if statusCode == http.StatusNotFound {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+		if diagnostic != nil {
+			resp.Diagnostics.Append(diagnostic)
+			return
+		}
+		if membersResp.JSON200 == nil {
+			resp.Diagnostics.AddError("Client Error", "Unable to list team members, got nil response")
+			return
+		}
+
+		for _, m := range membersResp.JSON200.TeamMembers {
+			if m.UserId == userId {
+				data.ID = membershipID(teamId, userId)
+				tflog.Trace(ctx, fmt.Sprintf("read team_membership %v/%v", teamId, userId))
+				resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+				return
+			}
+		}
+
+		if membersResp.JSON200.TotalCount <= offset+len(membersResp.JSON200.TeamMembers) {
+			break
+		}
+		offset += pageSize
 	}
 
 	// Member no longer exists — remove from state
