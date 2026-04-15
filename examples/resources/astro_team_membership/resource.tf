@@ -21,7 +21,11 @@ import {
 # ─────────────────────────────────────────────────────────────────────────────
 # Decentralized ownership example
 #
-# Variable declarations for the examples below
+# A shared "platform-engineers" team is created by the platform module.
+# Each product team independently manages their own members using a data source
+# to look up the shared team — no cross-state references, no coordination.
+# ─────────────────────────────────────────────────────────────────────────────
+
 variable "platform_engineer_user_ids" {
   type        = set(string)
   description = "User IDs of platform engineers to add to the shared team"
@@ -29,30 +33,17 @@ variable "platform_engineer_user_ids" {
 
 variable "new_analytics_user_ids" {
   type        = set(string)
-  description = "User IDs to onboard into the analytics workspace"
+  description = "User IDs to onboard into the analytics team"
 }
-
-variable "platform_engineers_team_id" {
-  type        = string
-  description = "ID of the shared platform-engineers team (passed in from the platform module output)"
-}
-
-#
-#
-# A shared "platform-engineers" team is owned by the platform module.
-# Each product team independently grants that team access to their own
-# workspace — no coordination with the platform team required.
-# ─────────────────────────────────────────────────────────────────────────────
 
 # platform/main.tf — owned by the platform team
-# Creates the shared team. Does NOT manage workspace or deployment roles.
+# Creates the shared team and manages its own core members.
 resource "astro_team" "platform_engineers" {
   name              = "platform-engineers"
   organization_role = "ORGANIZATION_MEMBER"
-  # No member_ids here — memberships are managed independently below
+  # No member_ids — memberships are managed independently below
 }
 
-# platform/main.tf — platform team manages its own members
 resource "astro_team_membership" "platform_member" {
   for_each = toset(var.platform_engineer_user_ids)
 
@@ -61,11 +52,15 @@ resource "astro_team_membership" "platform_member" {
 }
 
 # analytics/main.tf — owned by the analytics team
-# Grants the shared platform team access to the analytics workspace.
-# This module has no dependency on the platform module's state.
+# Looks up the shared team by name and onboards its own members.
+# No dependency on the platform module's state file.
+data "astro_teams" "platform_engineers" {
+  names = ["platform-engineers"]
+}
+
 resource "astro_team_membership" "analytics_onboarding" {
   for_each = toset(var.new_analytics_user_ids)
 
-  team_id = var.platform_engineers_team_id # passed in as a variable
+  team_id = one(data.astro_teams.platform_engineers.teams).id
   user_id = each.value
 }
