@@ -31,20 +31,44 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
+			// Test that empty workspace_roles = [] is accepted and stored as an empty set in state
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "[]", "", ""),
-				ExpectError: regexp.MustCompile("Attribute workspace_roles set must contain at least 1 elements"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN)),
+					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "0"),
+					resource.TestCheckNoResourceAttr(tfVarName, "deployment_roles"),
+					resource.TestCheckNoResourceAttr(tfVarName, "dag_roles"),
+					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), 0, 0, 0),
+				),
 			},
+			// Test that empty deployment_roles = [] is accepted and stored as an empty set in state
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "", "[]", ""),
-				ExpectError: regexp.MustCompile("Attribute deployment_roles set must contain at least 1 elements"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN)),
+					resource.TestCheckNoResourceAttr(tfVarName, "workspace_roles"),
+					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "0"),
+					resource.TestCheckNoResourceAttr(tfVarName, "dag_roles"),
+					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), 0, 0, 0),
+				),
 			},
+			// Test that empty dag_roles = [] is accepted and stored as an empty set in state
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "", "", "[]"),
-				ExpectError: regexp.MustCompile("Attribute dag_roles set must contain at least 1 elements"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN)),
+					resource.TestCheckNoResourceAttr(tfVarName, "workspace_roles"),
+					resource.TestCheckNoResourceAttr(tfVarName, "deployment_roles"),
+					resource.TestCheckResourceAttr(tfVarName, "dag_roles.#", "0"),
+					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), 0, 0, 0),
+				),
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +

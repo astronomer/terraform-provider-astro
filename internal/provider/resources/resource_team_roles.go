@@ -10,6 +10,7 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/provider/common"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/samber/lo"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
@@ -80,11 +81,30 @@ func (r *teamRolesResource) Configure(
 	r.organizationId = apiClients.OrganizationId
 }
 
+// preserveEmptySet returns preferred if it is an explicit empty set and actual
+// is null. This prevents "Provider produced inconsistent result after apply"
+// errors that occur when the user configures workspace_roles/deployment_roles/
+// dag_roles as [] and the API returns null for those fields.
+func preserveEmptySet(preferred, actual types.Set) types.Set {
+	if !preferred.IsNull() && !preferred.IsUnknown() && len(preferred.Elements()) == 0 && actual.IsNull() {
+		return preferred
+	}
+	return actual
+}
+
 func (r *teamRolesResource) MutateRoles(
 	ctx context.Context,
 	data *models.TeamRoles,
 ) diag.Diagnostics {
 	teamId := data.TeamId.ValueString()
+
+	// Save planned role sets before the API call. When the user configures an
+	// empty collection (e.g. workspace_roles = []) the API returns null, which
+	// would cause a plan/state mismatch. preserveEmptySet restores the planned
+	// empty set so that the returned state matches the plan.
+	plannedWorkspaceRoles := data.WorkspaceRoles
+	plannedDeploymentRoles := data.DeploymentRoles
+	plannedDagRoles := data.DagRoles
 
 	// Then convert the models to the request types for the API
 	workspaceRoles, diags := common.RequestWorkspaceRoles(ctx, data.WorkspaceRoles)
@@ -148,6 +168,10 @@ func (r *teamRolesResource) MutateRoles(
 		return diags
 	}
 
+	data.WorkspaceRoles = preserveEmptySet(plannedWorkspaceRoles, data.WorkspaceRoles)
+	data.DeploymentRoles = preserveEmptySet(plannedDeploymentRoles, data.DeploymentRoles)
+	data.DagRoles = preserveEmptySet(plannedDagRoles, data.DagRoles)
+
 	return nil
 }
 
@@ -186,6 +210,12 @@ func (r *teamRolesResource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Save prior state role sets so that explicit empty sets ([]) are preserved
+	// if the API returns null (see preserveEmptySet for rationale).
+	priorWorkspaceRoles := data.WorkspaceRoles
+	priorDeploymentRoles := data.DeploymentRoles
+	priorDagRoles := data.DagRoles
 
 	teamId := data.TeamId.ValueString()
 
@@ -227,6 +257,10 @@ func (r *teamRolesResource) Read(
 		resp.Diagnostics.Append(diags...)
 		return
 	}
+
+	data.WorkspaceRoles = preserveEmptySet(priorWorkspaceRoles, data.WorkspaceRoles)
+	data.DeploymentRoles = preserveEmptySet(priorDeploymentRoles, data.DeploymentRoles)
+	data.DagRoles = preserveEmptySet(priorDagRoles, data.DagRoles)
 
 	tflog.Trace(ctx, fmt.Sprintf("read a team_roles resource: %v", teamId))
 
