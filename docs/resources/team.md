@@ -3,12 +3,12 @@
 page_title: "astro_team Resource - astro"
 subcategory: ""
 description: |-
-  Team resource
+  Creates and manages a team and its members. Astro permissions are hierarchical (organization, workspace, deployment, then DAG). Declare roles at each applicable parent scope as well as nested scopes, not only at the leaf, so Terraform state matches the API.
 ---
 
 # astro_team (Resource)
 
-Team resource
+Creates and manages a team and its members. Astro permissions are hierarchical (organization, workspace, deployment, then DAG). Declare roles at each applicable parent scope as well as nested scopes, not only at the leaf, so Terraform state matches the API.
 
 ## Example Usage
 
@@ -64,11 +64,11 @@ resource "astro_team" "imported_team" {
 
 ### Optional
 
-- `dag_roles` (Attributes Set) The DAG roles to assign to the team. Each role grants permissions to a specific DAG or DAGs with a specific tag within a deployment. (see [below for nested schema](#nestedatt--dag_roles))
-- `deployment_roles` (Attributes Set) The roles to assign to the Deployments (see [below for nested schema](#nestedatt--deployment_roles))
+- `dag_roles` (Attributes Set) The DAG roles to assign to the team. Each role grants permissions to a specific DAG or DAGs with a specific tag within a deployment. Each deployment referenced in `dag_roles` must also have a corresponding entry in `deployment_roles` (for example `DEPLOYMENT_ACCESSOR`). (see [below for nested schema](#nestedatt--dag_roles))
+- `deployment_roles` (Attributes Set) The roles to assign to the Deployments. Each `deployment_id` must belong to a workspace that also appears in `workspace_roles`. Required for any deployment referenced in `dag_roles`. (see [below for nested schema](#nestedatt--deployment_roles))
 - `description` (String) Team description
 - `member_ids` (Set of String) The IDs of the users to add to the Team
-- `workspace_roles` (Attributes Set) The roles to assign to the Workspaces (see [below for nested schema](#nestedatt--workspace_roles))
+- `workspace_roles` (Attributes Set) The roles to assign to the Workspaces. When you set `deployment_roles` or `dag_roles`, include each deployment's parent workspace here (any workspace role), so Terraform state matches the API. (see [below for nested schema](#nestedatt--workspace_roles))
 
 ### Read-Only
 

@@ -3,12 +3,12 @@
 page_title: "astro_user_roles Resource - astro"
 subcategory: ""
 description: |-
-  User Roles resource
+  Manages organization, workspace, deployment, and DAG roles for a user. Astro permissions are hierarchical (organization, workspace, deployment, then DAG). Declare roles at each applicable parent scope as well as nested scopes, not only at the leaf, so Terraform state matches the API.
 ---
 
 # astro_user_roles (Resource)
 
-User Roles resource
+Manages organization, workspace, deployment, and DAG roles for a user. Astro permissions are hierarchical (organization, workspace, deployment, then DAG). Declare roles at each applicable parent scope as well as nested scopes, not only at the leaf, so Terraform state matches the API.
 
 ## Example Usage
 
@@ -29,9 +29,17 @@ resource "astro_user_roles" "workspace_roles" {
   ]
 }
 
+# deployment_roles: include workspace_roles for each deployment's parent workspace
+# (any valid workspace role) so Terraform state matches stored roles.
 resource "astro_user_roles" "deployment_roles" {
   user_id           = "clzaftcaz006001lhkey6qzzg"
   organization_role = "ORGANIZATION_MEMBER"
+  workspace_roles = [
+    {
+      workspace_id = "clx42sxw501gl01o0gjenthnh"
+      role         = "WORKSPACE_MEMBER"
+    }
+  ]
   deployment_roles = [
     {
       deployment_id = "clyn6kxud003x01mtxmccegnh"
@@ -70,6 +78,12 @@ resource "astro_user_roles" "dag_roles" {
       role         = "WORKSPACE_MEMBER"
     }
   ]
+  deployment_roles = [
+    {
+      deployment_id = "clyn6kxud003x01mtxmccegnh"
+      role          = "DEPLOYMENT_ACCESSOR"
+    }
+  ]
   dag_roles = [
     {
       deployment_id = "clyn6kxud003x01mtxmccegnh"
@@ -86,6 +100,12 @@ resource "astro_user_roles" "dag_roles_with_tag" {
     {
       workspace_id = "clx42sxw501gl01o0gjenthnh"
       role         = "WORKSPACE_MEMBER"
+    }
+  ]
+  deployment_roles = [
+    {
+      deployment_id = "clyn6kxud003x01mtxmccegnh"
+      role          = "DEPLOYMENT_ACCESSOR"
     }
   ]
   dag_roles = [
@@ -140,8 +160,8 @@ resource "astro_user_roles" "imported_user_roles" {
 ### Optional
 
 - `dag_roles` (Attributes Set) The DAG roles to assign to the user. Each role grants permissions to a specific DAG or DAGs with a specific tag within a deployment. Each deployment referenced in `dag_roles` must also have a corresponding entry in `deployment_roles` (e.g. with `DEPLOYMENT_ACCESSOR` role). (see [below for nested schema](#nestedatt--dag_roles))
-- `deployment_roles` (Attributes Set) The roles to assign to the deployments. Required for any deployment referenced in `dag_roles`. (see [below for nested schema](#nestedatt--deployment_roles))
-- `workspace_roles` (Attributes Set) The roles to assign to the workspaces (see [below for nested schema](#nestedatt--workspace_roles))
+- `deployment_roles` (Attributes Set) The roles to assign to the deployments. Each `deployment_id` must belong to a workspace that also appears in `workspace_roles`. Required for any deployment referenced in `dag_roles`. (see [below for nested schema](#nestedatt--deployment_roles))
+- `workspace_roles` (Attributes Set) The roles to assign to the workspaces. When you set `deployment_roles` or `dag_roles`, include each deployment's parent workspace here (any workspace role), so Terraform state matches the API. (see [below for nested schema](#nestedatt--workspace_roles))
 
 <a id="nestedatt--dag_roles"></a>
 ### Nested Schema for `dag_roles`

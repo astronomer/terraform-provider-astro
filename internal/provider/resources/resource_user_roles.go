@@ -53,7 +53,7 @@ func (r *UserRolesResource) Schema(
 ) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "User Roles resource",
+		MarkdownDescription: "Manages organization, workspace, deployment, and DAG roles for a user. Astro permissions are hierarchical (organization, workspace, deployment, then DAG). Declare roles at each applicable parent scope as well as nested scopes, not only at the leaf, so Terraform state matches the API.",
 		Attributes:          schemas.ResourceUserRolesSchemaAttributes(),
 	}
 }

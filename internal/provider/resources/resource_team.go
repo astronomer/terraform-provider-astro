@@ -54,7 +54,7 @@ func (r *TeamResource) Schema(
 ) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Team resource",
+		MarkdownDescription: "Creates and manages a team and its members. Astro permissions are hierarchical (organization, workspace, deployment, then DAG). Declare roles at each applicable parent scope as well as nested scopes, not only at the leaf, so Terraform state matches the API.",
 		Attributes:          schemas.TeamResourceSchemaAttributes(),
 	}
 }

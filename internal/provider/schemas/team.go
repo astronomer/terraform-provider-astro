@@ -136,21 +136,21 @@ func TeamResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 				Attributes: ResourceWorkspaceRoleSchemaAttributes(),
 			},
 			Optional:            true,
-			MarkdownDescription: "The roles to assign to the Workspaces",
+			MarkdownDescription: "The roles to assign to the Workspaces. When you set `deployment_roles` or `dag_roles`, include each deployment's parent workspace here (any workspace role), so Terraform state matches the API.",
 		},
 		"deployment_roles": resourceSchema.SetNestedAttribute{
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: ResourceDeploymentRoleSchemaAttributes(),
 			},
 			Optional:            true,
-			MarkdownDescription: "The roles to assign to the Deployments",
+			MarkdownDescription: "The roles to assign to the Deployments. Each `deployment_id` must belong to a workspace that also appears in `workspace_roles`. Required for any deployment referenced in `dag_roles`.",
 		},
 		"dag_roles": resourceSchema.SetNestedAttribute{
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: ResourceDagRoleSchemaAttributes(),
 			},
 			Optional:            true,
-			MarkdownDescription: "The DAG roles to assign to the team. Each role grants permissions to a specific DAG or DAGs with a specific tag within a deployment.",
+			MarkdownDescription: "The DAG roles to assign to the team. Each role grants permissions to a specific DAG or DAGs with a specific tag within a deployment. Each deployment referenced in `dag_roles` must also have a corresponding entry in `deployment_roles` (for example `DEPLOYMENT_ACCESSOR`).",
 		},
 		"roles_count": resourceSchema.Int64Attribute{
 			MarkdownDescription: "Number of roles assigned to the Team",

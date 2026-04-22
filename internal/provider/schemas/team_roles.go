@@ -35,14 +35,14 @@ func ResourceTeamRolesSchemaAttributes() map[string]resourceSchema.Attribute {
 				Attributes: ResourceWorkspaceRoleSchemaAttributes(),
 			},
 			Optional:            true,
-			MarkdownDescription: "The roles to assign to the workspaces",
+			MarkdownDescription: "The roles to assign to the workspaces. When you set `deployment_roles` or `dag_roles`, include each deployment's parent workspace here (any workspace role), so Terraform state matches the API.",
 		},
 		"deployment_roles": resourceSchema.SetNestedAttribute{
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: ResourceDeploymentRoleSchemaAttributes(),
 			},
 			Optional:            true,
-			MarkdownDescription: "The roles to assign to the deployments. Required for any deployment referenced in `dag_roles`.",
+			MarkdownDescription: "The roles to assign to the deployments. Each `deployment_id` must belong to a workspace that also appears in `workspace_roles`. Required for any deployment referenced in `dag_roles`.",
 		},
 		"dag_roles": resourceSchema.SetNestedAttribute{
 			NestedObject: resourceSchema.NestedAttributeObject{
