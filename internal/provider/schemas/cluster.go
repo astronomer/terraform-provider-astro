@@ -91,6 +91,11 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 				stringplanmodifier.RequiresReplaceIfConfigured(),
 			},
 		},
+		"secondary_vpc_cidr": resourceSchema.StringAttribute{
+			MarkdownDescription: "Secondary CIDR for pod networking (AWS only, /16 to /20). Cannot be changed once set.",
+			Optional:            true,
+			Computed:            true,
+		},
 		"metadata": resourceSchema.SingleNestedAttribute{
 			Attributes:          ClusterMetadataResourceAttributes(),
 			Computed:            true,
@@ -245,6 +250,10 @@ func ClusterDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 		},
 		"vpc_subnet_range": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Cluster VPC subnet range",
+			Computed:            true,
+		},
+		"secondary_vpc_cidr": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Secondary CIDR for pod networking (AWS only)",
 			Computed:            true,
 		},
 		"metadata": datasourceSchema.SingleNestedAttribute{

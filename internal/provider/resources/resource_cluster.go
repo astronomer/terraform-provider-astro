@@ -101,6 +101,7 @@ func (r *ClusterResource) Create(
 			Region:                       data.Region.ValueString(),
 			Type:                         platform.CreateAwsClusterRequestType(data.Type.ValueString()),
 			VpcSubnetRange:               data.VpcSubnetRange.ValueString(),
+			SecondaryVpcCidr:             data.SecondaryVpcCidr.ValueStringPointer(),
 			DrRegion:                     data.DrRegion.ValueStringPointer(),
 			DrVpcSubnetRange:             data.DrVpcSubnetRange.ValueStringPointer(),
 			DrSecondaryVpcCidr:           data.DrSecondaryVpcCidr.ValueStringPointer(),
@@ -610,6 +611,14 @@ func validateAzureConfig(ctx context.Context, data *models.ClusterResource) diag
 		)
 	}
 
+	// secondary_vpc_cidr is AWS only
+	if !data.SecondaryVpcCidr.IsNull() {
+		diags.AddError(
+			"secondary_vpc_cidr is not allowed for 'AZURE' cluster",
+			"Please remove secondary_vpc_cidr",
+		)
+	}
+
 	// DR is not supported for Azure clusters
 	if !data.IsDrEnabled.IsNull() && data.IsDrEnabled.ValueBool() {
 		diags.AddError(
@@ -673,6 +682,12 @@ func validateGcpConfig(ctx context.Context, data *models.ClusterResource) diag.D
 		diags.AddError(
 			"tenant_id is not allowed for 'GCP' cluster",
 			"Please remove tenant_id",
+		)
+	}
+	if !data.SecondaryVpcCidr.IsNull() {
+		diags.AddError(
+			"secondary_vpc_cidr is not allowed for 'GCP' cluster",
+			"Please remove secondary_vpc_cidr",
 		)
 	}
 

@@ -68,6 +68,7 @@ Read-Only:
 - `provider_account` (String) Cluster provider account
 - `region` (String) Cluster region
 - `service_peering_range` (String) Cluster service peering range
+- `secondary_vpc_cidr` (String) Secondary CIDR for pod networking (AWS only)
 - `service_subnet_range` (String) Cluster service subnet range
 - `status` (String) Cluster status
 - `tags` (Attributes Set) Cluster tags (see [below for nested schema](#nestedatt--clusters--tags))
