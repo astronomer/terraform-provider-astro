@@ -789,6 +789,7 @@ type clusterInput struct {
 	Region                             string
 	CloudProvider                      string
 	RestrictedWorkspaceResourceVarName string
+	SecondaryVpcCidr                   string
 	IsDrEnabled                        bool
 	DrRegion                           string
 	DrVpcSubnetRange                   string
@@ -807,6 +808,11 @@ func cluster(input clusterInput) string {
 	pod_subnet_range = "172.21.0.0/19"
 	service_peering_range = "172.23.0.0/20"
 	service_subnet_range =  "172.22.0.0/22"`
+	}
+	secondaryVpcCidrField := ""
+	if input.SecondaryVpcCidr != "" {
+		secondaryVpcCidrField = fmt.Sprintf(`
+	secondary_vpc_cidr = "%v"`, input.SecondaryVpcCidr)
 	}
 	drFields := ""
 	if input.IsDrEnabled {
@@ -834,9 +840,10 @@ func cluster(input clusterInput) string {
 	vpc_subnet_range = "172.20.0.0/20"
 	%v
 	%v
+	%v
 	workspace_ids = [%v]
 }
-`, input.Name, input.Name, input.Region, input.CloudProvider, gcpNetworkFields, drFields, workspaceId)
+`, input.Name, input.Name, input.Region, input.CloudProvider, gcpNetworkFields, secondaryVpcCidrField, drFields, workspaceId)
 }
 
 func clusterWithVariableName(input clusterInput) string {

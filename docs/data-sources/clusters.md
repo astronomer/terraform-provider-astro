@@ -67,6 +67,7 @@ Read-Only:
 - `pod_subnet_range` (String) Cluster pod subnet range
 - `provider_account` (String) Cluster provider account
 - `region` (String) Cluster region
+- `secondary_vpc_cidr` (String) Secondary CIDR for pod networking (AWS only)
 - `service_peering_range` (String) Cluster service peering range
 - `service_subnet_range` (String) Cluster service subnet range
 - `status` (String) Cluster status

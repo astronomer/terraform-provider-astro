@@ -1,10 +1,11 @@
 resource "astro_cluster" "aws_example" {
-  type             = "DEDICATED"
-  name             = "my first aws cluster"
-  region           = "us-east-1"
-  cloud_provider   = "AWS"
-  vpc_subnet_range = "172.20.0.0/20"
-  workspace_ids    = []
+  type               = "DEDICATED"
+  name               = "my first aws cluster"
+  region             = "us-east-1"
+  cloud_provider     = "AWS"
+  vpc_subnet_range   = "172.20.0.0/20"
+  secondary_vpc_cidr = "100.64.0.0/19" # Optional: secondary CIDR for pod networking
+  workspace_ids      = []
   timeouts = {    # Optional timeouts for create, update, and delete
     create = "3h" # Timeout after 3 hours if the cluster is not created
     update = "2h" # Timeout after 2 hours if the cluster is not updated

@@ -24,6 +24,7 @@ type ClusterResource struct {
 	ServicePeeringRange          types.String   `tfsdk:"service_peering_range"`
 	ServiceSubnetRange           types.String   `tfsdk:"service_subnet_range"`
 	VpcSubnetRange               types.String   `tfsdk:"vpc_subnet_range"`
+	SecondaryVpcCidr             types.String   `tfsdk:"secondary_vpc_cidr"`
 	Metadata                     types.Object   `tfsdk:"metadata"`
 	Status                       types.String   `tfsdk:"status"`
 	CreatedAt                    types.String   `tfsdk:"created_at"`
@@ -55,6 +56,7 @@ type ClusterDataSource struct {
 	ServicePeeringRange          types.String `tfsdk:"service_peering_range"`
 	ServiceSubnetRange           types.String `tfsdk:"service_subnet_range"`
 	VpcSubnetRange               types.String `tfsdk:"vpc_subnet_range"`
+	SecondaryVpcCidr             types.String `tfsdk:"secondary_vpc_cidr"`
 	Metadata                     types.Object `tfsdk:"metadata"`
 	Status                       types.String `tfsdk:"status"`
 	CreatedAt                    types.String `tfsdk:"created_at"`
@@ -127,6 +129,7 @@ func (data *ClusterResource) ReadFromResponse(
 	data.ServicePeeringRange = types.StringPointerValue(cluster.ServicePeeringRange)
 	data.ServiceSubnetRange = types.StringPointerValue(cluster.ServiceSubnetRange)
 	data.VpcSubnetRange = types.StringValue(cluster.VpcSubnetRange)
+	data.SecondaryVpcCidr = types.StringPointerValue(cluster.SecondaryVpcCidr)
 	data.Metadata, diags = ClusterMetadataTypesObject(ctx, cluster.Metadata)
 	if diags.HasError() {
 		return diags
@@ -188,6 +191,7 @@ func (data *ClusterDataSource) ReadFromResponse(
 	data.ServicePeeringRange = types.StringPointerValue(cluster.ServicePeeringRange)
 	data.ServiceSubnetRange = types.StringPointerValue(cluster.ServiceSubnetRange)
 	data.VpcSubnetRange = types.StringValue(cluster.VpcSubnetRange)
+	data.SecondaryVpcCidr = types.StringPointerValue(cluster.SecondaryVpcCidr)
 	data.Metadata, diags = ClusterMetadataTypesObject(ctx, cluster.Metadata)
 	if diags.HasError() {
 		return diags

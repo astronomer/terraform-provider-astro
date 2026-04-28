@@ -14,12 +14,13 @@ Cluster resource. If creating multiple clusters, add a delay between each cluste
 
 ```terraform
 resource "astro_cluster" "aws_example" {
-  type             = "DEDICATED"
-  name             = "my first aws cluster"
-  region           = "us-east-1"
-  cloud_provider   = "AWS"
-  vpc_subnet_range = "172.20.0.0/20"
-  workspace_ids    = []
+  type               = "DEDICATED"
+  name               = "my first aws cluster"
+  region             = "us-east-1"
+  cloud_provider     = "AWS"
+  vpc_subnet_range   = "172.20.0.0/20"
+  secondary_vpc_cidr = "100.64.0.0/19" # Optional: secondary CIDR for pod networking
+  workspace_ids      = []
   timeouts = {    # Optional timeouts for create, update, and delete
     create = "3h" # Timeout after 3 hours if the cluster is not created
     update = "2h" # Timeout after 2 hours if the cluster is not updated
@@ -99,6 +100,7 @@ resource "astro_cluster" "imported_cluster" {
 - `is_dr_enabled` (Boolean) Whether Disaster Recovery is enabled on the cluster. Only supported for AWS clusters. Can only be enabled at cluster creation time. Can be set to `false` to disable DR on an existing cluster.
 - `is_failed_over` (Boolean) Whether the cluster is currently failed over to the DR region. Set to `true` to trigger failover; set to `false` to fail back.
 - `pod_subnet_range` (String) Cluster pod subnet range - required for 'GCP' clusters. If changed, the cluster will be recreated.
+- `secondary_vpc_cidr` (String) Secondary CIDR for pod networking (AWS only, /16 to /20). Cannot be changed once set.
 - `service_peering_range` (String) Cluster service peering range - required for 'GCP' clusters. If changed, the cluster will be recreated.
 - `service_subnet_range` (String) Cluster service subnet range - required for 'GCP' clusters. If changed, the cluster will be recreated.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))

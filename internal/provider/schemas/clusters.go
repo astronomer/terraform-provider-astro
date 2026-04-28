@@ -24,6 +24,7 @@ func ClustersElementAttributeTypes() map[string]attr.Type {
 		"service_peering_range": types.StringType,
 		"service_subnet_range":  types.StringType,
 		"vpc_subnet_range":      types.StringType,
+		"secondary_vpc_cidr":    types.StringType,
 		"metadata": types.ObjectType{
 			AttrTypes: ClusterMetadataAttributeTypes(),
 		},
