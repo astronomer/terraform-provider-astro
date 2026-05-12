@@ -114,7 +114,7 @@ func ValidateRoleMatchesEntityType(role string, scopeType string) bool {
 }
 
 type ValidateWorkspaceDeploymentRolesInput struct {
-	PlatformClient  *platform.ClientWithResponses
+	PlatformClient  platform.ClientWithResponsesInterface
 	OrganizationId  string
 	DeploymentRoles []iam.DeploymentRole
 	WorkspaceRoles  []iam.WorkspaceRole
@@ -133,25 +133,44 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 	})
 	deploymentRoleIds = lo.Uniq(deploymentRoleIds)
 
-	// get list of deployments
-	listDeployments, err := input.PlatformClient.ListDeploymentsWithResponse(ctx, input.OrganizationId, &platform.ListDeploymentsParams{
+	// get list of deployments (paginated)
+	params := &platform.ListDeploymentsParams{
 		DeploymentIds: &deploymentRoleIds,
-	})
-	if err != nil {
-		tflog.Error(ctx, "failed to mutate roles", map[string]interface{}{"error": err})
-		return diag.Diagnostics{diag.NewErrorDiagnostic(
-			"Client Error",
-			fmt.Sprintf("Unable to mutate roles and list deployments, got error: %s", err),
-		),
-		}
+		Limit:         lo.ToPtr(100),
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, listDeployments.HTTPResponse, listDeployments.Body)
-	if diagnostic != nil {
-		return diag.Diagnostics{diagnostic}
+
+	var queriedDeployments []platform.Deployment
+	offset := 0 // Will be incremented appropriately to ensure all Deployments are returned
+
+	for {
+		params.Offset = &offset
+		listDeployments, err := input.PlatformClient.ListDeploymentsWithResponse(ctx, input.OrganizationId, params)
+
+		if err != nil {
+			tflog.Error(ctx, "failed to mutate roles", map[string]interface{}{"error": err})
+			return diag.Diagnostics{diag.NewErrorDiagnostic(
+				"Client Error",
+				fmt.Sprintf("Unable to mutate roles and list deployments, got error: %s", err),
+			)}
+		}
+
+		_, diagnostic := clients.NormalizeAPIError(ctx, listDeployments.HTTPResponse, listDeployments.Body)
+		if diagnostic != nil {
+			return diag.Diagnostics{diagnostic}
+		}
+
+		// Append new Deployments to queriedDeployments, which we'll eventually use to validate Deployment ID's
+		queriedDeployments = append(queriedDeployments, listDeployments.JSON200.Deployments...)
+
+		// Break if we've hit the last page; otherwise, increment the offset and continue
+		if listDeployments.JSON200.TotalCount <= offset+len(listDeployments.JSON200.Deployments) {
+			break
+		}
+		offset += 100
 	}
 
 	// get list of deployment ids
-	deploymentIds := lo.Map(listDeployments.JSON200.Deployments, func(deployment platform.Deployment, _ int) string {
+	deploymentIds := lo.Map(queriedDeployments, func(deployment platform.Deployment, _ int) string {
 		return deployment.Id
 	})
 
@@ -167,7 +186,7 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 	}
 
 	// get list of workspace ids from deployments
-	deploymentWorkspaceIds := lo.Map(listDeployments.JSON200.Deployments, func(deployment platform.Deployment, _ int) string {
+	deploymentWorkspaceIds := lo.Map(queriedDeployments, func(deployment platform.Deployment, _ int) string {
 		return deployment.WorkspaceId
 	})
 	deploymentWorkspaceIds = lo.Uniq(deploymentWorkspaceIds)
