@@ -78,12 +78,13 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 						SchedulerSize: "SMALL",
 					}) +
 					dedicatedRemoteDeployment(dedicatedRemoteDeploymentInput{
-						ClusterId:     awsResourceVarId,
-						WorkspaceId:   workspaceResourceVarId,
-						Name:          awsDeploymentName,
-						Description:   "deployment description",
-						Executor:      "ASTRO",
-						TaskLogBucket: "s3://my-task-log-bucket",
+						ClusterId:              awsResourceVarId,
+						WorkspaceId:            workspaceResourceVarId,
+						Name:                   awsDeploymentName,
+						Description:            "deployment description",
+						Executor:               "ASTRO",
+						TaskLogBucket:          "s3://my-task-log-bucket",
+						AllowedIpAddressRanges: []string{"8.8.8.8/32"},
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
@@ -290,12 +291,13 @@ func TestAcc_ResourceClusterAzureWithDedicatedDeployments(t *testing.T) {
 						SchedulerSize: "SMALL",
 					}) +
 					dedicatedRemoteDeployment(dedicatedRemoteDeploymentInput{
-						ClusterId:         azureResourceVarId,
-						WorkspaceId:       workspaceResourceVarId,
-						Name:              azureDeploymentName,
-						Description:       utils.TestResourceDescription,
-						Executor:          "ASTRO",
-						TaskLogUrlPattern: "https://s3.amazonaws.com/my-task-log-bucket/{{ task_id }}/{{ execution_date }}/{{ filename }}",
+						ClusterId:              azureResourceVarId,
+						WorkspaceId:            workspaceResourceVarId,
+						Name:                   azureDeploymentName,
+						Description:            utils.TestResourceDescription,
+						Executor:               "ASTRO",
+						TaskLogUrlPattern:      "https://s3.amazonaws.com/my-task-log-bucket/{{ task_id }}/{{ execution_date }}/{{ filename }}",
+						AllowedIpAddressRanges: []string{"8.8.8.8/32"},
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
@@ -397,11 +399,12 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 						SchedulerSize: "SMALL",
 					}) +
 					dedicatedRemoteDeployment(dedicatedRemoteDeploymentInput{
-						ClusterId:   gcpResourceVarId,
-						WorkspaceId: workspaceResourceVarId,
-						Name:        gcpDeploymentName,
-						Description: utils.TestResourceDescription,
-						Executor:    "ASTRO",
+						ClusterId:              gcpResourceVarId,
+						WorkspaceId:            workspaceResourceVarId,
+						Name:                   gcpDeploymentName,
+						Description:            utils.TestResourceDescription,
+						Executor:               "ASTRO",
+						AllowedIpAddressRanges: []string{"8.8.8.8/32"},
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check cluster
@@ -748,6 +751,10 @@ type dedicatedRemoteDeploymentInput struct {
 	Executor          string
 	TaskLogBucket     string
 	TaskLogUrlPattern string
+	// AllowedIpAddressRanges controls the `allowed_ip_address_ranges` HCL field.
+	// nil or empty → field is omitted from HCL entirely (regression case for GH #244).
+	// non-empty → field is emitted with the given CIDRs.
+	AllowedIpAddressRanges []string
 }
 
 func dedicatedRemoteDeployment(input dedicatedRemoteDeploymentInput) string {
@@ -758,6 +765,14 @@ func dedicatedRemoteDeployment(input dedicatedRemoteDeploymentInput) string {
 	var taskLogUrlPatternStr string
 	if input.TaskLogUrlPattern != "" {
 		taskLogUrlPatternStr = fmt.Sprintf(`task_log_url_pattern = "%s"`, input.TaskLogUrlPattern)
+	}
+	var allowedIpRangesStr string
+	if len(input.AllowedIpAddressRanges) > 0 {
+		quoted := make([]string, len(input.AllowedIpAddressRanges))
+		for i, ip := range input.AllowedIpAddressRanges {
+			quoted[i] = fmt.Sprintf(`"%s"`, ip)
+		}
+		allowedIpRangesStr = fmt.Sprintf(`allowed_ip_address_ranges = [%s]`, strings.Join(quoted, ", "))
 	}
 	return fmt.Sprintf(`
 resource "astro_deployment" "%v_remote" {
@@ -776,12 +791,12 @@ resource "astro_deployment" "%v_remote" {
 	environment_variables = []
 	remote_execution = {
 		enabled = true
-		allowed_ip_address_ranges = ["8.8.8.8/32"]
+		%s
 		%s
 		%s
 	}
 }
-`, input.Name, input.Name, input.Description, input.ClusterId, input.Executor, input.WorkspaceId, taskLogBucketStr, taskLogUrlPatternStr)
+`, input.Name, input.Name, input.Description, input.ClusterId, input.Executor, input.WorkspaceId, allowedIpRangesStr, taskLogBucketStr, taskLogUrlPatternStr)
 }
 
 type clusterInput struct {

@@ -6,6 +6,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -63,7 +66,18 @@ func RemoteExecutionResourceSchemaAttributes() map[string]resourceSchema.Attribu
 		"allowed_ip_address_ranges": resourceSchema.SetAttribute{
 			MarkdownDescription: "The allowed IP address ranges for remote execution",
 			Optional:            true,
-			ElementType:         types.StringType,
+			// The API always returns this field as an array (empty `[]` when unset rather than null),
+			// so the schema must be `Computed` with an empty-set default. Without this, omitting the
+			// field in HCL produces "Provider produced inconsistent result after apply: was null,
+			// but now cty.SetValEmpty(cty.String)." See GH #244.
+			Computed:    true,
+			ElementType: types.StringType,
+			Default: setdefault.StaticValue(
+				types.SetValueMust(types.StringType, []attr.Value{}),
+			),
+			PlanModifiers: []planmodifier.Set{
+				setplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"remote_api_url": resourceSchema.StringAttribute{
 			MarkdownDescription: "The URL for the remote API",

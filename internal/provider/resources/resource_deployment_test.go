@@ -187,12 +187,13 @@ func TestAcc_ResourceDeploymentDedicated(t *testing.T) {
 						SchedulerSize: "SMALL",
 					}) +
 					dedicatedRemoteDeployment(dedicatedRemoteDeploymentInput{
-						ClusterId:     clusterId,
-						WorkspaceId:   workspaceId,
-						Name:          deploymentName,
-						Description:   "deployment description",
-						Executor:      "ASTRO",
-						TaskLogBucket: "s3://my-task-log-bucket",
+						ClusterId:              clusterId,
+						WorkspaceId:            workspaceId,
+						Name:                   deploymentName,
+						Description:            "deployment description",
+						Executor:               "ASTRO",
+						TaskLogBucket:          "s3://my-task-log-bucket",
+						AllowedIpAddressRanges: []string{"8.8.8.8/32"},
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					// Check dedicated deployment
@@ -219,6 +220,72 @@ func TestAcc_ResourceDeploymentDedicated(t *testing.T) {
 					testAccCheckDeploymentExistence(t, deploymentName, true, true),
 					testAccCheckDeploymentExistence(t, deploymentName+"_astro", true, true),
 					testAccCheckDeploymentExistence(t, deploymentName+"_remote", true, true),
+				),
+			},
+		},
+	})
+}
+
+// TestAcc_ResourceDeploymentRemoteExecutionAllowedIPRanges regresses GH #244.
+// The Astro API always returns `allowedIpAddressRanges` as an array (empty `[]` when unset
+// rather than null). When this field was Optional-only, omitting it from HCL caused
+// "Provider produced inconsistent result after apply: was null, but now cty.SetValEmpty(cty.String)".
+//
+// Steps:
+//  1. Create the remote deployment without `allowed_ip_address_ranges` — must succeed in
+//     one apply and the implicit post-apply plan must be empty.
+//  2. Update to a multi-element list — round-trip preserves both values; plan empty.
+func TestAcc_ResourceDeploymentRemoteExecutionAllowedIPRanges(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
+
+	workspaceName := fmt.Sprintf("%v_workspace", namePrefix)
+	workspaceResourceVar := fmt.Sprintf("astro_workspace.%v", workspaceName)
+	workspaceId := fmt.Sprintf("%v.id", workspaceResourceVar)
+
+	clusterId := fmt.Sprintf("\"%v\"", os.Getenv("HOSTED_DEDICATED_CLUSTER_ID"))
+	deploymentName := fmt.Sprintf("%v_remote_ips", namePrefix)
+	resourceVar := fmt.Sprintf("astro_deployment.%v_remote", deploymentName)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckDeploymentExistence(t, deploymentName+"_remote", true, false),
+		),
+		Steps: []resource.TestStep{
+			// Step 1: create without allowed_ip_address_ranges — bug fired here before the fix.
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
+					dedicatedRemoteDeployment(dedicatedRemoteDeploymentInput{
+						ClusterId:   clusterId,
+						WorkspaceId: workspaceId,
+						Name:        deploymentName,
+						Description: "deployment description",
+						Executor:    "ASTRO",
+					}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "remote_execution.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceVar, "remote_execution.allowed_ip_address_ranges.#", "0"),
+					testAccCheckDeploymentExistence(t, deploymentName+"_remote", true, true),
+				),
+			},
+			// Step 2: update to multiple IPs — round-trip preserves both.
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					workspace(workspaceName, workspaceName, utils.TestResourceDescription, false) +
+					dedicatedRemoteDeployment(dedicatedRemoteDeploymentInput{
+						ClusterId:              clusterId,
+						WorkspaceId:            workspaceId,
+						Name:                   deploymentName,
+						Description:            "deployment description",
+						Executor:               "ASTRO",
+						AllowedIpAddressRanges: []string{"10.0.0.0/8", "192.168.1.0/24"},
+					}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "remote_execution.allowed_ip_address_ranges.#", "2"),
+					resource.TestCheckTypeSetElemAttr(resourceVar, "remote_execution.allowed_ip_address_ranges.*", "10.0.0.0/8"),
+					resource.TestCheckTypeSetElemAttr(resourceVar, "remote_execution.allowed_ip_address_ranges.*", "192.168.1.0/24"),
 				),
 			},
 		},
