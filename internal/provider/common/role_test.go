@@ -156,6 +156,7 @@ func TestValidateWorkspaceDeploymentRoles(t *testing.T) {
 		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 			PlatformClient:  mockClient,
 			OrganizationId:  orgId,
+			Limit:           100,
 			DeploymentRoles: []iam.DeploymentRole{},
 			WorkspaceRoles:  []iam.WorkspaceRole{},
 		})
@@ -171,6 +172,7 @@ func TestValidateWorkspaceDeploymentRoles(t *testing.T) {
 		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 			PlatformClient:  mockClient,
 			OrganizationId:  orgId,
+			Limit:           100,
 			DeploymentRoles: []iam.DeploymentRole{{DeploymentId: "dep-1", Role: "DEPLOYMENT_ADMIN"}},
 			WorkspaceRoles:  []iam.WorkspaceRole{{WorkspaceId: workspaceId, Role: iam.WORKSPACEOWNER}},
 		})
@@ -190,6 +192,7 @@ func TestValidateWorkspaceDeploymentRoles(t *testing.T) {
 		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 			PlatformClient:  mockClient,
 			OrganizationId:  orgId,
+			Limit:           100,
 			DeploymentRoles: []iam.DeploymentRole{{DeploymentId: "dep-1", Role: "DEPLOYMENT_ADMIN"}},
 			WorkspaceRoles:  []iam.WorkspaceRole{{WorkspaceId: workspaceId, Role: iam.WORKSPACEOWNER}},
 		})
@@ -205,6 +208,7 @@ func TestValidateWorkspaceDeploymentRoles(t *testing.T) {
 		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 			PlatformClient:  mockClient,
 			OrganizationId:  orgId,
+			Limit:           100,
 			DeploymentRoles: []iam.DeploymentRole{{DeploymentId: "dep-nonexistent", Role: "DEPLOYMENT_ADMIN"}},
 			WorkspaceRoles:  []iam.WorkspaceRole{{WorkspaceId: workspaceId, Role: iam.WORKSPACEOWNER}},
 		})
@@ -221,6 +225,7 @@ func TestValidateWorkspaceDeploymentRoles(t *testing.T) {
 		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 			PlatformClient:  mockClient,
 			OrganizationId:  orgId,
+			Limit:           100,
 			DeploymentRoles: []iam.DeploymentRole{{DeploymentId: "dep-1", Role: "DEPLOYMENT_ADMIN"}},
 			// workspace role is for a different workspace than the deployment belongs to
 			WorkspaceRoles: []iam.WorkspaceRole{{WorkspaceId: workspaceId, Role: iam.WORKSPACEOWNER}},
@@ -237,6 +242,7 @@ func TestValidateWorkspaceDeploymentRoles(t *testing.T) {
 		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 			PlatformClient:  mockClient,
 			OrganizationId:  orgId,
+			Limit:           100,
 			DeploymentRoles: []iam.DeploymentRole{{DeploymentId: "dep-1", Role: "DEPLOYMENT_ADMIN"}},
 			WorkspaceRoles:  []iam.WorkspaceRole{{WorkspaceId: workspaceId, Role: iam.WORKSPACEOWNER}},
 		})
@@ -269,6 +275,7 @@ func TestValidateWorkspaceDeploymentRoles(t *testing.T) {
 		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 			PlatformClient:  mockClient,
 			OrganizationId:  orgId,
+			Limit:           100,
 			DeploymentRoles: []iam.DeploymentRole{{DeploymentId: "dep-149", Role: "DEPLOYMENT_ADMIN"}},
 			WorkspaceRoles:  []iam.WorkspaceRole{{WorkspaceId: workspaceId, Role: iam.WORKSPACEOWNER}},
 		})
@@ -295,6 +302,7 @@ func TestValidateWorkspaceDeploymentRoles(t *testing.T) {
 		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 			PlatformClient:  mockClient,
 			OrganizationId:  orgId,
+			Limit:           100,
 			DeploymentRoles: []iam.DeploymentRole{{DeploymentId: "dep-149", Role: "DEPLOYMENT_ADMIN"}},
 			WorkspaceRoles:  []iam.WorkspaceRole{{WorkspaceId: workspaceId, Role: iam.WORKSPACEOWNER}},
 		})
@@ -314,6 +322,7 @@ func TestValidateWorkspaceDeploymentRoles(t *testing.T) {
 		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 			PlatformClient:  mockClient,
 			OrganizationId:  orgId,
+			Limit:           100,
 			DeploymentRoles: []iam.DeploymentRole{{DeploymentId: "dep-1", Role: "DEPLOYMENT_ADMIN"}},
 			WorkspaceRoles:  []iam.WorkspaceRole{{WorkspaceId: workspaceId, Role: iam.WORKSPACEOWNER}},
 		})
@@ -332,6 +341,7 @@ func TestValidateWorkspaceDeploymentRoles(t *testing.T) {
 		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 			PlatformClient: mockClient,
 			OrganizationId: orgId,
+			Limit:          100,
 			DeploymentRoles: []iam.DeploymentRole{
 				{DeploymentId: "dep-1", Role: "DEPLOYMENT_ADMIN"},
 				{DeploymentId: "dep-2", Role: "DEPLOYMENT_ADMIN"},
@@ -356,6 +366,7 @@ func TestValidateWorkspaceDeploymentRoles(t *testing.T) {
 		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 			PlatformClient: mockClient,
 			OrganizationId: orgId,
+			Limit:          100,
 			DeploymentRoles: []iam.DeploymentRole{
 				{DeploymentId: "dep-1", Role: "DEPLOYMENT_ADMIN"},
 				{DeploymentId: "dep-2", Role: "DEPLOYMENT_ADMIN"},
@@ -377,6 +388,7 @@ func TestValidateWorkspaceDeploymentRoles(t *testing.T) {
 		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 			PlatformClient: mockClient,
 			OrganizationId: orgId,
+			Limit:          100,
 			// same deployment ID provided twice
 			DeploymentRoles: []iam.DeploymentRole{
 				{DeploymentId: "dep-1", Role: "DEPLOYMENT_ADMIN"},
@@ -414,6 +426,7 @@ func TestValidateWorkspaceDeploymentRoles(t *testing.T) {
 		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
 			PlatformClient:  mockClient,
 			OrganizationId:  orgId,
+			Limit:           100,
 			DeploymentRoles: []iam.DeploymentRole{{DeploymentId: "dep-124", Role: "DEPLOYMENT_ADMIN"}},
 			WorkspaceRoles:  []iam.WorkspaceRole{{WorkspaceId: workspaceId, Role: iam.WORKSPACEOWNER}},
 		})

@@ -118,6 +118,7 @@ type ValidateWorkspaceDeploymentRolesInput struct {
 	OrganizationId  string
 	DeploymentRoles []iam.DeploymentRole
 	WorkspaceRoles  []iam.WorkspaceRole
+	Limit           int // page size for ListDeployments; defaults to 1000 if zero
 }
 
 // ValidateWorkspaceDeploymentRoles checks if deployment roles have corresponding workspace roles
@@ -133,10 +134,15 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 	})
 	deploymentRoleIds = lo.Uniq(deploymentRoleIds)
 
+	limit := input.Limit
+	if limit == 0 {
+		limit = 1000
+	}
+
 	// get list of deployments (paginated)
 	params := &platform.ListDeploymentsParams{
 		DeploymentIds: &deploymentRoleIds,
-		Limit:         lo.ToPtr(100),
+		Limit:         lo.ToPtr(limit),
 	}
 
 	var queriedDeployments []platform.Deployment
