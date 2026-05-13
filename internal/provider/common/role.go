@@ -160,6 +160,11 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 			)}
 		}
 
+		_, diagnostic := clients.NormalizeAPIError(ctx, listDeployments.HTTPResponse, listDeployments.Body)
+		if diagnostic != nil {
+			return diag.Diagnostics{diagnostic}
+		}
+
 		if listDeployments.JSON200 == nil {
 			return diag.Diagnostics{diag.NewErrorDiagnostic(
 				"Client Error", "Unable to list deployments, got nil response")}
@@ -168,11 +173,6 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 		// Handle an empty page, breaking early
 		if len(listDeployments.JSON200.Deployments) == 0 {
 			break
-		}
-
-		_, diagnostic := clients.NormalizeAPIError(ctx, listDeployments.HTTPResponse, listDeployments.Body)
-		if diagnostic != nil {
-			return diag.Diagnostics{diagnostic}
 		}
 
 		// Append new Deployments to queriedDeployments, which we'll eventually use to validate Deployment ID's
