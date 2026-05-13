@@ -154,6 +154,16 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 			)}
 		}
 
+		if listDeployments.JSON200 == nil {
+			return diag.Diagnostics{diag.NewErrorDiagnostic(
+				"Client Error", "Unable to list deployments, got nil response")}
+		}
+
+		// Handle an empty page, breaking early
+		if len(listDeployments.JSON200.Deployments) == 0 {
+			break
+		}
+
 		_, diagnostic := clients.NormalizeAPIError(ctx, listDeployments.HTTPResponse, listDeployments.Body)
 		if diagnostic != nil {
 			return diag.Diagnostics{diagnostic}
@@ -166,7 +176,7 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 		if listDeployments.JSON200.TotalCount <= offset+len(listDeployments.JSON200.Deployments) {
 			break
 		}
-		offset += 100
+		offset += len(listDeployments.JSON200.Deployments)
 	}
 
 	// get list of deployment ids

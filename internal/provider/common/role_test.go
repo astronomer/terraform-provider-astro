@@ -275,4 +275,149 @@ func TestValidateWorkspaceDeploymentRoles(t *testing.T) {
 		assert.False(t, diags.HasError())
 		mockClient.AssertNumberOfCalls(t, "ListDeploymentsWithResponse", 2)
 	})
+
+	t.Run("client error on second page is returned as diagnostic", func(t *testing.T) {
+		mockClient := new(mocks_platform.ClientWithResponsesInterface)
+
+		page1Deps := make([]platform.Deployment, 100)
+		for i := range page1Deps {
+			page1Deps[i] = platform.Deployment{Id: fmt.Sprintf("dep-%d", i), WorkspaceId: workspaceId}
+		}
+
+		mockClient.On("ListDeploymentsWithResponse", ctx, orgId, mock.MatchedBy(func(p *platform.ListDeploymentsParams) bool {
+			return p.Offset != nil && *p.Offset == 0
+		})).Return(makeDeploymentsPaginatedResponse(page1Deps, 150), nil).Once()
+
+		mockClient.On("ListDeploymentsWithResponse", ctx, orgId, mock.MatchedBy(func(p *platform.ListDeploymentsParams) bool {
+			return p.Offset != nil && *p.Offset == 100
+		})).Return(nil, fmt.Errorf("timeout on page 2")).Once()
+
+		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
+			PlatformClient:  mockClient,
+			OrganizationId:  orgId,
+			DeploymentRoles: []iam.DeploymentRole{{DeploymentId: "dep-149", Role: "DEPLOYMENT_ADMIN"}},
+			WorkspaceRoles:  []iam.WorkspaceRole{{WorkspaceId: workspaceId, Role: iam.WORKSPACEOWNER}},
+		})
+		assert.True(t, diags.HasError())
+		assert.Contains(t, diags[0].Detail(), "timeout on page 2")
+	})
+
+	t.Run("nil JSON200 in response is returned as diagnostic", func(t *testing.T) {
+		mockClient := new(mocks_platform.ClientWithResponsesInterface)
+		nilBodyResp := &platform.ListDeploymentsResponse{
+			HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+			JSON200:      nil,
+		}
+		mockClient.On("ListDeploymentsWithResponse", ctx, orgId, mock.Anything).
+			Return(nilBodyResp, nil)
+
+		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
+			PlatformClient:  mockClient,
+			OrganizationId:  orgId,
+			DeploymentRoles: []iam.DeploymentRole{{DeploymentId: "dep-1", Role: "DEPLOYMENT_ADMIN"}},
+			WorkspaceRoles:  []iam.WorkspaceRole{{WorkspaceId: workspaceId, Role: iam.WORKSPACEOWNER}},
+		})
+		assert.True(t, diags.HasError())
+	})
+
+	t.Run("deployments across multiple workspaces with all workspace roles covered returns no diagnostics", func(t *testing.T) {
+		mockClient := new(mocks_platform.ClientWithResponsesInterface)
+		deps := []platform.Deployment{
+			{Id: "dep-1", WorkspaceId: "ws-1"},
+			{Id: "dep-2", WorkspaceId: "ws-2"},
+		}
+		mockClient.On("ListDeploymentsWithResponse", ctx, orgId, mock.Anything).
+			Return(makeDeploymentsPaginatedResponse(deps, 2), nil)
+
+		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
+			PlatformClient: mockClient,
+			OrganizationId: orgId,
+			DeploymentRoles: []iam.DeploymentRole{
+				{DeploymentId: "dep-1", Role: "DEPLOYMENT_ADMIN"},
+				{DeploymentId: "dep-2", Role: "DEPLOYMENT_ADMIN"},
+			},
+			WorkspaceRoles: []iam.WorkspaceRole{
+				{WorkspaceId: "ws-1", Role: iam.WORKSPACEOWNER},
+				{WorkspaceId: "ws-2", Role: iam.WORKSPACEMEMBER},
+			},
+		})
+		assert.False(t, diags.HasError())
+	})
+
+	t.Run("deployments across multiple workspaces with only partial workspace roles is reported as diagnostic", func(t *testing.T) {
+		mockClient := new(mocks_platform.ClientWithResponsesInterface)
+		deps := []platform.Deployment{
+			{Id: "dep-1", WorkspaceId: "ws-1"},
+			{Id: "dep-2", WorkspaceId: "ws-2"},
+		}
+		mockClient.On("ListDeploymentsWithResponse", ctx, orgId, mock.Anything).
+			Return(makeDeploymentsPaginatedResponse(deps, 2), nil)
+
+		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
+			PlatformClient: mockClient,
+			OrganizationId: orgId,
+			DeploymentRoles: []iam.DeploymentRole{
+				{DeploymentId: "dep-1", Role: "DEPLOYMENT_ADMIN"},
+				{DeploymentId: "dep-2", Role: "DEPLOYMENT_ADMIN"},
+			},
+			// ws-2 is missing a workspace role
+			WorkspaceRoles: []iam.WorkspaceRole{
+				{WorkspaceId: "ws-1", Role: iam.WORKSPACEOWNER},
+			},
+		})
+		assert.True(t, diags.HasError())
+	})
+
+	t.Run("duplicate deployment IDs are deduplicated before validation", func(t *testing.T) {
+		mockClient := new(mocks_platform.ClientWithResponsesInterface)
+		dep := platform.Deployment{Id: "dep-1", WorkspaceId: workspaceId}
+		mockClient.On("ListDeploymentsWithResponse", ctx, orgId, mock.Anything).
+			Return(makeDeploymentsPaginatedResponse([]platform.Deployment{dep}, 1), nil)
+
+		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
+			PlatformClient: mockClient,
+			OrganizationId: orgId,
+			// same deployment ID provided twice
+			DeploymentRoles: []iam.DeploymentRole{
+				{DeploymentId: "dep-1", Role: "DEPLOYMENT_ADMIN"},
+				{DeploymentId: "dep-1", Role: "DEPLOYMENT_ADMIN"},
+			},
+			WorkspaceRoles: []iam.WorkspaceRole{{WorkspaceId: workspaceId, Role: iam.WORKSPACEOWNER}},
+		})
+		assert.False(t, diags.HasError())
+	})
+
+	t.Run("pagination offset advances by actual page size for partial last page", func(t *testing.T) {
+		mockClient := new(mocks_platform.ClientWithResponsesInterface)
+
+		// Page 1: only 75 results (less than the 100 limit), totalCount=125
+		page1Deps := make([]platform.Deployment, 75)
+		for i := range page1Deps {
+			page1Deps[i] = platform.Deployment{Id: fmt.Sprintf("dep-%d", i), WorkspaceId: workspaceId}
+		}
+		// Page 2: 50 remaining results starting at offset 75
+		page2Deps := make([]platform.Deployment, 50)
+		for i := range page2Deps {
+			page2Deps[i] = platform.Deployment{Id: fmt.Sprintf("dep-%d", i+75), WorkspaceId: workspaceId}
+		}
+
+		mockClient.On("ListDeploymentsWithResponse", ctx, orgId, mock.MatchedBy(func(p *platform.ListDeploymentsParams) bool {
+			return p.Offset != nil && *p.Offset == 0
+		})).Return(makeDeploymentsPaginatedResponse(page1Deps, 125), nil).Once()
+
+		// Offset must be 75 (len of page 1), not 100 (fixed limit)
+		mockClient.On("ListDeploymentsWithResponse", ctx, orgId, mock.MatchedBy(func(p *platform.ListDeploymentsParams) bool {
+			return p.Offset != nil && *p.Offset == 75
+		})).Return(makeDeploymentsPaginatedResponse(page2Deps, 125), nil).Once()
+
+		// dep-124 only appears on page 2
+		diags := common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
+			PlatformClient:  mockClient,
+			OrganizationId:  orgId,
+			DeploymentRoles: []iam.DeploymentRole{{DeploymentId: "dep-124", Role: "DEPLOYMENT_ADMIN"}},
+			WorkspaceRoles:  []iam.WorkspaceRole{{WorkspaceId: workspaceId, Role: iam.WORKSPACEOWNER}},
+		})
+		assert.False(t, diags.HasError())
+		mockClient.AssertNumberOfCalls(t, "ListDeploymentsWithResponse", 2)
+	})
 }
