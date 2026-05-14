@@ -205,7 +205,7 @@ func NotificationChannelDefinitionDataSourceTypesObject(ctx context.Context, def
 		}
 	}
 
-	// Surface unrecognized keys at Debug level so future API additions are visible without breaking apply.
+	// Surface unrecognized keys at Warn level so future API additions are visible without breaking apply.
 	for k := range defMap {
 		if _, known := stringKeyMap[k]; known {
 			continue
