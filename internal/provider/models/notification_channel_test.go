@@ -10,7 +10,7 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 )
 
-// TestUnit_NotificationChannelDefinitionDataSourceTypesObject is the regression guard for CPP-737.
+// TestUnit_NotificationChannelDefinitionDataSourceTypesObject is the regression guard for issue #313.
 // Before the fix, a notification channel definition coming back from the API with camelCase keys
 // (dagId, deploymentId, etc.) caused types.ObjectValue to reject the extra attributes
 // ("Extra Object Attribute Name: dagId"), breaking any astro_alert that referenced such a channel.
@@ -127,14 +127,14 @@ func TestUnit_NotificationChannelDefinitionDataSourceTypesObject(t *testing.T) {
 				return
 			}
 			assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
-			// Named regression guard for CPP-737: the original failure surfaced as an
+			// Named regression guard for issue #313: the original failure surfaced as an
 			// "Extra Object Attribute Name: <key>" diagnostic from types.ObjectValue when
 			// raw camelCase API keys leaked into a schema-keyed attr map.
 			for _, d := range diags {
 				assert.NotContains(t, d.Detail(), "Extra Object Attribute Name",
-					"CPP-737 regression: unexpected schema attribute mismatch")
+					"regression for issue #313: unexpected schema attribute mismatch")
 				assert.NotContains(t, d.Summary(), "Extra Object Attribute Name",
-					"CPP-737 regression: unexpected schema attribute mismatch")
+					"regression for issue #313: unexpected schema attribute mismatch")
 			}
 
 			attrs := obj.Attributes()
