@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
@@ -145,6 +144,9 @@ func (data *NotificationChannelResource) ReadFromResponse(ctx context.Context, n
 }
 
 // NotificationChannelDefinitionDataSourceTypesObject converts a generic interface{} to a Terraform types.Object
+// matching the data source schema. The Astro API returns camelCase keys (e.g. dagId, deploymentId) which must be
+// mapped to the snake_case attribute names declared in the Terraform schema before constructing the Object —
+// otherwise types.ObjectValue rejects the extra keys with "Extra Object Attribute Name: <key>".
 func NotificationChannelDefinitionDataSourceTypesObject(ctx context.Context, def interface{}) (types.Object, diag.Diagnostics) {
 	// Cast to map[string]interface{} or default empty
 	var defMap map[string]interface{}
@@ -165,37 +167,60 @@ func NotificationChannelDefinitionDataSourceTypesObject(ctx context.Context, def
 		"webhook_url":          types.StringNull(),
 	}
 
-	// Override with actual values when present
-	for k, v := range defMap {
-		switch val := v.(type) {
-		case string:
-			if val != "" {
-				defAttrMap[k] = types.StringValue(val)
-			}
-		case []interface{}:
-			// Handle array values (like recipients)
-			var stringValues []attr.Value
-			for _, item := range val {
-				if str, ok := item.(string); ok && str != "" {
-					stringValues = append(stringValues, types.StringValue(str))
-				}
-			}
-			if len(stringValues) > 0 {
-				set, diags := types.SetValue(types.StringType, stringValues)
-				if diags.HasError() {
-					return types.Object{}, diags
-				}
-				defAttrMap[k] = set
-			}
-		default:
-			if v != nil {
-				defAttrMap[k] = types.StringValue(fmt.Sprintf("%v", v))
+	// Map every camelCase key the OpenAPI spec declares for a NotificationChannelDefinition to its snake_case
+	// schema attribute. Sensitive fields (deploymentApiToken, apiKey, integrationKey, webhookUrl) are typically
+	// stripped by the API for security, but we handle them defensively in case the backend ever returns them.
+
+	// String fields: camelCase API key → snake_case schema attr
+	stringKeyMap := map[string]string{
+		"dagId":              "dag_id",
+		"deploymentApiToken": "deployment_api_token",
+		"deploymentId":       "deployment_id",
+		"apiKey":             "api_key",
+		"integrationKey":     "integration_key",
+		"webhookUrl":         "webhook_url",
+	}
+	for apiKey, attrKey := range stringKeyMap {
+		if v, ok := defMap[apiKey]; ok && v != nil {
+			if s, ok := v.(string); ok && s != "" {
+				defAttrMap[attrKey] = types.StringValue(s)
 			}
 		}
 	}
 
-	// Create Terraform object using the definition attribute types
-	return types.ObjectValue(schemas.NotificationChannelDefinitionAttributeTypes(), defAttrMap)
+	// Handle recipients (set of strings, used by EMAIL channels)
+	if v, ok := defMap["recipients"]; ok && v != nil {
+		if arr, ok := v.([]interface{}); ok {
+			recipientVals := make([]attr.Value, 0, len(arr))
+			for _, el := range arr {
+				if s, ok2 := el.(string); ok2 {
+					recipientVals = append(recipientVals, types.StringValue(s))
+				}
+			}
+			if len(recipientVals) > 0 {
+				defAttrMap["recipients"] = types.SetValueMust(types.StringType, recipientVals)
+			} else {
+				defAttrMap["recipients"] = types.SetValueMust(types.StringType, []attr.Value{})
+			}
+		}
+	}
+
+	// Surface unrecognized keys at Warn level so future API additions are visible without breaking apply.
+	for k := range defMap {
+		if _, known := stringKeyMap[k]; known {
+			continue
+		}
+		if k == "recipients" {
+			continue
+		}
+		tflog.Warn(ctx, "Ignoring unrecognized notification channel definition key from API", map[string]interface{}{"key": k})
+	}
+
+	obj, objDiags := types.ObjectValue(schemas.NotificationChannelDefinitionAttributeTypes(), defAttrMap)
+	if objDiags.HasError() {
+		return types.Object{}, objDiags
+	}
+	return obj, nil
 }
 
 // NotificationChannelDefinitionResourceTypesObject maps platform notification channel definitions into a Terraform types.Object matching the resource schema.
