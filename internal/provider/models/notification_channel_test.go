@@ -23,9 +23,8 @@ import (
 //   - SLACK: webhookUrl
 func TestUnit_NotificationChannelDefinitionDataSourceTypesObject(t *testing.T) {
 	tests := []struct {
-		name      string
-		def       interface{}
-		expectErr bool
+		name string
+		def  interface{}
 		// expected snake_case attribute values; empty string means expect-null
 		wantStrings    map[string]string
 		wantRecipients []string // nil means expect-null
@@ -93,6 +92,19 @@ func TestUnit_NotificationChannelDefinitionDataSourceTypesObject(t *testing.T) {
 			wantStrings: map[string]string{"webhook_url": "https://hooks.slack.com/services/x/y/z"},
 		},
 		{
+			// A known camelCase key with an empty-string value is treated as null,
+			// not as a known-empty-string. This matters for Terraform plan diffs.
+			name: "empty-string value on a known key maps to null",
+			def: map[string]interface{}{
+				"dagId":        "",
+				"deploymentId": "clxxxxxxxxxxxxxxxxxxxx",
+			},
+			wantStrings: map[string]string{
+				// dag_id intentionally omitted — empty string yields null
+				"deployment_id": "clxxxxxxxxxxxxxxxxxxxx",
+			},
+		},
+		{
 			name: "extra unknown camelCase key is ignored, not raised as a diag",
 			def: map[string]interface{}{
 				"dagId":           "test_dag",
@@ -122,10 +134,6 @@ func TestUnit_NotificationChannelDefinitionDataSourceTypesObject(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			obj, diags := models.NotificationChannelDefinitionDataSourceTypesObject(context.Background(), tc.def)
-			if tc.expectErr {
-				assert.True(t, diags.HasError(), "expected diags to have an error")
-				return
-			}
 			assert.False(t, diags.HasError(), "unexpected diags: %v", diags)
 			// Named regression guard for issue #313: the original failure surfaced as an
 			// "Extra Object Attribute Name: <key>" diagnostic from types.ObjectValue when

@@ -216,7 +216,11 @@ func NotificationChannelDefinitionDataSourceTypesObject(ctx context.Context, def
 		tflog.Warn(ctx, "Ignoring unrecognized notification channel definition key from API", map[string]interface{}{"key": k})
 	}
 
-	return types.ObjectValue(schemas.NotificationChannelDefinitionAttributeTypes(), defAttrMap)
+	obj, objDiags := types.ObjectValue(schemas.NotificationChannelDefinitionAttributeTypes(), defAttrMap)
+	if objDiags.HasError() {
+		return types.Object{}, objDiags
+	}
+	return obj, nil
 }
 
 // NotificationChannelDefinitionResourceTypesObject maps platform notification channel definitions into a Terraform types.Object matching the resource schema.
