@@ -38,7 +38,7 @@ func UsersElementAttributeTypes() map[string]attr.Type {
 
 func UsersDataSourceSchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
-		"users": schema.SetNestedAttribute{
+		"users": schema.ListNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: UserDataSourceSchemaAttributes(),
 			},

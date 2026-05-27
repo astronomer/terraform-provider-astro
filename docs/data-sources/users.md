@@ -39,7 +39,7 @@ output "example_users" {
 
 ### Read-Only
 
-- `users` (Attributes Set) (see [below for nested schema](#nestedatt--users))
+- `users` (Attributes List) (see [below for nested schema](#nestedatt--users))
 
 <a id="nestedatt--users"></a>
 ### Nested Schema for `users`

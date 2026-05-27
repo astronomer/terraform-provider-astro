@@ -12,7 +12,7 @@ import (
 
 // Users describes the data source data model.
 type Users struct {
-	Users        types.Set    `tfsdk:"users"`
+	Users        types.List   `tfsdk:"users"`
 	WorkspaceId  types.String `tfsdk:"workspace_id"`  // query parameter
 	DeploymentId types.String `tfsdk:"deployment_id"` // query parameter
 }
@@ -33,7 +33,7 @@ func (data *Users) ReadFromResponse(ctx context.Context, users []iam.User) diag.
 		values[i] = objectValue
 	}
 	var diags diag.Diagnostics
-	data.Users, diags = types.SetValue(types.ObjectType{AttrTypes: schemas.UsersElementAttributeTypes()}, values)
+	data.Users, diags = types.ListValue(types.ObjectType{AttrTypes: schemas.UsersElementAttributeTypes()}, values)
 	if diags.HasError() {
 		return diags
 	}
