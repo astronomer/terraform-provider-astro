@@ -103,7 +103,7 @@ func (d *environmentObjectDataSource) Read(
 	}
 
 	// Populate the model with the response data
-	diags := data.ReadFromResponse(ctx, environmentObject.JSON200)
+	diags := data.ReadFromResponse(ctx, environmentObject.JSON200, nil)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

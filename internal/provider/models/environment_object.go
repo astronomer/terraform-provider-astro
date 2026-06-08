@@ -32,7 +32,7 @@ type EnvironmentObject struct {
 	UpdatedBy           types.Object `tfsdk:"updated_by"`
 }
 
-func (data *EnvironmentObject) ReadFromResponse(ctx context.Context, obj *platform.EnvironmentObject) diag.Diagnostics {
+func (data *EnvironmentObject) ReadFromResponse(ctx context.Context, obj *platform.EnvironmentObject, requestConnectionPassword *string) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	data.Id = types.StringPointerValue(obj.Id)
@@ -90,6 +90,11 @@ func (data *EnvironmentObject) ReadFromResponse(ctx context.Context, obj *platfo
 
 	// Connection
 	if obj.Connection != nil {
+		// The API does not return sensitive connection fields (password).
+		// Preserve the request value so Terraform state stays consistent.
+		if requestConnectionPassword != nil && obj.Connection.Password == nil {
+			obj.Connection.Password = requestConnectionPassword
+		}
 		data.ConnectionConfig, diags = environmentObjectConnectionToObject(ctx, obj.Connection)
 		if diags.HasError() {
 			return diags

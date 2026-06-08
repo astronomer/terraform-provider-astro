@@ -36,7 +36,7 @@ func (data *EnvironmentObjects) ReadFromResponse(ctx context.Context, objects []
 	envObjValues := make([]attr.Value, len(objects))
 	for i, obj := range objects {
 		var envObj EnvironmentObject
-		diags = envObj.ReadFromResponse(ctx, &obj)
+		diags = envObj.ReadFromResponse(ctx, &obj, nil)
 		if diags.HasError() {
 			return diags
 		}

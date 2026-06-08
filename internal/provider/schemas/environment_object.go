@@ -620,33 +620,27 @@ func environmentObjectConnectionResourceSchemaAttributes() map[string]resourceSc
 		"host": resourceSchema.StringAttribute{
 			MarkdownDescription: "The host address for the connection",
 			Optional:            true,
-			Computed:            true,
 		},
 		"port": resourceSchema.Int64Attribute{
 			MarkdownDescription: "The port for the connection",
 			Optional:            true,
-			Computed:            true,
 		},
 		"schema": resourceSchema.StringAttribute{
 			MarkdownDescription: "The schema for the connection",
 			Optional:            true,
-			Computed:            true,
 		},
 		"login": resourceSchema.StringAttribute{
 			MarkdownDescription: "The username used for the connection",
 			Optional:            true,
-			Computed:            true,
 		},
 		"password": resourceSchema.StringAttribute{
 			MarkdownDescription: "The password used for the connection",
 			Optional:            true,
-			Computed:            true,
 			Sensitive:           true,
 		},
 		"extra": resourceSchema.StringAttribute{
 			MarkdownDescription: "Extra connection details as JSON string",
 			Optional:            true,
-			Computed:            true,
 		},
 	}
 }

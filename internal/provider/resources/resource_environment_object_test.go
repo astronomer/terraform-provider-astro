@@ -26,7 +26,7 @@ func TestAcc_ResourceEnvironmentObjectAirflowVariable(t *testing.T) {
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		CheckDestroy:             testAccCheckEnvironmentObjectDestroyed(t, varKey),
 		Steps: []resource.TestStep{
-			// Create an Airflow variable
+			// Create
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + environmentObjectAirflowVariable("test", varKey, workspaceId, "initial_value", false),
 				Check: resource.ComposeTestCheckFunc(
@@ -39,7 +39,7 @@ func TestAcc_ResourceEnvironmentObjectAirflowVariable(t *testing.T) {
 					resource.TestCheckResourceAttrSet("astro_environment_object.test", "updated_at"),
 				),
 			},
-			// Update the value
+			// Update
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + environmentObjectAirflowVariable("test", varKey, workspaceId, "updated_value", false),
 				Check: resource.ComposeTestCheckFunc(
@@ -57,12 +57,92 @@ func TestAcc_ResourceEnvironmentObjectAirflowVariable(t *testing.T) {
 	})
 }
 
+func TestAcc_ResourceEnvironmentObjectConnection(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
+	connKey := fmt.Sprintf("test_conn_%v", namePrefix)
+	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckEnvironmentObjectDestroyed(t, connKey),
+		Steps: []resource.TestStep{
+			// Create
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + environmentObjectConnection("test", connKey, workspaceId, "example.com", 5432),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("astro_environment_object.test", "object_key", connKey),
+					resource.TestCheckResourceAttr("astro_environment_object.test", "object_type", "CONNECTION"),
+					resource.TestCheckResourceAttr("astro_environment_object.test", "scope", "WORKSPACE"),
+					resource.TestCheckResourceAttrSet("astro_environment_object.test", "id"),
+					resource.TestCheckResourceAttrSet("astro_environment_object.test", "created_at"),
+				),
+			},
+			// Update
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + environmentObjectConnection("test", connKey, workspaceId, "updated.example.com", 5433),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("astro_environment_object.test", "object_key", connKey),
+					resource.TestCheckResourceAttrSet("astro_environment_object.test", "id"),
+				),
+			},
+			// Import
+			{
+				ResourceName:            "astro_environment_object.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"connection_config.auth_type_id", "connection_config.password"},
+			},
+		},
+	})
+}
+
+func TestAcc_ResourceEnvironmentObjectMetricsExport(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
+	meKey := fmt.Sprintf("test_me_%v", namePrefix)
+	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckEnvironmentObjectDestroyed(t, meKey),
+		Steps: []resource.TestStep{
+			// Create
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + environmentObjectMetricsExport("test", meKey, workspaceId, "https://prometheus.example.com/api/v1/write"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("astro_environment_object.test", "object_key", meKey),
+					resource.TestCheckResourceAttr("astro_environment_object.test", "object_type", "METRICS_EXPORT"),
+					resource.TestCheckResourceAttr("astro_environment_object.test", "scope", "WORKSPACE"),
+					resource.TestCheckResourceAttrSet("astro_environment_object.test", "id"),
+					resource.TestCheckResourceAttrSet("astro_environment_object.test", "created_at"),
+				),
+			},
+			// Update endpoint
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + environmentObjectMetricsExport("test", meKey, workspaceId, "https://prometheus.example.com/api/v2/write"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("astro_environment_object.test", "object_key", meKey),
+					resource.TestCheckResourceAttrSet("astro_environment_object.test", "id"),
+				),
+			},
+			// Import
+			{
+				ResourceName:            "astro_environment_object.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"metrics_export.basic_token", "metrics_export.password"},
+			},
+		},
+	})
+}
+
 func environmentObjectAirflowVariable(tfName, varKey, workspaceId, value string, isSecret bool) string {
 	return fmt.Sprintf(`
 resource "astro_environment_object" "%s" {
-  object_key    = "%s"
-  object_type   = "AIRFLOW_VARIABLE"
-  scope         = "WORKSPACE"
+  object_key      = "%s"
+  object_type     = "AIRFLOW_VARIABLE"
+  scope           = "WORKSPACE"
   scope_entity_id = "%s"
 
   airflow_variable = {
@@ -71,6 +151,42 @@ resource "astro_environment_object" "%s" {
   }
 }
 `, tfName, varKey, workspaceId, value, isSecret)
+}
+
+func environmentObjectConnection(tfName, connKey, workspaceId, host string, port int) string {
+	return fmt.Sprintf(`
+resource "astro_environment_object" "%s" {
+  object_key      = "%s"
+  object_type     = "CONNECTION"
+  scope           = "WORKSPACE"
+  scope_entity_id = "%s"
+
+  connection_config = {
+    type     = "postgres"
+    host     = "%s"
+    port     = %d
+    login    = "testuser"
+    password = "testpass"
+    schema   = "testdb"
+  }
+}
+`, tfName, connKey, workspaceId, host, port)
+}
+
+func environmentObjectMetricsExport(tfName, meKey, workspaceId, endpoint string) string {
+	return fmt.Sprintf(`
+resource "astro_environment_object" "%s" {
+  object_key      = "%s"
+  object_type     = "METRICS_EXPORT"
+  scope           = "WORKSPACE"
+  scope_entity_id = "%s"
+
+  metrics_export = {
+    endpoint      = "%s"
+    exporter_type = "PROMETHEUS"
+  }
+}
+`, tfName, meKey, workspaceId, endpoint)
 }
 
 func testAccCheckEnvironmentObjectDestroyed(t *testing.T, objectKey string) resource.TestCheckFunc {

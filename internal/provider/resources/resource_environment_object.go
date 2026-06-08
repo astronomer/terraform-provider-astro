@@ -89,6 +89,15 @@ func (r *environmentObjectResource) Create(
 		return
 	}
 
+	// Extract connection password from plan before API call (API won't return it)
+	var requestConnPassword *string
+	if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
+		var ci connectionInput
+		if d := data.ConnectionConfig.As(ctx, &ci, basetypes.ObjectAsOptions{}); !d.HasError() {
+			requestConnPassword = ci.Password.ValueStringPointer()
+		}
+	}
+
 	// create request
 	createReq, diags := buildCreateRequest(ctx, &data)
 	if diags.HasError() {
@@ -121,7 +130,7 @@ func (r *environmentObjectResource) Create(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, getResp.JSON200)
+	diags = data.ReadFromResponse(ctx, getResp.JSON200, requestConnPassword)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -146,6 +155,15 @@ func (r *environmentObjectResource) Read(
 		return
 	}
 
+	// Extract connection password from prior state (API won't return it)
+	var stateConnPassword *string
+	if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
+		var ci connectionInput
+		if d := data.ConnectionConfig.As(ctx, &ci, basetypes.ObjectAsOptions{}); !d.HasError() {
+			stateConnPassword = ci.Password.ValueStringPointer()
+		}
+	}
+
 	// get request
 	envObj, err := r.platformClient.GetEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString())
 	if err != nil {
@@ -165,7 +183,7 @@ func (r *environmentObjectResource) Read(
 		return
 	}
 
-	diags := data.ReadFromResponse(ctx, envObj.JSON200)
+	diags := data.ReadFromResponse(ctx, envObj.JSON200, stateConnPassword)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -188,6 +206,15 @@ func (r *environmentObjectResource) Update(
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	// Extract connection password from plan before API call (API won't return it)
+	var requestConnPassword *string
+	if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
+		var ci connectionInput
+		if d := data.ConnectionConfig.As(ctx, &ci, basetypes.ObjectAsOptions{}); !d.HasError() {
+			requestConnPassword = ci.Password.ValueStringPointer()
+		}
 	}
 
 	// update request
@@ -222,7 +249,7 @@ func (r *environmentObjectResource) Update(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, getResp.JSON200)
+	diags = data.ReadFromResponse(ctx, getResp.JSON200, requestConnPassword)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -273,14 +300,15 @@ func (r *environmentObjectResource) ImportState(
 }
 
 type connectionInput struct {
-	AuthTypeId types.String `tfsdk:"auth_type_id"`
-	Type       types.String `tfsdk:"type"`
-	Host       types.String `tfsdk:"host"`
-	Port       types.Int64  `tfsdk:"port"`
-	Schema     types.String `tfsdk:"schema"`
-	Login      types.String `tfsdk:"login"`
-	Password   types.String `tfsdk:"password"`
-	Extra      types.String `tfsdk:"extra"`
+	AuthTypeId         types.String `tfsdk:"auth_type_id"`
+	ConnectionAuthType types.Object `tfsdk:"connection_auth_type"`
+	Type               types.String `tfsdk:"type"`
+	Host               types.String `tfsdk:"host"`
+	Port               types.Int64  `tfsdk:"port"`
+	Schema             types.String `tfsdk:"schema"`
+	Login              types.String `tfsdk:"login"`
+	Password           types.String `tfsdk:"password"`
+	Extra              types.String `tfsdk:"extra"`
 }
 
 type airflowVariableInput struct {
