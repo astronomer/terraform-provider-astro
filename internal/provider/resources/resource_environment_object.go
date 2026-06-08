@@ -197,19 +197,32 @@ func (r *environmentObjectResource) Update(
 		return
 	}
 
-	envObj, err := r.platformClient.UpdateEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString(), updateReq)
+	updateResp, err := r.platformClient.UpdateEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString(), updateReq)
 	if err != nil {
 		tflog.Error(ctx, "failed to update environment object", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update environment object: %s", err))
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, envObj.HTTPResponse, envObj.Body)
+	_, diagnostic := clients.NormalizeAPIError(ctx, updateResp.HTTPResponse, updateResp.Body)
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, envObj.JSON200)
+	// Follow-up GET to ensure full state including created_by
+	getResp, err := r.platformClient.GetEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString())
+	if err != nil {
+		tflog.Error(ctx, "failed to get environment object after update", map[string]interface{}{"error": err})
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read environment object after update: %s", err))
+		return
+	}
+	_, diagnostic = clients.NormalizeAPIError(ctx, getResp.HTTPResponse, getResp.Body)
+	if diagnostic != nil {
+		resp.Diagnostics.Append(diagnostic)
+		return
+	}
+
+	diags = data.ReadFromResponse(ctx, getResp.JSON200)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

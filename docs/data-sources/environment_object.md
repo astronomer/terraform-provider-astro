@@ -52,6 +52,7 @@ Read-Only:
 
 Read-Only:
 
+- `auth_type_id` (String) The ID for the connection auth type
 - `connection_auth_type` (Attributes) The auth type of the connection (see [below for nested schema](#nestedatt--connection_config--connection_auth_type))
 - `extra` (String) Extra connection details as JSON string
 - `host` (String) The host address for the connection

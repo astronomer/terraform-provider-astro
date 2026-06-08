@@ -180,6 +180,7 @@ func environmentObjectConnectionToObject(ctx context.Context, conn *platform.Env
 	}
 
 	return types.ObjectValue(schemas.EnvironmentObjectConnectionAttributeTypes(), map[string]attr.Value{
+		"auth_type_id":         types.StringNull(),
 		"connection_auth_type": authTypeObj,
 		"type":                 types.StringValue(conn.Type),
 		"host":                 types.StringPointerValue(conn.Host),

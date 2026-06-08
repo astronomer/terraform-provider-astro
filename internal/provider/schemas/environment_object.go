@@ -36,6 +36,7 @@ func EnvironmentObjectMetricsExportAttributeTypes() map[string]attr.Type {
 
 func EnvironmentObjectConnectionAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
+		"auth_type_id": types.StringType,
 		"connection_auth_type": types.ObjectType{
 			AttrTypes: EnvironmentObjectConnectionAuthTypeAttributeTypes(),
 		},
@@ -267,6 +268,10 @@ func environmentObjectConnectionAuthTypeDataSourceSchemaAttributes() map[string]
 
 func environmentObjectConnectionDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
+		"auth_type_id": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The ID for the connection auth type",
+			Computed:            true,
+		},
 		"connection_auth_type": datasourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "The auth type of the connection",
 			Computed:            true,
@@ -579,6 +584,35 @@ func environmentObjectConnectionResourceSchemaAttributes() map[string]resourceSc
 			MarkdownDescription: "The ID for the connection auth type. Write-only field used during create/update.",
 			Optional:            true,
 		},
+		"connection_auth_type": resourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "The resolved auth type of the connection. Read-only, populated from auth_type_id.",
+			Computed:            true,
+			Attributes: map[string]resourceSchema.Attribute{
+				"parameters": resourceSchema.ListNestedAttribute{
+					NestedObject: resourceSchema.NestedAttributeObject{
+						Attributes: map[string]resourceSchema.Attribute{
+							"airflow_param_name": resourceSchema.StringAttribute{Computed: true},
+							"friendly_name":      resourceSchema.StringAttribute{Computed: true},
+							"data_type":          resourceSchema.StringAttribute{Computed: true},
+							"is_required":        resourceSchema.BoolAttribute{Computed: true},
+							"is_secret":          resourceSchema.BoolAttribute{Computed: true},
+							"description":        resourceSchema.StringAttribute{Computed: true},
+							"example":            resourceSchema.StringAttribute{Computed: true},
+							"is_in_extra":        resourceSchema.BoolAttribute{Computed: true},
+						},
+					},
+					Computed: true,
+				},
+				"id":                    resourceSchema.StringAttribute{Computed: true},
+				"name":                  resourceSchema.StringAttribute{Computed: true},
+				"auth_method_name":      resourceSchema.StringAttribute{Computed: true},
+				"airflow_type":          resourceSchema.StringAttribute{Computed: true},
+				"description":           resourceSchema.StringAttribute{Computed: true},
+				"provider_package_name": resourceSchema.StringAttribute{Computed: true},
+				"provider_logo":         resourceSchema.StringAttribute{Computed: true},
+				"guide_path":            resourceSchema.StringAttribute{Computed: true},
+			},
+		},
 		"type": resourceSchema.StringAttribute{
 			MarkdownDescription: "The type of connection",
 			Required:            true,
@@ -586,27 +620,33 @@ func environmentObjectConnectionResourceSchemaAttributes() map[string]resourceSc
 		"host": resourceSchema.StringAttribute{
 			MarkdownDescription: "The host address for the connection",
 			Optional:            true,
+			Computed:            true,
 		},
 		"port": resourceSchema.Int64Attribute{
 			MarkdownDescription: "The port for the connection",
 			Optional:            true,
+			Computed:            true,
 		},
 		"schema": resourceSchema.StringAttribute{
 			MarkdownDescription: "The schema for the connection",
 			Optional:            true,
+			Computed:            true,
 		},
 		"login": resourceSchema.StringAttribute{
 			MarkdownDescription: "The username used for the connection",
 			Optional:            true,
+			Computed:            true,
 		},
 		"password": resourceSchema.StringAttribute{
 			MarkdownDescription: "The password used for the connection",
 			Optional:            true,
+			Computed:            true,
 			Sensitive:           true,
 		},
 		"extra": resourceSchema.StringAttribute{
 			MarkdownDescription: "Extra connection details as JSON string",
 			Optional:            true,
+			Computed:            true,
 		},
 	}
 }

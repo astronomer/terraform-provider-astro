@@ -67,6 +67,41 @@ Optional:
 - `port` (Number) The port for the connection
 - `schema` (String) The schema for the connection
 
+Read-Only:
+
+- `connection_auth_type` (Attributes) The resolved auth type of the connection. Read-only, populated from auth_type_id. (see [below for nested schema](#nestedatt--connection_config--connection_auth_type))
+
+<a id="nestedatt--connection_config--connection_auth_type"></a>
+### Nested Schema for `connection_config.connection_auth_type`
+
+Read-Only:
+
+- `airflow_type` (String)
+- `auth_method_name` (String)
+- `description` (String)
+- `guide_path` (String)
+- `id` (String)
+- `name` (String)
+- `parameters` (Attributes List) (see [below for nested schema](#nestedatt--connection_config--connection_auth_type--parameters))
+- `provider_logo` (String)
+- `provider_package_name` (String)
+
+<a id="nestedatt--connection_config--connection_auth_type--parameters"></a>
+### Nested Schema for `connection_config.connection_auth_type.parameters`
+
+Read-Only:
+
+- `airflow_param_name` (String)
+- `data_type` (String)
+- `description` (String)
+- `example` (String)
+- `friendly_name` (String)
+- `is_in_extra` (Boolean)
+- `is_required` (Boolean)
+- `is_secret` (Boolean)
+
+
+
 
 <a id="nestedatt--exclude_links"></a>
 ### Nested Schema for `exclude_links`
