@@ -305,9 +305,9 @@ func buildCreateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 	}
 
 	// Connection
-	if !data.Connection.IsNull() && !data.Connection.IsUnknown() {
+	if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
 		var ci connectionInput
-		diags = data.Connection.As(ctx, &ci, basetypes.ObjectAsOptions{})
+		diags = data.ConnectionConfig.As(ctx, &ci, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return req, diags
 		}
@@ -424,9 +424,9 @@ func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 	}
 
 	// Connection
-	if !data.Connection.IsNull() && !data.Connection.IsUnknown() {
+	if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
 		var ci connectionInput
-		diags = data.Connection.As(ctx, &ci, basetypes.ObjectAsOptions{})
+		diags = data.ConnectionConfig.As(ctx, &ci, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return req, diags
 		}
@@ -707,7 +707,6 @@ func buildUpdateOverrides(ctx context.Context, li *linkInput) (*platform.UpdateE
 	}
 	return overrides, nil
 }
-
 
 func tfMapToStringMap(ctx context.Context, m types.Map) map[string]string {
 	result := make(map[string]string, len(m.Elements()))

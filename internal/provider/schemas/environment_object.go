@@ -89,11 +89,11 @@ func EnvironmentObjectExcludeLinkAttributeTypes() map[string]attr.Type {
 
 func EnvironmentObjectLinkAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"scope":                       types.StringType,
-		"scope_entity_id":             types.StringType,
-		"airflow_variable_overrides":  types.ObjectType{AttrTypes: EnvironmentObjectAirflowVariableOverridesAttributeTypes()},
-		"connection_overrides":        types.ObjectType{AttrTypes: EnvironmentObjectConnectionOverridesAttributeTypes()},
-		"metrics_export_overrides":    types.ObjectType{AttrTypes: EnvironmentObjectMetricsExportOverridesAttributeTypes()},
+		"scope":                      types.StringType,
+		"scope_entity_id":            types.StringType,
+		"airflow_variable_overrides": types.ObjectType{AttrTypes: EnvironmentObjectAirflowVariableOverridesAttributeTypes()},
+		"connection_overrides":       types.ObjectType{AttrTypes: EnvironmentObjectConnectionOverridesAttributeTypes()},
+		"metrics_export_overrides":   types.ObjectType{AttrTypes: EnvironmentObjectMetricsExportOverridesAttributeTypes()},
 	}
 }
 
@@ -469,7 +469,7 @@ func EnvironmentObjectDataSourceSchemaAttributes() map[string]datasourceSchema.A
 			Computed:            true,
 			Attributes:          environmentObjectAirflowVariableDataSourceSchemaAttributes(),
 		},
-		"connection": datasourceSchema.SingleNestedAttribute{
+		"connection_config": datasourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "The connection definition",
 			Computed:            true,
 			Attributes:          environmentObjectConnectionDataSourceSchemaAttributes(),
@@ -781,7 +781,7 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 			Computed:            true,
 			Attributes:          environmentObjectAirflowVariableResourceSchemaAttributes(),
 		},
-		"connection": resourceSchema.SingleNestedAttribute{
+		"connection_config": resourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "The connection definition. Required when object_type is CONNECTION",
 			Optional:            true,
 			Computed:            true,

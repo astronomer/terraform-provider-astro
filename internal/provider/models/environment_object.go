@@ -21,7 +21,7 @@ type EnvironmentObject struct {
 	SourceScopeEntityId types.String `tfsdk:"source_scope_entity_id"`
 	AutoLinkDeployments types.Bool   `tfsdk:"auto_link_deployments"`
 	AirflowVariable     types.Object `tfsdk:"airflow_variable"`
-	Connection          types.Object `tfsdk:"connection"`
+	ConnectionConfig    types.Object `tfsdk:"connection_config"`
 	MetricsExport       types.Object `tfsdk:"metrics_export"`
 	Links               types.List   `tfsdk:"links"`
 	ExcludeLinks        types.List   `tfsdk:"exclude_links"`
@@ -89,12 +89,12 @@ func (data *EnvironmentObject) ReadFromResponse(ctx context.Context, obj *platfo
 
 	// Connection
 	if obj.Connection != nil {
-		data.Connection, diags = environmentObjectConnectionToObject(ctx, obj.Connection)
+		data.ConnectionConfig, diags = environmentObjectConnectionToObject(ctx, obj.Connection)
 		if diags.HasError() {
 			return diags
 		}
 	} else {
-		data.Connection = types.ObjectNull(schemas.EnvironmentObjectConnectionAttributeTypes())
+		data.ConnectionConfig = types.ObjectNull(schemas.EnvironmentObjectConnectionAttributeTypes())
 	}
 
 	// Metrics Export
