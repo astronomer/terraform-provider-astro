@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
+// Ensure provider defined types fully satisfy framework interfaces.
 var _ datasource.DataSource = &environmentObjectDataSource{}
 var _ datasource.DataSourceWithConfigure = &environmentObjectDataSource{}
 
@@ -21,6 +22,7 @@ func NewEnvironmentObjectDataSource() datasource.DataSource {
 	return &environmentObjectDataSource{}
 }
 
+// environmentObjectDataSource defines the data source implementation.
 type environmentObjectDataSource struct {
 	PlatformClient platform.ClientWithResponsesInterface
 	OrganizationId string
@@ -40,6 +42,7 @@ func (d *environmentObjectDataSource) Schema(
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = schema.Schema{
+		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Environment Object data source",
 		Attributes:          schemas.EnvironmentObjectDataSourceSchemaAttributes(),
 	}
@@ -50,6 +53,7 @@ func (d *environmentObjectDataSource) Configure(
 	req datasource.ConfigureRequest,
 	resp *datasource.ConfigureResponse,
 ) {
+	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -71,6 +75,7 @@ func (d *environmentObjectDataSource) Read(
 ) {
 	var data models.EnvironmentObject
 
+	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -97,11 +102,13 @@ func (d *environmentObjectDataSource) Read(
 		return
 	}
 
+	// Populate the model with the response data
 	diags := data.ReadFromResponse(ctx, environmentObject.JSON200)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
 	}
 
+	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

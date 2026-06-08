@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+// EnvironmentObjects describes the data source data model.
 type EnvironmentObjects struct {
 	WorkspaceId        types.String `tfsdk:"workspace_id"`
 	DeploymentId       types.String `tfsdk:"deployment_id"`

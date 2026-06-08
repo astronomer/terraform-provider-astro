@@ -15,6 +15,7 @@ import (
 	"github.com/samber/lo"
 )
 
+// Ensure provider defined types fully satisfy framework interfaces.
 var _ datasource.DataSource = &environmentObjectsDataSource{}
 var _ datasource.DataSourceWithConfigure = &environmentObjectsDataSource{}
 
@@ -22,6 +23,7 @@ func NewEnvironmentObjectsDataSource() datasource.DataSource {
 	return &environmentObjectsDataSource{}
 }
 
+// environmentObjectsDataSource defines the data source implementation.
 type environmentObjectsDataSource struct {
 	PlatformClient platform.ClientWithResponsesInterface
 	OrganizationId string
@@ -41,6 +43,7 @@ func (d *environmentObjectsDataSource) Schema(
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = schema.Schema{
+		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Environment Objects data source. Lists environment objects with optional filters.",
 		Attributes:          schemas.EnvironmentObjectsDataSourceSchemaAttributes(),
 	}
@@ -51,6 +54,7 @@ func (d *environmentObjectsDataSource) Configure(
 	req datasource.ConfigureRequest,
 	resp *datasource.ConfigureResponse,
 ) {
+	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -72,6 +76,7 @@ func (d *environmentObjectsDataSource) Read(
 ) {
 	var data models.EnvironmentObjects
 
+	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -129,11 +134,13 @@ func (d *environmentObjectsDataSource) Read(
 		offset += 1000
 	}
 
+	// Populate the model with the response data
 	diags := data.ReadFromResponse(ctx, allObjects)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
 	}
 
+	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

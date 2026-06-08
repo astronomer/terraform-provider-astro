@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+// EnvironmentObject describes the resource and data source data model.
 type EnvironmentObject struct {
 	Id                  types.String `tfsdk:"id"`
 	ObjectKey           types.String `tfsdk:"object_key"`

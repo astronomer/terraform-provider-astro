@@ -21,6 +21,7 @@ import (
 	"github.com/samber/lo"
 )
 
+// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &environmentObjectResource{}
 var _ resource.ResourceWithImportState = &environmentObjectResource{}
 var _ resource.ResourceWithConfigure = &environmentObjectResource{}
@@ -29,6 +30,7 @@ func NewEnvironmentObjectResource() resource.Resource {
 	return &environmentObjectResource{}
 }
 
+// environmentObjectResource defines the resource implementation.
 type environmentObjectResource struct {
 	platformClient *platform.ClientWithResponses
 	organizationId string
@@ -48,6 +50,7 @@ func (r *environmentObjectResource) Schema(
 	resp *resource.SchemaResponse,
 ) {
 	resp.Schema = schema.Schema{
+		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Environment Object resource. Manages Airflow connections, variables, and metrics exports scoped to a Workspace or Deployment.",
 		Attributes:          schemas.EnvironmentObjectResourceSchemaAttributes(),
 	}
@@ -58,6 +61,7 @@ func (r *environmentObjectResource) Configure(
 	req resource.ConfigureRequest,
 	resp *resource.ConfigureResponse,
 ) {
+	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -79,11 +83,13 @@ func (r *environmentObjectResource) Create(
 ) {
 	var data models.EnvironmentObject
 
+	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	// create request
 	createReq, diags := buildCreateRequest(ctx, &data)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
@@ -102,7 +108,7 @@ func (r *environmentObjectResource) Create(
 		return
 	}
 
-	// Create only returns the ID — do a follow-up GET to populate full state
+	// Create only returns the ID, do a follow-up GET to populate full state
 	getResp, err := r.platformClient.GetEnvironmentObjectWithResponse(ctx, r.organizationId, createResp.JSON200.Id)
 	if err != nil {
 		tflog.Error(ctx, "failed to get environment object after create", map[string]interface{}{"error": err})
@@ -121,7 +127,9 @@ func (r *environmentObjectResource) Create(
 		return
 	}
 
-	tflog.Trace(ctx, fmt.Sprintf("created environment object: %v", data.Id.ValueString()))
+	tflog.Trace(ctx, fmt.Sprintf("created a environment object resource: %v", data.Id.ValueString()))
+
+	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -132,11 +140,13 @@ func (r *environmentObjectResource) Read(
 ) {
 	var data models.EnvironmentObject
 
+	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	// get request
 	envObj, err := r.platformClient.GetEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString())
 	if err != nil {
 		tflog.Error(ctx, "failed to get environment object", map[string]interface{}{"error": err})
@@ -144,6 +154,8 @@ func (r *environmentObjectResource) Read(
 		return
 	}
 	statusCode, diagnostic := clients.NormalizeAPIError(ctx, envObj.HTTPResponse, envObj.Body)
+	// If the resource no longer exists, it is recommended to ignore the errors
+	// and call RemoveResource to remove the resource from the state. The next Terraform plan will recreate the resource.
 	if statusCode == http.StatusNotFound {
 		resp.State.RemoveResource(ctx)
 		return
@@ -159,7 +171,9 @@ func (r *environmentObjectResource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, fmt.Sprintf("read environment object: %v", data.Id.ValueString()))
+	tflog.Trace(ctx, fmt.Sprintf("read a environment object resource: %v", data.Id.ValueString()))
+
+	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -170,11 +184,13 @@ func (r *environmentObjectResource) Update(
 ) {
 	var data models.EnvironmentObject
 
+	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	// update request
 	updateReq, diags := buildUpdateRequest(ctx, &data)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
@@ -199,7 +215,9 @@ func (r *environmentObjectResource) Update(
 		return
 	}
 
-	tflog.Trace(ctx, fmt.Sprintf("updated environment object: %v", data.Id.ValueString()))
+	tflog.Trace(ctx, fmt.Sprintf("updated a environment object resource: %v", data.Id.ValueString()))
+
+	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -210,11 +228,13 @@ func (r *environmentObjectResource) Delete(
 ) {
 	var data models.EnvironmentObject
 
+	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	// delete request
 	envObj, err := r.platformClient.DeleteEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString())
 	if err != nil {
 		tflog.Error(ctx, "failed to delete environment object", map[string]interface{}{"error": err})
@@ -222,12 +242,13 @@ func (r *environmentObjectResource) Delete(
 		return
 	}
 	statusCode, diagnostic := clients.NormalizeAPIError(ctx, envObj.HTTPResponse, envObj.Body)
+	// It is recommended to ignore 404 Resource Not Found errors when deleting a resource
 	if statusCode != http.StatusNotFound && diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return
 	}
 
-	tflog.Trace(ctx, fmt.Sprintf("deleted environment object: %v", data.Id.ValueString()))
+	tflog.Trace(ctx, fmt.Sprintf("deleted a environment object resource: %v", data.Id.ValueString()))
 }
 
 func (r *environmentObjectResource) ImportState(
@@ -237,8 +258,6 @@ func (r *environmentObjectResource) ImportState(
 ) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
-
-// --- Request builders ---
 
 type connectionInput struct {
 	AuthTypeId types.String `tfsdk:"auth_type_id"`
