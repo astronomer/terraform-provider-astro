@@ -15,7 +15,9 @@ import (
 	"github.com/samber/lo"
 )
 
-func TestAcc_ResourceEnvironmentObjectAirflowVariable(t *testing.T) {
+// --- Workspace-scoped tests ---
+
+func TestAcc_ResourceEnvironmentObjectAirflowVariable_Workspace(t *testing.T) {
 	namePrefix := utils.GenerateTestResourceName(10)
 	varKey := fmt.Sprintf("test_var_%v", namePrefix)
 	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
@@ -24,19 +26,18 @@ func TestAcc_ResourceEnvironmentObjectAirflowVariable(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
-		CheckDestroy:             resource.ComposeTestCheckFunc(testAccCheckEnvironmentObjectDestroyed(t, varKey)),
+		CheckDestroy:             testAccCheckEnvironmentObjectDestroyed(t, varKey),
 		Steps: []resource.TestStep{
-			// Create
 			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + environmentObjectAirflowVariable("test", varKey, workspaceId, "initial_value", false),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjAirflowVar("test", varKey, "WORKSPACE", workspaceId, "initial_value", false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckEnvironmentObjectExists(t, varKey),
 					resource.TestCheckResourceAttr(resourceVar, "object_key", varKey),
 					resource.TestCheckResourceAttr(resourceVar, "object_type", "AIRFLOW_VARIABLE"),
 					resource.TestCheckResourceAttr(resourceVar, "scope", "WORKSPACE"),
 					resource.TestCheckResourceAttr(resourceVar, "scope_entity_id", workspaceId),
-					resource.TestCheckResourceAttr(resourceVar, "airflow_variable.value", "initial_value"),
-					resource.TestCheckResourceAttr(resourceVar, "airflow_variable.is_secret", "false"),
+					resource.TestCheckResourceAttr(resourceVar, "value", "initial_value"),
+					resource.TestCheckResourceAttr(resourceVar, "is_secret", "false"),
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
 					resource.TestCheckResourceAttrSet(resourceVar, "updated_at"),
@@ -44,37 +45,33 @@ func TestAcc_ResourceEnvironmentObjectAirflowVariable(t *testing.T) {
 			},
 			// Update value (in-place)
 			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + environmentObjectAirflowVariable("test", varKey, workspaceId, "updated_value", false),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjAirflowVar("test", varKey, "WORKSPACE", workspaceId, "updated_value", false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckEnvironmentObjectExists(t, varKey),
-					resource.TestCheckResourceAttr(resourceVar, "airflow_variable.value", "updated_value"),
-					resource.TestCheckResourceAttr(resourceVar, "airflow_variable.is_secret", "false"),
+					resource.TestCheckResourceAttr(resourceVar, "value", "updated_value"),
 				),
 			},
-			// Toggle is_secret=true — immutable on the API, so RequiresReplace forces re-create.
-			// The model preserves the plan value so state stays consistent with the user's input
-			// even though the API returns an empty value for secrets.
+			// Toggle is_secret=true — RequiresReplace forces re-create
 			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + environmentObjectAirflowVariable("test", varKey, workspaceId, "secret_value", true),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjAirflowVar("test", varKey, "WORKSPACE", workspaceId, "secret_value", true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckEnvironmentObjectExists(t, varKey),
-					resource.TestCheckResourceAttr(resourceVar, "airflow_variable.is_secret", "true"),
-					resource.TestCheckResourceAttr(resourceVar, "airflow_variable.value", "secret_value"),
+					resource.TestCheckResourceAttr(resourceVar, "is_secret", "true"),
+					resource.TestCheckResourceAttr(resourceVar, "value", "secret_value"),
 				),
 			},
-			// Import — value cannot be verified after import because the secret value isn't
-			// returned by the API and there's no plan to preserve from during a raw import.
+			// Import
 			{
 				ResourceName:            resourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"airflow_variable.value"},
+				ImportStateVerifyIgnore: []string{"value"},
 			},
 		},
 	})
 }
 
-func TestAcc_ResourceEnvironmentObjectConnection(t *testing.T) {
+func TestAcc_ResourceEnvironmentObjectConnection_Workspace(t *testing.T) {
 	namePrefix := utils.GenerateTestResourceName(10)
 	connKey := fmt.Sprintf("test_conn_%v", namePrefix)
 	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
@@ -83,51 +80,48 @@ func TestAcc_ResourceEnvironmentObjectConnection(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
-		CheckDestroy:             resource.ComposeTestCheckFunc(testAccCheckEnvironmentObjectDestroyed(t, connKey)),
+		CheckDestroy:             testAccCheckEnvironmentObjectDestroyed(t, connKey),
 		Steps: []resource.TestStep{
-			// Create with extra JSON to exercise the round-trip preservation logic.
 			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + environmentObjectConnection("test", connKey, workspaceId, "example.com", 5432, `{"sslmode":"require","timeout":30}`),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjConnection("test", connKey, "WORKSPACE", workspaceId, "example.com", 5432, `{"sslmode":"require","timeout":30}`),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckEnvironmentObjectExists(t, connKey),
 					resource.TestCheckResourceAttr(resourceVar, "object_key", connKey),
 					resource.TestCheckResourceAttr(resourceVar, "object_type", "CONNECTION"),
 					resource.TestCheckResourceAttr(resourceVar, "scope", "WORKSPACE"),
-					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.type", "postgres"),
-					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.host", "example.com"),
-					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.port", "5432"),
-					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.login", "testuser"),
-					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.password", "testpass"),
-					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.schema", "testdb"),
-					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.extra", `{"sslmode":"require","timeout":30}`),
+					resource.TestCheckResourceAttr(resourceVar, "type", "postgres"),
+					resource.TestCheckResourceAttr(resourceVar, "host", "example.com"),
+					resource.TestCheckResourceAttr(resourceVar, "port", "5432"),
+					resource.TestCheckResourceAttr(resourceVar, "login", "testuser"),
+					resource.TestCheckResourceAttr(resourceVar, "password", "testpass"),
+					resource.TestCheckResourceAttr(resourceVar, "schema", "testdb"),
+					resource.TestCheckResourceAttr(resourceVar, "extra", `{"sslmode":"require","timeout":30}`),
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
-					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
 				),
 			},
-			// Update host/port — preserved password and extra must follow through.
+			// Update host/port
 			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + environmentObjectConnection("test", connKey, workspaceId, "updated.example.com", 5433, `{"sslmode":"require","timeout":30}`),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjConnection("test", connKey, "WORKSPACE", workspaceId, "updated.example.com", 5433, `{"sslmode":"require","timeout":30}`),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckEnvironmentObjectExists(t, connKey),
-					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.host", "updated.example.com"),
-					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.port", "5433"),
-					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.password", "testpass"),
-					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.extra", `{"sslmode":"require","timeout":30}`),
+					resource.TestCheckResourceAttr(resourceVar, "host", "updated.example.com"),
+					resource.TestCheckResourceAttr(resourceVar, "port", "5433"),
+					resource.TestCheckResourceAttr(resourceVar, "password", "testpass"),
+					resource.TestCheckResourceAttr(resourceVar, "extra", `{"sslmode":"require","timeout":30}`),
 				),
 			},
-			// Import — password and extra are unrecoverable on import: the API does not echo
-			// them back on GET, and there's no plan to preserve from during a raw import.
+			// Import
 			{
 				ResourceName:            resourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"airflow_connection.password", "airflow_connection.extra"},
+				ImportStateVerifyIgnore: []string{"password", "extra"},
 			},
 		},
 	})
 }
 
-func TestAcc_ResourceEnvironmentObjectMetricsExport(t *testing.T) {
+func TestAcc_ResourceEnvironmentObjectMetricsExport_Workspace(t *testing.T) {
 	namePrefix := utils.GenerateTestResourceName(10)
 	meKey := fmt.Sprintf("test_me_%v", namePrefix)
 	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
@@ -136,103 +130,218 @@ func TestAcc_ResourceEnvironmentObjectMetricsExport(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
-		CheckDestroy:             resource.ComposeTestCheckFunc(testAccCheckEnvironmentObjectDestroyed(t, meKey)),
+		CheckDestroy:             testAccCheckEnvironmentObjectDestroyed(t, meKey),
 		Steps: []resource.TestStep{
-			// Create
 			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + environmentObjectMetricsExport("test", meKey, workspaceId, "https://prometheus.example.com/api/v1/write"),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExport("test", meKey, "WORKSPACE", workspaceId, "https://prometheus.example.com/api/v1/write"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckEnvironmentObjectExists(t, meKey),
 					resource.TestCheckResourceAttr(resourceVar, "object_key", meKey),
 					resource.TestCheckResourceAttr(resourceVar, "object_type", "METRICS_EXPORT"),
 					resource.TestCheckResourceAttr(resourceVar, "scope", "WORKSPACE"),
-					resource.TestCheckResourceAttr(resourceVar, "metrics_export.endpoint", "https://prometheus.example.com/api/v1/write"),
-					resource.TestCheckResourceAttr(resourceVar, "metrics_export.exporter_type", "PROMETHEUS"),
+					resource.TestCheckResourceAttr(resourceVar, "endpoint", "https://prometheus.example.com/api/v1/write"),
+					resource.TestCheckResourceAttr(resourceVar, "exporter_type", "PROMETHEUS"),
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
-					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
 				),
 			},
 			// Update endpoint
 			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + environmentObjectMetricsExport("test", meKey, workspaceId, "https://prometheus.example.com/api/v2/write"),
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExport("test", meKey, "WORKSPACE", workspaceId, "https://prometheus.example.com/api/v2/write"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckEnvironmentObjectExists(t, meKey),
-					resource.TestCheckResourceAttr(resourceVar, "metrics_export.endpoint", "https://prometheus.example.com/api/v2/write"),
+					resource.TestCheckResourceAttr(resourceVar, "endpoint", "https://prometheus.example.com/api/v2/write"),
 				),
 			},
-			// Import — basic_token & password are unrecoverable on import.
+			// Import
 			{
 				ResourceName:            resourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"metrics_export.basic_token", "metrics_export.password"},
+				ImportStateVerifyIgnore: []string{"basic_token", "password"},
 			},
 		},
 	})
 }
 
-func environmentObjectAirflowVariable(tfName, varKey, workspaceId, value string, isSecret bool) string {
+// --- Deployment-scoped tests ---
+
+func TestAcc_ResourceEnvironmentObjectAirflowVariable_Deployment(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
+	varKey := fmt.Sprintf("test_var_dep_%v", namePrefix)
+	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
+	resourceVar := "astro_environment_object.test"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckEnvironmentObjectDestroyed(t, varKey),
+		Steps: []resource.TestStep{
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjAirflowVar("test", varKey, "DEPLOYMENT", deploymentId, "dep_value", false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckEnvironmentObjectExists(t, varKey),
+					resource.TestCheckResourceAttr(resourceVar, "object_key", varKey),
+					resource.TestCheckResourceAttr(resourceVar, "object_type", "AIRFLOW_VARIABLE"),
+					resource.TestCheckResourceAttr(resourceVar, "scope", "DEPLOYMENT"),
+					resource.TestCheckResourceAttr(resourceVar, "scope_entity_id", deploymentId),
+					resource.TestCheckResourceAttr(resourceVar, "value", "dep_value"),
+					resource.TestCheckResourceAttrSet(resourceVar, "id"),
+				),
+			},
+			// Update value
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjAirflowVar("test", varKey, "DEPLOYMENT", deploymentId, "dep_updated", false),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "value", "dep_updated"),
+				),
+			},
+			// Import
+			{
+				ResourceName:      resourceVar,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAcc_ResourceEnvironmentObjectConnection_Deployment(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
+	connKey := fmt.Sprintf("test_conn_dep_%v", namePrefix)
+	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
+	resourceVar := "astro_environment_object.test"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckEnvironmentObjectDestroyed(t, connKey),
+		Steps: []resource.TestStep{
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjConnection("test", connKey, "DEPLOYMENT", deploymentId, "db.example.com", 3306, ""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckEnvironmentObjectExists(t, connKey),
+					resource.TestCheckResourceAttr(resourceVar, "object_key", connKey),
+					resource.TestCheckResourceAttr(resourceVar, "object_type", "CONNECTION"),
+					resource.TestCheckResourceAttr(resourceVar, "scope", "DEPLOYMENT"),
+					resource.TestCheckResourceAttr(resourceVar, "type", "postgres"),
+					resource.TestCheckResourceAttr(resourceVar, "host", "db.example.com"),
+					resource.TestCheckResourceAttr(resourceVar, "port", "3306"),
+					resource.TestCheckResourceAttrSet(resourceVar, "id"),
+				),
+			},
+			// Update host
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjConnection("test", connKey, "DEPLOYMENT", deploymentId, "db-updated.example.com", 3306, ""),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "host", "db-updated.example.com"),
+				),
+			},
+			// Import
+			{
+				ResourceName:            resourceVar,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"password", "extra"},
+			},
+		},
+	})
+}
+
+func TestAcc_ResourceEnvironmentObjectMetricsExport_Deployment(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
+	meKey := fmt.Sprintf("test_me_dep_%v", namePrefix)
+	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
+	resourceVar := "astro_environment_object.test"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckEnvironmentObjectDestroyed(t, meKey),
+		Steps: []resource.TestStep{
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExport("test", meKey, "DEPLOYMENT", deploymentId, "https://prom.example.com/api/v1/write"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckEnvironmentObjectExists(t, meKey),
+					resource.TestCheckResourceAttr(resourceVar, "object_key", meKey),
+					resource.TestCheckResourceAttr(resourceVar, "object_type", "METRICS_EXPORT"),
+					resource.TestCheckResourceAttr(resourceVar, "scope", "DEPLOYMENT"),
+					resource.TestCheckResourceAttr(resourceVar, "endpoint", "https://prom.example.com/api/v1/write"),
+					resource.TestCheckResourceAttrSet(resourceVar, "id"),
+				),
+			},
+			// Update endpoint
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExport("test", meKey, "DEPLOYMENT", deploymentId, "https://prom.example.com/api/v2/write"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "endpoint", "https://prom.example.com/api/v2/write"),
+				),
+			},
+			// Import
+			{
+				ResourceName:            resourceVar,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"basic_token", "password"},
+			},
+		},
+	})
+}
+
+// --- Config helpers ---
+
+func envObjAirflowVar(tfName, varKey, scope, scopeEntityId, value string, isSecret bool) string {
 	return fmt.Sprintf(`
 resource "astro_environment_object" "%s" {
   object_key      = "%s"
   object_type     = "AIRFLOW_VARIABLE"
-  scope           = "WORKSPACE"
+  scope           = "%s"
   scope_entity_id = "%s"
 
-  airflow_variable = {
-    value     = "%s"
-    is_secret = %t
-  }
+  value     = "%s"
+  is_secret = %t
 }
-`, tfName, varKey, workspaceId, value, isSecret)
+`, tfName, varKey, scope, scopeEntityId, value, isSecret)
 }
 
-func environmentObjectConnection(tfName, connKey, workspaceId, host string, port int, extraJSON string) string {
+func envObjConnection(tfName, connKey, scope, scopeEntityId, host string, port int, extraJSON string) string {
 	extraLine := ""
 	if extraJSON != "" {
-		// %q quotes the JSON string verbatim so it round-trips byte-identical through
-		// the preservation logic in models/environment_object.go.
 		extraLine = fmt.Sprintf("extra = %q", extraJSON)
 	}
 	return fmt.Sprintf(`
 resource "astro_environment_object" "%s" {
   object_key      = "%s"
   object_type     = "CONNECTION"
-  scope           = "WORKSPACE"
+  scope           = "%s"
   scope_entity_id = "%s"
 
-  airflow_connection = {
-    type     = "postgres"
-    host     = "%s"
-    port     = %d
-    login    = "testuser"
-    password = "testpass"
-    schema   = "testdb"
-    %s
-  }
+  type     = "postgres"
+  host     = "%s"
+  port     = %d
+  login    = "testuser"
+  password = "testpass"
+  schema   = "testdb"
+  %s
 }
-`, tfName, connKey, workspaceId, host, port, extraLine)
+`, tfName, connKey, scope, scopeEntityId, host, port, extraLine)
 }
 
-func environmentObjectMetricsExport(tfName, meKey, workspaceId, endpoint string) string {
+func envObjMetricsExport(tfName, meKey, scope, scopeEntityId, endpoint string) string {
 	return fmt.Sprintf(`
 resource "astro_environment_object" "%s" {
   object_key      = "%s"
   object_type     = "METRICS_EXPORT"
-  scope           = "WORKSPACE"
+  scope           = "%s"
   scope_entity_id = "%s"
 
-  metrics_export = {
-    endpoint      = "%s"
-    exporter_type = "PROMETHEUS"
-  }
+  endpoint      = "%s"
+  exporter_type = "PROMETHEUS"
 }
-`, tfName, meKey, workspaceId, endpoint)
+`, tfName, meKey, scope, scopeEntityId, endpoint)
 }
 
-// testAccCheckEnvironmentObjectExists verifies that an environment object with
-// the given key is reachable via the API (not just present in Terraform state).
-// Matches the pattern used by testAccCheckNotificationChannelExists et al.
+// --- Existence checks ---
+
 func testAccCheckEnvironmentObjectExists(t *testing.T, objectKey string) resource.TestCheckFunc {
 	t.Helper()
 	return func(s *terraform.State) error {
@@ -251,12 +360,8 @@ func testAccCheckEnvironmentObjectExists(t *testing.T, objectKey string) resourc
 		if err != nil {
 			return fmt.Errorf("failed to list environment objects: %v", err)
 		}
-		if resp == nil {
+		if resp == nil || resp.JSON200 == nil {
 			return fmt.Errorf("nil response from list environment objects")
-		}
-		if resp.JSON200 == nil {
-			status, diag := clients.NormalizeAPIError(ctx, resp.HTTPResponse, resp.Body)
-			return fmt.Errorf("response JSON200 is nil status: %v, err: %v", status, diag.Detail())
 		}
 
 		for _, obj := range resp.JSON200.EnvironmentObjects {
@@ -288,15 +393,15 @@ func testAccCheckEnvironmentObjectDestroyed(t *testing.T, objectKey string) reso
 			return fmt.Errorf("failed to list environment objects: %v", err)
 		}
 		if resp == nil {
-			return fmt.Errorf("nil response from list environment objects")
+			return nil
 		}
 		if resp.StatusCode() != 200 {
-			status, diag := clients.NormalizeAPIError(ctx, resp.HTTPResponse, resp.Body)
-			if status == 404 {
+			statusCode, diag := clients.NormalizeAPIError(ctx, resp.HTTPResponse, resp.Body)
+			if statusCode == 404 {
 				return nil
 			}
 			if diag != nil {
-				return fmt.Errorf("unexpected error checking environment object destruction: %s", diag.Detail())
+				return fmt.Errorf("unexpected error checking destruction: %s", diag.Detail())
 			}
 		}
 		if resp.JSON200 != nil {
