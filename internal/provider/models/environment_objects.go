@@ -16,38 +16,28 @@ type EnvironmentObjects struct {
 	DeploymentId       types.String `tfsdk:"deployment_id"`
 	ObjectType         types.String `tfsdk:"object_type"`
 	ObjectKey          types.String `tfsdk:"object_key"`
-	EnvironmentObjects types.List   `tfsdk:"environment_objects"`
+	ShowSecrets        types.Bool   `tfsdk:"show_secrets"`
+	ResolveLinked      types.Bool   `tfsdk:"resolve_linked"`
+	EnvironmentObjects types.Set    `tfsdk:"environment_objects"`
 }
 
 func (data *EnvironmentObjects) ReadFromResponse(ctx context.Context, objects []platform.EnvironmentObject) diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	envObjAttrTypes := schemas.EnvironmentObjectDataSourceSchemaAttributes()
-	attrTypes := make(map[string]attr.Type)
-	for k, v := range envObjAttrTypes {
-		attrTypes[k] = v.GetType()
-	}
-
-	if len(objects) == 0 {
-		data.EnvironmentObjects = types.ListNull(types.ObjectType{AttrTypes: attrTypes})
-		return nil
-	}
-
-	envObjValues := make([]attr.Value, len(objects))
+	values := make([]attr.Value, len(objects))
 	for i, obj := range objects {
-		var envObj EnvironmentObject
-		diags = envObj.ReadFromResponse(ctx, &obj, nil)
+		var single EnvironmentObject
+		diags := single.ReadFromResponse(ctx, &obj, nil)
 		if diags.HasError() {
 			return diags
 		}
 
-		objVal, d := types.ObjectValueFrom(ctx, attrTypes, &envObj)
-		if d.HasError() {
-			return d
+		objectValue, diags := types.ObjectValueFrom(ctx, schemas.EnvironmentObjectsElementAttributeTypes(), single)
+		if diags.HasError() {
+			return diags
 		}
-		envObjValues[i] = objVal
+		values[i] = objectValue
 	}
 
-	data.EnvironmentObjects, diags = types.ListValue(types.ObjectType{AttrTypes: attrTypes}, envObjValues)
+	var diags diag.Diagnostics
+	data.EnvironmentObjects, diags = types.SetValue(types.ObjectType{AttrTypes: schemas.EnvironmentObjectsElementAttributeTypes()}, values)
 	return diags
 }

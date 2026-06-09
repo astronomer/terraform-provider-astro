@@ -25,6 +25,7 @@ import (
 var _ resource.Resource = &environmentObjectResource{}
 var _ resource.ResourceWithImportState = &environmentObjectResource{}
 var _ resource.ResourceWithConfigure = &environmentObjectResource{}
+var _ resource.ResourceWithValidateConfig = &environmentObjectResource{}
 
 func NewEnvironmentObjectResource() resource.Resource {
 	return &environmentObjectResource{}
@@ -89,13 +90,12 @@ func (r *environmentObjectResource) Create(
 		return
 	}
 
-	// Extract connection password from plan before API call (API won't return it)
-	var requestConnPassword *string
-	if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
-		var ci connectionInput
-		if d := data.ConnectionConfig.As(ctx, &ci, basetypes.ObjectAsOptions{}); !d.HasError() {
-			requestConnPassword = ci.Password.ValueStringPointer()
-		}
+	// Build preserve struct from plan: captures sensitive fields and the user's exact
+	// `extra` JSON string so state stays consistent after the API strips/normalizes them.
+	preserve, diags := buildPreserveFromModel(ctx, &data)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
 	}
 
 	// create request
@@ -108,7 +108,7 @@ func (r *environmentObjectResource) Create(
 	createResp, err := r.platformClient.CreateEnvironmentObjectWithResponse(ctx, r.organizationId, createReq)
 	if err != nil {
 		tflog.Error(ctx, "failed to create environment object", map[string]interface{}{"error": err})
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create environment object: %s", err))
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create environment object, got error: %s", err))
 		return
 	}
 	_, diagnostic := clients.NormalizeAPIError(ctx, createResp.HTTPResponse, createResp.Body)
@@ -116,12 +116,17 @@ func (r *environmentObjectResource) Create(
 		resp.Diagnostics.Append(diagnostic)
 		return
 	}
+	if createResp.JSON200 == nil {
+		tflog.Error(ctx, "failed to create environment object", map[string]interface{}{"error": "nil response"})
+		resp.Diagnostics.AddError("Client Error", "Unable to create environment object, got nil response")
+		return
+	}
 
 	// Create only returns the ID, do a follow-up GET to populate full state
 	getResp, err := r.platformClient.GetEnvironmentObjectWithResponse(ctx, r.organizationId, createResp.JSON200.Id)
 	if err != nil {
 		tflog.Error(ctx, "failed to get environment object after create", map[string]interface{}{"error": err})
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read environment object after create: %s", err))
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get environment object after create, got error: %s", err))
 		return
 	}
 	_, diagnostic = clients.NormalizeAPIError(ctx, getResp.HTTPResponse, getResp.Body)
@@ -129,14 +134,19 @@ func (r *environmentObjectResource) Create(
 		resp.Diagnostics.Append(diagnostic)
 		return
 	}
+	if getResp.JSON200 == nil {
+		tflog.Error(ctx, "failed to get environment object after create", map[string]interface{}{"error": "nil response"})
+		resp.Diagnostics.AddError("Client Error", "Unable to get environment object after create, got nil response")
+		return
+	}
 
-	diags = data.ReadFromResponse(ctx, getResp.JSON200, requestConnPassword)
+	diags = data.ReadFromResponse(ctx, getResp.JSON200, preserve)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
 	}
 
-	tflog.Trace(ctx, fmt.Sprintf("created a environment object resource: %v", data.Id.ValueString()))
+	tflog.Trace(ctx, fmt.Sprintf("created an environment object resource: %v", data.Id.ValueString()))
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -155,20 +165,19 @@ func (r *environmentObjectResource) Read(
 		return
 	}
 
-	// Extract connection password from prior state (API won't return it)
-	var stateConnPassword *string
-	if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
-		var ci connectionInput
-		if d := data.ConnectionConfig.As(ctx, &ci, basetypes.ObjectAsOptions{}); !d.HasError() {
-			stateConnPassword = ci.Password.ValueStringPointer()
-		}
+	// Build preserve struct from prior state so sensitive fields and the user's `extra`
+	// JSON string survive the refresh (the API returns null/empty/reordered for these).
+	preserve, diags := buildPreserveFromModel(ctx, &data)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
 	}
 
 	// get request
 	envObj, err := r.platformClient.GetEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString())
 	if err != nil {
 		tflog.Error(ctx, "failed to get environment object", map[string]interface{}{"error": err})
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get environment object: %s", err))
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get environment object, got error: %s", err))
 		return
 	}
 	statusCode, diagnostic := clients.NormalizeAPIError(ctx, envObj.HTTPResponse, envObj.Body)
@@ -182,14 +191,19 @@ func (r *environmentObjectResource) Read(
 		resp.Diagnostics.Append(diagnostic)
 		return
 	}
+	if envObj.JSON200 == nil {
+		tflog.Error(ctx, "failed to get environment object", map[string]interface{}{"error": "nil response"})
+		resp.Diagnostics.AddError("Client Error", "Unable to get environment object, got nil response")
+		return
+	}
 
-	diags := data.ReadFromResponse(ctx, envObj.JSON200, stateConnPassword)
+	diags = data.ReadFromResponse(ctx, envObj.JSON200, preserve)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
 	}
 
-	tflog.Trace(ctx, fmt.Sprintf("read a environment object resource: %v", data.Id.ValueString()))
+	tflog.Trace(ctx, fmt.Sprintf("read an environment object resource: %v", data.Id.ValueString()))
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -208,13 +222,12 @@ func (r *environmentObjectResource) Update(
 		return
 	}
 
-	// Extract connection password from plan before API call (API won't return it)
-	var requestConnPassword *string
-	if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
-		var ci connectionInput
-		if d := data.ConnectionConfig.As(ctx, &ci, basetypes.ObjectAsOptions{}); !d.HasError() {
-			requestConnPassword = ci.Password.ValueStringPointer()
-		}
+	// Build preserve struct from plan: captures sensitive fields and the user's
+	// `extra` JSON string for the round-trip.
+	preserve, diags := buildPreserveFromModel(ctx, &data)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
 	}
 
 	// update request
@@ -227,7 +240,7 @@ func (r *environmentObjectResource) Update(
 	updateResp, err := r.platformClient.UpdateEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString(), updateReq)
 	if err != nil {
 		tflog.Error(ctx, "failed to update environment object", map[string]interface{}{"error": err})
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update environment object: %s", err))
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update environment object, got error: %s", err))
 		return
 	}
 	_, diagnostic := clients.NormalizeAPIError(ctx, updateResp.HTTPResponse, updateResp.Body)
@@ -240,7 +253,7 @@ func (r *environmentObjectResource) Update(
 	getResp, err := r.platformClient.GetEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString())
 	if err != nil {
 		tflog.Error(ctx, "failed to get environment object after update", map[string]interface{}{"error": err})
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read environment object after update: %s", err))
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get environment object after update, got error: %s", err))
 		return
 	}
 	_, diagnostic = clients.NormalizeAPIError(ctx, getResp.HTTPResponse, getResp.Body)
@@ -248,14 +261,19 @@ func (r *environmentObjectResource) Update(
 		resp.Diagnostics.Append(diagnostic)
 		return
 	}
+	if getResp.JSON200 == nil {
+		tflog.Error(ctx, "failed to get environment object after update", map[string]interface{}{"error": "nil response"})
+		resp.Diagnostics.AddError("Client Error", "Unable to get environment object after update, got nil response")
+		return
+	}
 
-	diags = data.ReadFromResponse(ctx, getResp.JSON200, requestConnPassword)
+	diags = data.ReadFromResponse(ctx, getResp.JSON200, preserve)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
 	}
 
-	tflog.Trace(ctx, fmt.Sprintf("updated a environment object resource: %v", data.Id.ValueString()))
+	tflog.Trace(ctx, fmt.Sprintf("updated an environment object resource: %v", data.Id.ValueString()))
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -278,7 +296,7 @@ func (r *environmentObjectResource) Delete(
 	envObj, err := r.platformClient.DeleteEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString())
 	if err != nil {
 		tflog.Error(ctx, "failed to delete environment object", map[string]interface{}{"error": err})
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete environment object: %s", err))
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete environment object, got error: %s", err))
 		return
 	}
 	statusCode, diagnostic := clients.NormalizeAPIError(ctx, envObj.HTTPResponse, envObj.Body)
@@ -288,7 +306,7 @@ func (r *environmentObjectResource) Delete(
 		return
 	}
 
-	tflog.Trace(ctx, fmt.Sprintf("deleted a environment object resource: %v", data.Id.ValueString()))
+	tflog.Trace(ctx, fmt.Sprintf("deleted an environment object resource: %v", data.Id.ValueString()))
 }
 
 func (r *environmentObjectResource) ImportState(
@@ -297,47 +315,6 @@ func (r *environmentObjectResource) ImportState(
 	resp *resource.ImportStateResponse,
 ) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
-}
-
-type connectionInput struct {
-	AuthTypeId         types.String `tfsdk:"auth_type_id"`
-	ConnectionAuthType types.Object `tfsdk:"connection_auth_type"`
-	Type               types.String `tfsdk:"type"`
-	Host               types.String `tfsdk:"host"`
-	Port               types.Int64  `tfsdk:"port"`
-	Schema             types.String `tfsdk:"schema"`
-	Login              types.String `tfsdk:"login"`
-	Password           types.String `tfsdk:"password"`
-	Extra              types.String `tfsdk:"extra"`
-}
-
-type airflowVariableInput struct {
-	Value    types.String `tfsdk:"value"`
-	IsSecret types.Bool   `tfsdk:"is_secret"`
-}
-
-type metricsExportInput struct {
-	AuthType     types.String `tfsdk:"auth_type"`
-	Endpoint     types.String `tfsdk:"endpoint"`
-	BasicToken   types.String `tfsdk:"basic_token"`
-	ExporterType types.String `tfsdk:"exporter_type"`
-	Username     types.String `tfsdk:"username"`
-	Password     types.String `tfsdk:"password"`
-	Headers      types.Map    `tfsdk:"headers"`
-	Labels       types.Map    `tfsdk:"labels"`
-}
-
-type excludeLinkInput struct {
-	Scope         types.String `tfsdk:"scope"`
-	ScopeEntityId types.String `tfsdk:"scope_entity_id"`
-}
-
-type linkInput struct {
-	Scope                    types.String `tfsdk:"scope"`
-	ScopeEntityId            types.String `tfsdk:"scope_entity_id"`
-	AirflowVariableOverrides types.Object `tfsdk:"airflow_variable_overrides"`
-	ConnectionOverrides      types.Object `tfsdk:"connection_overrides"`
-	MetricsExportOverrides   types.Object `tfsdk:"metrics_export_overrides"`
 }
 
 func buildCreateRequest(ctx context.Context, data *models.EnvironmentObject) (platform.CreateEnvironmentObjectJSONRequestBody, diag.Diagnostics) {
@@ -353,7 +330,7 @@ func buildCreateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 
 	// Airflow Variable
 	if !data.AirflowVariable.IsNull() && !data.AirflowVariable.IsUnknown() {
-		var av airflowVariableInput
+		var av models.EnvironmentObjectAirflowVariableInput
 		diags = data.AirflowVariable.As(ctx, &av, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return req, diags
@@ -366,7 +343,7 @@ func buildCreateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 
 	// Connection
 	if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
-		var ci connectionInput
+		var ci models.EnvironmentObjectConnectionInput
 		diags = data.ConnectionConfig.As(ctx, &ci, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return req, diags
@@ -394,7 +371,7 @@ func buildCreateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 
 	// Metrics Export
 	if !data.MetricsExport.IsNull() && !data.MetricsExport.IsUnknown() {
-		var me metricsExportInput
+		var me models.EnvironmentObjectMetricsExportInput
 		diags = data.MetricsExport.As(ctx, &me, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return req, diags
@@ -422,7 +399,7 @@ func buildCreateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 
 	// Links
 	if !data.Links.IsNull() && !data.Links.IsUnknown() {
-		var linkInputs []linkInput
+		var linkInputs []models.EnvironmentObjectLinkInput
 		diags = data.Links.ElementsAs(ctx, &linkInputs, false)
 		if diags.HasError() {
 			return req, diags
@@ -446,7 +423,7 @@ func buildCreateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 
 	// Exclude Links
 	if !data.ExcludeLinks.IsNull() && !data.ExcludeLinks.IsUnknown() {
-		var elInputs []excludeLinkInput
+		var elInputs []models.EnvironmentObjectExcludeLinkInput
 		diags = data.ExcludeLinks.ElementsAs(ctx, &elInputs, false)
 		if diags.HasError() {
 			return req, diags
@@ -473,7 +450,7 @@ func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 
 	// Airflow Variable
 	if !data.AirflowVariable.IsNull() && !data.AirflowVariable.IsUnknown() {
-		var av airflowVariableInput
+		var av models.EnvironmentObjectAirflowVariableInput
 		diags = data.AirflowVariable.As(ctx, &av, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return req, diags
@@ -485,7 +462,7 @@ func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 
 	// Connection
 	if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
-		var ci connectionInput
+		var ci models.EnvironmentObjectConnectionInput
 		diags = data.ConnectionConfig.As(ctx, &ci, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return req, diags
@@ -513,7 +490,7 @@ func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 
 	// Metrics Export
 	if !data.MetricsExport.IsNull() && !data.MetricsExport.IsUnknown() {
-		var me metricsExportInput
+		var me models.EnvironmentObjectMetricsExportInput
 		diags = data.MetricsExport.As(ctx, &me, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return req, diags
@@ -543,7 +520,7 @@ func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 
 	// Links
 	if !data.Links.IsNull() && !data.Links.IsUnknown() {
-		var linkInputs []linkInput
+		var linkInputs []models.EnvironmentObjectLinkInput
 		diags = data.Links.ElementsAs(ctx, &linkInputs, false)
 		if diags.HasError() {
 			return req, diags
@@ -567,7 +544,7 @@ func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 
 	// Exclude Links
 	if !data.ExcludeLinks.IsNull() && !data.ExcludeLinks.IsUnknown() {
-		var elInputs []excludeLinkInput
+		var elInputs []models.EnvironmentObjectExcludeLinkInput
 		diags = data.ExcludeLinks.ElementsAs(ctx, &elInputs, false)
 		if diags.HasError() {
 			return req, diags
@@ -585,37 +562,12 @@ func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 	return req, nil
 }
 
-type connectionOverridesInput struct {
-	Type     types.String `tfsdk:"type"`
-	Host     types.String `tfsdk:"host"`
-	Port     types.Int64  `tfsdk:"port"`
-	Schema   types.String `tfsdk:"schema"`
-	Login    types.String `tfsdk:"login"`
-	Password types.String `tfsdk:"password"`
-	Extra    types.String `tfsdk:"extra"`
-}
-
-type metricsExportOverridesInput struct {
-	AuthType     types.String `tfsdk:"auth_type"`
-	Endpoint     types.String `tfsdk:"endpoint"`
-	BasicToken   types.String `tfsdk:"basic_token"`
-	ExporterType types.String `tfsdk:"exporter_type"`
-	Username     types.String `tfsdk:"username"`
-	Password     types.String `tfsdk:"password"`
-	Headers      types.Map    `tfsdk:"headers"`
-	Labels       types.Map    `tfsdk:"labels"`
-}
-
-type airflowVariableOverridesInput struct {
-	Value types.String `tfsdk:"value"`
-}
-
-func buildCreateOverrides(ctx context.Context, li *linkInput) (*platform.CreateEnvironmentObjectOverridesRequest, diag.Diagnostics) {
+func buildCreateOverrides(ctx context.Context, li *models.EnvironmentObjectLinkInput) (*platform.CreateEnvironmentObjectOverridesRequest, diag.Diagnostics) {
 	overrides := &platform.CreateEnvironmentObjectOverridesRequest{}
 	hasOverrides := false
 
 	if !li.AirflowVariableOverrides.IsNull() && !li.AirflowVariableOverrides.IsUnknown() {
-		var avo airflowVariableOverridesInput
+		var avo models.EnvironmentObjectAirflowVariableOverridesInput
 		diags := li.AirflowVariableOverrides.As(ctx, &avo, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return nil, diags
@@ -627,7 +579,7 @@ func buildCreateOverrides(ctx context.Context, li *linkInput) (*platform.CreateE
 	}
 
 	if !li.ConnectionOverrides.IsNull() && !li.ConnectionOverrides.IsUnknown() {
-		var co connectionOverridesInput
+		var co models.EnvironmentObjectConnectionOverridesInput
 		diags := li.ConnectionOverrides.As(ctx, &co, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return nil, diags
@@ -645,7 +597,7 @@ func buildCreateOverrides(ctx context.Context, li *linkInput) (*platform.CreateE
 		if !co.Extra.IsNull() && !co.Extra.IsUnknown() {
 			var extra map[string]interface{}
 			if err := json.Unmarshal([]byte(co.Extra.ValueString()), &extra); err != nil {
-				return nil, diag.Diagnostics{diag.NewErrorDiagnostic("Invalid Input", "connection overrides extra must be valid JSON")}
+				return nil, diag.Diagnostics{diag.NewErrorDiagnostic("Invalid Input", fmt.Sprintf("connection overrides extra must be valid JSON: %s", err))}
 			}
 			connOvr.Extra = &extra
 		}
@@ -654,7 +606,7 @@ func buildCreateOverrides(ctx context.Context, li *linkInput) (*platform.CreateE
 	}
 
 	if !li.MetricsExportOverrides.IsNull() && !li.MetricsExportOverrides.IsUnknown() {
-		var mo metricsExportOverridesInput
+		var mo models.EnvironmentObjectMetricsExportOverridesInput
 		diags := li.MetricsExportOverrides.As(ctx, &mo, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return nil, diags
@@ -689,12 +641,12 @@ func buildCreateOverrides(ctx context.Context, li *linkInput) (*platform.CreateE
 	return overrides, nil
 }
 
-func buildUpdateOverrides(ctx context.Context, li *linkInput) (*platform.UpdateEnvironmentObjectOverridesRequest, diag.Diagnostics) {
+func buildUpdateOverrides(ctx context.Context, li *models.EnvironmentObjectLinkInput) (*platform.UpdateEnvironmentObjectOverridesRequest, diag.Diagnostics) {
 	overrides := &platform.UpdateEnvironmentObjectOverridesRequest{}
 	hasOverrides := false
 
 	if !li.AirflowVariableOverrides.IsNull() && !li.AirflowVariableOverrides.IsUnknown() {
-		var avo airflowVariableOverridesInput
+		var avo models.EnvironmentObjectAirflowVariableOverridesInput
 		diags := li.AirflowVariableOverrides.As(ctx, &avo, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return nil, diags
@@ -706,7 +658,7 @@ func buildUpdateOverrides(ctx context.Context, li *linkInput) (*platform.UpdateE
 	}
 
 	if !li.ConnectionOverrides.IsNull() && !li.ConnectionOverrides.IsUnknown() {
-		var co connectionOverridesInput
+		var co models.EnvironmentObjectConnectionOverridesInput
 		diags := li.ConnectionOverrides.As(ctx, &co, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return nil, diags
@@ -724,7 +676,7 @@ func buildUpdateOverrides(ctx context.Context, li *linkInput) (*platform.UpdateE
 		if !co.Extra.IsNull() && !co.Extra.IsUnknown() {
 			var extra map[string]interface{}
 			if err := json.Unmarshal([]byte(co.Extra.ValueString()), &extra); err != nil {
-				return nil, diag.Diagnostics{diag.NewErrorDiagnostic("Invalid Input", "connection overrides extra must be valid JSON")}
+				return nil, diag.Diagnostics{diag.NewErrorDiagnostic("Invalid Input", fmt.Sprintf("connection overrides extra must be valid JSON: %s", err))}
 			}
 			connOvr.Extra = &extra
 		}
@@ -733,7 +685,7 @@ func buildUpdateOverrides(ctx context.Context, li *linkInput) (*platform.UpdateE
 	}
 
 	if !li.MetricsExportOverrides.IsNull() && !li.MetricsExportOverrides.IsUnknown() {
-		var mo metricsExportOverridesInput
+		var mo models.EnvironmentObjectMetricsExportOverridesInput
 		diags := li.MetricsExportOverrides.As(ctx, &mo, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return nil, diags
@@ -776,4 +728,193 @@ func tfMapToStringMap(ctx context.Context, m types.Map) map[string]string {
 		}
 	}
 	return result
+}
+
+// buildPreserveFromModel walks the model and extracts every value the API does
+// not echo back on GET — sensitive fields plus the user's exact `extra` JSON
+// string. Used to repopulate state without losing user input on refresh.
+// Diagnostics from .As() are surfaced; silent failure would clobber state.
+func buildPreserveFromModel(ctx context.Context, data *models.EnvironmentObject) (*models.EnvironmentObjectPreserve, diag.Diagnostics) {
+	preserve := &models.EnvironmentObjectPreserve{}
+	var diags diag.Diagnostics
+
+	// Connection
+	if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
+		var ci models.EnvironmentObjectConnectionInput
+		d := data.ConnectionConfig.As(ctx, &ci, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true})
+		if d.HasError() {
+			diags.Append(d...)
+			return nil, diags
+		}
+		preserve.ConnectionPassword = ci.Password.ValueStringPointer()
+		preserve.ConnectionAuthTypeId = ci.AuthTypeId.ValueStringPointer()
+		preserve.ConnectionExtra = ci.Extra.ValueStringPointer()
+	}
+
+	// Airflow Variable
+	if !data.AirflowVariable.IsNull() && !data.AirflowVariable.IsUnknown() {
+		var av models.EnvironmentObjectAirflowVariableInput
+		d := data.AirflowVariable.As(ctx, &av, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true})
+		if d.HasError() {
+			diags.Append(d...)
+			return nil, diags
+		}
+		// Preserve value when secret (API returns empty for secrets) OR when caller
+		// supplied a value (handles is_secret toggle edge cases).
+		if av.IsSecret.ValueBool() || !av.Value.IsNull() {
+			preserve.AirflowVariableValue = av.Value.ValueStringPointer()
+		}
+	}
+
+	// Metrics Export
+	if !data.MetricsExport.IsNull() && !data.MetricsExport.IsUnknown() {
+		var me models.EnvironmentObjectMetricsExportInput
+		d := data.MetricsExport.As(ctx, &me, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true})
+		if d.HasError() {
+			diags.Append(d...)
+			return nil, diags
+		}
+		preserve.MetricsExportPassword = me.Password.ValueStringPointer()
+		preserve.MetricsExportBasicToken = me.BasicToken.ValueStringPointer()
+	}
+
+	// Per-link overrides
+	if !data.Links.IsNull() && !data.Links.IsUnknown() {
+		var linkInputs []models.EnvironmentObjectLinkInput
+		d := data.Links.ElementsAs(ctx, &linkInputs, false)
+		if d.HasError() {
+			diags.Append(d...)
+			return nil, diags
+		}
+		if len(linkInputs) > 0 {
+			preserve.LinkOverrides = make(map[string]*models.EnvironmentObjectLinkOverridePreserve, len(linkInputs))
+			for _, li := range linkInputs {
+				lop := &models.EnvironmentObjectLinkOverridePreserve{}
+				if !li.AirflowVariableOverrides.IsNull() && !li.AirflowVariableOverrides.IsUnknown() {
+					var avo models.EnvironmentObjectAirflowVariableOverridesInput
+					d := li.AirflowVariableOverrides.As(ctx, &avo, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true})
+					if d.HasError() {
+						diags.Append(d...)
+						return nil, diags
+					}
+					lop.AirflowVariableValue = avo.Value.ValueStringPointer()
+				}
+				if !li.ConnectionOverrides.IsNull() && !li.ConnectionOverrides.IsUnknown() {
+					var co models.EnvironmentObjectConnectionOverridesInput
+					d := li.ConnectionOverrides.As(ctx, &co, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true})
+					if d.HasError() {
+						diags.Append(d...)
+						return nil, diags
+					}
+					lop.ConnectionPassword = co.Password.ValueStringPointer()
+					lop.ConnectionExtra = co.Extra.ValueStringPointer()
+				}
+				if !li.MetricsExportOverrides.IsNull() && !li.MetricsExportOverrides.IsUnknown() {
+					var mo models.EnvironmentObjectMetricsExportOverridesInput
+					d := li.MetricsExportOverrides.As(ctx, &mo, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true})
+					if d.HasError() {
+						diags.Append(d...)
+						return nil, diags
+					}
+					lop.MetricsExportPassword = mo.Password.ValueStringPointer()
+					lop.MetricsExportBasicToken = mo.BasicToken.ValueStringPointer()
+				}
+				preserve.LinkOverrides[models.LinkPreserveKey(li.Scope.ValueString(), li.ScopeEntityId.ValueString())] = lop
+			}
+		}
+	}
+
+	return preserve, nil
+}
+
+// ValidateConfig validates the configuration of the resource as a whole before any operations are performed.
+// It enforces the documented invariants that the schema alone cannot express: the right block must be set for
+// each object_type, and auto_link_deployments / links / exclude_links only apply to WORKSPACE scope.
+func (r *environmentObjectResource) ValidateConfig(
+	ctx context.Context,
+	req resource.ValidateConfigRequest,
+	resp *resource.ValidateConfigResponse,
+) {
+	var data models.EnvironmentObject
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// object_type ↔ block mutual exclusivity. Skip when object_type is unknown
+	// (rare — typically interpolated from another resource).
+	if !data.ObjectType.IsUnknown() && !data.ObjectType.IsNull() {
+		objectType := platform.CreateEnvironmentObjectRequestObjectType(data.ObjectType.ValueString())
+		switch objectType {
+		case platform.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE:
+			if data.AirflowVariable.IsNull() {
+				resp.Diagnostics.AddAttributeError(path.Root("airflow_variable"),
+					"Missing required block",
+					"object_type=AIRFLOW_VARIABLE requires an airflow_variable block")
+			}
+			if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
+				resp.Diagnostics.AddAttributeError(path.Root("connection_config"),
+					"Conflicting block",
+					"connection_config is not allowed when object_type=AIRFLOW_VARIABLE")
+			}
+			if !data.MetricsExport.IsNull() && !data.MetricsExport.IsUnknown() {
+				resp.Diagnostics.AddAttributeError(path.Root("metrics_export"),
+					"Conflicting block",
+					"metrics_export is not allowed when object_type=AIRFLOW_VARIABLE")
+			}
+		case platform.CreateEnvironmentObjectRequestObjectTypeCONNECTION:
+			if data.ConnectionConfig.IsNull() {
+				resp.Diagnostics.AddAttributeError(path.Root("connection_config"),
+					"Missing required block",
+					"object_type=CONNECTION requires a connection_config block")
+			}
+			if !data.AirflowVariable.IsNull() && !data.AirflowVariable.IsUnknown() {
+				resp.Diagnostics.AddAttributeError(path.Root("airflow_variable"),
+					"Conflicting block",
+					"airflow_variable is not allowed when object_type=CONNECTION")
+			}
+			if !data.MetricsExport.IsNull() && !data.MetricsExport.IsUnknown() {
+				resp.Diagnostics.AddAttributeError(path.Root("metrics_export"),
+					"Conflicting block",
+					"metrics_export is not allowed when object_type=CONNECTION")
+			}
+		case platform.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
+			if data.MetricsExport.IsNull() {
+				resp.Diagnostics.AddAttributeError(path.Root("metrics_export"),
+					"Missing required block",
+					"object_type=METRICS_EXPORT requires a metrics_export block")
+			}
+			if !data.AirflowVariable.IsNull() && !data.AirflowVariable.IsUnknown() {
+				resp.Diagnostics.AddAttributeError(path.Root("airflow_variable"),
+					"Conflicting block",
+					"airflow_variable is not allowed when object_type=METRICS_EXPORT")
+			}
+			if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
+				resp.Diagnostics.AddAttributeError(path.Root("connection_config"),
+					"Conflicting block",
+					"connection_config is not allowed when object_type=METRICS_EXPORT")
+			}
+		}
+	}
+
+	// scope=DEPLOYMENT can't carry workspace-only attributes.
+	if !data.Scope.IsUnknown() && !data.Scope.IsNull() &&
+		data.Scope.ValueString() == string(platform.CreateEnvironmentObjectRequestScopeDEPLOYMENT) {
+		if !data.AutoLinkDeployments.IsNull() && !data.AutoLinkDeployments.IsUnknown() {
+			resp.Diagnostics.AddAttributeError(path.Root("auto_link_deployments"),
+				"Conflicting attribute",
+				"auto_link_deployments is only valid when scope=WORKSPACE")
+		}
+		if !data.Links.IsNull() && !data.Links.IsUnknown() {
+			resp.Diagnostics.AddAttributeError(path.Root("links"),
+				"Conflicting attribute",
+				"links is only valid when scope=WORKSPACE")
+		}
+		if !data.ExcludeLinks.IsNull() && !data.ExcludeLinks.IsUnknown() {
+			resp.Diagnostics.AddAttributeError(path.Root("exclude_links"),
+				"Conflicting attribute",
+				"exclude_links is only valid when scope=WORKSPACE")
+		}
+	}
 }

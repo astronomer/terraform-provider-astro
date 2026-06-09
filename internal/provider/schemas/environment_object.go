@@ -1,18 +1,19 @@
 package schemas
 
 import (
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
-
-// --- Attribute Types (used by models for types.ObjectValue / types.ListValueFrom) ---
 
 func EnvironmentObjectAirflowVariableAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
@@ -78,6 +79,7 @@ func EnvironmentObjectConnectionAuthTypeParameterAttributeTypes() map[string]att
 		"description":        types.StringType,
 		"example":            types.StringType,
 		"is_in_extra":        types.BoolType,
+		"pattern":            types.StringType,
 	}
 }
 
@@ -128,8 +130,6 @@ func EnvironmentObjectMetricsExportOverridesAttributeTypes() map[string]attr.Typ
 		"labels":        types.MapType{ElemType: types.StringType},
 	}
 }
-
-// --- Data Source Schema Attributes ---
 
 func environmentObjectAirflowVariableDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
@@ -217,6 +217,10 @@ func environmentObjectConnectionAuthTypeParameterDataSourceSchemaAttributes() ma
 		},
 		"is_in_extra": datasourceSchema.BoolAttribute{
 			MarkdownDescription: "Whether the parameter is included in the extra field",
+			Computed:            true,
+		},
+		"pattern": datasourceSchema.StringAttribute{
+			MarkdownDescription: "A regex pattern for the parameter",
 			Computed:            true,
 		},
 	}
@@ -484,14 +488,14 @@ func EnvironmentObjectDataSourceSchemaAttributes() map[string]datasourceSchema.A
 			Computed:            true,
 			Attributes:          environmentObjectMetricsExportDataSourceSchemaAttributes(),
 		},
-		"links": datasourceSchema.ListNestedAttribute{
+		"links": datasourceSchema.SetNestedAttribute{
 			MarkdownDescription: "The Deployments linked to the environment object",
 			Computed:            true,
 			NestedObject: datasourceSchema.NestedAttributeObject{
 				Attributes: environmentObjectLinkDataSourceSchemaAttributes(),
 			},
 		},
-		"exclude_links": datasourceSchema.ListNestedAttribute{
+		"exclude_links": datasourceSchema.SetNestedAttribute{
 			MarkdownDescription: "The excluded links for the environment object",
 			Computed:            true,
 			NestedObject: datasourceSchema.NestedAttributeObject{
@@ -499,27 +503,25 @@ func EnvironmentObjectDataSourceSchemaAttributes() map[string]datasourceSchema.A
 			},
 		},
 		"created_at": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Creation timestamp",
+			MarkdownDescription: "Environment Object creation timestamp",
 			Computed:            true,
 		},
 		"updated_at": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Last updated timestamp",
+			MarkdownDescription: "Environment Object last updated timestamp",
 			Computed:            true,
 		},
 		"created_by": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Creator",
+			MarkdownDescription: "Environment Object creator",
 			Computed:            true,
 			Attributes:          DataSourceSubjectProfileSchemaAttributes(),
 		},
 		"updated_by": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Updater",
+			MarkdownDescription: "Environment Object updater",
 			Computed:            true,
 			Attributes:          DataSourceSubjectProfileSchemaAttributes(),
 		},
 	}
 }
-
-// --- Resource Schema Attributes ---
 
 func environmentObjectAirflowVariableResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
@@ -529,9 +531,12 @@ func environmentObjectAirflowVariableResourceSchemaAttributes() map[string]resou
 			Sensitive:           true,
 		},
 		"is_secret": resourceSchema.BoolAttribute{
-			MarkdownDescription: "Whether the value is a secret",
+			MarkdownDescription: "Whether the value is a secret (immutable on the API; toggling this forces resource replacement)",
 			Optional:            true,
 			Computed:            true,
+			PlanModifiers: []planmodifier.Bool{
+				boolplanmodifier.RequiresReplace(),
+			},
 		},
 	}
 }
@@ -542,6 +547,12 @@ func environmentObjectMetricsExportResourceSchemaAttributes() map[string]resourc
 			MarkdownDescription: "The type of authentication (AUTH_TOKEN, BASIC)",
 			Optional:            true,
 			Computed:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(platform.CreateEnvironmentObjectMetricsExportRequestAuthTypeAUTHTOKEN),
+					string(platform.CreateEnvironmentObjectMetricsExportRequestAuthTypeBASIC),
+				),
+			},
 		},
 		"endpoint": resourceSchema.StringAttribute{
 			MarkdownDescription: "The Prometheus endpoint where the metrics are exported",
@@ -555,6 +566,11 @@ func environmentObjectMetricsExportResourceSchemaAttributes() map[string]resourc
 		"exporter_type": resourceSchema.StringAttribute{
 			MarkdownDescription: "The type of exporter (PROMETHEUS)",
 			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(platform.CreateEnvironmentObjectMetricsExportRequestExporterTypePROMETHEUS),
+				),
+			},
 		},
 		"username": resourceSchema.StringAttribute{
 			MarkdownDescription: "The username to connect to the remote endpoint",
@@ -578,40 +594,52 @@ func environmentObjectMetricsExportResourceSchemaAttributes() map[string]resourc
 	}
 }
 
+func environmentObjectConnectionAuthTypeParameterResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"airflow_param_name": resourceSchema.StringAttribute{Computed: true},
+		"friendly_name":      resourceSchema.StringAttribute{Computed: true},
+		"data_type":          resourceSchema.StringAttribute{Computed: true},
+		"is_required":        resourceSchema.BoolAttribute{Computed: true},
+		"is_secret":          resourceSchema.BoolAttribute{Computed: true},
+		"description":        resourceSchema.StringAttribute{Computed: true},
+		"example":            resourceSchema.StringAttribute{Computed: true},
+		"is_in_extra":        resourceSchema.BoolAttribute{Computed: true},
+		"pattern":            resourceSchema.StringAttribute{Computed: true},
+	}
+}
+
+func environmentObjectConnectionAuthTypeResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"parameters": resourceSchema.ListNestedAttribute{
+			NestedObject: resourceSchema.NestedAttributeObject{
+				Attributes: environmentObjectConnectionAuthTypeParameterResourceSchemaAttributes(),
+			},
+			Computed: true,
+		},
+		"id":                    resourceSchema.StringAttribute{Computed: true},
+		"name":                  resourceSchema.StringAttribute{Computed: true},
+		"auth_method_name":      resourceSchema.StringAttribute{Computed: true},
+		"airflow_type":          resourceSchema.StringAttribute{Computed: true},
+		"description":           resourceSchema.StringAttribute{Computed: true},
+		"provider_package_name": resourceSchema.StringAttribute{Computed: true},
+		"provider_logo":         resourceSchema.StringAttribute{Computed: true},
+		"guide_path":            resourceSchema.StringAttribute{Computed: true},
+	}
+}
+
 func environmentObjectConnectionResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
 		"auth_type_id": resourceSchema.StringAttribute{
-			MarkdownDescription: "The ID for the connection auth type. Write-only field used during create/update.",
+			MarkdownDescription: "The ID for the connection auth type (provided on create/update; not returned by the API)",
 			Optional:            true,
 		},
 		"connection_auth_type": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "The resolved auth type of the connection. Read-only, populated from auth_type_id.",
+			MarkdownDescription: "The resolved auth type of the connection, populated from auth_type_id",
 			Computed:            true,
-			Attributes: map[string]resourceSchema.Attribute{
-				"parameters": resourceSchema.ListNestedAttribute{
-					NestedObject: resourceSchema.NestedAttributeObject{
-						Attributes: map[string]resourceSchema.Attribute{
-							"airflow_param_name": resourceSchema.StringAttribute{Computed: true},
-							"friendly_name":      resourceSchema.StringAttribute{Computed: true},
-							"data_type":          resourceSchema.StringAttribute{Computed: true},
-							"is_required":        resourceSchema.BoolAttribute{Computed: true},
-							"is_secret":          resourceSchema.BoolAttribute{Computed: true},
-							"description":        resourceSchema.StringAttribute{Computed: true},
-							"example":            resourceSchema.StringAttribute{Computed: true},
-							"is_in_extra":        resourceSchema.BoolAttribute{Computed: true},
-						},
-					},
-					Computed: true,
-				},
-				"id":                    resourceSchema.StringAttribute{Computed: true},
-				"name":                  resourceSchema.StringAttribute{Computed: true},
-				"auth_method_name":      resourceSchema.StringAttribute{Computed: true},
-				"airflow_type":          resourceSchema.StringAttribute{Computed: true},
-				"description":           resourceSchema.StringAttribute{Computed: true},
-				"provider_package_name": resourceSchema.StringAttribute{Computed: true},
-				"provider_logo":         resourceSchema.StringAttribute{Computed: true},
-				"guide_path":            resourceSchema.StringAttribute{Computed: true},
+			PlanModifiers: []planmodifier.Object{
+				objectplanmodifier.UseStateForUnknown(),
 			},
+			Attributes: environmentObjectConnectionAuthTypeResourceSchemaAttributes(),
 		},
 		"type": resourceSchema.StringAttribute{
 			MarkdownDescription: "The type of connection",
@@ -650,10 +678,14 @@ func environmentObjectExcludeLinkResourceSchemaAttributes() map[string]resourceS
 		"scope": resourceSchema.StringAttribute{
 			MarkdownDescription: "Scope of the excluded entity (DEPLOYMENT)",
 			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(string(platform.ExcludeLinkEnvironmentObjectRequestScopeDEPLOYMENT)),
+			},
 		},
 		"scope_entity_id": resourceSchema.StringAttribute{
 			MarkdownDescription: "ID of the excluded entity",
 			Required:            true,
+			Validators:          []validator.String{validators.IsCuid()},
 		},
 	}
 }
@@ -663,10 +695,14 @@ func environmentObjectLinkResourceSchemaAttributes() map[string]resourceSchema.A
 		"scope": resourceSchema.StringAttribute{
 			MarkdownDescription: "Scope of the linked entity (DEPLOYMENT)",
 			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(string(platform.CreateEnvironmentObjectLinkRequestScopeDEPLOYMENT)),
+			},
 		},
 		"scope_entity_id": resourceSchema.StringAttribute{
 			MarkdownDescription: "Linked entity ID",
 			Required:            true,
+			Validators:          []validator.String{validators.IsCuid()},
 		},
 		"airflow_variable_overrides": resourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "Airflow variable overrides for this link",
@@ -778,6 +814,13 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 		"object_type": resourceSchema.StringAttribute{
 			MarkdownDescription: "The type of environment object (AIRFLOW_VARIABLE, CONNECTION, METRICS_EXPORT)",
 			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(platform.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE),
+					string(platform.CreateEnvironmentObjectRequestObjectTypeCONNECTION),
+					string(platform.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT),
+				),
+			},
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
 			},
@@ -785,6 +828,12 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 		"scope": resourceSchema.StringAttribute{
 			MarkdownDescription: "The scope of the environment object (WORKSPACE, DEPLOYMENT)",
 			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(platform.CreateEnvironmentObjectRequestScopeWORKSPACE),
+					string(platform.CreateEnvironmentObjectRequestScopeDEPLOYMENT),
+				),
+			},
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
 			},
@@ -792,6 +841,7 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 		"scope_entity_id": resourceSchema.StringAttribute{
 			MarkdownDescription: "The ID of the scope entity where the environment object is created",
 			Required:            true,
+			Validators:          []validator.String{validators.IsCuid()},
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
 			},
@@ -799,10 +849,16 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 		"source_scope": resourceSchema.StringAttribute{
 			MarkdownDescription: "The source scope, if resolved from a link",
 			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"source_scope_entity_id": resourceSchema.StringAttribute{
 			MarkdownDescription: "The source scope entity ID, if resolved from a link",
 			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"auto_link_deployments": resourceSchema.BoolAttribute{
 			MarkdownDescription: "Whether to automatically link Deployments to the environment object. Only applicable for WORKSPACE scope",
@@ -827,7 +883,7 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 			Computed:            true,
 			Attributes:          environmentObjectMetricsExportResourceSchemaAttributes(),
 		},
-		"links": resourceSchema.ListNestedAttribute{
+		"links": resourceSchema.SetNestedAttribute{
 			MarkdownDescription: "The Deployments linked to the environment object. Only applicable for WORKSPACE scope",
 			Optional:            true,
 			Computed:            true,
@@ -835,7 +891,7 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 				Attributes: environmentObjectLinkResourceSchemaAttributes(),
 			},
 		},
-		"exclude_links": resourceSchema.ListNestedAttribute{
+		"exclude_links": resourceSchema.SetNestedAttribute{
 			MarkdownDescription: "The excluded links for the environment object. Only applicable for WORKSPACE scope",
 			Optional:            true,
 			Computed:            true,
@@ -844,18 +900,18 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 			},
 		},
 		"created_at": resourceSchema.StringAttribute{
-			MarkdownDescription: "Creation timestamp",
+			MarkdownDescription: "Environment Object creation timestamp",
 			Computed:            true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"updated_at": resourceSchema.StringAttribute{
-			MarkdownDescription: "Last updated timestamp",
+			MarkdownDescription: "Environment Object last updated timestamp",
 			Computed:            true,
 		},
 		"created_by": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Creator",
+			MarkdownDescription: "Environment Object creator",
 			Computed:            true,
 			Attributes:          ResourceSubjectProfileSchemaAttributes(),
 			PlanModifiers: []planmodifier.Object{
@@ -863,7 +919,7 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 			},
 		},
 		"updated_by": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Updater",
+			MarkdownDescription: "Environment Object updater",
 			Computed:            true,
 			Attributes:          ResourceSubjectProfileSchemaAttributes(),
 		},

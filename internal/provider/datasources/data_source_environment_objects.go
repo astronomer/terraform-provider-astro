@@ -99,6 +99,12 @@ func (d *environmentObjectsDataSource) Read(
 	if !data.ObjectKey.IsNull() && !data.ObjectKey.IsUnknown() {
 		params.ObjectKey = data.ObjectKey.ValueStringPointer()
 	}
+	if !data.ShowSecrets.IsNull() && !data.ShowSecrets.IsUnknown() {
+		params.ShowSecrets = data.ShowSecrets.ValueBoolPointer()
+	}
+	if !data.ResolveLinked.IsNull() && !data.ResolveLinked.IsUnknown() {
+		params.ResolveLinked = data.ResolveLinked.ValueBoolPointer()
+	}
 
 	var allObjects []platform.EnvironmentObject
 	offset := 0
@@ -125,13 +131,22 @@ func (d *environmentObjectsDataSource) Read(
 			return
 		}
 
+		// Defensive: an empty page after the first call means the server has nothing
+		// more to return; without this guard a server that under-reports TotalCount
+		// would loop forever.
+		if len(listResp.JSON200.EnvironmentObjects) == 0 {
+			break
+		}
+
 		allObjects = append(allObjects, listResp.JSON200.EnvironmentObjects...)
 
 		if listResp.JSON200.TotalCount <= offset+len(listResp.JSON200.EnvironmentObjects) {
 			break
 		}
 
-		offset += 1000
+		// Advance by the actual page length (not the requested limit) so partial
+		// pages don't skip records. Matches the pattern used in common/role.go.
+		offset += len(listResp.JSON200.EnvironmentObjects)
 	}
 
 	// Populate the model with the response data

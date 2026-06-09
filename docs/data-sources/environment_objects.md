@@ -20,11 +20,13 @@ Environment Objects data source. Lists environment objects with optional filters
 - `deployment_id` (String) Filter by Deployment ID
 - `object_key` (String) Filter by object key
 - `object_type` (String) Filter by object type (AIRFLOW_VARIABLE, CONNECTION, METRICS_EXPORT)
+- `resolve_linked` (Boolean) If true, resolves and returns environment objects linked to the specified Deployment or Workspace
+- `show_secrets` (Boolean) If true, returns the actual values of secret fields in the response
 - `workspace_id` (String) Filter by Workspace ID
 
 ### Read-Only
 
-- `environment_objects` (Attributes List) List of environment objects (see [below for nested schema](#nestedatt--environment_objects))
+- `environment_objects` (Attributes Set) (see [below for nested schema](#nestedatt--environment_objects))
 
 <a id="nestedatt--environment_objects"></a>
 ### Nested Schema for `environment_objects`
@@ -38,10 +40,10 @@ Read-Only:
 - `airflow_variable` (Attributes) The Airflow variable definition (see [below for nested schema](#nestedatt--environment_objects--airflow_variable))
 - `auto_link_deployments` (Boolean) Whether to automatically link Deployments to the environment object
 - `connection_config` (Attributes) The connection definition (see [below for nested schema](#nestedatt--environment_objects--connection_config))
-- `created_at` (String) Creation timestamp
-- `created_by` (Attributes) Creator (see [below for nested schema](#nestedatt--environment_objects--created_by))
-- `exclude_links` (Attributes List) The excluded links for the environment object (see [below for nested schema](#nestedatt--environment_objects--exclude_links))
-- `links` (Attributes List) The Deployments linked to the environment object (see [below for nested schema](#nestedatt--environment_objects--links))
+- `created_at` (String) Environment Object creation timestamp
+- `created_by` (Attributes) Environment Object creator (see [below for nested schema](#nestedatt--environment_objects--created_by))
+- `exclude_links` (Attributes Set) The excluded links for the environment object (see [below for nested schema](#nestedatt--environment_objects--exclude_links))
+- `links` (Attributes Set) The Deployments linked to the environment object (see [below for nested schema](#nestedatt--environment_objects--links))
 - `metrics_export` (Attributes) The metrics export definition (see [below for nested schema](#nestedatt--environment_objects--metrics_export))
 - `object_key` (String) The key for the environment object
 - `object_type` (String) The type of environment object (AIRFLOW_VARIABLE, CONNECTION, METRICS_EXPORT)
@@ -49,8 +51,8 @@ Read-Only:
 - `scope_entity_id` (String) The ID of the scope entity
 - `source_scope` (String) The source scope, if resolved from a link
 - `source_scope_entity_id` (String) The source scope entity ID, if resolved from a link
-- `updated_at` (String) Last updated timestamp
-- `updated_by` (Attributes) Updater (see [below for nested schema](#nestedatt--environment_objects--updated_by))
+- `updated_at` (String) Environment Object last updated timestamp
+- `updated_by` (Attributes) Environment Object updater (see [below for nested schema](#nestedatt--environment_objects--updated_by))
 
 <a id="nestedatt--environment_objects--airflow_variable"></a>
 ### Nested Schema for `environment_objects.airflow_variable`
@@ -104,6 +106,7 @@ Read-Only:
 - `is_in_extra` (Boolean) Whether the parameter is included in the extra field
 - `is_required` (Boolean) Whether the parameter is required
 - `is_secret` (Boolean) Whether the parameter is a secret
+- `pattern` (String) A regex pattern for the parameter
 
 
 

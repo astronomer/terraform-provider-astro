@@ -24,10 +24,10 @@ Environment Object data source
 - `airflow_variable` (Attributes) The Airflow variable definition (see [below for nested schema](#nestedatt--airflow_variable))
 - `auto_link_deployments` (Boolean) Whether to automatically link Deployments to the environment object
 - `connection_config` (Attributes) The connection definition (see [below for nested schema](#nestedatt--connection_config))
-- `created_at` (String) Creation timestamp
-- `created_by` (Attributes) Creator (see [below for nested schema](#nestedatt--created_by))
-- `exclude_links` (Attributes List) The excluded links for the environment object (see [below for nested schema](#nestedatt--exclude_links))
-- `links` (Attributes List) The Deployments linked to the environment object (see [below for nested schema](#nestedatt--links))
+- `created_at` (String) Environment Object creation timestamp
+- `created_by` (Attributes) Environment Object creator (see [below for nested schema](#nestedatt--created_by))
+- `exclude_links` (Attributes Set) The excluded links for the environment object (see [below for nested schema](#nestedatt--exclude_links))
+- `links` (Attributes Set) The Deployments linked to the environment object (see [below for nested schema](#nestedatt--links))
 - `metrics_export` (Attributes) The metrics export definition (see [below for nested schema](#nestedatt--metrics_export))
 - `object_key` (String) The key for the environment object
 - `object_type` (String) The type of environment object (AIRFLOW_VARIABLE, CONNECTION, METRICS_EXPORT)
@@ -35,8 +35,8 @@ Environment Object data source
 - `scope_entity_id` (String) The ID of the scope entity
 - `source_scope` (String) The source scope, if resolved from a link
 - `source_scope_entity_id` (String) The source scope entity ID, if resolved from a link
-- `updated_at` (String) Last updated timestamp
-- `updated_by` (Attributes) Updater (see [below for nested schema](#nestedatt--updated_by))
+- `updated_at` (String) Environment Object last updated timestamp
+- `updated_by` (Attributes) Environment Object updater (see [below for nested schema](#nestedatt--updated_by))
 
 <a id="nestedatt--airflow_variable"></a>
 ### Nested Schema for `airflow_variable`
@@ -90,6 +90,7 @@ Read-Only:
 - `is_in_extra` (Boolean) Whether the parameter is included in the extra field
 - `is_required` (Boolean) Whether the parameter is required
 - `is_secret` (Boolean) Whether the parameter is a secret
+- `pattern` (String) A regex pattern for the parameter
 
 
 

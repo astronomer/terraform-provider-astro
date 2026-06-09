@@ -27,26 +27,26 @@ Environment Object resource. Manages Airflow connections, variables, and metrics
 - `airflow_variable` (Attributes) The Airflow variable definition. Required when object_type is AIRFLOW_VARIABLE (see [below for nested schema](#nestedatt--airflow_variable))
 - `auto_link_deployments` (Boolean) Whether to automatically link Deployments to the environment object. Only applicable for WORKSPACE scope
 - `connection_config` (Attributes) The connection definition. Required when object_type is CONNECTION (see [below for nested schema](#nestedatt--connection_config))
-- `exclude_links` (Attributes List) The excluded links for the environment object. Only applicable for WORKSPACE scope (see [below for nested schema](#nestedatt--exclude_links))
-- `links` (Attributes List) The Deployments linked to the environment object. Only applicable for WORKSPACE scope (see [below for nested schema](#nestedatt--links))
+- `exclude_links` (Attributes Set) The excluded links for the environment object. Only applicable for WORKSPACE scope (see [below for nested schema](#nestedatt--exclude_links))
+- `links` (Attributes Set) The Deployments linked to the environment object. Only applicable for WORKSPACE scope (see [below for nested schema](#nestedatt--links))
 - `metrics_export` (Attributes) The metrics export definition. Required when object_type is METRICS_EXPORT (see [below for nested schema](#nestedatt--metrics_export))
 
 ### Read-Only
 
-- `created_at` (String) Creation timestamp
-- `created_by` (Attributes) Creator (see [below for nested schema](#nestedatt--created_by))
+- `created_at` (String) Environment Object creation timestamp
+- `created_by` (Attributes) Environment Object creator (see [below for nested schema](#nestedatt--created_by))
 - `id` (String) Environment object identifier
 - `source_scope` (String) The source scope, if resolved from a link
 - `source_scope_entity_id` (String) The source scope entity ID, if resolved from a link
-- `updated_at` (String) Last updated timestamp
-- `updated_by` (Attributes) Updater (see [below for nested schema](#nestedatt--updated_by))
+- `updated_at` (String) Environment Object last updated timestamp
+- `updated_by` (Attributes) Environment Object updater (see [below for nested schema](#nestedatt--updated_by))
 
 <a id="nestedatt--airflow_variable"></a>
 ### Nested Schema for `airflow_variable`
 
 Optional:
 
-- `is_secret` (Boolean) Whether the value is a secret
+- `is_secret` (Boolean) Whether the value is a secret (immutable on the API; toggling this forces resource replacement)
 - `value` (String, Sensitive) The value of the Airflow variable
 
 
@@ -59,7 +59,7 @@ Required:
 
 Optional:
 
-- `auth_type_id` (String) The ID for the connection auth type. Write-only field used during create/update.
+- `auth_type_id` (String) The ID for the connection auth type (provided on create/update; not returned by the API)
 - `extra` (String) Extra connection details as JSON string
 - `host` (String) The host address for the connection
 - `login` (String) The username used for the connection
@@ -69,7 +69,7 @@ Optional:
 
 Read-Only:
 
-- `connection_auth_type` (Attributes) The resolved auth type of the connection. Read-only, populated from auth_type_id. (see [below for nested schema](#nestedatt--connection_config--connection_auth_type))
+- `connection_auth_type` (Attributes) The resolved auth type of the connection, populated from auth_type_id (see [below for nested schema](#nestedatt--connection_config--connection_auth_type))
 
 <a id="nestedatt--connection_config--connection_auth_type"></a>
 ### Nested Schema for `connection_config.connection_auth_type`
@@ -99,6 +99,7 @@ Read-Only:
 - `is_in_extra` (Boolean)
 - `is_required` (Boolean)
 - `is_secret` (Boolean)
+- `pattern` (String)
 
 
 
