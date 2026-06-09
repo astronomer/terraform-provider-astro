@@ -85,6 +85,11 @@ func (d *usersDataSource) Read(
 
 	params := &iam.ListUsersParams{
 		Limit: lo.ToPtr(1000),
+		// Sort by id (immutable, unique) so pagination is stable across calls and
+		// the resulting list ordering is deterministic between plans. Without this,
+		// the API's default ordering can shift between reads, producing spurious
+		// plan diffs now that `users` is an ordered List instead of a Set.
+		Sorts: &[]iam.ListUsersParamsSorts{iam.ListUsersParamsSortsIdAsc},
 	}
 	var diags diag.Diagnostics
 	workspaceId := data.WorkspaceId.ValueString()
