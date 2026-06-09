@@ -35,7 +35,7 @@ func EnvironmentObjectMetricsExportAttributeTypes() map[string]attr.Type {
 	}
 }
 
-func EnvironmentObjectConnectionAttributeTypes() map[string]attr.Type {
+func EnvironmentObjectAirflowConnectionAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"auth_type_id": types.StringType,
 		"connection_auth_type": types.ObjectType{
@@ -92,11 +92,20 @@ func EnvironmentObjectExcludeLinkAttributeTypes() map[string]attr.Type {
 
 func EnvironmentObjectLinkAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"scope":                      types.StringType,
-		"scope_entity_id":            types.StringType,
-		"airflow_variable_overrides": types.ObjectType{AttrTypes: EnvironmentObjectAirflowVariableOverridesAttributeTypes()},
-		"connection_overrides":       types.ObjectType{AttrTypes: EnvironmentObjectConnectionOverridesAttributeTypes()},
-		"metrics_export_overrides":   types.ObjectType{AttrTypes: EnvironmentObjectMetricsExportOverridesAttributeTypes()},
+		"scope":           types.StringType,
+		"scope_entity_id": types.StringType,
+		"overrides":       types.ObjectType{AttrTypes: EnvironmentObjectOverridesAttributeTypes()},
+	}
+}
+
+// EnvironmentObjectOverridesAttributeTypes describes the per-link overrides
+// wrapper, mirroring the API's Overrides struct (one optional sub-object per
+// object_type).
+func EnvironmentObjectOverridesAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"airflow_variable":   types.ObjectType{AttrTypes: EnvironmentObjectAirflowVariableOverridesAttributeTypes()},
+		"airflow_connection": types.ObjectType{AttrTypes: EnvironmentObjectAirflowConnectionOverridesAttributeTypes()},
+		"metrics_export":     types.ObjectType{AttrTypes: EnvironmentObjectMetricsExportOverridesAttributeTypes()},
 	}
 }
 
@@ -106,7 +115,7 @@ func EnvironmentObjectAirflowVariableOverridesAttributeTypes() map[string]attr.T
 	}
 }
 
-func EnvironmentObjectConnectionOverridesAttributeTypes() map[string]attr.Type {
+func EnvironmentObjectAirflowConnectionOverridesAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"type":     types.StringType,
 		"host":     types.StringType,
@@ -220,7 +229,7 @@ func environmentObjectConnectionAuthTypeParameterDataSourceSchemaAttributes() ma
 			Computed:            true,
 		},
 		"pattern": datasourceSchema.StringAttribute{
-			MarkdownDescription: "A regex pattern for the parameter",
+			MarkdownDescription: "A regex pattern that the parameter value must match",
 			Computed:            true,
 		},
 	}
@@ -270,7 +279,7 @@ func environmentObjectConnectionAuthTypeDataSourceSchemaAttributes() map[string]
 	}
 }
 
-func environmentObjectConnectionDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
+func environmentObjectAirflowConnectionDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"auth_type_id": datasourceSchema.StringAttribute{
 			MarkdownDescription: "The ID for the connection auth type",
@@ -322,7 +331,7 @@ func environmentObjectAirflowVariableOverridesDataSourceSchemaAttributes() map[s
 	}
 }
 
-func environmentObjectConnectionOverridesDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
+func environmentObjectAirflowConnectionOverridesDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"type": datasourceSchema.StringAttribute{
 			MarkdownDescription: "The type of connection",
@@ -397,6 +406,26 @@ func environmentObjectMetricsExportOverridesDataSourceSchemaAttributes() map[str
 	}
 }
 
+func environmentObjectOverridesDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
+	return map[string]datasourceSchema.Attribute{
+		"airflow_variable": datasourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Airflow variable overrides for this link",
+			Computed:            true,
+			Attributes:          environmentObjectAirflowVariableOverridesDataSourceSchemaAttributes(),
+		},
+		"airflow_connection": datasourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Airflow connection overrides for this link",
+			Computed:            true,
+			Attributes:          environmentObjectAirflowConnectionOverridesDataSourceSchemaAttributes(),
+		},
+		"metrics_export": datasourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Metrics export overrides for this link",
+			Computed:            true,
+			Attributes:          environmentObjectMetricsExportOverridesDataSourceSchemaAttributes(),
+		},
+	}
+}
+
 func environmentObjectLinkDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"scope": datasourceSchema.StringAttribute{
@@ -407,20 +436,10 @@ func environmentObjectLinkDataSourceSchemaAttributes() map[string]datasourceSche
 			MarkdownDescription: "Linked entity ID",
 			Computed:            true,
 		},
-		"airflow_variable_overrides": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Airflow variable overrides for this link",
+		"overrides": datasourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Per-link overrides (only the sub-block matching the parent object_type is populated)",
 			Computed:            true,
-			Attributes:          environmentObjectAirflowVariableOverridesDataSourceSchemaAttributes(),
-		},
-		"connection_overrides": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Connection overrides for this link",
-			Computed:            true,
-			Attributes:          environmentObjectConnectionOverridesDataSourceSchemaAttributes(),
-		},
-		"metrics_export_overrides": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Metrics export overrides for this link",
-			Computed:            true,
-			Attributes:          environmentObjectMetricsExportOverridesDataSourceSchemaAttributes(),
+			Attributes:          environmentObjectOverridesDataSourceSchemaAttributes(),
 		},
 	}
 }
@@ -478,10 +497,10 @@ func EnvironmentObjectDataSourceSchemaAttributes() map[string]datasourceSchema.A
 			Computed:            true,
 			Attributes:          environmentObjectAirflowVariableDataSourceSchemaAttributes(),
 		},
-		"connection_config": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "The connection definition",
+		"airflow_connection": datasourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "The Airflow connection definition",
 			Computed:            true,
-			Attributes:          environmentObjectConnectionDataSourceSchemaAttributes(),
+			Attributes:          environmentObjectAirflowConnectionDataSourceSchemaAttributes(),
 		},
 		"metrics_export": datasourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "The metrics export definition",
@@ -627,7 +646,7 @@ func environmentObjectConnectionAuthTypeResourceSchemaAttributes() map[string]re
 	}
 }
 
-func environmentObjectConnectionResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+func environmentObjectAirflowConnectionResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
 		"auth_type_id": resourceSchema.StringAttribute{
 			MarkdownDescription: "The ID for the connection auth type (provided on create/update; not returned by the API)",
@@ -673,6 +692,111 @@ func environmentObjectConnectionResourceSchemaAttributes() map[string]resourceSc
 	}
 }
 
+func environmentObjectAirflowVariableOverridesResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"value": resourceSchema.StringAttribute{
+			MarkdownDescription: "The value of the Airflow variable",
+			Optional:            true,
+			Sensitive:           true,
+		},
+	}
+}
+
+func environmentObjectAirflowConnectionOverridesResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"type": resourceSchema.StringAttribute{
+			MarkdownDescription: "The type of connection",
+			Optional:            true,
+		},
+		"host": resourceSchema.StringAttribute{
+			MarkdownDescription: "The host address",
+			Optional:            true,
+		},
+		"port": resourceSchema.Int64Attribute{
+			MarkdownDescription: "The port",
+			Optional:            true,
+		},
+		"schema": resourceSchema.StringAttribute{
+			MarkdownDescription: "The schema",
+			Optional:            true,
+		},
+		"login": resourceSchema.StringAttribute{
+			MarkdownDescription: "The username",
+			Optional:            true,
+		},
+		"password": resourceSchema.StringAttribute{
+			MarkdownDescription: "The password",
+			Optional:            true,
+			Sensitive:           true,
+		},
+		"extra": resourceSchema.StringAttribute{
+			MarkdownDescription: "Extra connection details as JSON string",
+			Optional:            true,
+		},
+	}
+}
+
+func environmentObjectMetricsExportOverridesResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"auth_type": resourceSchema.StringAttribute{
+			MarkdownDescription: "The type of authentication",
+			Optional:            true,
+		},
+		"endpoint": resourceSchema.StringAttribute{
+			MarkdownDescription: "The Prometheus endpoint",
+			Optional:            true,
+		},
+		"basic_token": resourceSchema.StringAttribute{
+			MarkdownDescription: "The bearer token",
+			Optional:            true,
+			Sensitive:           true,
+		},
+		"exporter_type": resourceSchema.StringAttribute{
+			MarkdownDescription: "The type of exporter",
+			Optional:            true,
+		},
+		"username": resourceSchema.StringAttribute{
+			MarkdownDescription: "The username",
+			Optional:            true,
+		},
+		"password": resourceSchema.StringAttribute{
+			MarkdownDescription: "The password",
+			Optional:            true,
+			Sensitive:           true,
+		},
+		"headers": resourceSchema.MapAttribute{
+			ElementType:         types.StringType,
+			MarkdownDescription: "HTTP request headers",
+			Optional:            true,
+		},
+		"labels": resourceSchema.MapAttribute{
+			ElementType:         types.StringType,
+			MarkdownDescription: "Metrics labels",
+			Optional:            true,
+		},
+	}
+}
+
+func environmentObjectOverridesResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"airflow_variable": resourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Airflow variable overrides for this link (only valid when object_type=AIRFLOW_VARIABLE)",
+			Optional:            true,
+			Attributes:          environmentObjectAirflowVariableOverridesResourceSchemaAttributes(),
+		},
+		"airflow_connection": resourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Airflow connection overrides for this link (only valid when object_type=CONNECTION)",
+			Optional:            true,
+			Attributes:          environmentObjectAirflowConnectionOverridesResourceSchemaAttributes(),
+		},
+		"metrics_export": resourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Metrics export overrides for this link (only valid when object_type=METRICS_EXPORT)",
+			Optional:            true,
+			Attributes:          environmentObjectMetricsExportOverridesResourceSchemaAttributes(),
+		},
+	}
+}
+
 func environmentObjectExcludeLinkResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
 		"scope": resourceSchema.StringAttribute{
@@ -704,93 +828,10 @@ func environmentObjectLinkResourceSchemaAttributes() map[string]resourceSchema.A
 			Required:            true,
 			Validators:          []validator.String{validators.IsCuid()},
 		},
-		"airflow_variable_overrides": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Airflow variable overrides for this link",
+		"overrides": resourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "Per-link overrides. Set only the sub-block matching the parent object_type.",
 			Optional:            true,
-			Attributes: map[string]resourceSchema.Attribute{
-				"value": resourceSchema.StringAttribute{
-					MarkdownDescription: "The value of the Airflow variable",
-					Optional:            true,
-					Sensitive:           true,
-				},
-			},
-		},
-		"connection_overrides": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Connection overrides for this link",
-			Optional:            true,
-			Attributes: map[string]resourceSchema.Attribute{
-				"type": resourceSchema.StringAttribute{
-					MarkdownDescription: "The type of connection",
-					Optional:            true,
-				},
-				"host": resourceSchema.StringAttribute{
-					MarkdownDescription: "The host address",
-					Optional:            true,
-				},
-				"port": resourceSchema.Int64Attribute{
-					MarkdownDescription: "The port",
-					Optional:            true,
-				},
-				"schema": resourceSchema.StringAttribute{
-					MarkdownDescription: "The schema",
-					Optional:            true,
-				},
-				"login": resourceSchema.StringAttribute{
-					MarkdownDescription: "The username",
-					Optional:            true,
-				},
-				"password": resourceSchema.StringAttribute{
-					MarkdownDescription: "The password",
-					Optional:            true,
-					Sensitive:           true,
-				},
-				"extra": resourceSchema.StringAttribute{
-					MarkdownDescription: "Extra connection details as JSON string",
-					Optional:            true,
-				},
-			},
-		},
-		"metrics_export_overrides": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Metrics export overrides for this link",
-			Optional:            true,
-			Attributes: map[string]resourceSchema.Attribute{
-				"auth_type": resourceSchema.StringAttribute{
-					MarkdownDescription: "The type of authentication",
-					Optional:            true,
-				},
-				"endpoint": resourceSchema.StringAttribute{
-					MarkdownDescription: "The Prometheus endpoint",
-					Optional:            true,
-				},
-				"basic_token": resourceSchema.StringAttribute{
-					MarkdownDescription: "The bearer token",
-					Optional:            true,
-					Sensitive:           true,
-				},
-				"exporter_type": resourceSchema.StringAttribute{
-					MarkdownDescription: "The type of exporter",
-					Optional:            true,
-				},
-				"username": resourceSchema.StringAttribute{
-					MarkdownDescription: "The username",
-					Optional:            true,
-				},
-				"password": resourceSchema.StringAttribute{
-					MarkdownDescription: "The password",
-					Optional:            true,
-					Sensitive:           true,
-				},
-				"headers": resourceSchema.MapAttribute{
-					ElementType:         types.StringType,
-					MarkdownDescription: "HTTP request headers",
-					Optional:            true,
-				},
-				"labels": resourceSchema.MapAttribute{
-					ElementType:         types.StringType,
-					MarkdownDescription: "Metrics labels",
-					Optional:            true,
-				},
-			},
+			Attributes:          environmentObjectOverridesResourceSchemaAttributes(),
 		},
 	}
 }
@@ -871,11 +912,11 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 			Computed:            true,
 			Attributes:          environmentObjectAirflowVariableResourceSchemaAttributes(),
 		},
-		"connection_config": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "The connection definition. Required when object_type is CONNECTION",
+		"airflow_connection": resourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "The Airflow connection definition. Required when object_type is CONNECTION",
 			Optional:            true,
 			Computed:            true,
-			Attributes:          environmentObjectConnectionResourceSchemaAttributes(),
+			Attributes:          environmentObjectAirflowConnectionResourceSchemaAttributes(),
 		},
 		"metrics_export": resourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "The metrics export definition. Required when object_type is METRICS_EXPORT",

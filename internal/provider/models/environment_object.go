@@ -23,7 +23,7 @@ type EnvironmentObject struct {
 	SourceScopeEntityId types.String `tfsdk:"source_scope_entity_id"`
 	AutoLinkDeployments types.Bool   `tfsdk:"auto_link_deployments"`
 	AirflowVariable     types.Object `tfsdk:"airflow_variable"`
-	ConnectionConfig    types.Object `tfsdk:"connection_config"`
+	AirflowConnection   types.Object `tfsdk:"airflow_connection"`
 	MetricsExport       types.Object `tfsdk:"metrics_export"`
 	Links               types.Set    `tfsdk:"links"`
 	ExcludeLinks        types.Set    `tfsdk:"exclude_links"`
@@ -33,10 +33,11 @@ type EnvironmentObject struct {
 	UpdatedBy           types.Object `tfsdk:"updated_by"`
 }
 
-// EnvironmentObjectConnectionInput is the tfsdk-tagged struct used to (de)serialize
-// the connection_config attribute. Resource handlers unmarshal data.ConnectionConfig
-// into this type before building API requests or extracting preserve values.
-type EnvironmentObjectConnectionInput struct {
+// EnvironmentObjectAirflowConnectionInput is the tfsdk-tagged struct used to
+// (de)serialize the airflow_connection attribute. Resource handlers unmarshal
+// data.AirflowConnection into this type before building API requests or
+// extracting preserve values.
+type EnvironmentObjectAirflowConnectionInput struct {
 	AuthTypeId         types.String `tfsdk:"auth_type_id"`
 	ConnectionAuthType types.Object `tfsdk:"connection_auth_type"`
 	Type               types.String `tfsdk:"type"`
@@ -76,17 +77,25 @@ type EnvironmentObjectExcludeLinkInput struct {
 }
 
 // EnvironmentObjectLinkInput is the tfsdk-tagged struct for a links element.
+// Per-link overrides are nested under a single `overrides` block (one optional
+// sub-block per object_type), mirroring the API's Overrides struct.
 type EnvironmentObjectLinkInput struct {
-	Scope                    types.String `tfsdk:"scope"`
-	ScopeEntityId            types.String `tfsdk:"scope_entity_id"`
-	AirflowVariableOverrides types.Object `tfsdk:"airflow_variable_overrides"`
-	ConnectionOverrides      types.Object `tfsdk:"connection_overrides"`
-	MetricsExportOverrides   types.Object `tfsdk:"metrics_export_overrides"`
+	Scope         types.String `tfsdk:"scope"`
+	ScopeEntityId types.String `tfsdk:"scope_entity_id"`
+	Overrides     types.Object `tfsdk:"overrides"`
 }
 
-// EnvironmentObjectConnectionOverridesInput is the tfsdk-tagged struct for the
-// per-link connection_overrides attribute.
-type EnvironmentObjectConnectionOverridesInput struct {
+// EnvironmentObjectOverridesInput is the tfsdk-tagged struct for the
+// per-link `overrides` wrapper.
+type EnvironmentObjectOverridesInput struct {
+	AirflowVariable   types.Object `tfsdk:"airflow_variable"`
+	AirflowConnection types.Object `tfsdk:"airflow_connection"`
+	MetricsExport     types.Object `tfsdk:"metrics_export"`
+}
+
+// EnvironmentObjectAirflowConnectionOverridesInput is the tfsdk-tagged struct
+// for `overrides.airflow_connection`.
+type EnvironmentObjectAirflowConnectionOverridesInput struct {
 	Type     types.String `tfsdk:"type"`
 	Host     types.String `tfsdk:"host"`
 	Port     types.Int64  `tfsdk:"port"`
@@ -96,8 +105,8 @@ type EnvironmentObjectConnectionOverridesInput struct {
 	Extra    types.String `tfsdk:"extra"`
 }
 
-// EnvironmentObjectMetricsExportOverridesInput is the tfsdk-tagged struct for the
-// per-link metrics_export_overrides attribute.
+// EnvironmentObjectMetricsExportOverridesInput is the tfsdk-tagged struct for
+// `overrides.metrics_export`.
 type EnvironmentObjectMetricsExportOverridesInput struct {
 	AuthType     types.String `tfsdk:"auth_type"`
 	Endpoint     types.String `tfsdk:"endpoint"`
@@ -109,8 +118,8 @@ type EnvironmentObjectMetricsExportOverridesInput struct {
 	Labels       types.Map    `tfsdk:"labels"`
 }
 
-// EnvironmentObjectAirflowVariableOverridesInput is the tfsdk-tagged struct for the
-// per-link airflow_variable_overrides attribute.
+// EnvironmentObjectAirflowVariableOverridesInput is the tfsdk-tagged struct for
+// `overrides.airflow_variable`.
 type EnvironmentObjectAirflowVariableOverridesInput struct {
 	Value types.String `tfsdk:"value"`
 }
@@ -120,12 +129,12 @@ type EnvironmentObjectAirflowVariableOverridesInput struct {
 // nil when the caller has nothing to preserve (e.g. import, or data sources).
 type EnvironmentObjectPreserve struct {
 	// Top-level
-	ConnectionPassword      *string
-	ConnectionAuthTypeId    *string
-	ConnectionExtra         *string // user's exact JSON string (avoids map round-trip drift)
-	AirflowVariableValue    *string // only meaningful when is_secret=true
-	MetricsExportPassword   *string
-	MetricsExportBasicToken *string
+	AirflowConnectionPassword   *string
+	AirflowConnectionAuthTypeId *string
+	AirflowConnectionExtra      *string // user's exact JSON string (avoids map round-trip drift)
+	AirflowVariableValue        *string // only meaningful when is_secret=true
+	MetricsExportPassword       *string
+	MetricsExportBasicToken     *string
 	// Per-link overrides, keyed by LinkPreserveKey(scope, scope_entity_id).
 	LinkOverrides map[string]*EnvironmentObjectLinkOverridePreserve
 }
@@ -133,11 +142,11 @@ type EnvironmentObjectPreserve struct {
 // EnvironmentObjectLinkOverridePreserve carries per-link override secrets/JSON
 // that the API strips on GET.
 type EnvironmentObjectLinkOverridePreserve struct {
-	AirflowVariableValue    *string
-	ConnectionPassword      *string
-	ConnectionExtra         *string
-	MetricsExportPassword   *string
-	MetricsExportBasicToken *string
+	AirflowVariableValue      *string
+	AirflowConnectionPassword *string
+	AirflowConnectionExtra    *string
+	MetricsExportPassword     *string
+	MetricsExportBasicToken   *string
 }
 
 // LinkPreserveKey builds the composite key used to look up per-link preserve
@@ -203,14 +212,14 @@ func (data *EnvironmentObject) ReadFromResponse(ctx context.Context, obj *platfo
 		data.AirflowVariable = types.ObjectNull(schemas.EnvironmentObjectAirflowVariableAttributeTypes())
 	}
 
-	// Connection
+	// Airflow Connection
 	if obj.Connection != nil {
-		data.ConnectionConfig, diags = EnvironmentObjectConnectionTypesObject(ctx, obj.Connection, preserve)
+		data.AirflowConnection, diags = EnvironmentObjectAirflowConnectionTypesObject(ctx, obj.Connection, preserve)
 		if diags.HasError() {
 			return diags
 		}
 	} else {
-		data.ConnectionConfig = types.ObjectNull(schemas.EnvironmentObjectConnectionAttributeTypes())
+		data.AirflowConnection = types.ObjectNull(schemas.EnvironmentObjectAirflowConnectionAttributeTypes())
 	}
 
 	// Metrics Export
@@ -270,11 +279,12 @@ func (data *EnvironmentObject) ReadFromResponse(ctx context.Context, obj *platfo
 	return nil
 }
 
-// EnvironmentObjectConnectionTypesObject converts a platform.EnvironmentObjectConnection
-// into a types.Object matching the connection_config schema. The preserve argument
-// supplies the user's auth_type_id / password / extra values when the API does not
-// echo them back; pass nil from data sources or other read-only contexts.
-func EnvironmentObjectConnectionTypesObject(ctx context.Context, conn *platform.EnvironmentObjectConnection, preserve *EnvironmentObjectPreserve) (types.Object, diag.Diagnostics) {
+// EnvironmentObjectAirflowConnectionTypesObject converts a
+// platform.EnvironmentObjectConnection into a types.Object matching the
+// airflow_connection schema. The preserve argument supplies the user's
+// auth_type_id / password / extra values when the API does not echo them back;
+// pass nil from data sources or other read-only contexts.
+func EnvironmentObjectAirflowConnectionTypesObject(ctx context.Context, conn *platform.EnvironmentObjectConnection, preserve *EnvironmentObjectPreserve) (types.Object, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	var authTypeObj types.Object
@@ -293,8 +303,8 @@ func EnvironmentObjectConnectionTypesObject(ctx context.Context, conn *platform.
 	// import populates a stable value.
 	var authTypeIdVal types.String
 	switch {
-	case preserve != nil && preserve.ConnectionAuthTypeId != nil:
-		authTypeIdVal = types.StringValue(*preserve.ConnectionAuthTypeId)
+	case preserve != nil && preserve.AirflowConnectionAuthTypeId != nil:
+		authTypeIdVal = types.StringValue(*preserve.AirflowConnectionAuthTypeId)
 	case conn.ConnectionAuthType != nil:
 		authTypeIdVal = types.StringValue(conn.ConnectionAuthType.Id)
 	default:
@@ -306,8 +316,8 @@ func EnvironmentObjectConnectionTypesObject(ctx context.Context, conn *platform.
 	// user's original jsonencode(...) string.
 	var extraVal types.String
 	switch {
-	case preserve != nil && preserve.ConnectionExtra != nil:
-		extraVal = types.StringValue(*preserve.ConnectionExtra)
+	case preserve != nil && preserve.AirflowConnectionExtra != nil:
+		extraVal = types.StringValue(*preserve.AirflowConnectionExtra)
 	case conn.Extra != nil:
 		extraBytes, err := json.Marshal(conn.Extra)
 		if err != nil {
@@ -325,9 +335,9 @@ func EnvironmentObjectConnectionTypesObject(ctx context.Context, conn *platform.
 		portVal = types.Int64Null()
 	}
 
-	passwordVal := preserveSecret(conn.Password, ifPreserve(preserve, func(p *EnvironmentObjectPreserve) *string { return p.ConnectionPassword }))
+	passwordVal := preserveSecret(conn.Password, ifPreserve(preserve, func(p *EnvironmentObjectPreserve) *string { return p.AirflowConnectionPassword }))
 
-	return types.ObjectValue(schemas.EnvironmentObjectConnectionAttributeTypes(), map[string]attr.Value{
+	return types.ObjectValue(schemas.EnvironmentObjectAirflowConnectionAttributeTypes(), map[string]attr.Value{
 		"auth_type_id":         authTypeIdVal,
 		"connection_auth_type": authTypeObj,
 		"type":                 types.StringValue(conn.Type),
@@ -423,37 +433,58 @@ func EnvironmentObjectMetricsExportTypesObject(ctx context.Context, me *platform
 // types.Object matching the link schema. The preserve argument supplies any
 // per-link override secrets/extra JSON that the API does not echo back.
 func EnvironmentObjectLinkTypesObject(ctx context.Context, link *platform.EnvironmentObjectLink, preserve *EnvironmentObjectLinkOverridePreserve) (types.Object, diag.Diagnostics) {
+	overrides, diags := environmentObjectOverridesTypesObject(ctx, link, preserve)
+	if diags.HasError() {
+		return types.Object{}, diags
+	}
+
+	return types.ObjectValue(schemas.EnvironmentObjectLinkAttributeTypes(), map[string]attr.Value{
+		"scope":           types.StringValue(string(link.Scope)),
+		"scope_entity_id": types.StringValue(link.ScopeEntityId),
+		"overrides":       overrides,
+	})
+}
+
+// environmentObjectOverridesTypesObject builds the `overrides` wrapper for a
+// link by populating only the sub-block whose source field is non-nil on the
+// API response, mirroring the platform.EnvironmentObjectLink structure.
+func environmentObjectOverridesTypesObject(ctx context.Context, link *platform.EnvironmentObjectLink, preserve *EnvironmentObjectLinkOverridePreserve) (types.Object, diag.Diagnostics) {
+	overridesAttrTypes := schemas.EnvironmentObjectOverridesAttributeTypes()
+
+	hasAny := link.AirflowVariableOverrides != nil || link.ConnectionOverrides != nil || link.MetricsExportOverrides != nil
+	if !hasAny {
+		return types.ObjectNull(overridesAttrTypes), nil
+	}
+
 	var diags diag.Diagnostics
 
-	// Airflow variable overrides
-	var avOverrides types.Object
+	// airflow_variable
+	avObj := types.ObjectNull(schemas.EnvironmentObjectAirflowVariableOverridesAttributeTypes())
 	if link.AirflowVariableOverrides != nil {
 		value := link.AirflowVariableOverrides.Value
 		if preserve != nil && preserve.AirflowVariableValue != nil {
 			value = *preserve.AirflowVariableValue
 		}
-		avOverrides, diags = types.ObjectValue(schemas.EnvironmentObjectAirflowVariableOverridesAttributeTypes(), map[string]attr.Value{
+		avObj, diags = types.ObjectValue(schemas.EnvironmentObjectAirflowVariableOverridesAttributeTypes(), map[string]attr.Value{
 			"value": types.StringValue(value),
 		})
 		if diags.HasError() {
 			return types.Object{}, diags
 		}
-	} else {
-		avOverrides = types.ObjectNull(schemas.EnvironmentObjectAirflowVariableOverridesAttributeTypes())
 	}
 
-	// Connection overrides
-	var connOverrides types.Object
+	// airflow_connection
+	acObj := types.ObjectNull(schemas.EnvironmentObjectAirflowConnectionOverridesAttributeTypes())
 	if link.ConnectionOverrides != nil {
 		co := link.ConnectionOverrides
 		var extraVal types.String
 		switch {
-		case preserve != nil && preserve.ConnectionExtra != nil:
-			extraVal = types.StringValue(*preserve.ConnectionExtra)
+		case preserve != nil && preserve.AirflowConnectionExtra != nil:
+			extraVal = types.StringValue(*preserve.AirflowConnectionExtra)
 		case co.Extra != nil:
 			extraBytes, err := json.Marshal(co.Extra)
 			if err != nil {
-				return types.Object{}, diag.Diagnostics{diag.NewErrorDiagnostic("Internal Error", fmt.Sprintf("Failed to marshal connection overrides extra: %s", err))}
+				return types.Object{}, diag.Diagnostics{diag.NewErrorDiagnostic("Internal Error", fmt.Sprintf("Failed to marshal airflow_connection overrides extra: %s", err))}
 			}
 			extraVal = types.StringValue(string(extraBytes))
 		default:
@@ -467,9 +498,9 @@ func EnvironmentObjectLinkTypesObject(ctx context.Context, link *platform.Enviro
 			portVal = types.Int64Null()
 		}
 
-		passwordVal := preserveSecretLink(co.Password, preserve, func(p *EnvironmentObjectLinkOverridePreserve) *string { return p.ConnectionPassword })
+		passwordVal := preserveSecretLink(co.Password, preserve, func(p *EnvironmentObjectLinkOverridePreserve) *string { return p.AirflowConnectionPassword })
 
-		connOverrides, diags = types.ObjectValue(schemas.EnvironmentObjectConnectionOverridesAttributeTypes(), map[string]attr.Value{
+		acObj, diags = types.ObjectValue(schemas.EnvironmentObjectAirflowConnectionOverridesAttributeTypes(), map[string]attr.Value{
 			"type":     types.StringPointerValue(co.Type),
 			"host":     types.StringPointerValue(co.Host),
 			"port":     portVal,
@@ -481,12 +512,10 @@ func EnvironmentObjectLinkTypesObject(ctx context.Context, link *platform.Enviro
 		if diags.HasError() {
 			return types.Object{}, diags
 		}
-	} else {
-		connOverrides = types.ObjectNull(schemas.EnvironmentObjectConnectionOverridesAttributeTypes())
 	}
 
-	// Metrics export overrides
-	var meOverrides types.Object
+	// metrics_export
+	meObj := types.ObjectNull(schemas.EnvironmentObjectMetricsExportOverridesAttributeTypes())
 	if link.MetricsExportOverrides != nil {
 		mo := link.MetricsExportOverrides
 		var authTypeVal types.String
@@ -513,7 +542,7 @@ func EnvironmentObjectLinkTypesObject(ctx context.Context, link *platform.Enviro
 		basicToken := preserveSecretLink(mo.BasicToken, preserve, func(p *EnvironmentObjectLinkOverridePreserve) *string { return p.MetricsExportBasicToken })
 		password := preserveSecretLink(mo.Password, preserve, func(p *EnvironmentObjectLinkOverridePreserve) *string { return p.MetricsExportPassword })
 
-		meOverrides, diags = types.ObjectValue(schemas.EnvironmentObjectMetricsExportOverridesAttributeTypes(), map[string]attr.Value{
+		meObj, diags = types.ObjectValue(schemas.EnvironmentObjectMetricsExportOverridesAttributeTypes(), map[string]attr.Value{
 			"auth_type":     authTypeVal,
 			"endpoint":      types.StringPointerValue(mo.Endpoint),
 			"basic_token":   basicToken,
@@ -526,16 +555,12 @@ func EnvironmentObjectLinkTypesObject(ctx context.Context, link *platform.Enviro
 		if diags.HasError() {
 			return types.Object{}, diags
 		}
-	} else {
-		meOverrides = types.ObjectNull(schemas.EnvironmentObjectMetricsExportOverridesAttributeTypes())
 	}
 
-	return types.ObjectValue(schemas.EnvironmentObjectLinkAttributeTypes(), map[string]attr.Value{
-		"scope":                      types.StringValue(string(link.Scope)),
-		"scope_entity_id":            types.StringValue(link.ScopeEntityId),
-		"airflow_variable_overrides": avOverrides,
-		"connection_overrides":       connOverrides,
-		"metrics_export_overrides":   meOverrides,
+	return types.ObjectValue(overridesAttrTypes, map[string]attr.Value{
+		"airflow_variable":   avObj,
+		"airflow_connection": acObj,
+		"metrics_export":     meObj,
 	})
 }
 

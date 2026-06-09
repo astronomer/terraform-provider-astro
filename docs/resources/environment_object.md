@@ -24,9 +24,9 @@ Environment Object resource. Manages Airflow connections, variables, and metrics
 
 ### Optional
 
+- `airflow_connection` (Attributes) The Airflow connection definition. Required when object_type is CONNECTION (see [below for nested schema](#nestedatt--airflow_connection))
 - `airflow_variable` (Attributes) The Airflow variable definition. Required when object_type is AIRFLOW_VARIABLE (see [below for nested schema](#nestedatt--airflow_variable))
 - `auto_link_deployments` (Boolean) Whether to automatically link Deployments to the environment object. Only applicable for WORKSPACE scope
-- `connection_config` (Attributes) The connection definition. Required when object_type is CONNECTION (see [below for nested schema](#nestedatt--connection_config))
 - `exclude_links` (Attributes Set) The excluded links for the environment object. Only applicable for WORKSPACE scope (see [below for nested schema](#nestedatt--exclude_links))
 - `links` (Attributes Set) The Deployments linked to the environment object. Only applicable for WORKSPACE scope (see [below for nested schema](#nestedatt--links))
 - `metrics_export` (Attributes) The metrics export definition. Required when object_type is METRICS_EXPORT (see [below for nested schema](#nestedatt--metrics_export))
@@ -41,17 +41,8 @@ Environment Object resource. Manages Airflow connections, variables, and metrics
 - `updated_at` (String) Environment Object last updated timestamp
 - `updated_by` (Attributes) Environment Object updater (see [below for nested schema](#nestedatt--updated_by))
 
-<a id="nestedatt--airflow_variable"></a>
-### Nested Schema for `airflow_variable`
-
-Optional:
-
-- `is_secret` (Boolean) Whether the value is a secret (immutable on the API; toggling this forces resource replacement)
-- `value` (String, Sensitive) The value of the Airflow variable
-
-
-<a id="nestedatt--connection_config"></a>
-### Nested Schema for `connection_config`
+<a id="nestedatt--airflow_connection"></a>
+### Nested Schema for `airflow_connection`
 
 Required:
 
@@ -69,10 +60,10 @@ Optional:
 
 Read-Only:
 
-- `connection_auth_type` (Attributes) The resolved auth type of the connection, populated from auth_type_id (see [below for nested schema](#nestedatt--connection_config--connection_auth_type))
+- `connection_auth_type` (Attributes) The resolved auth type of the connection, populated from auth_type_id (see [below for nested schema](#nestedatt--airflow_connection--connection_auth_type))
 
-<a id="nestedatt--connection_config--connection_auth_type"></a>
-### Nested Schema for `connection_config.connection_auth_type`
+<a id="nestedatt--airflow_connection--connection_auth_type"></a>
+### Nested Schema for `airflow_connection.connection_auth_type`
 
 Read-Only:
 
@@ -82,12 +73,12 @@ Read-Only:
 - `guide_path` (String)
 - `id` (String)
 - `name` (String)
-- `parameters` (Attributes List) (see [below for nested schema](#nestedatt--connection_config--connection_auth_type--parameters))
+- `parameters` (Attributes List) (see [below for nested schema](#nestedatt--airflow_connection--connection_auth_type--parameters))
 - `provider_logo` (String)
 - `provider_package_name` (String)
 
-<a id="nestedatt--connection_config--connection_auth_type--parameters"></a>
-### Nested Schema for `connection_config.connection_auth_type.parameters`
+<a id="nestedatt--airflow_connection--connection_auth_type--parameters"></a>
+### Nested Schema for `airflow_connection.connection_auth_type.parameters`
 
 Read-Only:
 
@@ -102,6 +93,15 @@ Read-Only:
 - `pattern` (String)
 
 
+
+
+<a id="nestedatt--airflow_variable"></a>
+### Nested Schema for `airflow_variable`
+
+Optional:
+
+- `is_secret` (Boolean) Whether the value is a secret (immutable on the API; toggling this forces resource replacement)
+- `value` (String, Sensitive) The value of the Airflow variable
 
 
 <a id="nestedatt--exclude_links"></a>
@@ -123,20 +123,19 @@ Required:
 
 Optional:
 
-- `airflow_variable_overrides` (Attributes) Airflow variable overrides for this link (see [below for nested schema](#nestedatt--links--airflow_variable_overrides))
-- `connection_overrides` (Attributes) Connection overrides for this link (see [below for nested schema](#nestedatt--links--connection_overrides))
-- `metrics_export_overrides` (Attributes) Metrics export overrides for this link (see [below for nested schema](#nestedatt--links--metrics_export_overrides))
+- `overrides` (Attributes) Per-link overrides. Set only the sub-block matching the parent object_type. (see [below for nested schema](#nestedatt--links--overrides))
 
-<a id="nestedatt--links--airflow_variable_overrides"></a>
-### Nested Schema for `links.airflow_variable_overrides`
+<a id="nestedatt--links--overrides"></a>
+### Nested Schema for `links.overrides`
 
 Optional:
 
-- `value` (String, Sensitive) The value of the Airflow variable
+- `airflow_connection` (Attributes) Airflow connection overrides for this link (only valid when object_type=CONNECTION) (see [below for nested schema](#nestedatt--links--overrides--airflow_connection))
+- `airflow_variable` (Attributes) Airflow variable overrides for this link (only valid when object_type=AIRFLOW_VARIABLE) (see [below for nested schema](#nestedatt--links--overrides--airflow_variable))
+- `metrics_export` (Attributes) Metrics export overrides for this link (only valid when object_type=METRICS_EXPORT) (see [below for nested schema](#nestedatt--links--overrides--metrics_export))
 
-
-<a id="nestedatt--links--connection_overrides"></a>
-### Nested Schema for `links.connection_overrides`
+<a id="nestedatt--links--overrides--airflow_connection"></a>
+### Nested Schema for `links.overrides.airflow_connection`
 
 Optional:
 
@@ -149,8 +148,16 @@ Optional:
 - `type` (String) The type of connection
 
 
-<a id="nestedatt--links--metrics_export_overrides"></a>
-### Nested Schema for `links.metrics_export_overrides`
+<a id="nestedatt--links--overrides--airflow_variable"></a>
+### Nested Schema for `links.overrides.airflow_variable`
+
+Optional:
+
+- `value` (String, Sensitive) The value of the Airflow variable
+
+
+<a id="nestedatt--links--overrides--metrics_export"></a>
+### Nested Schema for `links.overrides.metrics_export`
 
 Optional:
 
@@ -162,6 +169,7 @@ Optional:
 - `labels` (Map of String) Metrics labels
 - `password` (String, Sensitive) The password
 - `username` (String) The username
+
 
 
 

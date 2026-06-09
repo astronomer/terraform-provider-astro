@@ -20,7 +20,7 @@ func EnvironmentObjectsElementAttributeTypes() map[string]attr.Type {
 		"source_scope_entity_id": types.StringType,
 		"auto_link_deployments":  types.BoolType,
 		"airflow_variable":       types.ObjectType{AttrTypes: EnvironmentObjectAirflowVariableAttributeTypes()},
-		"connection_config":      types.ObjectType{AttrTypes: EnvironmentObjectConnectionAttributeTypes()},
+		"airflow_connection":     types.ObjectType{AttrTypes: EnvironmentObjectAirflowConnectionAttributeTypes()},
 		"metrics_export":         types.ObjectType{AttrTypes: EnvironmentObjectMetricsExportAttributeTypes()},
 		"links":                  types.SetType{ElemType: types.ObjectType{AttrTypes: EnvironmentObjectLinkAttributeTypes()}},
 		"exclude_links":          types.SetType{ElemType: types.ObjectType{AttrTypes: EnvironmentObjectExcludeLinkAttributeTypes()}},

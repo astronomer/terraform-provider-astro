@@ -93,13 +93,13 @@ func TestAcc_ResourceEnvironmentObjectConnection(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "object_key", connKey),
 					resource.TestCheckResourceAttr(resourceVar, "object_type", "CONNECTION"),
 					resource.TestCheckResourceAttr(resourceVar, "scope", "WORKSPACE"),
-					resource.TestCheckResourceAttr(resourceVar, "connection_config.type", "postgres"),
-					resource.TestCheckResourceAttr(resourceVar, "connection_config.host", "example.com"),
-					resource.TestCheckResourceAttr(resourceVar, "connection_config.port", "5432"),
-					resource.TestCheckResourceAttr(resourceVar, "connection_config.login", "testuser"),
-					resource.TestCheckResourceAttr(resourceVar, "connection_config.password", "testpass"),
-					resource.TestCheckResourceAttr(resourceVar, "connection_config.schema", "testdb"),
-					resource.TestCheckResourceAttr(resourceVar, "connection_config.extra", `{"sslmode":"require","timeout":30}`),
+					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.type", "postgres"),
+					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.host", "example.com"),
+					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.port", "5432"),
+					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.login", "testuser"),
+					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.password", "testpass"),
+					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.schema", "testdb"),
+					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.extra", `{"sslmode":"require","timeout":30}`),
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
 				),
@@ -109,10 +109,10 @@ func TestAcc_ResourceEnvironmentObjectConnection(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + environmentObjectConnection("test", connKey, workspaceId, "updated.example.com", 5433, `{"sslmode":"require","timeout":30}`),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckEnvironmentObjectExists(t, connKey),
-					resource.TestCheckResourceAttr(resourceVar, "connection_config.host", "updated.example.com"),
-					resource.TestCheckResourceAttr(resourceVar, "connection_config.port", "5433"),
-					resource.TestCheckResourceAttr(resourceVar, "connection_config.password", "testpass"),
-					resource.TestCheckResourceAttr(resourceVar, "connection_config.extra", `{"sslmode":"require","timeout":30}`),
+					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.host", "updated.example.com"),
+					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.port", "5433"),
+					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.password", "testpass"),
+					resource.TestCheckResourceAttr(resourceVar, "airflow_connection.extra", `{"sslmode":"require","timeout":30}`),
 				),
 			},
 			// Import — password and extra are unrecoverable on import: the API does not echo
@@ -121,7 +121,7 @@ func TestAcc_ResourceEnvironmentObjectConnection(t *testing.T) {
 				ResourceName:            resourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"connection_config.password", "connection_config.extra"},
+				ImportStateVerifyIgnore: []string{"airflow_connection.password", "airflow_connection.extra"},
 			},
 		},
 	})
@@ -201,7 +201,7 @@ resource "astro_environment_object" "%s" {
   scope           = "WORKSPACE"
   scope_entity_id = "%s"
 
-  connection_config = {
+  airflow_connection = {
     type     = "postgres"
     host     = "%s"
     port     = %d

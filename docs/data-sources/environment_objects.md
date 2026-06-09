@@ -37,9 +37,9 @@ Required:
 
 Read-Only:
 
+- `airflow_connection` (Attributes) The Airflow connection definition (see [below for nested schema](#nestedatt--environment_objects--airflow_connection))
 - `airflow_variable` (Attributes) The Airflow variable definition (see [below for nested schema](#nestedatt--environment_objects--airflow_variable))
 - `auto_link_deployments` (Boolean) Whether to automatically link Deployments to the environment object
-- `connection_config` (Attributes) The connection definition (see [below for nested schema](#nestedatt--environment_objects--connection_config))
 - `created_at` (String) Environment Object creation timestamp
 - `created_by` (Attributes) Environment Object creator (see [below for nested schema](#nestedatt--environment_objects--created_by))
 - `exclude_links` (Attributes Set) The excluded links for the environment object (see [below for nested schema](#nestedatt--environment_objects--exclude_links))
@@ -54,22 +54,13 @@ Read-Only:
 - `updated_at` (String) Environment Object last updated timestamp
 - `updated_by` (Attributes) Environment Object updater (see [below for nested schema](#nestedatt--environment_objects--updated_by))
 
-<a id="nestedatt--environment_objects--airflow_variable"></a>
-### Nested Schema for `environment_objects.airflow_variable`
-
-Read-Only:
-
-- `is_secret` (Boolean) Whether the value is a secret
-- `value` (String) The value of the Airflow variable
-
-
-<a id="nestedatt--environment_objects--connection_config"></a>
-### Nested Schema for `environment_objects.connection_config`
+<a id="nestedatt--environment_objects--airflow_connection"></a>
+### Nested Schema for `environment_objects.airflow_connection`
 
 Read-Only:
 
 - `auth_type_id` (String) The ID for the connection auth type
-- `connection_auth_type` (Attributes) The auth type of the connection (see [below for nested schema](#nestedatt--environment_objects--connection_config--connection_auth_type))
+- `connection_auth_type` (Attributes) The auth type of the connection (see [below for nested schema](#nestedatt--environment_objects--airflow_connection--connection_auth_type))
 - `extra` (String) Extra connection details as JSON string
 - `host` (String) The host address for the connection
 - `login` (String) The username used for the connection
@@ -78,8 +69,8 @@ Read-Only:
 - `schema` (String) The schema for the connection
 - `type` (String) The type of connection
 
-<a id="nestedatt--environment_objects--connection_config--connection_auth_type"></a>
-### Nested Schema for `environment_objects.connection_config.connection_auth_type`
+<a id="nestedatt--environment_objects--airflow_connection--connection_auth_type"></a>
+### Nested Schema for `environment_objects.airflow_connection.connection_auth_type`
 
 Read-Only:
 
@@ -89,12 +80,12 @@ Read-Only:
 - `guide_path` (String) The URL to the guide for the connection auth type
 - `id` (String) The ID of the connection auth type
 - `name` (String) The name of the connection auth type
-- `parameters` (Attributes List) The parameters for the connection auth type (see [below for nested schema](#nestedatt--environment_objects--connection_config--connection_auth_type--parameters))
+- `parameters` (Attributes List) The parameters for the connection auth type (see [below for nested schema](#nestedatt--environment_objects--airflow_connection--connection_auth_type--parameters))
 - `provider_logo` (String) The URL of the provider logo
 - `provider_package_name` (String) The name of the provider package
 
-<a id="nestedatt--environment_objects--connection_config--connection_auth_type--parameters"></a>
-### Nested Schema for `environment_objects.connection_config.connection_auth_type.parameters`
+<a id="nestedatt--environment_objects--airflow_connection--connection_auth_type--parameters"></a>
+### Nested Schema for `environment_objects.airflow_connection.connection_auth_type.parameters`
 
 Read-Only:
 
@@ -106,9 +97,18 @@ Read-Only:
 - `is_in_extra` (Boolean) Whether the parameter is included in the extra field
 - `is_required` (Boolean) Whether the parameter is required
 - `is_secret` (Boolean) Whether the parameter is a secret
-- `pattern` (String) A regex pattern for the parameter
+- `pattern` (String) A regex pattern that the parameter value must match
 
 
+
+
+<a id="nestedatt--environment_objects--airflow_variable"></a>
+### Nested Schema for `environment_objects.airflow_variable`
+
+Read-Only:
+
+- `is_secret` (Boolean) Whether the value is a secret
+- `value` (String) The value of the Airflow variable
 
 
 <a id="nestedatt--environment_objects--created_by"></a>
@@ -138,22 +138,21 @@ Read-Only:
 
 Read-Only:
 
-- `airflow_variable_overrides` (Attributes) Airflow variable overrides for this link (see [below for nested schema](#nestedatt--environment_objects--links--airflow_variable_overrides))
-- `connection_overrides` (Attributes) Connection overrides for this link (see [below for nested schema](#nestedatt--environment_objects--links--connection_overrides))
-- `metrics_export_overrides` (Attributes) Metrics export overrides for this link (see [below for nested schema](#nestedatt--environment_objects--links--metrics_export_overrides))
+- `overrides` (Attributes) Per-link overrides (only the sub-block matching the parent object_type is populated) (see [below for nested schema](#nestedatt--environment_objects--links--overrides))
 - `scope` (String) Scope of the linked entity
 - `scope_entity_id` (String) Linked entity ID
 
-<a id="nestedatt--environment_objects--links--airflow_variable_overrides"></a>
-### Nested Schema for `environment_objects.links.airflow_variable_overrides`
+<a id="nestedatt--environment_objects--links--overrides"></a>
+### Nested Schema for `environment_objects.links.overrides`
 
 Read-Only:
 
-- `value` (String) The value of the Airflow variable
+- `airflow_connection` (Attributes) Airflow connection overrides for this link (see [below for nested schema](#nestedatt--environment_objects--links--overrides--airflow_connection))
+- `airflow_variable` (Attributes) Airflow variable overrides for this link (see [below for nested schema](#nestedatt--environment_objects--links--overrides--airflow_variable))
+- `metrics_export` (Attributes) Metrics export overrides for this link (see [below for nested schema](#nestedatt--environment_objects--links--overrides--metrics_export))
 
-
-<a id="nestedatt--environment_objects--links--connection_overrides"></a>
-### Nested Schema for `environment_objects.links.connection_overrides`
+<a id="nestedatt--environment_objects--links--overrides--airflow_connection"></a>
+### Nested Schema for `environment_objects.links.overrides.airflow_connection`
 
 Read-Only:
 
@@ -166,8 +165,16 @@ Read-Only:
 - `type` (String) The type of connection
 
 
-<a id="nestedatt--environment_objects--links--metrics_export_overrides"></a>
-### Nested Schema for `environment_objects.links.metrics_export_overrides`
+<a id="nestedatt--environment_objects--links--overrides--airflow_variable"></a>
+### Nested Schema for `environment_objects.links.overrides.airflow_variable`
+
+Read-Only:
+
+- `value` (String) The value of the Airflow variable
+
+
+<a id="nestedatt--environment_objects--links--overrides--metrics_export"></a>
+### Nested Schema for `environment_objects.links.overrides.metrics_export`
 
 Read-Only:
 
@@ -179,6 +186,7 @@ Read-Only:
 - `labels` (Map of String) Metrics labels
 - `password` (String, Sensitive) The password
 - `username` (String) The username
+
 
 
 

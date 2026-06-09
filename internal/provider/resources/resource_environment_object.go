@@ -341,10 +341,10 @@ func buildCreateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 		}
 	}
 
-	// Connection
-	if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
-		var ci models.EnvironmentObjectConnectionInput
-		diags = data.ConnectionConfig.As(ctx, &ci, basetypes.ObjectAsOptions{})
+	// Airflow Connection
+	if !data.AirflowConnection.IsNull() && !data.AirflowConnection.IsUnknown() {
+		var ci models.EnvironmentObjectAirflowConnectionInput
+		diags = data.AirflowConnection.As(ctx, &ci, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return req, diags
 		}
@@ -362,7 +362,7 @@ func buildCreateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 		if !ci.Extra.IsNull() && !ci.Extra.IsUnknown() {
 			var extra map[string]interface{}
 			if err := json.Unmarshal([]byte(ci.Extra.ValueString()), &extra); err != nil {
-				return req, diag.Diagnostics{diag.NewErrorDiagnostic("Invalid Input", fmt.Sprintf("connection.extra must be valid JSON: %s", err))}
+				return req, diag.Diagnostics{diag.NewErrorDiagnostic("Invalid Input", fmt.Sprintf("airflow_connection.extra must be valid JSON: %s", err))}
 			}
 			connReq.Extra = &extra
 		}
@@ -410,7 +410,7 @@ func buildCreateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 				Scope:         platform.CreateEnvironmentObjectLinkRequestScope(li.Scope.ValueString()),
 				ScopeEntityId: li.ScopeEntityId.ValueString(),
 			}
-			overrides, d := buildCreateOverrides(ctx, &li)
+			overrides, d := buildCreateOverrides(ctx, li.Overrides)
 			if d.HasError() {
 				return req, d
 			}
@@ -460,10 +460,10 @@ func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 		}
 	}
 
-	// Connection
-	if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
-		var ci models.EnvironmentObjectConnectionInput
-		diags = data.ConnectionConfig.As(ctx, &ci, basetypes.ObjectAsOptions{})
+	// Airflow Connection
+	if !data.AirflowConnection.IsNull() && !data.AirflowConnection.IsUnknown() {
+		var ci models.EnvironmentObjectAirflowConnectionInput
+		diags = data.AirflowConnection.As(ctx, &ci, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return req, diags
 		}
@@ -481,7 +481,7 @@ func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 		if !ci.Extra.IsNull() && !ci.Extra.IsUnknown() {
 			var extra map[string]interface{}
 			if err := json.Unmarshal([]byte(ci.Extra.ValueString()), &extra); err != nil {
-				return req, diag.Diagnostics{diag.NewErrorDiagnostic("Invalid Input", fmt.Sprintf("connection.extra must be valid JSON: %s", err))}
+				return req, diag.Diagnostics{diag.NewErrorDiagnostic("Invalid Input", fmt.Sprintf("airflow_connection.extra must be valid JSON: %s", err))}
 			}
 			connReq.Extra = &extra
 		}
@@ -531,7 +531,7 @@ func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 				Scope:         platform.UpdateEnvironmentObjectLinkRequestScope(li.Scope.ValueString()),
 				ScopeEntityId: li.ScopeEntityId.ValueString(),
 			}
-			overrides, d := buildUpdateOverrides(ctx, &li)
+			overrides, d := buildUpdateOverrides(ctx, li.Overrides)
 			if d.HasError() {
 				return req, d
 			}
@@ -562,27 +562,35 @@ func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 	return req, nil
 }
 
-func buildCreateOverrides(ctx context.Context, li *models.EnvironmentObjectLinkInput) (*platform.CreateEnvironmentObjectOverridesRequest, diag.Diagnostics) {
-	overrides := &platform.CreateEnvironmentObjectOverridesRequest{}
-	hasOverrides := false
-
-	if !li.AirflowVariableOverrides.IsNull() && !li.AirflowVariableOverrides.IsUnknown() {
-		var avo models.EnvironmentObjectAirflowVariableOverridesInput
-		diags := li.AirflowVariableOverrides.As(ctx, &avo, basetypes.ObjectAsOptions{})
-		if diags.HasError() {
-			return nil, diags
-		}
-		overrides.AirflowVariable = &platform.CreateEnvironmentObjectAirflowVariableOverridesRequest{
-			Value: avo.Value.ValueStringPointer(),
-		}
-		hasOverrides = true
+// buildCreateOverrides unpacks the per-link `overrides` wrapper into the API's
+// CreateEnvironmentObjectOverridesRequest. Returns nil when no sub-block is set.
+func buildCreateOverrides(ctx context.Context, overrides types.Object) (*platform.CreateEnvironmentObjectOverridesRequest, diag.Diagnostics) {
+	if overrides.IsNull() || overrides.IsUnknown() {
+		return nil, nil
+	}
+	var ov models.EnvironmentObjectOverridesInput
+	if d := overrides.As(ctx, &ov, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true}); d.HasError() {
+		return nil, d
 	}
 
-	if !li.ConnectionOverrides.IsNull() && !li.ConnectionOverrides.IsUnknown() {
-		var co models.EnvironmentObjectConnectionOverridesInput
-		diags := li.ConnectionOverrides.As(ctx, &co, basetypes.ObjectAsOptions{})
-		if diags.HasError() {
-			return nil, diags
+	out := &platform.CreateEnvironmentObjectOverridesRequest{}
+	hasAny := false
+
+	if !ov.AirflowVariable.IsNull() && !ov.AirflowVariable.IsUnknown() {
+		var avo models.EnvironmentObjectAirflowVariableOverridesInput
+		if d := ov.AirflowVariable.As(ctx, &avo, basetypes.ObjectAsOptions{}); d.HasError() {
+			return nil, d
+		}
+		out.AirflowVariable = &platform.CreateEnvironmentObjectAirflowVariableOverridesRequest{
+			Value: avo.Value.ValueStringPointer(),
+		}
+		hasAny = true
+	}
+
+	if !ov.AirflowConnection.IsNull() && !ov.AirflowConnection.IsUnknown() {
+		var co models.EnvironmentObjectAirflowConnectionOverridesInput
+		if d := ov.AirflowConnection.As(ctx, &co, basetypes.ObjectAsOptions{}); d.HasError() {
+			return nil, d
 		}
 		connOvr := &platform.CreateEnvironmentObjectConnectionOverridesRequest{
 			Type:     co.Type.ValueStringPointer(),
@@ -597,19 +605,18 @@ func buildCreateOverrides(ctx context.Context, li *models.EnvironmentObjectLinkI
 		if !co.Extra.IsNull() && !co.Extra.IsUnknown() {
 			var extra map[string]interface{}
 			if err := json.Unmarshal([]byte(co.Extra.ValueString()), &extra); err != nil {
-				return nil, diag.Diagnostics{diag.NewErrorDiagnostic("Invalid Input", fmt.Sprintf("connection overrides extra must be valid JSON: %s", err))}
+				return nil, diag.Diagnostics{diag.NewErrorDiagnostic("Invalid Input", fmt.Sprintf("overrides.airflow_connection.extra must be valid JSON: %s", err))}
 			}
 			connOvr.Extra = &extra
 		}
-		overrides.Connection = connOvr
-		hasOverrides = true
+		out.Connection = connOvr
+		hasAny = true
 	}
 
-	if !li.MetricsExportOverrides.IsNull() && !li.MetricsExportOverrides.IsUnknown() {
+	if !ov.MetricsExport.IsNull() && !ov.MetricsExport.IsUnknown() {
 		var mo models.EnvironmentObjectMetricsExportOverridesInput
-		diags := li.MetricsExportOverrides.As(ctx, &mo, basetypes.ObjectAsOptions{})
-		if diags.HasError() {
-			return nil, diags
+		if d := ov.MetricsExport.As(ctx, &mo, basetypes.ObjectAsOptions{}); d.HasError() {
+			return nil, d
 		}
 		meOvr := &platform.CreateEnvironmentObjectMetricsExportOverridesRequest{
 			Endpoint:   mo.Endpoint.ValueStringPointer(),
@@ -631,37 +638,44 @@ func buildCreateOverrides(ctx context.Context, li *models.EnvironmentObjectLinkI
 			l := tfMapToStringMap(ctx, mo.Labels)
 			meOvr.Labels = &l
 		}
-		overrides.MetricsExport = meOvr
-		hasOverrides = true
+		out.MetricsExport = meOvr
+		hasAny = true
 	}
 
-	if !hasOverrides {
+	if !hasAny {
 		return nil, nil
 	}
-	return overrides, nil
+	return out, nil
 }
 
-func buildUpdateOverrides(ctx context.Context, li *models.EnvironmentObjectLinkInput) (*platform.UpdateEnvironmentObjectOverridesRequest, diag.Diagnostics) {
-	overrides := &platform.UpdateEnvironmentObjectOverridesRequest{}
-	hasOverrides := false
-
-	if !li.AirflowVariableOverrides.IsNull() && !li.AirflowVariableOverrides.IsUnknown() {
-		var avo models.EnvironmentObjectAirflowVariableOverridesInput
-		diags := li.AirflowVariableOverrides.As(ctx, &avo, basetypes.ObjectAsOptions{})
-		if diags.HasError() {
-			return nil, diags
-		}
-		overrides.AirflowVariable = &platform.UpdateEnvironmentObjectAirflowVariableOverridesRequest{
-			Value: avo.Value.ValueStringPointer(),
-		}
-		hasOverrides = true
+// buildUpdateOverrides is the Update counterpart to buildCreateOverrides.
+func buildUpdateOverrides(ctx context.Context, overrides types.Object) (*platform.UpdateEnvironmentObjectOverridesRequest, diag.Diagnostics) {
+	if overrides.IsNull() || overrides.IsUnknown() {
+		return nil, nil
+	}
+	var ov models.EnvironmentObjectOverridesInput
+	if d := overrides.As(ctx, &ov, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true}); d.HasError() {
+		return nil, d
 	}
 
-	if !li.ConnectionOverrides.IsNull() && !li.ConnectionOverrides.IsUnknown() {
-		var co models.EnvironmentObjectConnectionOverridesInput
-		diags := li.ConnectionOverrides.As(ctx, &co, basetypes.ObjectAsOptions{})
-		if diags.HasError() {
-			return nil, diags
+	out := &platform.UpdateEnvironmentObjectOverridesRequest{}
+	hasAny := false
+
+	if !ov.AirflowVariable.IsNull() && !ov.AirflowVariable.IsUnknown() {
+		var avo models.EnvironmentObjectAirflowVariableOverridesInput
+		if d := ov.AirflowVariable.As(ctx, &avo, basetypes.ObjectAsOptions{}); d.HasError() {
+			return nil, d
+		}
+		out.AirflowVariable = &platform.UpdateEnvironmentObjectAirflowVariableOverridesRequest{
+			Value: avo.Value.ValueStringPointer(),
+		}
+		hasAny = true
+	}
+
+	if !ov.AirflowConnection.IsNull() && !ov.AirflowConnection.IsUnknown() {
+		var co models.EnvironmentObjectAirflowConnectionOverridesInput
+		if d := ov.AirflowConnection.As(ctx, &co, basetypes.ObjectAsOptions{}); d.HasError() {
+			return nil, d
 		}
 		connOvr := &platform.UpdateEnvironmentObjectConnectionOverridesRequest{
 			Type:     co.Type.ValueStringPointer(),
@@ -676,19 +690,18 @@ func buildUpdateOverrides(ctx context.Context, li *models.EnvironmentObjectLinkI
 		if !co.Extra.IsNull() && !co.Extra.IsUnknown() {
 			var extra map[string]interface{}
 			if err := json.Unmarshal([]byte(co.Extra.ValueString()), &extra); err != nil {
-				return nil, diag.Diagnostics{diag.NewErrorDiagnostic("Invalid Input", fmt.Sprintf("connection overrides extra must be valid JSON: %s", err))}
+				return nil, diag.Diagnostics{diag.NewErrorDiagnostic("Invalid Input", fmt.Sprintf("overrides.airflow_connection.extra must be valid JSON: %s", err))}
 			}
 			connOvr.Extra = &extra
 		}
-		overrides.Connection = connOvr
-		hasOverrides = true
+		out.Connection = connOvr
+		hasAny = true
 	}
 
-	if !li.MetricsExportOverrides.IsNull() && !li.MetricsExportOverrides.IsUnknown() {
+	if !ov.MetricsExport.IsNull() && !ov.MetricsExport.IsUnknown() {
 		var mo models.EnvironmentObjectMetricsExportOverridesInput
-		diags := li.MetricsExportOverrides.As(ctx, &mo, basetypes.ObjectAsOptions{})
-		if diags.HasError() {
-			return nil, diags
+		if d := ov.MetricsExport.As(ctx, &mo, basetypes.ObjectAsOptions{}); d.HasError() {
+			return nil, d
 		}
 		meOvr := &platform.UpdateEnvironmentObjectMetricsExportOverridesRequest{
 			Endpoint:   mo.Endpoint.ValueStringPointer(),
@@ -710,14 +723,14 @@ func buildUpdateOverrides(ctx context.Context, li *models.EnvironmentObjectLinkI
 			l := tfMapToStringMap(ctx, mo.Labels)
 			meOvr.Labels = &l
 		}
-		overrides.MetricsExport = meOvr
-		hasOverrides = true
+		out.MetricsExport = meOvr
+		hasAny = true
 	}
 
-	if !hasOverrides {
+	if !hasAny {
 		return nil, nil
 	}
-	return overrides, nil
+	return out, nil
 }
 
 func tfMapToStringMap(ctx context.Context, m types.Map) map[string]string {
@@ -738,17 +751,17 @@ func buildPreserveFromModel(ctx context.Context, data *models.EnvironmentObject)
 	preserve := &models.EnvironmentObjectPreserve{}
 	var diags diag.Diagnostics
 
-	// Connection
-	if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
-		var ci models.EnvironmentObjectConnectionInput
-		d := data.ConnectionConfig.As(ctx, &ci, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true})
+	// Airflow Connection
+	if !data.AirflowConnection.IsNull() && !data.AirflowConnection.IsUnknown() {
+		var ci models.EnvironmentObjectAirflowConnectionInput
+		d := data.AirflowConnection.As(ctx, &ci, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true})
 		if d.HasError() {
 			diags.Append(d...)
 			return nil, diags
 		}
-		preserve.ConnectionPassword = ci.Password.ValueStringPointer()
-		preserve.ConnectionAuthTypeId = ci.AuthTypeId.ValueStringPointer()
-		preserve.ConnectionExtra = ci.Extra.ValueStringPointer()
+		preserve.AirflowConnectionPassword = ci.Password.ValueStringPointer()
+		preserve.AirflowConnectionAuthTypeId = ci.AuthTypeId.ValueStringPointer()
+		preserve.AirflowConnectionExtra = ci.Extra.ValueStringPointer()
 	}
 
 	// Airflow Variable
@@ -789,35 +802,10 @@ func buildPreserveFromModel(ctx context.Context, data *models.EnvironmentObject)
 		if len(linkInputs) > 0 {
 			preserve.LinkOverrides = make(map[string]*models.EnvironmentObjectLinkOverridePreserve, len(linkInputs))
 			for _, li := range linkInputs {
-				lop := &models.EnvironmentObjectLinkOverridePreserve{}
-				if !li.AirflowVariableOverrides.IsNull() && !li.AirflowVariableOverrides.IsUnknown() {
-					var avo models.EnvironmentObjectAirflowVariableOverridesInput
-					d := li.AirflowVariableOverrides.As(ctx, &avo, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true})
-					if d.HasError() {
-						diags.Append(d...)
-						return nil, diags
-					}
-					lop.AirflowVariableValue = avo.Value.ValueStringPointer()
-				}
-				if !li.ConnectionOverrides.IsNull() && !li.ConnectionOverrides.IsUnknown() {
-					var co models.EnvironmentObjectConnectionOverridesInput
-					d := li.ConnectionOverrides.As(ctx, &co, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true})
-					if d.HasError() {
-						diags.Append(d...)
-						return nil, diags
-					}
-					lop.ConnectionPassword = co.Password.ValueStringPointer()
-					lop.ConnectionExtra = co.Extra.ValueStringPointer()
-				}
-				if !li.MetricsExportOverrides.IsNull() && !li.MetricsExportOverrides.IsUnknown() {
-					var mo models.EnvironmentObjectMetricsExportOverridesInput
-					d := li.MetricsExportOverrides.As(ctx, &mo, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true})
-					if d.HasError() {
-						diags.Append(d...)
-						return nil, diags
-					}
-					lop.MetricsExportPassword = mo.Password.ValueStringPointer()
-					lop.MetricsExportBasicToken = mo.BasicToken.ValueStringPointer()
+				lop, d := extractLinkOverridePreserve(ctx, li.Overrides)
+				if d.HasError() {
+					diags.Append(d...)
+					return nil, diags
 				}
 				preserve.LinkOverrides[models.LinkPreserveKey(li.Scope.ValueString(), li.ScopeEntityId.ValueString())] = lop
 			}
@@ -825,6 +813,44 @@ func buildPreserveFromModel(ctx context.Context, data *models.EnvironmentObject)
 	}
 
 	return preserve, nil
+}
+
+// extractLinkOverridePreserve pulls per-link sensitive fields out of the
+// collapsed `overrides` wrapper.
+func extractLinkOverridePreserve(ctx context.Context, overrides types.Object) (*models.EnvironmentObjectLinkOverridePreserve, diag.Diagnostics) {
+	lop := &models.EnvironmentObjectLinkOverridePreserve{}
+	if overrides.IsNull() || overrides.IsUnknown() {
+		return lop, nil
+	}
+	var ov models.EnvironmentObjectOverridesInput
+	if d := overrides.As(ctx, &ov, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true}); d.HasError() {
+		return nil, d
+	}
+
+	if !ov.AirflowVariable.IsNull() && !ov.AirflowVariable.IsUnknown() {
+		var avo models.EnvironmentObjectAirflowVariableOverridesInput
+		if d := ov.AirflowVariable.As(ctx, &avo, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true}); d.HasError() {
+			return nil, d
+		}
+		lop.AirflowVariableValue = avo.Value.ValueStringPointer()
+	}
+	if !ov.AirflowConnection.IsNull() && !ov.AirflowConnection.IsUnknown() {
+		var co models.EnvironmentObjectAirflowConnectionOverridesInput
+		if d := ov.AirflowConnection.As(ctx, &co, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true}); d.HasError() {
+			return nil, d
+		}
+		lop.AirflowConnectionPassword = co.Password.ValueStringPointer()
+		lop.AirflowConnectionExtra = co.Extra.ValueStringPointer()
+	}
+	if !ov.MetricsExport.IsNull() && !ov.MetricsExport.IsUnknown() {
+		var mo models.EnvironmentObjectMetricsExportOverridesInput
+		if d := ov.MetricsExport.As(ctx, &mo, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true}); d.HasError() {
+			return nil, d
+		}
+		lop.MetricsExportPassword = mo.Password.ValueStringPointer()
+		lop.MetricsExportBasicToken = mo.BasicToken.ValueStringPointer()
+	}
+	return lop, nil
 }
 
 // ValidateConfig validates the configuration of the resource as a whole before any operations are performed.
@@ -853,10 +879,10 @@ func (r *environmentObjectResource) ValidateConfig(
 					"Missing required block",
 					"object_type=AIRFLOW_VARIABLE requires an airflow_variable block")
 			}
-			if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
-				resp.Diagnostics.AddAttributeError(path.Root("connection_config"),
+			if !data.AirflowConnection.IsNull() && !data.AirflowConnection.IsUnknown() {
+				resp.Diagnostics.AddAttributeError(path.Root("airflow_connection"),
 					"Conflicting block",
-					"connection_config is not allowed when object_type=AIRFLOW_VARIABLE")
+					"airflow_connection is not allowed when object_type=AIRFLOW_VARIABLE")
 			}
 			if !data.MetricsExport.IsNull() && !data.MetricsExport.IsUnknown() {
 				resp.Diagnostics.AddAttributeError(path.Root("metrics_export"),
@@ -864,10 +890,10 @@ func (r *environmentObjectResource) ValidateConfig(
 					"metrics_export is not allowed when object_type=AIRFLOW_VARIABLE")
 			}
 		case platform.CreateEnvironmentObjectRequestObjectTypeCONNECTION:
-			if data.ConnectionConfig.IsNull() {
-				resp.Diagnostics.AddAttributeError(path.Root("connection_config"),
+			if data.AirflowConnection.IsNull() {
+				resp.Diagnostics.AddAttributeError(path.Root("airflow_connection"),
 					"Missing required block",
-					"object_type=CONNECTION requires a connection_config block")
+					"object_type=CONNECTION requires an airflow_connection block")
 			}
 			if !data.AirflowVariable.IsNull() && !data.AirflowVariable.IsUnknown() {
 				resp.Diagnostics.AddAttributeError(path.Root("airflow_variable"),
@@ -890,10 +916,10 @@ func (r *environmentObjectResource) ValidateConfig(
 					"Conflicting block",
 					"airflow_variable is not allowed when object_type=METRICS_EXPORT")
 			}
-			if !data.ConnectionConfig.IsNull() && !data.ConnectionConfig.IsUnknown() {
-				resp.Diagnostics.AddAttributeError(path.Root("connection_config"),
+			if !data.AirflowConnection.IsNull() && !data.AirflowConnection.IsUnknown() {
+				resp.Diagnostics.AddAttributeError(path.Root("airflow_connection"),
 					"Conflicting block",
-					"connection_config is not allowed when object_type=METRICS_EXPORT")
+					"airflow_connection is not allowed when object_type=METRICS_EXPORT")
 			}
 		}
 	}
