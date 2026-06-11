@@ -22,6 +22,11 @@ type EnvironmentObjects struct {
 }
 
 func (data *EnvironmentObjects) ReadFromResponse(ctx context.Context, objects []platform.EnvironmentObject) diag.Diagnostics {
+	// Hoist the attribute type map out of the loop — it's identical for every
+	// element and was being rebuilt N+1 times.
+	elemAttrTypes := schemas.EnvironmentObjectsElementAttributeTypes()
+	elemObjectType := types.ObjectType{AttrTypes: elemAttrTypes}
+
 	values := make([]attr.Value, len(objects))
 	for i, obj := range objects {
 		var single EnvironmentObject
@@ -30,7 +35,7 @@ func (data *EnvironmentObjects) ReadFromResponse(ctx context.Context, objects []
 			return diags
 		}
 
-		objectValue, diags := types.ObjectValueFrom(ctx, schemas.EnvironmentObjectsElementAttributeTypes(), single)
+		objectValue, diags := types.ObjectValueFrom(ctx, elemAttrTypes, single)
 		if diags.HasError() {
 			return diags
 		}
@@ -38,6 +43,6 @@ func (data *EnvironmentObjects) ReadFromResponse(ctx context.Context, objects []
 	}
 
 	var diags diag.Diagnostics
-	data.EnvironmentObjects, diags = types.SetValue(types.ObjectType{AttrTypes: schemas.EnvironmentObjectsElementAttributeTypes()}, values)
+	data.EnvironmentObjects, diags = types.SetValue(elemObjectType, values)
 	return diags
 }

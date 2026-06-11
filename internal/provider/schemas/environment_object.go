@@ -15,42 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func EnvironmentObjectAirflowVariableAttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"value":     types.StringType,
-		"is_secret": types.BoolType,
-	}
-}
-
-func EnvironmentObjectMetricsExportAttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"auth_type":     types.StringType,
-		"endpoint":      types.StringType,
-		"basic_token":   types.StringType,
-		"exporter_type": types.StringType,
-		"username":      types.StringType,
-		"password":      types.StringType,
-		"headers":       types.MapType{ElemType: types.StringType},
-		"labels":        types.MapType{ElemType: types.StringType},
-	}
-}
-
-func EnvironmentObjectAirflowConnectionAttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"auth_type_id": types.StringType,
-		"connection_auth_type": types.ObjectType{
-			AttrTypes: EnvironmentObjectConnectionAuthTypeAttributeTypes(),
-		},
-		"type":     types.StringType,
-		"host":     types.StringType,
-		"port":     types.Int64Type,
-		"schema":   types.StringType,
-		"login":    types.StringType,
-		"password": types.StringType,
-		"extra":    types.StringType,
-	}
-}
-
+// EnvironmentObjectConnectionAuthTypeAttributeTypes describes the read-only
+// `connection_auth_type` nested object that the API resolves from `auth_type_id`.
 func EnvironmentObjectConnectionAuthTypeAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"parameters": types.ListType{
@@ -90,6 +56,10 @@ func EnvironmentObjectExcludeLinkAttributeTypes() map[string]attr.Type {
 	}
 }
 
+// EnvironmentObjectLinkAttributeTypes describes a single per-link element with
+// a flat `overrides` block (one optional field per overridable attribute,
+// discriminated by the parent's object_type — same flat-polymorphic pattern as
+// `astro_notification_channel.definition`).
 func EnvironmentObjectLinkAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"scope":           types.StringType,
@@ -98,99 +68,29 @@ func EnvironmentObjectLinkAttributeTypes() map[string]attr.Type {
 	}
 }
 
-// EnvironmentObjectOverridesAttributeTypes describes the per-link overrides
-// wrapper, mirroring the API's Overrides struct (one optional sub-object per
-// object_type).
+// EnvironmentObjectOverridesAttributeTypes describes the per-link `overrides`
+// flat union: every overridable field across all object_types, all optional.
+// The parent's object_type determines which fields are meaningful.
 func EnvironmentObjectOverridesAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"airflow_variable":   types.ObjectType{AttrTypes: EnvironmentObjectAirflowVariableOverridesAttributeTypes()},
-		"airflow_connection": types.ObjectType{AttrTypes: EnvironmentObjectAirflowConnectionOverridesAttributeTypes()},
-		"metrics_export":     types.ObjectType{AttrTypes: EnvironmentObjectMetricsExportOverridesAttributeTypes()},
-	}
-}
-
-func EnvironmentObjectAirflowVariableOverridesAttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
+		// AIRFLOW_VARIABLE
 		"value": types.StringType,
-	}
-}
-
-func EnvironmentObjectAirflowConnectionOverridesAttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
+		// CONNECTION
 		"type":     types.StringType,
 		"host":     types.StringType,
 		"port":     types.Int64Type,
 		"schema":   types.StringType,
 		"login":    types.StringType,
-		"password": types.StringType,
 		"extra":    types.StringType,
-	}
-}
-
-func EnvironmentObjectMetricsExportOverridesAttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
+		"password": types.StringType, // polymorphic: connection password OR basic-auth password
+		// METRICS_EXPORT
 		"auth_type":     types.StringType,
 		"endpoint":      types.StringType,
 		"basic_token":   types.StringType,
 		"exporter_type": types.StringType,
 		"username":      types.StringType,
-		"password":      types.StringType,
 		"headers":       types.MapType{ElemType: types.StringType},
 		"labels":        types.MapType{ElemType: types.StringType},
-	}
-}
-
-func environmentObjectAirflowVariableDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
-	return map[string]datasourceSchema.Attribute{
-		"value": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The value of the Airflow variable",
-			Computed:            true,
-		},
-		"is_secret": datasourceSchema.BoolAttribute{
-			MarkdownDescription: "Whether the value is a secret",
-			Computed:            true,
-		},
-	}
-}
-
-func environmentObjectMetricsExportDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
-	return map[string]datasourceSchema.Attribute{
-		"auth_type": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The type of authentication to use when connecting to the remote endpoint",
-			Computed:            true,
-		},
-		"endpoint": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The Prometheus endpoint where the metrics are exported",
-			Computed:            true,
-		},
-		"basic_token": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The bearer token to connect to the remote endpoint",
-			Computed:            true,
-			Sensitive:           true,
-		},
-		"exporter_type": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The type of exporter",
-			Computed:            true,
-		},
-		"username": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The username to connect to the remote endpoint",
-			Computed:            true,
-		},
-		"password": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The password to connect to the remote endpoint",
-			Computed:            true,
-			Sensitive:           true,
-		},
-		"headers": datasourceSchema.MapAttribute{
-			ElementType:         types.StringType,
-			MarkdownDescription: "HTTP request headers for the remote endpoint",
-			Computed:            true,
-		},
-		"labels": datasourceSchema.MapAttribute{
-			ElementType:         types.StringType,
-			MarkdownDescription: "Key-value pair metrics labels for your export",
-			Computed:            true,
-		},
 	}
 }
 
@@ -279,149 +179,74 @@ func environmentObjectConnectionAuthTypeDataSourceSchemaAttributes() map[string]
 	}
 }
 
-func environmentObjectAirflowConnectionDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
-	return map[string]datasourceSchema.Attribute{
-		"auth_type_id": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The ID for the connection auth type",
-			Computed:            true,
-		},
-		"connection_auth_type": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "The auth type of the connection",
-			Computed:            true,
-			Attributes:          environmentObjectConnectionAuthTypeDataSourceSchemaAttributes(),
-		},
-		"type": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The type of connection",
-			Computed:            true,
-		},
-		"host": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The host address for the connection",
-			Computed:            true,
-		},
-		"port": datasourceSchema.Int64Attribute{
-			MarkdownDescription: "The port for the connection",
-			Computed:            true,
-		},
-		"schema": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The schema for the connection",
-			Computed:            true,
-		},
-		"login": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The username used for the connection",
-			Computed:            true,
-		},
-		"password": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The password used for the connection",
-			Computed:            true,
-			Sensitive:           true,
-		},
-		"extra": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Extra connection details as JSON string",
-			Computed:            true,
-		},
-	}
-}
-
-func environmentObjectAirflowVariableOverridesDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
+// environmentObjectOverridesDataSourceSchemaAttributes is the flat `overrides`
+// shape for the data source — every overridable field across all object_types.
+func environmentObjectOverridesDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"value": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The value of the Airflow variable",
-			Computed:            true,
-		},
-	}
-}
-
-func environmentObjectAirflowConnectionOverridesDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
-	return map[string]datasourceSchema.Attribute{
-		"type": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The type of connection",
-			Computed:            true,
-		},
-		"host": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The host address for the connection",
-			Computed:            true,
-		},
-		"port": datasourceSchema.Int64Attribute{
-			MarkdownDescription: "The port for the connection",
-			Computed:            true,
-		},
-		"schema": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The schema for the connection",
-			Computed:            true,
-		},
-		"login": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The username used for the connection",
-			Computed:            true,
-		},
-		"password": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The password used for the connection",
+			MarkdownDescription: "Override value (only used when object_type=AIRFLOW_VARIABLE)",
 			Computed:            true,
 			Sensitive:           true,
 		},
-		"extra": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Extra connection details as JSON string",
+		"type": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Override connection type (only used when object_type=CONNECTION)",
 			Computed:            true,
 		},
-	}
-}
-
-func environmentObjectMetricsExportOverridesDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
-	return map[string]datasourceSchema.Attribute{
+		"host": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Override host address (only used when object_type=CONNECTION)",
+			Computed:            true,
+		},
+		"port": datasourceSchema.Int64Attribute{
+			MarkdownDescription: "Override port (only used when object_type=CONNECTION)",
+			Computed:            true,
+		},
+		"schema": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Override schema (only used when object_type=CONNECTION)",
+			Computed:            true,
+		},
+		"login": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Override login (only used when object_type=CONNECTION)",
+			Computed:            true,
+		},
+		"extra": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Override extra JSON (only used when object_type=CONNECTION)",
+			Computed:            true,
+		},
+		"password": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Override password — the connection password when object_type=CONNECTION, the HTTP Basic-auth password when object_type=METRICS_EXPORT",
+			Computed:            true,
+			Sensitive:           true,
+		},
 		"auth_type": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The type of authentication",
+			MarkdownDescription: "Override auth type (only used when object_type=METRICS_EXPORT)",
 			Computed:            true,
 		},
 		"endpoint": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The Prometheus endpoint",
+			MarkdownDescription: "Override Prometheus endpoint (only used when object_type=METRICS_EXPORT)",
 			Computed:            true,
 		},
 		"basic_token": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The bearer token",
+			MarkdownDescription: "Override bearer token (only used when object_type=METRICS_EXPORT)",
 			Computed:            true,
 			Sensitive:           true,
 		},
 		"exporter_type": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The type of exporter",
+			MarkdownDescription: "Override exporter type (only used when object_type=METRICS_EXPORT)",
 			Computed:            true,
 		},
 		"username": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The username",
+			MarkdownDescription: "Override username (only used when object_type=METRICS_EXPORT)",
 			Computed:            true,
-		},
-		"password": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The password",
-			Computed:            true,
-			Sensitive:           true,
 		},
 		"headers": datasourceSchema.MapAttribute{
 			ElementType:         types.StringType,
-			MarkdownDescription: "HTTP request headers",
+			MarkdownDescription: "Override HTTP request headers (only used when object_type=METRICS_EXPORT)",
 			Computed:            true,
 		},
 		"labels": datasourceSchema.MapAttribute{
 			ElementType:         types.StringType,
-			MarkdownDescription: "Metrics labels",
+			MarkdownDescription: "Override metrics labels (only used when object_type=METRICS_EXPORT)",
 			Computed:            true,
-		},
-	}
-}
-
-func environmentObjectOverridesDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
-	return map[string]datasourceSchema.Attribute{
-		"airflow_variable": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Airflow variable overrides for this link",
-			Computed:            true,
-			Attributes:          environmentObjectAirflowVariableOverridesDataSourceSchemaAttributes(),
-		},
-		"airflow_connection": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Airflow connection overrides for this link",
-			Computed:            true,
-			Attributes:          environmentObjectAirflowConnectionOverridesDataSourceSchemaAttributes(),
-		},
-		"metrics_export": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Metrics export overrides for this link",
-			Computed:            true,
-			Attributes:          environmentObjectMetricsExportOverridesDataSourceSchemaAttributes(),
 		},
 	}
 }
@@ -437,7 +262,7 @@ func environmentObjectLinkDataSourceSchemaAttributes() map[string]datasourceSche
 			Computed:            true,
 		},
 		"overrides": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Per-link overrides (only the sub-block matching the parent object_type is populated)",
+			MarkdownDescription: "Per-link overrides. Only the fields matching the parent object_type are populated",
 			Computed:            true,
 			Attributes:          environmentObjectOverridesDataSourceSchemaAttributes(),
 		},
@@ -457,8 +282,12 @@ func environmentObjectExcludeLinkDataSourceSchemaAttributes() map[string]datasou
 	}
 }
 
+// EnvironmentObjectDataSourceSchemaAttributes is the flat data source schema
+// matching the resource shape. Every type-specific field is Computed and
+// populated only when the parent object_type matches.
 func EnvironmentObjectDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
+		// Identity / common
 		"id": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Environment object identifier",
 			Required:            true,
@@ -477,7 +306,7 @@ func EnvironmentObjectDataSourceSchemaAttributes() map[string]datasourceSchema.A
 			Computed:            true,
 		},
 		"scope_entity_id": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The ID of the scope entity",
+			MarkdownDescription: "The ID of the scope entity where the environment object is created",
 			Computed:            true,
 		},
 		"source_scope": datasourceSchema.StringAttribute{
@@ -492,21 +321,89 @@ func EnvironmentObjectDataSourceSchemaAttributes() map[string]datasourceSchema.A
 			MarkdownDescription: "Whether to automatically link Deployments to the environment object",
 			Computed:            true,
 		},
-		"airflow_variable": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "The Airflow variable definition",
+		// AIRFLOW_VARIABLE fields
+		"value": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The value of the Airflow variable (only used when object_type=AIRFLOW_VARIABLE)",
 			Computed:            true,
-			Attributes:          environmentObjectAirflowVariableDataSourceSchemaAttributes(),
+			Sensitive:           true,
 		},
-		"airflow_connection": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "The Airflow connection definition",
+		"is_secret": datasourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether the value is a secret (only used when object_type=AIRFLOW_VARIABLE)",
 			Computed:            true,
-			Attributes:          environmentObjectAirflowConnectionDataSourceSchemaAttributes(),
 		},
-		"metrics_export": datasourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "The metrics export definition",
+		// CONNECTION fields
+		"type": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The connection type (only used when object_type=CONNECTION)",
 			Computed:            true,
-			Attributes:          environmentObjectMetricsExportDataSourceSchemaAttributes(),
 		},
+		"host": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The host address for the connection (only used when object_type=CONNECTION)",
+			Computed:            true,
+		},
+		"port": datasourceSchema.Int64Attribute{
+			MarkdownDescription: "The port for the connection (only used when object_type=CONNECTION)",
+			Computed:            true,
+		},
+		"schema": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The schema for the connection (only used when object_type=CONNECTION)",
+			Computed:            true,
+		},
+		"login": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The username used for the connection (only used when object_type=CONNECTION)",
+			Computed:            true,
+		},
+		"extra": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Extra connection details as JSON string (only used when object_type=CONNECTION)",
+			Computed:            true,
+		},
+		"auth_type_id": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The ID for the connection auth type (only used when object_type=CONNECTION)",
+			Computed:            true,
+		},
+		"connection_auth_type": datasourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "The resolved auth type of the connection (only used when object_type=CONNECTION)",
+			Computed:            true,
+			Attributes:          environmentObjectConnectionAuthTypeDataSourceSchemaAttributes(),
+		},
+		// METRICS_EXPORT fields
+		"endpoint": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The Prometheus endpoint where the metrics are exported (only used when object_type=METRICS_EXPORT)",
+			Computed:            true,
+		},
+		"exporter_type": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The type of exporter (only used when object_type=METRICS_EXPORT)",
+			Computed:            true,
+		},
+		"auth_type": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The type of authentication (only used when object_type=METRICS_EXPORT)",
+			Computed:            true,
+		},
+		"basic_token": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The bearer token to connect to the remote endpoint (only used when object_type=METRICS_EXPORT)",
+			Computed:            true,
+			Sensitive:           true,
+		},
+		"username": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The username to connect to the remote endpoint (only used when object_type=METRICS_EXPORT)",
+			Computed:            true,
+		},
+		"headers": datasourceSchema.MapAttribute{
+			ElementType:         types.StringType,
+			MarkdownDescription: "HTTP request headers for the remote endpoint (only used when object_type=METRICS_EXPORT)",
+			Computed:            true,
+		},
+		"labels": datasourceSchema.MapAttribute{
+			ElementType:         types.StringType,
+			MarkdownDescription: "Key-value pair metrics labels (only used when object_type=METRICS_EXPORT)",
+			Computed:            true,
+		},
+		// Polymorphic — used by both CONNECTION and METRICS_EXPORT
+		"password": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The password — the connection password when object_type=CONNECTION, the HTTP Basic-auth password when object_type=METRICS_EXPORT",
+			Computed:            true,
+			Sensitive:           true,
+		},
+		// Links
 		"links": datasourceSchema.SetNestedAttribute{
 			MarkdownDescription: "The Deployments linked to the environment object",
 			Computed:            true,
@@ -521,6 +418,7 @@ func EnvironmentObjectDataSourceSchemaAttributes() map[string]datasourceSchema.A
 				Attributes: environmentObjectExcludeLinkDataSourceSchemaAttributes(),
 			},
 		},
+		// Metadata
 		"created_at": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Environment Object creation timestamp",
 			Computed:            true,
@@ -542,88 +440,44 @@ func EnvironmentObjectDataSourceSchemaAttributes() map[string]datasourceSchema.A
 	}
 }
 
-func environmentObjectAirflowVariableResourceSchemaAttributes() map[string]resourceSchema.Attribute {
-	return map[string]resourceSchema.Attribute{
-		"value": resourceSchema.StringAttribute{
-			MarkdownDescription: "The value of the Airflow variable",
-			Optional:            true,
-			Sensitive:           true,
-		},
-		"is_secret": resourceSchema.BoolAttribute{
-			MarkdownDescription: "Whether the value is a secret (immutable on the API; toggling this forces resource replacement)",
-			Optional:            true,
-			Computed:            true,
-			PlanModifiers: []planmodifier.Bool{
-				boolplanmodifier.RequiresReplace(),
-			},
-		},
-	}
-}
-
-func environmentObjectMetricsExportResourceSchemaAttributes() map[string]resourceSchema.Attribute {
-	return map[string]resourceSchema.Attribute{
-		"auth_type": resourceSchema.StringAttribute{
-			MarkdownDescription: "The type of authentication (AUTH_TOKEN, BASIC)",
-			Optional:            true,
-			Computed:            true,
-			Validators: []validator.String{
-				stringvalidator.OneOf(
-					string(platform.CreateEnvironmentObjectMetricsExportRequestAuthTypeAUTHTOKEN),
-					string(platform.CreateEnvironmentObjectMetricsExportRequestAuthTypeBASIC),
-				),
-			},
-		},
-		"endpoint": resourceSchema.StringAttribute{
-			MarkdownDescription: "The Prometheus endpoint where the metrics are exported",
-			Required:            true,
-		},
-		"basic_token": resourceSchema.StringAttribute{
-			MarkdownDescription: "The bearer token to connect to the remote endpoint",
-			Optional:            true,
-			Sensitive:           true,
-		},
-		"exporter_type": resourceSchema.StringAttribute{
-			MarkdownDescription: "The type of exporter (PROMETHEUS)",
-			Required:            true,
-			Validators: []validator.String{
-				stringvalidator.OneOf(
-					string(platform.CreateEnvironmentObjectMetricsExportRequestExporterTypePROMETHEUS),
-				),
-			},
-		},
-		"username": resourceSchema.StringAttribute{
-			MarkdownDescription: "The username to connect to the remote endpoint",
-			Optional:            true,
-		},
-		"password": resourceSchema.StringAttribute{
-			MarkdownDescription: "The password to connect to the remote endpoint",
-			Optional:            true,
-			Sensitive:           true,
-		},
-		"headers": resourceSchema.MapAttribute{
-			ElementType:         types.StringType,
-			MarkdownDescription: "HTTP request headers for the remote endpoint",
-			Optional:            true,
-		},
-		"labels": resourceSchema.MapAttribute{
-			ElementType:         types.StringType,
-			MarkdownDescription: "Key-value pair metrics labels for your export",
-			Optional:            true,
-		},
-	}
-}
-
 func environmentObjectConnectionAuthTypeParameterResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
-		"airflow_param_name": resourceSchema.StringAttribute{Computed: true},
-		"friendly_name":      resourceSchema.StringAttribute{Computed: true},
-		"data_type":          resourceSchema.StringAttribute{Computed: true},
-		"is_required":        resourceSchema.BoolAttribute{Computed: true},
-		"is_secret":          resourceSchema.BoolAttribute{Computed: true},
-		"description":        resourceSchema.StringAttribute{Computed: true},
-		"example":            resourceSchema.StringAttribute{Computed: true},
-		"is_in_extra":        resourceSchema.BoolAttribute{Computed: true},
-		"pattern":            resourceSchema.StringAttribute{Computed: true},
+		"airflow_param_name": resourceSchema.StringAttribute{
+			MarkdownDescription: "The name of the parameter in Airflow",
+			Computed:            true,
+		},
+		"friendly_name": resourceSchema.StringAttribute{
+			MarkdownDescription: "The UI-friendly name for the parameter",
+			Computed:            true,
+		},
+		"data_type": resourceSchema.StringAttribute{
+			MarkdownDescription: "The data type of the parameter",
+			Computed:            true,
+		},
+		"is_required": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether the parameter is required",
+			Computed:            true,
+		},
+		"is_secret": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether the parameter is a secret",
+			Computed:            true,
+		},
+		"description": resourceSchema.StringAttribute{
+			MarkdownDescription: "A description of the parameter",
+			Computed:            true,
+		},
+		"example": resourceSchema.StringAttribute{
+			MarkdownDescription: "An example value for the parameter",
+			Computed:            true,
+		},
+		"is_in_extra": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether the parameter is included in the extra field",
+			Computed:            true,
+		},
+		"pattern": resourceSchema.StringAttribute{
+			MarkdownDescription: "A regex pattern that the parameter value must match",
+			Computed:            true,
+		},
 	}
 }
 
@@ -633,166 +487,117 @@ func environmentObjectConnectionAuthTypeResourceSchemaAttributes() map[string]re
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: environmentObjectConnectionAuthTypeParameterResourceSchemaAttributes(),
 			},
-			Computed: true,
-		},
-		"id":                    resourceSchema.StringAttribute{Computed: true},
-		"name":                  resourceSchema.StringAttribute{Computed: true},
-		"auth_method_name":      resourceSchema.StringAttribute{Computed: true},
-		"airflow_type":          resourceSchema.StringAttribute{Computed: true},
-		"description":           resourceSchema.StringAttribute{Computed: true},
-		"provider_package_name": resourceSchema.StringAttribute{Computed: true},
-		"provider_logo":         resourceSchema.StringAttribute{Computed: true},
-		"guide_path":            resourceSchema.StringAttribute{Computed: true},
-	}
-}
-
-func environmentObjectAirflowConnectionResourceSchemaAttributes() map[string]resourceSchema.Attribute {
-	return map[string]resourceSchema.Attribute{
-		"auth_type_id": resourceSchema.StringAttribute{
-			MarkdownDescription: "The ID for the connection auth type (provided on create/update; not returned by the API)",
-			Optional:            true,
-		},
-		"connection_auth_type": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "The resolved auth type of the connection, populated from auth_type_id",
+			MarkdownDescription: "The parameters for the connection auth type",
 			Computed:            true,
-			PlanModifiers: []planmodifier.Object{
-				objectplanmodifier.UseStateForUnknown(),
-			},
-			Attributes: environmentObjectConnectionAuthTypeResourceSchemaAttributes(),
 		},
-		"type": resourceSchema.StringAttribute{
-			MarkdownDescription: "The type of connection",
-			Required:            true,
+		"id": resourceSchema.StringAttribute{
+			MarkdownDescription: "The ID of the connection auth type",
+			Computed:            true,
 		},
-		"host": resourceSchema.StringAttribute{
-			MarkdownDescription: "The host address for the connection",
-			Optional:            true,
+		"name": resourceSchema.StringAttribute{
+			MarkdownDescription: "The name of the connection auth type",
+			Computed:            true,
 		},
-		"port": resourceSchema.Int64Attribute{
-			MarkdownDescription: "The port for the connection",
-			Optional:            true,
+		"auth_method_name": resourceSchema.StringAttribute{
+			MarkdownDescription: "The name of the auth method used in the connection",
+			Computed:            true,
 		},
-		"schema": resourceSchema.StringAttribute{
-			MarkdownDescription: "The schema for the connection",
-			Optional:            true,
+		"airflow_type": resourceSchema.StringAttribute{
+			MarkdownDescription: "The type of connection in Airflow",
+			Computed:            true,
 		},
-		"login": resourceSchema.StringAttribute{
-			MarkdownDescription: "The username used for the connection",
-			Optional:            true,
+		"description": resourceSchema.StringAttribute{
+			MarkdownDescription: "A description of the connection auth type",
+			Computed:            true,
 		},
-		"password": resourceSchema.StringAttribute{
-			MarkdownDescription: "The password used for the connection",
-			Optional:            true,
-			Sensitive:           true,
+		"provider_package_name": resourceSchema.StringAttribute{
+			MarkdownDescription: "The name of the provider package",
+			Computed:            true,
 		},
-		"extra": resourceSchema.StringAttribute{
-			MarkdownDescription: "Extra connection details as JSON string",
-			Optional:            true,
+		"provider_logo": resourceSchema.StringAttribute{
+			MarkdownDescription: "The URL of the provider logo",
+			Computed:            true,
+		},
+		"guide_path": resourceSchema.StringAttribute{
+			MarkdownDescription: "The URL to the guide for the connection auth type",
+			Computed:            true,
 		},
 	}
 }
 
-func environmentObjectAirflowVariableOverridesResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+// environmentObjectOverridesResourceSchemaAttributes is the flat per-link
+// `overrides` block. All fields Optional; ValidateConfig enforces which apply
+// based on parent object_type.
+func environmentObjectOverridesResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
+		// AIRFLOW_VARIABLE
 		"value": resourceSchema.StringAttribute{
-			MarkdownDescription: "The value of the Airflow variable",
+			MarkdownDescription: "Override value (only valid when object_type=AIRFLOW_VARIABLE)",
 			Optional:            true,
 			Sensitive:           true,
 		},
-	}
-}
-
-func environmentObjectAirflowConnectionOverridesResourceSchemaAttributes() map[string]resourceSchema.Attribute {
-	return map[string]resourceSchema.Attribute{
+		// CONNECTION
 		"type": resourceSchema.StringAttribute{
-			MarkdownDescription: "The type of connection",
+			MarkdownDescription: "Override connection type (only valid when object_type=CONNECTION)",
 			Optional:            true,
 		},
 		"host": resourceSchema.StringAttribute{
-			MarkdownDescription: "The host address",
+			MarkdownDescription: "Override host address (only valid when object_type=CONNECTION)",
 			Optional:            true,
 		},
 		"port": resourceSchema.Int64Attribute{
-			MarkdownDescription: "The port",
+			MarkdownDescription: "Override port (only valid when object_type=CONNECTION)",
 			Optional:            true,
 		},
 		"schema": resourceSchema.StringAttribute{
-			MarkdownDescription: "The schema",
+			MarkdownDescription: "Override schema (only valid when object_type=CONNECTION)",
 			Optional:            true,
 		},
 		"login": resourceSchema.StringAttribute{
-			MarkdownDescription: "The username",
+			MarkdownDescription: "Override login (only valid when object_type=CONNECTION)",
 			Optional:            true,
-		},
-		"password": resourceSchema.StringAttribute{
-			MarkdownDescription: "The password",
-			Optional:            true,
-			Sensitive:           true,
 		},
 		"extra": resourceSchema.StringAttribute{
-			MarkdownDescription: "Extra connection details as JSON string",
+			MarkdownDescription: "Override extra JSON (only valid when object_type=CONNECTION)",
 			Optional:            true,
 		},
-	}
-}
-
-func environmentObjectMetricsExportOverridesResourceSchemaAttributes() map[string]resourceSchema.Attribute {
-	return map[string]resourceSchema.Attribute{
+		// METRICS_EXPORT
 		"auth_type": resourceSchema.StringAttribute{
-			MarkdownDescription: "The type of authentication",
+			MarkdownDescription: "Override auth type (only valid when object_type=METRICS_EXPORT)",
 			Optional:            true,
 		},
 		"endpoint": resourceSchema.StringAttribute{
-			MarkdownDescription: "The Prometheus endpoint",
+			MarkdownDescription: "Override Prometheus endpoint (only valid when object_type=METRICS_EXPORT)",
 			Optional:            true,
 		},
 		"basic_token": resourceSchema.StringAttribute{
-			MarkdownDescription: "The bearer token",
+			MarkdownDescription: "Override bearer token (only valid when object_type=METRICS_EXPORT)",
 			Optional:            true,
 			Sensitive:           true,
 		},
 		"exporter_type": resourceSchema.StringAttribute{
-			MarkdownDescription: "The type of exporter",
+			MarkdownDescription: "Override exporter type (only valid when object_type=METRICS_EXPORT)",
 			Optional:            true,
 		},
 		"username": resourceSchema.StringAttribute{
-			MarkdownDescription: "The username",
+			MarkdownDescription: "Override username (only valid when object_type=METRICS_EXPORT)",
 			Optional:            true,
-		},
-		"password": resourceSchema.StringAttribute{
-			MarkdownDescription: "The password",
-			Optional:            true,
-			Sensitive:           true,
 		},
 		"headers": resourceSchema.MapAttribute{
 			ElementType:         types.StringType,
-			MarkdownDescription: "HTTP request headers",
+			MarkdownDescription: "Override HTTP request headers (only valid when object_type=METRICS_EXPORT)",
 			Optional:            true,
 		},
 		"labels": resourceSchema.MapAttribute{
 			ElementType:         types.StringType,
-			MarkdownDescription: "Metrics labels",
+			MarkdownDescription: "Override metrics labels (only valid when object_type=METRICS_EXPORT)",
 			Optional:            true,
 		},
-	}
-}
-
-func environmentObjectOverridesResourceSchemaAttributes() map[string]resourceSchema.Attribute {
-	return map[string]resourceSchema.Attribute{
-		"airflow_variable": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Airflow variable overrides for this link (only valid when object_type=AIRFLOW_VARIABLE)",
+		// Polymorphic
+		"password": resourceSchema.StringAttribute{
+			MarkdownDescription: "Override password — the connection password when object_type=CONNECTION, the HTTP Basic-auth password when object_type=METRICS_EXPORT",
 			Optional:            true,
-			Attributes:          environmentObjectAirflowVariableOverridesResourceSchemaAttributes(),
-		},
-		"airflow_connection": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Airflow connection overrides for this link (only valid when object_type=CONNECTION)",
-			Optional:            true,
-			Attributes:          environmentObjectAirflowConnectionOverridesResourceSchemaAttributes(),
-		},
-		"metrics_export": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Metrics export overrides for this link (only valid when object_type=METRICS_EXPORT)",
-			Optional:            true,
-			Attributes:          environmentObjectMetricsExportOverridesResourceSchemaAttributes(),
+			Sensitive:           true,
 		},
 	}
 }
@@ -829,15 +634,20 @@ func environmentObjectLinkResourceSchemaAttributes() map[string]resourceSchema.A
 			Validators:          []validator.String{validators.IsCuid()},
 		},
 		"overrides": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Per-link overrides. Set only the sub-block matching the parent object_type.",
+			MarkdownDescription: "Per-link overrides. Set only the fields matching the parent object_type.",
 			Optional:            true,
 			Attributes:          environmentObjectOverridesResourceSchemaAttributes(),
 		},
 	}
 }
 
+// EnvironmentObjectResourceSchemaAttributes is the flat top-level schema.
+// Type-specific fields sit directly on the resource and are gated by ValidateConfig
+// against the `object_type` discriminator — same flat-polymorphic shape as
+// `astro_notification_channel.definition` writ large.
 func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
+		// Identity / common
 		"id": resourceSchema.StringAttribute{
 			MarkdownDescription: "Environment object identifier",
 			Computed:            true,
@@ -853,7 +663,7 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 			},
 		},
 		"object_type": resourceSchema.StringAttribute{
-			MarkdownDescription: "The type of environment object (AIRFLOW_VARIABLE, CONNECTION, METRICS_EXPORT)",
+			MarkdownDescription: "The type of environment object (AIRFLOW_VARIABLE, CONNECTION, METRICS_EXPORT). Determines which type-specific fields are required.",
 			Required:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
@@ -905,25 +715,135 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 			MarkdownDescription: "Whether to automatically link Deployments to the environment object. Only applicable for WORKSPACE scope",
 			Optional:            true,
 			Computed:            true,
+			// The model normalizes API nil → false (the API treats false as
+			// the absence value). Without UseStateForUnknown, an omitted
+			// auto_link_deployments would refresh as unknown each plan and
+			// re-introduce the same drift after the first apply.
+			PlanModifiers: []planmodifier.Bool{
+				boolplanmodifier.UseStateForUnknown(),
+			},
 		},
-		"airflow_variable": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "The Airflow variable definition. Required when object_type is AIRFLOW_VARIABLE",
+		// AIRFLOW_VARIABLE fields (only valid when object_type=AIRFLOW_VARIABLE)
+		"value": resourceSchema.StringAttribute{
+			MarkdownDescription: "The value of the Airflow variable (only valid when object_type=AIRFLOW_VARIABLE)",
+			Optional:            true,
+			Sensitive:           true,
+		},
+		"is_secret": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether the value is a secret (only valid when object_type=AIRFLOW_VARIABLE). Immutable on the API; toggling forces resource replacement.",
 			Optional:            true,
 			Computed:            true,
-			Attributes:          environmentObjectAirflowVariableResourceSchemaAttributes(),
+			// No Default — is_secret is type-specific. The API returns null
+			// for CONNECTION / METRICS_EXPORT, so a blanket false default
+			// would cause "inconsistent result after apply" drift.
+			PlanModifiers: []planmodifier.Bool{
+				boolplanmodifier.RequiresReplace(),
+			},
 		},
-		"airflow_connection": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "The Airflow connection definition. Required when object_type is CONNECTION",
+		// CONNECTION fields (only valid when object_type=CONNECTION)
+		"type": resourceSchema.StringAttribute{
+			MarkdownDescription: "The connection type (required when object_type=CONNECTION). Immutable on the API; changing it forces resource replacement.",
 			Optional:            true,
 			Computed:            true,
-			Attributes:          environmentObjectAirflowConnectionResourceSchemaAttributes(),
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+			},
 		},
-		"metrics_export": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "The metrics export definition. Required when object_type is METRICS_EXPORT",
+		"host": resourceSchema.StringAttribute{
+			MarkdownDescription: "The host address for the connection (only valid when object_type=CONNECTION)",
 			Optional:            true,
 			Computed:            true,
-			Attributes:          environmentObjectMetricsExportResourceSchemaAttributes(),
 		},
+		"port": resourceSchema.Int64Attribute{
+			MarkdownDescription: "The port for the connection (only valid when object_type=CONNECTION)",
+			Optional:            true,
+			Computed:            true,
+		},
+		"schema": resourceSchema.StringAttribute{
+			MarkdownDescription: "The schema for the connection (only valid when object_type=CONNECTION)",
+			Optional:            true,
+			Computed:            true,
+		},
+		"login": resourceSchema.StringAttribute{
+			MarkdownDescription: "The username used for the connection (only valid when object_type=CONNECTION)",
+			Optional:            true,
+			Computed:            true,
+		},
+		"extra": resourceSchema.StringAttribute{
+			MarkdownDescription: "Extra connection details as JSON string (only valid when object_type=CONNECTION). Use jsonencode({...})",
+			Optional:            true,
+			Computed:            true,
+		},
+		"auth_type_id": resourceSchema.StringAttribute{
+			MarkdownDescription: "The ID for the connection auth type (only valid when object_type=CONNECTION). Provided on create/update; not returned by the API",
+			Optional:            true,
+		},
+		"connection_auth_type": resourceSchema.SingleNestedAttribute{
+			MarkdownDescription: "The resolved auth type of the connection, populated from auth_type_id (only set when object_type=CONNECTION)",
+			Computed:            true,
+			// No UseStateForUnknown: the API recomputes this object whenever
+			// auth_type_id changes, but the framework doesn't know about that
+			// cross-field dependency. Pinning to prior state would produce
+			// "Provider produced inconsistent result after apply" on any
+			// auth_type_id change. Leave it (known after apply) instead.
+			Attributes: environmentObjectConnectionAuthTypeResourceSchemaAttributes(),
+		},
+		// METRICS_EXPORT fields (only valid when object_type=METRICS_EXPORT)
+		"endpoint": resourceSchema.StringAttribute{
+			MarkdownDescription: "The Prometheus endpoint where the metrics are exported (required when object_type=METRICS_EXPORT)",
+			Optional:            true,
+			Computed:            true,
+		},
+		"exporter_type": resourceSchema.StringAttribute{
+			MarkdownDescription: "The type of exporter (required when object_type=METRICS_EXPORT)",
+			Optional:            true,
+			Computed:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(platform.CreateEnvironmentObjectMetricsExportRequestExporterTypePROMETHEUS),
+				),
+			},
+		},
+		"auth_type": resourceSchema.StringAttribute{
+			MarkdownDescription: "The type of authentication (only valid when object_type=METRICS_EXPORT). Values: AUTH_TOKEN, BASIC",
+			Optional:            true,
+			Computed:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(platform.CreateEnvironmentObjectMetricsExportRequestAuthTypeAUTHTOKEN),
+					string(platform.CreateEnvironmentObjectMetricsExportRequestAuthTypeBASIC),
+				),
+			},
+		},
+		"basic_token": resourceSchema.StringAttribute{
+			MarkdownDescription: "The bearer token to connect to the remote endpoint (only valid when object_type=METRICS_EXPORT)",
+			Optional:            true,
+			Sensitive:           true,
+		},
+		"username": resourceSchema.StringAttribute{
+			MarkdownDescription: "The username to connect to the remote endpoint (only valid when object_type=METRICS_EXPORT)",
+			Optional:            true,
+			Computed:            true,
+		},
+		"headers": resourceSchema.MapAttribute{
+			ElementType:         types.StringType,
+			MarkdownDescription: "HTTP request headers for the remote endpoint (only valid when object_type=METRICS_EXPORT)",
+			Optional:            true,
+			Computed:            true,
+		},
+		"labels": resourceSchema.MapAttribute{
+			ElementType:         types.StringType,
+			MarkdownDescription: "Key-value pair metrics labels for your export (only valid when object_type=METRICS_EXPORT)",
+			Optional:            true,
+			Computed:            true,
+		},
+		// Polymorphic — applies to both CONNECTION and METRICS_EXPORT
+		"password": resourceSchema.StringAttribute{
+			MarkdownDescription: "The password — the connection password when object_type=CONNECTION, the HTTP Basic-auth password when object_type=METRICS_EXPORT",
+			Optional:            true,
+			Sensitive:           true,
+		},
+		// Links
 		"links": resourceSchema.SetNestedAttribute{
 			MarkdownDescription: "The Deployments linked to the environment object. Only applicable for WORKSPACE scope",
 			Optional:            true,
@@ -940,6 +860,7 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 				Attributes: environmentObjectExcludeLinkResourceSchemaAttributes(),
 			},
 		},
+		// Metadata
 		"created_at": resourceSchema.StringAttribute{
 			MarkdownDescription: "Environment Object creation timestamp",
 			Computed:            true,

@@ -10,7 +10,234 @@ description: |-
 
 Environment Object resource. Manages Airflow connections, variables, and metrics exports scoped to a Workspace or Deployment.
 
+## Example Usage
 
+```terraform
+# AIRFLOW_VARIABLE — workspace-scoped, non-secret
+resource "astro_environment_object" "var_workspace_plain" {
+  object_key      = "etl_default_region"
+  object_type     = "AIRFLOW_VARIABLE"
+  scope           = "WORKSPACE"
+  scope_entity_id = "clx42sxw501gl01o0gjenthnh"
+
+  value     = "us-east-1"
+  is_secret = false
+}
+
+# AIRFLOW_VARIABLE — workspace-scoped, secret. Toggling `is_secret` forces replacement.
+resource "astro_environment_object" "var_workspace_secret" {
+  object_key      = "external_api_key"
+  object_type     = "AIRFLOW_VARIABLE"
+  scope           = "WORKSPACE"
+  scope_entity_id = "clx42sxw501gl01o0gjenthnh"
+
+  value     = "sk-abc123-replace-me"
+  is_secret = true
+}
+
+# AIRFLOW_VARIABLE — auto-linked to every Deployment in the workspace
+resource "astro_environment_object" "var_workspace_autolinked" {
+  object_key            = "feature_flag_v2_pipeline"
+  object_type           = "AIRFLOW_VARIABLE"
+  scope                 = "WORKSPACE"
+  scope_entity_id       = "clx42sxw501gl01o0gjenthnh"
+  auto_link_deployments = true
+
+  value     = "enabled"
+  is_secret = false
+}
+
+# AIRFLOW_VARIABLE — workspace-scoped with a per-Deployment override
+resource "astro_environment_object" "var_workspace_with_override" {
+  object_key      = "warehouse_database"
+  object_type     = "AIRFLOW_VARIABLE"
+  scope           = "WORKSPACE"
+  scope_entity_id = "clx42sxw501gl01o0gjenthnh"
+
+  value     = "analytics_prod"
+  is_secret = false
+
+  links = [
+    {
+      scope           = "DEPLOYMENT"
+      scope_entity_id = "clx44jyu001m201m5dzsbexqr"
+      overrides = {
+        value = "analytics_staging"
+      }
+    },
+  ]
+}
+
+# AIRFLOW_VARIABLE — deployment-scoped (no links/auto_link_deployments allowed)
+resource "astro_environment_object" "var_deployment_only" {
+  object_key      = "deployment_local_flag"
+  object_type     = "AIRFLOW_VARIABLE"
+  scope           = "DEPLOYMENT"
+  scope_entity_id = "clx44jyu001m201m5dzsbexqr"
+
+  value     = "true"
+  is_secret = false
+}
+
+# CONNECTION — Postgres with extra JSON (preserved byte-for-byte across refresh)
+resource "astro_environment_object" "conn_workspace_postgres" {
+  object_key      = "warehouse_postgres"
+  object_type     = "CONNECTION"
+  scope           = "WORKSPACE"
+  scope_entity_id = "clx42sxw501gl01o0gjenthnh"
+
+  type     = "postgres"
+  host     = "warehouse.example.com"
+  port     = 5432
+  login    = "airflow"
+  password = "REPLACE_ME"
+  schema   = "analytics"
+  extra    = jsonencode({ sslmode = "require", timeout = 30 })
+}
+
+# CONNECTION — Snowflake with a typed auth provider (auth_type_id)
+resource "astro_environment_object" "conn_workspace_snowflake" {
+  object_key      = "snowflake_warehouse"
+  object_type     = "CONNECTION"
+  scope           = "WORKSPACE"
+  scope_entity_id = "clx42sxw501gl01o0gjenthnh"
+
+  type         = "snowflake"
+  auth_type_id = "snowflake-password"
+  host         = "abc12345.us-east-1.snowflakecomputing.com"
+  login        = "AIRFLOW_USER"
+  password     = "REPLACE_ME"
+  schema       = "ANALYTICS"
+  extra        = jsonencode({ account = "abc12345", warehouse = "AIRFLOW_WH", role = "AIRFLOW_ROLE" })
+}
+
+# CONNECTION — minimal HTTP (only `type` is required)
+resource "astro_environment_object" "conn_workspace_http" {
+  object_key      = "internal_metrics_api"
+  object_type     = "CONNECTION"
+  scope           = "WORKSPACE"
+  scope_entity_id = "clx42sxw501gl01o0gjenthnh"
+
+  type = "http"
+  host = "https://metrics.internal.example.com"
+}
+
+# CONNECTION — workspace-scoped with a per-Deployment override and an exclusion
+resource "astro_environment_object" "conn_workspace_with_overrides" {
+  object_key      = "warehouse_with_per_env_overrides"
+  object_type     = "CONNECTION"
+  scope           = "WORKSPACE"
+  scope_entity_id = "clx42sxw501gl01o0gjenthnh"
+
+  type     = "postgres"
+  host     = "warehouse.example.com"
+  port     = 5432
+  login    = "airflow"
+  password = "REPLACE_ME"
+  schema   = "analytics"
+
+  links = [
+    {
+      scope           = "DEPLOYMENT"
+      scope_entity_id = "clx44jyu001m201m5dzsbexqr"
+      overrides = {
+        host   = "warehouse-staging.example.com"
+        schema = "analytics_staging"
+        extra  = jsonencode({ sslmode = "prefer" })
+      }
+    },
+  ]
+
+  exclude_links = [
+    { scope = "DEPLOYMENT", scope_entity_id = "clx44sandbox001m5dzsbexqr" },
+  ]
+}
+
+# CONNECTION — deployment-scoped
+resource "astro_environment_object" "conn_deployment_postgres" {
+  object_key      = "dev_postgres"
+  object_type     = "CONNECTION"
+  scope           = "DEPLOYMENT"
+  scope_entity_id = "clx44jyu001m201m5dzsbexqr"
+
+  type     = "postgres"
+  host     = "dev-warehouse.example.com"
+  port     = 5432
+  login    = "dev"
+  password = "REPLACE_ME"
+  schema   = "dev_analytics"
+}
+
+# METRICS_EXPORT — Prometheus with bearer-token auth, custom headers and labels
+resource "astro_environment_object" "metrics_workspace_bearer" {
+  object_key      = "prometheus_remote_write"
+  object_type     = "METRICS_EXPORT"
+  scope           = "WORKSPACE"
+  scope_entity_id = "clx42sxw501gl01o0gjenthnh"
+
+  endpoint      = "https://prometheus.example.com/api/v1/write"
+  exporter_type = "PROMETHEUS"
+  auth_type     = "AUTH_TOKEN"
+  basic_token   = "REPLACE_ME"
+  labels        = { environment = "prod", team = "data" }
+  headers       = { "X-Scope-OrgID" = "astro-tenant-1" }
+}
+
+# METRICS_EXPORT — Prometheus with basic auth (note: `password` is the HTTP Basic-auth password here)
+resource "astro_environment_object" "metrics_workspace_basic_auth" {
+  object_key      = "prometheus_remote_write_basic"
+  object_type     = "METRICS_EXPORT"
+  scope           = "WORKSPACE"
+  scope_entity_id = "clx42sxw501gl01o0gjenthnh"
+
+  endpoint      = "https://prometheus.example.com/api/v1/write"
+  exporter_type = "PROMETHEUS"
+  auth_type     = "BASIC"
+  username      = "metrics"
+  password      = "REPLACE_ME"
+}
+
+# METRICS_EXPORT — workspace-scoped with a per-Deployment override
+resource "astro_environment_object" "metrics_workspace_with_override" {
+  object_key      = "prometheus_per_env"
+  object_type     = "METRICS_EXPORT"
+  scope           = "WORKSPACE"
+  scope_entity_id = "clx42sxw501gl01o0gjenthnh"
+
+  endpoint      = "https://prometheus.example.com/api/v1/write"
+  exporter_type = "PROMETHEUS"
+  auth_type     = "AUTH_TOKEN"
+  basic_token   = "REPLACE_ME"
+
+  links = [
+    {
+      scope           = "DEPLOYMENT"
+      scope_entity_id = "clx44jyu001m201m5dzsbexqr"
+      overrides = {
+        endpoint = "https://prometheus-staging.example.com/api/v1/write"
+        labels   = { environment = "staging" }
+      }
+    },
+  ]
+}
+
+# METRICS_EXPORT — deployment-scoped
+resource "astro_environment_object" "metrics_deployment_only" {
+  object_key      = "prometheus_dev"
+  object_type     = "METRICS_EXPORT"
+  scope           = "DEPLOYMENT"
+  scope_entity_id = "clx44jyu001m201m5dzsbexqr"
+
+  endpoint      = "https://prometheus-dev.example.com/api/v1/write"
+  exporter_type = "PROMETHEUS"
+}
+
+# Import an existing environment object
+import {
+  id = "cm4ntm56001gk01mbhudv1elv"
+  to = astro_environment_object.conn_workspace_postgres
+}
+```
 
 <!-- schema generated by tfplugindocs -->
 ## Schema
@@ -18,21 +245,36 @@ Environment Object resource. Manages Airflow connections, variables, and metrics
 ### Required
 
 - `object_key` (String) The key for the environment object
-- `object_type` (String) The type of environment object (AIRFLOW_VARIABLE, CONNECTION, METRICS_EXPORT)
+- `object_type` (String) The type of environment object (AIRFLOW_VARIABLE, CONNECTION, METRICS_EXPORT). Determines which type-specific fields are required.
 - `scope` (String) The scope of the environment object (WORKSPACE, DEPLOYMENT)
 - `scope_entity_id` (String) The ID of the scope entity where the environment object is created
 
 ### Optional
 
-- `airflow_connection` (Attributes) The Airflow connection definition. Required when object_type is CONNECTION (see [below for nested schema](#nestedatt--airflow_connection))
-- `airflow_variable` (Attributes) The Airflow variable definition. Required when object_type is AIRFLOW_VARIABLE (see [below for nested schema](#nestedatt--airflow_variable))
+- `auth_type` (String) The type of authentication (only valid when object_type=METRICS_EXPORT). Values: AUTH_TOKEN, BASIC
+- `auth_type_id` (String) The ID for the connection auth type (only valid when object_type=CONNECTION). Provided on create/update; not returned by the API
 - `auto_link_deployments` (Boolean) Whether to automatically link Deployments to the environment object. Only applicable for WORKSPACE scope
+- `basic_token` (String, Sensitive) The bearer token to connect to the remote endpoint (only valid when object_type=METRICS_EXPORT)
+- `endpoint` (String) The Prometheus endpoint where the metrics are exported (required when object_type=METRICS_EXPORT)
 - `exclude_links` (Attributes Set) The excluded links for the environment object. Only applicable for WORKSPACE scope (see [below for nested schema](#nestedatt--exclude_links))
+- `exporter_type` (String) The type of exporter (required when object_type=METRICS_EXPORT)
+- `extra` (String) Extra connection details as JSON string (only valid when object_type=CONNECTION). Use jsonencode({...})
+- `headers` (Map of String) HTTP request headers for the remote endpoint (only valid when object_type=METRICS_EXPORT)
+- `host` (String) The host address for the connection (only valid when object_type=CONNECTION)
+- `is_secret` (Boolean) Whether the value is a secret (only valid when object_type=AIRFLOW_VARIABLE). Immutable on the API; toggling forces resource replacement.
+- `labels` (Map of String) Key-value pair metrics labels for your export (only valid when object_type=METRICS_EXPORT)
 - `links` (Attributes Set) The Deployments linked to the environment object. Only applicable for WORKSPACE scope (see [below for nested schema](#nestedatt--links))
-- `metrics_export` (Attributes) The metrics export definition. Required when object_type is METRICS_EXPORT (see [below for nested schema](#nestedatt--metrics_export))
+- `login` (String) The username used for the connection (only valid when object_type=CONNECTION)
+- `password` (String, Sensitive) The password — the connection password when object_type=CONNECTION, the HTTP Basic-auth password when object_type=METRICS_EXPORT
+- `port` (Number) The port for the connection (only valid when object_type=CONNECTION)
+- `schema` (String) The schema for the connection (only valid when object_type=CONNECTION)
+- `type` (String) The connection type (required when object_type=CONNECTION). Immutable on the API; changing it forces resource replacement.
+- `username` (String) The username to connect to the remote endpoint (only valid when object_type=METRICS_EXPORT)
+- `value` (String, Sensitive) The value of the Airflow variable (only valid when object_type=AIRFLOW_VARIABLE)
 
 ### Read-Only
 
+- `connection_auth_type` (Attributes) The resolved auth type of the connection, populated from auth_type_id (only set when object_type=CONNECTION) (see [below for nested schema](#nestedatt--connection_auth_type))
 - `created_at` (String) Environment Object creation timestamp
 - `created_by` (Attributes) Environment Object creator (see [below for nested schema](#nestedatt--created_by))
 - `id` (String) Environment object identifier
@@ -40,69 +282,6 @@ Environment Object resource. Manages Airflow connections, variables, and metrics
 - `source_scope_entity_id` (String) The source scope entity ID, if resolved from a link
 - `updated_at` (String) Environment Object last updated timestamp
 - `updated_by` (Attributes) Environment Object updater (see [below for nested schema](#nestedatt--updated_by))
-
-<a id="nestedatt--airflow_connection"></a>
-### Nested Schema for `airflow_connection`
-
-Required:
-
-- `type` (String) The type of connection
-
-Optional:
-
-- `auth_type_id` (String) The ID for the connection auth type (provided on create/update; not returned by the API)
-- `extra` (String) Extra connection details as JSON string
-- `host` (String) The host address for the connection
-- `login` (String) The username used for the connection
-- `password` (String, Sensitive) The password used for the connection
-- `port` (Number) The port for the connection
-- `schema` (String) The schema for the connection
-
-Read-Only:
-
-- `connection_auth_type` (Attributes) The resolved auth type of the connection, populated from auth_type_id (see [below for nested schema](#nestedatt--airflow_connection--connection_auth_type))
-
-<a id="nestedatt--airflow_connection--connection_auth_type"></a>
-### Nested Schema for `airflow_connection.connection_auth_type`
-
-Read-Only:
-
-- `airflow_type` (String)
-- `auth_method_name` (String)
-- `description` (String)
-- `guide_path` (String)
-- `id` (String)
-- `name` (String)
-- `parameters` (Attributes List) (see [below for nested schema](#nestedatt--airflow_connection--connection_auth_type--parameters))
-- `provider_logo` (String)
-- `provider_package_name` (String)
-
-<a id="nestedatt--airflow_connection--connection_auth_type--parameters"></a>
-### Nested Schema for `airflow_connection.connection_auth_type.parameters`
-
-Read-Only:
-
-- `airflow_param_name` (String)
-- `data_type` (String)
-- `description` (String)
-- `example` (String)
-- `friendly_name` (String)
-- `is_in_extra` (Boolean)
-- `is_required` (Boolean)
-- `is_secret` (Boolean)
-- `pattern` (String)
-
-
-
-
-<a id="nestedatt--airflow_variable"></a>
-### Nested Schema for `airflow_variable`
-
-Optional:
-
-- `is_secret` (Boolean) Whether the value is a secret (immutable on the API; toggling this forces resource replacement)
-- `value` (String, Sensitive) The value of the Airflow variable
-
 
 <a id="nestedatt--exclude_links"></a>
 ### Nested Schema for `exclude_links`
@@ -123,72 +302,61 @@ Required:
 
 Optional:
 
-- `overrides` (Attributes) Per-link overrides. Set only the sub-block matching the parent object_type. (see [below for nested schema](#nestedatt--links--overrides))
+- `overrides` (Attributes) Per-link overrides. Set only the fields matching the parent object_type. (see [below for nested schema](#nestedatt--links--overrides))
 
 <a id="nestedatt--links--overrides"></a>
 ### Nested Schema for `links.overrides`
 
 Optional:
 
-- `airflow_connection` (Attributes) Airflow connection overrides for this link (only valid when object_type=CONNECTION) (see [below for nested schema](#nestedatt--links--overrides--airflow_connection))
-- `airflow_variable` (Attributes) Airflow variable overrides for this link (only valid when object_type=AIRFLOW_VARIABLE) (see [below for nested schema](#nestedatt--links--overrides--airflow_variable))
-- `metrics_export` (Attributes) Metrics export overrides for this link (only valid when object_type=METRICS_EXPORT) (see [below for nested schema](#nestedatt--links--overrides--metrics_export))
-
-<a id="nestedatt--links--overrides--airflow_connection"></a>
-### Nested Schema for `links.overrides.airflow_connection`
-
-Optional:
-
-- `extra` (String) Extra connection details as JSON string
-- `host` (String) The host address
-- `login` (String) The username
-- `password` (String, Sensitive) The password
-- `port` (Number) The port
-- `schema` (String) The schema
-- `type` (String) The type of connection
-
-
-<a id="nestedatt--links--overrides--airflow_variable"></a>
-### Nested Schema for `links.overrides.airflow_variable`
-
-Optional:
-
-- `value` (String, Sensitive) The value of the Airflow variable
-
-
-<a id="nestedatt--links--overrides--metrics_export"></a>
-### Nested Schema for `links.overrides.metrics_export`
-
-Optional:
-
-- `auth_type` (String) The type of authentication
-- `basic_token` (String, Sensitive) The bearer token
-- `endpoint` (String) The Prometheus endpoint
-- `exporter_type` (String) The type of exporter
-- `headers` (Map of String) HTTP request headers
-- `labels` (Map of String) Metrics labels
-- `password` (String, Sensitive) The password
-- `username` (String) The username
+- `auth_type` (String) Override auth type (only valid when object_type=METRICS_EXPORT)
+- `basic_token` (String, Sensitive) Override bearer token (only valid when object_type=METRICS_EXPORT)
+- `endpoint` (String) Override Prometheus endpoint (only valid when object_type=METRICS_EXPORT)
+- `exporter_type` (String) Override exporter type (only valid when object_type=METRICS_EXPORT)
+- `extra` (String) Override extra JSON (only valid when object_type=CONNECTION)
+- `headers` (Map of String) Override HTTP request headers (only valid when object_type=METRICS_EXPORT)
+- `host` (String) Override host address (only valid when object_type=CONNECTION)
+- `labels` (Map of String) Override metrics labels (only valid when object_type=METRICS_EXPORT)
+- `login` (String) Override login (only valid when object_type=CONNECTION)
+- `password` (String, Sensitive) Override password — the connection password when object_type=CONNECTION, the HTTP Basic-auth password when object_type=METRICS_EXPORT
+- `port` (Number) Override port (only valid when object_type=CONNECTION)
+- `schema` (String) Override schema (only valid when object_type=CONNECTION)
+- `type` (String) Override connection type (only valid when object_type=CONNECTION)
+- `username` (String) Override username (only valid when object_type=METRICS_EXPORT)
+- `value` (String, Sensitive) Override value (only valid when object_type=AIRFLOW_VARIABLE)
 
 
 
+<a id="nestedatt--connection_auth_type"></a>
+### Nested Schema for `connection_auth_type`
 
-<a id="nestedatt--metrics_export"></a>
-### Nested Schema for `metrics_export`
+Read-Only:
 
-Required:
+- `airflow_type` (String) The type of connection in Airflow
+- `auth_method_name` (String) The name of the auth method used in the connection
+- `description` (String) A description of the connection auth type
+- `guide_path` (String) The URL to the guide for the connection auth type
+- `id` (String) The ID of the connection auth type
+- `name` (String) The name of the connection auth type
+- `parameters` (Attributes List) The parameters for the connection auth type (see [below for nested schema](#nestedatt--connection_auth_type--parameters))
+- `provider_logo` (String) The URL of the provider logo
+- `provider_package_name` (String) The name of the provider package
 
-- `endpoint` (String) The Prometheus endpoint where the metrics are exported
-- `exporter_type` (String) The type of exporter (PROMETHEUS)
+<a id="nestedatt--connection_auth_type--parameters"></a>
+### Nested Schema for `connection_auth_type.parameters`
 
-Optional:
+Read-Only:
 
-- `auth_type` (String) The type of authentication (AUTH_TOKEN, BASIC)
-- `basic_token` (String, Sensitive) The bearer token to connect to the remote endpoint
-- `headers` (Map of String) HTTP request headers for the remote endpoint
-- `labels` (Map of String) Key-value pair metrics labels for your export
-- `password` (String, Sensitive) The password to connect to the remote endpoint
-- `username` (String) The username to connect to the remote endpoint
+- `airflow_param_name` (String) The name of the parameter in Airflow
+- `data_type` (String) The data type of the parameter
+- `description` (String) A description of the parameter
+- `example` (String) An example value for the parameter
+- `friendly_name` (String) The UI-friendly name for the parameter
+- `is_in_extra` (Boolean) Whether the parameter is included in the extra field
+- `is_required` (Boolean) Whether the parameter is required
+- `is_secret` (Boolean) Whether the parameter is a secret
+- `pattern` (String) A regex pattern that the parameter value must match
+
 
 
 <a id="nestedatt--created_by"></a>
