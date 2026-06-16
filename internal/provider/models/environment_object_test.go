@@ -222,8 +222,8 @@ func TestUnit_EnvironmentObject_ReadFromResponse_LinkOverridesPreserve(t *testin
 		_ = exporter
 		obj := newMetricsExportAPIResponse(nil, nil, nil)
 		obj.Links = &[]platform.EnvironmentObjectLink{{
-			Scope:                  deploymentScope,
-			ScopeEntityId:          depId,
+			Scope:         deploymentScope,
+			ScopeEntityId: depId,
 			MetricsExportOverrides: &platform.EnvironmentObjectMetricsExportOverrides{
 				Endpoint: lo.ToPtr("https://override.example.com/api/v1/write"),
 				// API does NOT echo auth_type, basic_token, password
@@ -249,8 +249,8 @@ func TestUnit_EnvironmentObject_ReadFromResponse_LinkOverridesPreserve(t *testin
 	t.Run("connection link override: extra preserve keeps byte-exact JSON", func(t *testing.T) {
 		obj := newConnectionAPIResponse(connectionAPI{})
 		obj.Links = &[]platform.EnvironmentObjectLink{{
-			Scope:               deploymentScope,
-			ScopeEntityId:       depId,
+			Scope:         deploymentScope,
+			ScopeEntityId: depId,
 			ConnectionOverrides: &platform.EnvironmentObjectConnectionOverrides{
 				Host: lo.ToPtr("override.example.com"),
 			},
