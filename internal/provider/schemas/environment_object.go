@@ -736,8 +736,14 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 			// No Default — is_secret is type-specific. The API returns null
 			// for CONNECTION / METRICS_EXPORT, so a blanket false default
 			// would cause "inconsistent result after apply" drift.
+			// RequiresReplaceIfConfigured (not RequiresReplace) — only
+			// fires when the user actually toggles the value in their
+			// config. Plain RequiresReplace would falsely trigger
+			// replacement on every in-place update because Optional+
+			// Computed is_secret plans as Unknown when the user omits it.
 			PlanModifiers: []planmodifier.Bool{
-				boolplanmodifier.RequiresReplace(),
+				boolplanmodifier.UseStateForUnknown(),
+				boolplanmodifier.RequiresReplaceIfConfigured(),
 			},
 		},
 		// CONNECTION fields (only valid when object_type=CONNECTION)
@@ -745,8 +751,16 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 			MarkdownDescription: "The connection type (required when object_type=CONNECTION). Immutable on the API; changing it forces resource replacement.",
 			Optional:            true,
 			Computed:            true,
+			// RequiresReplaceIfConfigured (not RequiresReplace) — only fires
+			// when the user actually changes the value in their config.
+			// Plain RequiresReplace would falsely trigger replacement on
+			// every in-place update because Optional+Computed `type` plans
+			// as Unknown when the user omits it, and Unknown ≠ prior state
+			// reads as a change. UseStateForUnknown keeps the post-fix
+			// state stable across refreshes.
 			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.RequiresReplace(),
+				stringplanmodifier.UseStateForUnknown(),
+				stringplanmodifier.RequiresReplaceIfConfigured(),
 			},
 		},
 		"host": resourceSchema.StringAttribute{
