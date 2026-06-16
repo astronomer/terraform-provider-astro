@@ -11,6 +11,7 @@ import (
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/samber/lo"
 )
@@ -434,6 +435,112 @@ func TestAcc_ResourceEnvironmentObjectMetricsExport_LinkOverrides(t *testing.T) 
 			},
 		},
 	})
+}
+
+// TestAcc_ResourceEnvironmentObject_InPlaceUpdate_NoSpuriousReplace is a
+// regression guard for the bug where Optional+Computed+RequiresReplace fields
+// (is_secret on AIRFLOW_VARIABLE, type on CONNECTION) without
+// UseStateForUnknown would replan as Unknown when omitted in config, then fire
+// RequiresReplace against the prior state — turning every in-place update of
+// an unrelated field into a destroy + recreate.
+//
+// The two steps below pin the value of `value` to different strings while
+// leaving is_secret out of the config; the plancheck asserts the step-2
+// action is Update (in-place), not Replace.
+func TestAcc_ResourceEnvironmentObject_InPlaceUpdate_NoSpuriousReplace(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
+	varKey := fmt.Sprintf("test_var_inplace_%v", namePrefix)
+	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
+	resourceVar := "astro_environment_object.test"
+
+	avNoIsSecret := func(value string) string {
+		return fmt.Sprintf(`
+resource "astro_environment_object" "test" {
+  object_key      = "%s"
+  object_type     = "AIRFLOW_VARIABLE"
+  scope           = "WORKSPACE"
+  scope_entity_id = "%s"
+
+  value = "%s"
+  # is_secret intentionally omitted — must stay in-place on subsequent updates
+}
+`, varKey, workspaceId, value)
+	}
+
+	// Capture the ID after the create step so we can assert step-2 didn't
+	// destroy + recreate (which would yield a different ID even though the
+	// object_key is identical).
+	var idAfterCreate string
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckEnvironmentObjectDestroyed(t, varKey),
+		Steps: []resource.TestStep{
+			// Create with is_secret omitted
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + avNoIsSecret("v1"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckEnvironmentObjectExists(t, varKey),
+					resource.TestCheckResourceAttr(resourceVar, "value", "v1"),
+					resource.TestCheckResourceAttr(resourceVar, "is_secret", "false"),
+					captureResourceID(resourceVar, &idAfterCreate),
+				),
+			},
+			// Update value — plancheck asserts the plan action is an in-place
+			// Update (Action_Update), not a destroy + recreate. The id-stability
+			// check after apply doubles as a belt-and-braces verification.
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + avNoIsSecret("v2"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceVar, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "value", "v2"),
+					resource.TestCheckResourceAttr(resourceVar, "is_secret", "false"),
+					checkResourceIDUnchanged(resourceVar, &idAfterCreate),
+				),
+			},
+		},
+	})
+}
+
+// captureResourceID copies the resource's id attribute into dest after a step
+// applies. Use with checkResourceIDUnchanged in a later step to assert the
+// resource wasn't destroyed + recreated.
+func captureResourceID(addr string, dest *string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[addr]
+		if !ok {
+			return fmt.Errorf("resource %s not in state", addr)
+		}
+		if rs.Primary == nil || rs.Primary.ID == "" {
+			return fmt.Errorf("resource %s has no primary id", addr)
+		}
+		*dest = rs.Primary.ID
+		return nil
+	}
+}
+
+// checkResourceIDUnchanged asserts the resource's current id matches the
+// previously-captured value. Replacement (destroy + create) produces a new id
+// even when the object_key is identical, so a stable id is proof of in-place.
+func checkResourceIDUnchanged(addr string, want *string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[addr]
+		if !ok {
+			return fmt.Errorf("resource %s not in state", addr)
+		}
+		if rs.Primary == nil {
+			return fmt.Errorf("resource %s has no primary", addr)
+		}
+		if rs.Primary.ID != *want {
+			return fmt.Errorf("resource %s id changed (was %s, now %s) — replacement happened when it shouldn't have", addr, *want, rs.Primary.ID)
+		}
+		return nil
+	}
 }
 
 // --- auto_link + exclude_links, typed auth, BASIC auth, link lifecycle ---
