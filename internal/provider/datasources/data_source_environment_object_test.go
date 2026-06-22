@@ -28,15 +28,20 @@ func TestAcc_DataSource_EnvironmentObject(t *testing.T) {
 
 	connTypedKey := fmt.Sprintf("ds_conn_typed_%s", namePrefix)
 
+	// Chain the resources via depends_on so creates serialize. Terraform's
+	// default parallelism (10) otherwise bursts all 8 POSTs against the Astro
+	// API within milliseconds, which trips the per-tenant rate limit in CI
+	// and yields HTTP 429 on the CONNECTION creates. The data sources still
+	// resolve on the same step since each one keys off its parent resource.
 	config := astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-		envObjAirflowVarResourceAndDS("av_ws", varWsKey, "WORKSPACE", workspaceId, "ws_value", false) +
-		envObjAirflowVarResourceAndDS("av_dep", varDepKey, "DEPLOYMENT", deploymentId, "dep_value", false) +
-		envObjConnectionResourceAndDS("conn_ws", connWsKey, "WORKSPACE", workspaceId) +
-		envObjConnectionResourceAndDS("conn_dep", connDepKey, "DEPLOYMENT", deploymentId) +
-		envObjMetricsExportResourceAndDS("me_ws", meWsKey, "WORKSPACE", workspaceId) +
-		envObjMetricsExportResourceAndDS("me_dep", meDepKey, "DEPLOYMENT", deploymentId) +
-		envObjAirflowVarWithLinkResourceAndDS("av_link", fmt.Sprintf("ds_av_link_%s", namePrefix), workspaceId, deploymentId) +
-		envObjConnectionTypedAuthResourceAndDS("conn_typed", connTypedKey, workspaceId, "snowflake-password")
+		envObjAirflowVarResourceAndDS("av_ws", varWsKey, "WORKSPACE", workspaceId, "ws_value", false, "") +
+		envObjAirflowVarResourceAndDS("av_dep", varDepKey, "DEPLOYMENT", deploymentId, "dep_value", false, "astro_environment_object.av_ws") +
+		envObjConnectionResourceAndDS("conn_ws", connWsKey, "WORKSPACE", workspaceId, "astro_environment_object.av_dep") +
+		envObjConnectionResourceAndDS("conn_dep", connDepKey, "DEPLOYMENT", deploymentId, "astro_environment_object.conn_ws") +
+		envObjMetricsExportResourceAndDS("me_ws", meWsKey, "WORKSPACE", workspaceId, "astro_environment_object.conn_dep") +
+		envObjMetricsExportResourceAndDS("me_dep", meDepKey, "DEPLOYMENT", deploymentId, "astro_environment_object.me_ws") +
+		envObjAirflowVarWithLinkResourceAndDS("av_link", fmt.Sprintf("ds_av_link_%s", namePrefix), workspaceId, deploymentId, "astro_environment_object.me_dep") +
+		envObjConnectionTypedAuthResourceAndDS("conn_typed", connTypedKey, workspaceId, "snowflake-password", "astro_environment_object.av_link")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
@@ -114,7 +119,17 @@ func checkEnvObjDataSourceCommon(dsAddr, objectKey, objectType, scope, scopeEnti
 
 // --- Config helpers (resource + sibling data source) ---
 
-func envObjAirflowVarResourceAndDS(name, key, scope, scopeEntityId, value string, isSecret bool) string {
+// dependsOnClause emits a `depends_on = [addr]` line when addr is non-empty.
+// Used to serialize resource creates in the omnibus DS test and avoid the
+// per-tenant 429 burst that terraform's default parallelism otherwise causes.
+func dependsOnClause(addr string) string {
+	if addr == "" {
+		return ""
+	}
+	return fmt.Sprintf("  depends_on = [%s]\n", addr)
+}
+
+func envObjAirflowVarResourceAndDS(name, key, scope, scopeEntityId, value string, isSecret bool, dependsOn string) string {
 	return fmt.Sprintf(`
 resource "astro_environment_object" "%s" {
   object_key      = "%s"
@@ -124,15 +139,15 @@ resource "astro_environment_object" "%s" {
 
   value     = "%s"
   is_secret = %t
-}
+%s}
 
 data "astro_environment_object" "%s" {
   id = astro_environment_object.%s.id
 }
-`, name, key, scope, scopeEntityId, value, isSecret, name, name)
+`, name, key, scope, scopeEntityId, value, isSecret, dependsOnClause(dependsOn), name, name)
 }
 
-func envObjConnectionResourceAndDS(name, key, scope, scopeEntityId string) string {
+func envObjConnectionResourceAndDS(name, key, scope, scopeEntityId, dependsOn string) string {
 	return fmt.Sprintf(`
 resource "astro_environment_object" "%s" {
   object_key      = "%s"
@@ -146,15 +161,15 @@ resource "astro_environment_object" "%s" {
   login    = "ds_user"
   password = "ds_pass"
   schema   = "analytics"
-}
+%s}
 
 data "astro_environment_object" "%s" {
   id = astro_environment_object.%s.id
 }
-`, name, key, scope, scopeEntityId, name, name)
+`, name, key, scope, scopeEntityId, dependsOnClause(dependsOn), name, name)
 }
 
-func envObjMetricsExportResourceAndDS(name, key, scope, scopeEntityId string) string {
+func envObjMetricsExportResourceAndDS(name, key, scope, scopeEntityId, dependsOn string) string {
 	return fmt.Sprintf(`
 resource "astro_environment_object" "%s" {
   object_key      = "%s"
@@ -164,15 +179,15 @@ resource "astro_environment_object" "%s" {
 
   endpoint      = "https://ds-prom.example.com/api/v1/write"
   exporter_type = "PROMETHEUS"
-}
+%s}
 
 data "astro_environment_object" "%s" {
   id = astro_environment_object.%s.id
 }
-`, name, key, scope, scopeEntityId, name, name)
+`, name, key, scope, scopeEntityId, dependsOnClause(dependsOn), name, name)
 }
 
-func envObjConnectionTypedAuthResourceAndDS(name, key, workspaceId, authTypeId string) string {
+func envObjConnectionTypedAuthResourceAndDS(name, key, workspaceId, authTypeId, dependsOn string) string {
 	return fmt.Sprintf(`
 resource "astro_environment_object" "%s" {
   object_key      = "%s"
@@ -187,15 +202,15 @@ resource "astro_environment_object" "%s" {
   password     = "ds_pass"
   schema       = "ANALYTICS"
   extra        = jsonencode({ account = "abc12345", warehouse = "AIRFLOW_WH", role = "AIRFLOW_ROLE" })
-}
+%s}
 
 data "astro_environment_object" "%s" {
   id = astro_environment_object.%s.id
 }
-`, name, key, workspaceId, authTypeId, name, name)
+`, name, key, workspaceId, authTypeId, dependsOnClause(dependsOn), name, name)
 }
 
-func envObjAirflowVarWithLinkResourceAndDS(name, key, workspaceId, deploymentId string) string {
+func envObjAirflowVarWithLinkResourceAndDS(name, key, workspaceId, deploymentId, dependsOn string) string {
 	return fmt.Sprintf(`
 resource "astro_environment_object" "%s" {
   object_key      = "%s"
@@ -213,10 +228,10 @@ resource "astro_environment_object" "%s" {
       value = "ds_override_value"
     }
   }]
-}
+%s}
 
 data "astro_environment_object" "%s" {
   id = astro_environment_object.%s.id
 }
-`, name, key, workspaceId, deploymentId, name, name)
+`, name, key, workspaceId, deploymentId, dependsOnClause(dependsOn), name, name)
 }
