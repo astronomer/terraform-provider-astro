@@ -5,6 +5,7 @@ endif
 
 CORE_IAM_OPENAPI_SPEC=../astro/apps/core/docs/iam/v1beta1/iam_v1beta1.yaml
 CORE_PLATFORM_OPENAPI_SPEC=../astro/apps/core/docs/platform/v1beta1/platform_v1beta1.yaml
+CORE_LABS_OPENAPI_SPEC=../astro/apps/core/docs/labs/v1.1/labsapi_v1.1.yaml
 
 DESIRED_OAPI_CODEGEN_VERSION=v2.1.0
 
@@ -102,3 +103,5 @@ api_client_gen:
 	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=User,Invite,Team,ApiToken,AgentToken,Role -generate=types,client -package=iam "$(CORE_IAM_OPENAPI_SPEC)" > ./internal/clients/iam/api.gen.go
 	@echo "Generating Platform API client..."
 	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Organization,Workspace,Cluster,Options,Deployment,Role,Environment,Alerts,NotificationChannels -generate=types,client -package=platform "$(CORE_PLATFORM_OPENAPI_SPEC)" > ./internal/clients/platform/api.gen.go
+	@echo "Generating Labs API client..."
+	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Alerts -generate=types,client -package=labs "$(CORE_LABS_OPENAPI_SPEC)" > ./internal/clients/labs/api.gen.go
