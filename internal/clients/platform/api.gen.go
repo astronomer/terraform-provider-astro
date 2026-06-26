@@ -5532,17 +5532,6 @@ func (t *CreateNotificationChannelRequest) FromCreateDagTriggerNotificationChann
 	if err != nil {
 		return err
 	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"CreateDagTriggerNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
-	if err != nil {
-		return err
-	}
 	t.union = b
 	return err
 }
@@ -5550,17 +5539,6 @@ func (t *CreateNotificationChannelRequest) FromCreateDagTriggerNotificationChann
 // MergeCreateDagTriggerNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateDagTriggerNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreateDagTriggerNotificationChannelRequest(v CreateDagTriggerNotificationChannelRequest) error {
 	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"CreateDagTriggerNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
 	if err != nil {
 		return err
 	}
@@ -5582,17 +5560,6 @@ func (t *CreateNotificationChannelRequest) FromCreateEmailNotificationChannelReq
 	if err != nil {
 		return err
 	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"CreateEmailNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
-	if err != nil {
-		return err
-	}
 	t.union = b
 	return err
 }
@@ -5600,17 +5567,6 @@ func (t *CreateNotificationChannelRequest) FromCreateEmailNotificationChannelReq
 // MergeCreateEmailNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateEmailNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreateEmailNotificationChannelRequest(v CreateEmailNotificationChannelRequest) error {
 	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"CreateEmailNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
 	if err != nil {
 		return err
 	}
@@ -5632,17 +5588,6 @@ func (t *CreateNotificationChannelRequest) FromCreateOpsgenieNotificationChannel
 	if err != nil {
 		return err
 	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"CreateOpsgenieNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
-	if err != nil {
-		return err
-	}
 	t.union = b
 	return err
 }
@@ -5650,17 +5595,6 @@ func (t *CreateNotificationChannelRequest) FromCreateOpsgenieNotificationChannel
 // MergeCreateOpsgenieNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateOpsgenieNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreateOpsgenieNotificationChannelRequest(v CreateOpsgenieNotificationChannelRequest) error {
 	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"CreateOpsgenieNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
 	if err != nil {
 		return err
 	}
@@ -5682,17 +5616,6 @@ func (t *CreateNotificationChannelRequest) FromCreatePagerDutyNotificationChanne
 	if err != nil {
 		return err
 	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"CreatePagerDutyNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
-	if err != nil {
-		return err
-	}
 	t.union = b
 	return err
 }
@@ -5700,17 +5623,6 @@ func (t *CreateNotificationChannelRequest) FromCreatePagerDutyNotificationChanne
 // MergeCreatePagerDutyNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreatePagerDutyNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreatePagerDutyNotificationChannelRequest(v CreatePagerDutyNotificationChannelRequest) error {
 	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"CreatePagerDutyNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
 	if err != nil {
 		return err
 	}
@@ -5732,17 +5644,6 @@ func (t *CreateNotificationChannelRequest) FromCreateSlackNotificationChannelReq
 	if err != nil {
 		return err
 	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"CreateSlackNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
-	if err != nil {
-		return err
-	}
 	t.union = b
 	return err
 }
@@ -5750,17 +5651,6 @@ func (t *CreateNotificationChannelRequest) FromCreateSlackNotificationChannelReq
 // MergeCreateSlackNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateSlackNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreateSlackNotificationChannelRequest(v CreateSlackNotificationChannelRequest) error {
 	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"CreateSlackNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
 	if err != nil {
 		return err
 	}
@@ -6480,17 +6370,6 @@ func (t *UpdateNotificationChannelRequest) FromUpdateDagTriggerNotificationChann
 	if err != nil {
 		return err
 	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"UpdateDagTriggerNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
-	if err != nil {
-		return err
-	}
 	t.union = b
 	return err
 }
@@ -6498,17 +6377,6 @@ func (t *UpdateNotificationChannelRequest) FromUpdateDagTriggerNotificationChann
 // MergeUpdateDagTriggerNotificationChannelRequest performs a merge with any union data inside the UpdateNotificationChannelRequest, using the provided UpdateDagTriggerNotificationChannelRequest
 func (t *UpdateNotificationChannelRequest) MergeUpdateDagTriggerNotificationChannelRequest(v UpdateDagTriggerNotificationChannelRequest) error {
 	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"UpdateDagTriggerNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
 	if err != nil {
 		return err
 	}
@@ -6530,17 +6398,6 @@ func (t *UpdateNotificationChannelRequest) FromUpdateEmailNotificationChannelReq
 	if err != nil {
 		return err
 	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"UpdateEmailNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
-	if err != nil {
-		return err
-	}
 	t.union = b
 	return err
 }
@@ -6548,17 +6405,6 @@ func (t *UpdateNotificationChannelRequest) FromUpdateEmailNotificationChannelReq
 // MergeUpdateEmailNotificationChannelRequest performs a merge with any union data inside the UpdateNotificationChannelRequest, using the provided UpdateEmailNotificationChannelRequest
 func (t *UpdateNotificationChannelRequest) MergeUpdateEmailNotificationChannelRequest(v UpdateEmailNotificationChannelRequest) error {
 	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"UpdateEmailNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
 	if err != nil {
 		return err
 	}
@@ -6580,17 +6426,6 @@ func (t *UpdateNotificationChannelRequest) FromUpdateOpsgenieNotificationChannel
 	if err != nil {
 		return err
 	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"UpdateOpsgenieNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
-	if err != nil {
-		return err
-	}
 	t.union = b
 	return err
 }
@@ -6598,17 +6433,6 @@ func (t *UpdateNotificationChannelRequest) FromUpdateOpsgenieNotificationChannel
 // MergeUpdateOpsgenieNotificationChannelRequest performs a merge with any union data inside the UpdateNotificationChannelRequest, using the provided UpdateOpsgenieNotificationChannelRequest
 func (t *UpdateNotificationChannelRequest) MergeUpdateOpsgenieNotificationChannelRequest(v UpdateOpsgenieNotificationChannelRequest) error {
 	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"UpdateOpsgenieNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
 	if err != nil {
 		return err
 	}
@@ -6630,17 +6454,6 @@ func (t *UpdateNotificationChannelRequest) FromUpdatePagerDutyNotificationChanne
 	if err != nil {
 		return err
 	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"UpdatePagerDutyNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
-	if err != nil {
-		return err
-	}
 	t.union = b
 	return err
 }
@@ -6648,17 +6461,6 @@ func (t *UpdateNotificationChannelRequest) FromUpdatePagerDutyNotificationChanne
 // MergeUpdatePagerDutyNotificationChannelRequest performs a merge with any union data inside the UpdateNotificationChannelRequest, using the provided UpdatePagerDutyNotificationChannelRequest
 func (t *UpdateNotificationChannelRequest) MergeUpdatePagerDutyNotificationChannelRequest(v UpdatePagerDutyNotificationChannelRequest) error {
 	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"UpdatePagerDutyNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
 	if err != nil {
 		return err
 	}
@@ -6680,17 +6482,6 @@ func (t *UpdateNotificationChannelRequest) FromUpdateSlackNotificationChannelReq
 	if err != nil {
 		return err
 	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"UpdateSlackNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
-	if err != nil {
-		return err
-	}
 	t.union = b
 	return err
 }
@@ -6698,17 +6489,6 @@ func (t *UpdateNotificationChannelRequest) FromUpdateSlackNotificationChannelReq
 // MergeUpdateSlackNotificationChannelRequest performs a merge with any union data inside the UpdateNotificationChannelRequest, using the provided UpdateSlackNotificationChannelRequest
 func (t *UpdateNotificationChannelRequest) MergeUpdateSlackNotificationChannelRequest(v UpdateSlackNotificationChannelRequest) error {
 	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-	// Inject discriminator into the marshaled JSON so this works whether
-	// the variant's discriminator field is required (value) or optional (pointer).
-	obj := make(map[string]json.RawMessage)
-	if err = json.Unmarshal(b, &obj); err != nil {
-		return err
-	}
-	obj["type"] = json.RawMessage(`"UpdateSlackNotificationChannelRequest"`)
-	b, err = json.Marshal(obj)
 	if err != nil {
 		return err
 	}

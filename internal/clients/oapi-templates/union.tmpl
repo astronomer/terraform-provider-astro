@@ -19,7 +19,7 @@
             }
             {{if $discriminator -}}
             {{range $value, $type := $discriminator.Mapping -}}
-                {{if eq $type $element -}}
+                {{if and (eq $type $element) (ne $value $element) -}}
                     {{$hasProperty := false -}}
                     {{range $properties -}}
                         {{if eq .GoFieldName $discriminator.PropertyName -}}
@@ -56,7 +56,7 @@
             }
             {{if $discriminator -}}
             {{range $value, $type := $discriminator.Mapping -}}
-                {{if eq $type $element -}}
+                {{if and (eq $type $element) (ne $value $element) -}}
                     {{$hasProperty := false -}}
                     {{range $properties -}}
                         {{if eq .GoFieldName $discriminator.PropertyName -}}
