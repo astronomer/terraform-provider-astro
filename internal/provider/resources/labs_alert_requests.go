@@ -211,7 +211,7 @@ func BuildLabsUpdateAlertRequest(ctx context.Context, data models.AlertResource)
 			Id:                     idPtr,
 			Name:                   &name,
 			Severity:               &sev,
-			Type:                   alertType,
+			Type:                   &alertType,
 			NotificationChannelIds: &ncIds,
 			Rules: &labs.UpdateDagFailureAlertRules{
 				PatternMatches: &pmReqs,
@@ -230,7 +230,7 @@ func BuildLabsUpdateAlertRequest(ctx context.Context, data models.AlertResource)
 			Name:                   &name,
 			NotificationChannelIds: &ncIds,
 			Severity:               &sev,
-			Type:                   alertType,
+			Type:                   &alertType,
 			Rules: &labs.UpdateDagSuccessAlertRules{
 				PatternMatches: &pmReqs,
 			},
@@ -249,7 +249,7 @@ func BuildLabsUpdateAlertRequest(ctx context.Context, data models.AlertResource)
 			Name:                   &name,
 			NotificationChannelIds: &ncIds,
 			Severity:               &sev,
-			Type:                   alertType,
+			Type:                   &alertType,
 			Rules: &labs.UpdateDagDurationAlertRules{
 				PatternMatches: &pmReqs,
 				Properties: &labs.UpdateDagDurationAlertProperties{
@@ -276,7 +276,7 @@ func BuildLabsUpdateAlertRequest(ctx context.Context, data models.AlertResource)
 			Name:                   &name,
 			NotificationChannelIds: &ncIds,
 			Severity:               &sev,
-			Type:                   alertType,
+			Type:                   &alertType,
 			Rules: &labs.UpdateDagTimelinessAlertRules{
 				PatternMatches: &pmReqs,
 				Properties: &labs.UpdateDagTimelinessAlertProperties{
@@ -299,7 +299,7 @@ func BuildLabsUpdateAlertRequest(ctx context.Context, data models.AlertResource)
 			Name:                   &name,
 			NotificationChannelIds: &ncIds,
 			Severity:               &sev,
-			Type:                   alertType,
+			Type:                   &alertType,
 			Rules: &labs.UpdateTaskFailureAlertRules{
 				PatternMatches: &pmReqs,
 			},
@@ -318,7 +318,7 @@ func BuildLabsUpdateAlertRequest(ctx context.Context, data models.AlertResource)
 			Name:                   &name,
 			NotificationChannelIds: &ncIds,
 			Severity:               &sev,
-			Type:                   alertType,
+			Type:                   &alertType,
 			Rules: &labs.UpdateTaskDurationAlertRules{
 				PatternMatches: &pmReqs,
 				Properties: &labs.UpdateTaskDurationAlertProperties{

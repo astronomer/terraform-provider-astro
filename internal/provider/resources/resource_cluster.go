@@ -318,7 +318,7 @@ func (r *ClusterResource) Update(
 	var updateClusterRequest platform.UpdateClusterRequest
 
 	updateDedicatedClusterRequest := platform.UpdateDedicatedClusterRequest{
-		ClusterType:  platform.UpdateDedicatedClusterRequestClusterType(data.Type.ValueString()),
+		ClusterType:  (*platform.UpdateDedicatedClusterRequestClusterType)(data.Type.ValueStringPointer()),
 		K8sTags:      []platform.ClusterK8sTag{},
 		Name:         data.Name.ValueString(),
 		NodePools:    nil,

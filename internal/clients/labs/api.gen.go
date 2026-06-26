@@ -831,7 +831,7 @@ type UpdateDagDurationAlertRequest struct {
 	Severity *UpdateDagDurationAlertRequestSeverity `json:"severity,omitempty"`
 
 	// Type The alert's type.
-	Type UpdateDagDurationAlertRequestType `json:"type"`
+	Type *UpdateDagDurationAlertRequestType `json:"type,omitempty"`
 }
 
 // UpdateDagDurationAlertRequestSeverity The alert's severity.
@@ -863,7 +863,7 @@ type UpdateDagFailureAlertRequest struct {
 	Severity *UpdateDagFailureAlertRequestSeverity `json:"severity,omitempty"`
 
 	// Type The alert's type.
-	Type UpdateDagFailureAlertRequestType `json:"type"`
+	Type *UpdateDagFailureAlertRequestType `json:"type,omitempty"`
 }
 
 // UpdateDagFailureAlertRequestSeverity The alert's severity.
@@ -894,7 +894,7 @@ type UpdateDagSuccessAlertRequest struct {
 	Severity *UpdateDagSuccessAlertRequestSeverity `json:"severity,omitempty"`
 
 	// Type The alert's type.
-	Type UpdateDagSuccessAlertRequestType `json:"type"`
+	Type *UpdateDagSuccessAlertRequestType `json:"type,omitempty"`
 }
 
 // UpdateDagSuccessAlertRequestSeverity The alert's severity.
@@ -937,7 +937,7 @@ type UpdateDagTimelinessAlertRequest struct {
 	Severity *UpdateDagTimelinessAlertRequestSeverity `json:"severity,omitempty"`
 
 	// Type The alert's type.
-	Type UpdateDagTimelinessAlertRequestType `json:"type"`
+	Type *UpdateDagTimelinessAlertRequestType `json:"type,omitempty"`
 }
 
 // UpdateDagTimelinessAlertRequestSeverity The alert's severity.
@@ -975,7 +975,7 @@ type UpdateTaskDurationAlertRequest struct {
 	Severity *UpdateTaskDurationAlertRequestSeverity `json:"severity,omitempty"`
 
 	// Type The alert's type.
-	Type UpdateTaskDurationAlertRequestType `json:"type"`
+	Type *UpdateTaskDurationAlertRequestType `json:"type,omitempty"`
 }
 
 // UpdateTaskDurationAlertRequestSeverity The alert's severity.
@@ -1007,7 +1007,7 @@ type UpdateTaskFailureAlertRequest struct {
 	Severity *UpdateTaskFailureAlertRequestSeverity `json:"severity,omitempty"`
 
 	// Type The alert's type.
-	Type UpdateTaskFailureAlertRequestType `json:"type"`
+	Type *UpdateTaskFailureAlertRequestType `json:"type,omitempty"`
 }
 
 // UpdateTaskFailureAlertRequestSeverity The alert's severity.
@@ -1040,20 +1040,42 @@ func (t CreateAlertRequest) AsCreateDagDurationAlertRequest() (CreateDagDuration
 
 // FromCreateDagDurationAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateDagDurationAlertRequest
 func (t *CreateAlertRequest) FromCreateDagDurationAlertRequest(v CreateDagDurationAlertRequest) error {
-	v.Type = "DAG_DURATION"
 	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DAG_DURATION"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	t.union = b
 	return err
 }
 
 // MergeCreateDagDurationAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateDagDurationAlertRequest
 func (t *CreateAlertRequest) MergeCreateDagDurationAlertRequest(v CreateDagDurationAlertRequest) error {
-	v.Type = "DAG_DURATION"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
-
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DAG_DURATION"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
@@ -1068,20 +1090,42 @@ func (t CreateAlertRequest) AsCreateDagFailureAlertRequest() (CreateDagFailureAl
 
 // FromCreateDagFailureAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateDagFailureAlertRequest
 func (t *CreateAlertRequest) FromCreateDagFailureAlertRequest(v CreateDagFailureAlertRequest) error {
-	v.Type = "DAG_FAILURE"
 	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DAG_FAILURE"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	t.union = b
 	return err
 }
 
 // MergeCreateDagFailureAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateDagFailureAlertRequest
 func (t *CreateAlertRequest) MergeCreateDagFailureAlertRequest(v CreateDagFailureAlertRequest) error {
-	v.Type = "DAG_FAILURE"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
-
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DAG_FAILURE"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
@@ -1096,20 +1140,42 @@ func (t CreateAlertRequest) AsCreateDagSuccessAlertRequest() (CreateDagSuccessAl
 
 // FromCreateDagSuccessAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateDagSuccessAlertRequest
 func (t *CreateAlertRequest) FromCreateDagSuccessAlertRequest(v CreateDagSuccessAlertRequest) error {
-	v.Type = "DAG_SUCCESS"
 	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DAG_SUCCESS"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	t.union = b
 	return err
 }
 
 // MergeCreateDagSuccessAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateDagSuccessAlertRequest
 func (t *CreateAlertRequest) MergeCreateDagSuccessAlertRequest(v CreateDagSuccessAlertRequest) error {
-	v.Type = "DAG_SUCCESS"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
-
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DAG_SUCCESS"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
@@ -1124,20 +1190,42 @@ func (t CreateAlertRequest) AsCreateDagTimelinessAlertRequest() (CreateDagTimeli
 
 // FromCreateDagTimelinessAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateDagTimelinessAlertRequest
 func (t *CreateAlertRequest) FromCreateDagTimelinessAlertRequest(v CreateDagTimelinessAlertRequest) error {
-	v.Type = "DAG_TIMELINESS"
 	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DAG_TIMELINESS"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	t.union = b
 	return err
 }
 
 // MergeCreateDagTimelinessAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateDagTimelinessAlertRequest
 func (t *CreateAlertRequest) MergeCreateDagTimelinessAlertRequest(v CreateDagTimelinessAlertRequest) error {
-	v.Type = "DAG_TIMELINESS"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
-
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DAG_TIMELINESS"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
@@ -1152,20 +1240,42 @@ func (t CreateAlertRequest) AsCreateTaskDurationAlertRequest() (CreateTaskDurati
 
 // FromCreateTaskDurationAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateTaskDurationAlertRequest
 func (t *CreateAlertRequest) FromCreateTaskDurationAlertRequest(v CreateTaskDurationAlertRequest) error {
-	v.Type = "TASK_DURATION"
 	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"TASK_DURATION"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	t.union = b
 	return err
 }
 
 // MergeCreateTaskDurationAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateTaskDurationAlertRequest
 func (t *CreateAlertRequest) MergeCreateTaskDurationAlertRequest(v CreateTaskDurationAlertRequest) error {
-	v.Type = "TASK_DURATION"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
-
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"TASK_DURATION"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
@@ -1180,20 +1290,42 @@ func (t CreateAlertRequest) AsCreateTaskFailureAlertRequest() (CreateTaskFailure
 
 // FromCreateTaskFailureAlertRequest overwrites any union data inside the CreateAlertRequest as the provided CreateTaskFailureAlertRequest
 func (t *CreateAlertRequest) FromCreateTaskFailureAlertRequest(v CreateTaskFailureAlertRequest) error {
-	v.Type = "TASK_FAILURE"
 	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"TASK_FAILURE"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	t.union = b
 	return err
 }
 
 // MergeCreateTaskFailureAlertRequest performs a merge with any union data inside the CreateAlertRequest, using the provided CreateTaskFailureAlertRequest
 func (t *CreateAlertRequest) MergeCreateTaskFailureAlertRequest(v CreateTaskFailureAlertRequest) error {
-	v.Type = "TASK_FAILURE"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
-
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"TASK_FAILURE"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
@@ -1249,20 +1381,42 @@ func (t UpdateAlertRequest) AsUpdateDagDurationAlertRequest() (UpdateDagDuration
 
 // FromUpdateDagDurationAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateDagDurationAlertRequest
 func (t *UpdateAlertRequest) FromUpdateDagDurationAlertRequest(v UpdateDagDurationAlertRequest) error {
-	v.Type = "DAG_DURATION"
 	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DAG_DURATION"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	t.union = b
 	return err
 }
 
 // MergeUpdateDagDurationAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateDagDurationAlertRequest
 func (t *UpdateAlertRequest) MergeUpdateDagDurationAlertRequest(v UpdateDagDurationAlertRequest) error {
-	v.Type = "DAG_DURATION"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
-
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DAG_DURATION"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
@@ -1277,20 +1431,42 @@ func (t UpdateAlertRequest) AsUpdateDagFailureAlertRequest() (UpdateDagFailureAl
 
 // FromUpdateDagFailureAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateDagFailureAlertRequest
 func (t *UpdateAlertRequest) FromUpdateDagFailureAlertRequest(v UpdateDagFailureAlertRequest) error {
-	v.Type = "DAG_FAILURE"
 	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DAG_FAILURE"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	t.union = b
 	return err
 }
 
 // MergeUpdateDagFailureAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateDagFailureAlertRequest
 func (t *UpdateAlertRequest) MergeUpdateDagFailureAlertRequest(v UpdateDagFailureAlertRequest) error {
-	v.Type = "DAG_FAILURE"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
-
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DAG_FAILURE"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
@@ -1305,20 +1481,42 @@ func (t UpdateAlertRequest) AsUpdateDagSuccessAlertRequest() (UpdateDagSuccessAl
 
 // FromUpdateDagSuccessAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateDagSuccessAlertRequest
 func (t *UpdateAlertRequest) FromUpdateDagSuccessAlertRequest(v UpdateDagSuccessAlertRequest) error {
-	v.Type = "DAG_SUCCESS"
 	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DAG_SUCCESS"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	t.union = b
 	return err
 }
 
 // MergeUpdateDagSuccessAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateDagSuccessAlertRequest
 func (t *UpdateAlertRequest) MergeUpdateDagSuccessAlertRequest(v UpdateDagSuccessAlertRequest) error {
-	v.Type = "DAG_SUCCESS"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
-
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DAG_SUCCESS"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
@@ -1333,20 +1531,42 @@ func (t UpdateAlertRequest) AsUpdateDagTimelinessAlertRequest() (UpdateDagTimeli
 
 // FromUpdateDagTimelinessAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateDagTimelinessAlertRequest
 func (t *UpdateAlertRequest) FromUpdateDagTimelinessAlertRequest(v UpdateDagTimelinessAlertRequest) error {
-	v.Type = "DAG_TIMELINESS"
 	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DAG_TIMELINESS"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	t.union = b
 	return err
 }
 
 // MergeUpdateDagTimelinessAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateDagTimelinessAlertRequest
 func (t *UpdateAlertRequest) MergeUpdateDagTimelinessAlertRequest(v UpdateDagTimelinessAlertRequest) error {
-	v.Type = "DAG_TIMELINESS"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
-
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DAG_TIMELINESS"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
@@ -1361,20 +1581,42 @@ func (t UpdateAlertRequest) AsUpdateTaskDurationAlertRequest() (UpdateTaskDurati
 
 // FromUpdateTaskDurationAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateTaskDurationAlertRequest
 func (t *UpdateAlertRequest) FromUpdateTaskDurationAlertRequest(v UpdateTaskDurationAlertRequest) error {
-	v.Type = "TASK_DURATION"
 	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"TASK_DURATION"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	t.union = b
 	return err
 }
 
 // MergeUpdateTaskDurationAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateTaskDurationAlertRequest
 func (t *UpdateAlertRequest) MergeUpdateTaskDurationAlertRequest(v UpdateTaskDurationAlertRequest) error {
-	v.Type = "TASK_DURATION"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
-
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"TASK_DURATION"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
@@ -1389,20 +1631,42 @@ func (t UpdateAlertRequest) AsUpdateTaskFailureAlertRequest() (UpdateTaskFailure
 
 // FromUpdateTaskFailureAlertRequest overwrites any union data inside the UpdateAlertRequest as the provided UpdateTaskFailureAlertRequest
 func (t *UpdateAlertRequest) FromUpdateTaskFailureAlertRequest(v UpdateTaskFailureAlertRequest) error {
-	v.Type = "TASK_FAILURE"
 	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"TASK_FAILURE"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	t.union = b
 	return err
 }
 
 // MergeUpdateTaskFailureAlertRequest performs a merge with any union data inside the UpdateAlertRequest, using the provided UpdateTaskFailureAlertRequest
 func (t *UpdateAlertRequest) MergeUpdateTaskFailureAlertRequest(v UpdateTaskFailureAlertRequest) error {
-	v.Type = "TASK_FAILURE"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
-
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"TASK_FAILURE"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
