@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/labs"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -45,8 +45,8 @@ func (e AlertsResourceElementModel) ToAlertResource() AlertResource {
 	}
 }
 
-// ReadFromResponse populates an element from a platform.Alert.
-func (e *AlertsResourceElementModel) ReadFromResponse(ctx context.Context, alert *platform.Alert) diag.Diagnostics {
+// ReadFromResponse populates an element from a labs.Alert.
+func (e *AlertsResourceElementModel) ReadFromResponse(ctx context.Context, alert *labs.Alert) diag.Diagnostics {
 	var diags diag.Diagnostics
 	e.Id = types.StringValue(alert.Id)
 	e.Name = types.StringValue(alert.Name)

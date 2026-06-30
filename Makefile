@@ -96,7 +96,7 @@ api_client_gen:
 	else \
 		echo "Correct version of oapi-codegen is already installed."; \
 	fi
-	# Both clients below use the forked union template (-templates ./internal/clients/oapi-templates,
+	# All three clients below use the forked union template (-templates ./internal/clients/oapi-templates,
 	# see union.tmpl) which injects discriminator values into marshaled JSON so Core's optional
 	# discriminator fields compile. Re-apply that fork when bumping DESIRED_OAPI_CODEGEN_VERSION.
 	@echo "Generating IAM API client..."

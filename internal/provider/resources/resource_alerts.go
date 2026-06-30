@@ -8,7 +8,6 @@ import (
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/labs"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -48,7 +47,6 @@ func NewAlertsResource() resource.Resource {
 // platform list so a single, well-tested response mapper is reused.
 type alertsResource struct {
 	labsClient     *labs.ClientWithResponses
-	platformClient *platform.ClientWithResponses
 	organizationId string
 }
 
@@ -75,7 +73,6 @@ func (r *alertsResource) Configure(ctx context.Context, req resource.ConfigureRe
 		return
 	}
 	r.labsClient = apiClients.LabsClient
-	r.platformClient = apiClients.PlatformClient
 	r.organizationId = apiClients.OrganizationId
 }
 
@@ -399,17 +396,17 @@ func (r *alertsResource) bulkDelete(ctx context.Context, ids []string) diag.Diag
 
 // listByIds fetches alerts by ID (chunked) via the platform list endpoint and returns them keyed by
 // alert ID. Labs has no list endpoint, so reads route through platform v1beta1.
-func (r *alertsResource) listByIds(ctx context.Context, ids []string) (map[string]platform.Alert, diag.Diagnostics) {
+func (r *alertsResource) listByIds(ctx context.Context, ids []string) (map[string]labs.Alert, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	found := make(map[string]platform.Alert, len(ids))
+	found := make(map[string]labs.Alert, len(ids))
 	for _, chunk := range chunkSlice(ids, alertsListPageLimit) {
 		alertIds := chunk
 		limit := len(chunk)
-		params := &platform.ListAlertsParams{
+		params := &labs.LabsListAlertsParams{
 			AlertIds: &alertIds,
 			Limit:    &limit,
 		}
-		listResp, err := r.platformClient.ListAlertsWithResponse(ctx, r.organizationId, params)
+		listResp, err := r.labsClient.LabsListAlertsWithResponse(ctx, r.organizationId, params)
 		if err != nil {
 			tflog.Error(ctx, "failed to list alerts", map[string]interface{}{"error": err})
 			diags.AddError("Client Error", fmt.Sprintf("Unable to list alerts: %s", err))
