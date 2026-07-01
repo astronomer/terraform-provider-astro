@@ -582,6 +582,28 @@ resource "astro_cluster" "%v" {
 `, clusterName, clusterName),
 				ExpectError: regexp.MustCompile(`dr_region is required when is_dr_enabled is true`),
 			},
+			// Test: DR enabled with dr_region derived from an unknown value (e.g. a Terraform
+			// variable or conditional) must not fail validation
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "terraform_data" "dr_region" {
+	input = "us-west-1"
+}
+
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "us-east-1"
+	cloud_provider = "AWS"
+	vpc_subnet_range = "172.20.0.0/20"
+	is_dr_enabled = true
+	dr_region = terraform_data.dr_region.output
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
 			// Test: DR enabled on Azure should fail
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
