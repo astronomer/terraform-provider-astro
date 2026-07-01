@@ -556,8 +556,8 @@ func validateAwsConfig(ctx context.Context, data *models.ClusterResource) diag.D
 	}
 
 	// DR validation
-	if !data.IsDrEnabled.IsNull() && data.IsDrEnabled.ValueBool() {
-		if data.DrRegion.IsNull() || data.DrRegion.IsUnknown() {
+	if !data.IsDrEnabled.IsNull() && !data.IsDrEnabled.IsUnknown() && data.IsDrEnabled.ValueBool() {
+		if data.DrRegion.IsNull() {
 			diags.AddError(
 				"dr_region is required when is_dr_enabled is true",
 				"Please set dr_region to the secondary region for Disaster Recovery",
