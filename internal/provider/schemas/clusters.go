@@ -54,6 +54,9 @@ func ClustersElementAttributeTypes() map[string]attr.Type {
 		"dr_secondary_vpc_cidr":           types.StringType,
 		"enable_replication_time_control": types.BoolType,
 		"is_failed_over":                  types.BoolType,
+		"dr_pod_subnet_range":             types.StringType,
+		"dr_service_peering_range":        types.StringType,
+		"dr_service_subnet_range":         types.StringType,
 	}
 }
 

@@ -286,6 +286,9 @@ type ApiToken struct {
 	// Kind The kind of the API token.
 	Kind ApiTokenKind `json:"kind"`
 
+	// LastRotatedAt The time when the API token was last rotated in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
+	LastRotatedAt *time.Time `json:"lastRotatedAt,omitempty"`
+
 	// LastUsedAt The time when the API token was last used in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
 	LastUsedAt *time.Time `json:"lastUsedAt,omitempty"`
 

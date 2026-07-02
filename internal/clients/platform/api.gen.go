@@ -617,6 +617,7 @@ const (
 	OrganizationSupportPlanENTERPRISE                 OrganizationSupportPlan = "ENTERPRISE"
 	OrganizationSupportPlanENTERPRISEBUSINESSCRITICAL OrganizationSupportPlan = "ENTERPRISE_BUSINESS_CRITICAL"
 	OrganizationSupportPlanENTERPRISEV2               OrganizationSupportPlan = "ENTERPRISE_V2"
+	OrganizationSupportPlanIBMENTERPRISE              OrganizationSupportPlan = "IBM_ENTERPRISE"
 	OrganizationSupportPlanINACTIVE                   OrganizationSupportPlan = "INACTIVE"
 	OrganizationSupportPlanINTERNAL                   OrganizationSupportPlan = "INTERNAL"
 	OrganizationSupportPlanPOV                        OrganizationSupportPlan = "POV"
@@ -1266,16 +1267,25 @@ type Cluster struct {
 	// DbInstanceType The type of database instance that is used for the cluster.
 	DbInstanceType string `json:"dbInstanceType"`
 
+	// DrPodSubnetRange The disaster recovery subnet range for Pods. For GCP clusters only.
+	DrPodSubnetRange *string `json:"drPodSubnetRange,omitempty"`
+
 	// DrRegion The secondary region for Disaster Recovery for the cluster.
 	DrRegion string `json:"drRegion"`
 
 	// DrSecondaryVpcCidr The secondary CIDR for the DR region. For AWS clusters only.
 	DrSecondaryVpcCidr *string `json:"drSecondaryVpcCidr,omitempty"`
 
-	// DrVpcSubnetRange The VPC subnet range for the DR region. For AWS clusters only.
+	// DrServicePeeringRange The disaster recovery service peering range. For GCP clusters only.
+	DrServicePeeringRange *string `json:"drServicePeeringRange,omitempty"`
+
+	// DrServiceSubnetRange The disaster recovery service subnet range. For GCP clusters only.
+	DrServiceSubnetRange *string `json:"drServiceSubnetRange,omitempty"`
+
+	// DrVpcSubnetRange The VPC subnet range for the DR region.
 	DrVpcSubnetRange *string `json:"drVpcSubnetRange,omitempty"`
 
-	// EnableReplicationTimeControl Whether S3 Replication Time Control is enabled for DR.
+	// EnableReplicationTimeControl Whether Bucket Storage Replication Time Control is enabled for DR.
 	EnableReplicationTimeControl *bool `json:"enableReplicationTimeControl,omitempty"`
 
 	// FailoverInProgress Whether a failover is currently in progress.
@@ -1311,7 +1321,9 @@ type Cluster struct {
 	ProviderAccount *string `json:"providerAccount,omitempty"`
 
 	// Region The region in which the cluster is created.
-	Region           string  `json:"region"`
+	Region string `json:"region"`
+
+	// SecondaryVpcCidr The secondary VPC CIDR. For AWS clusters only.
 	SecondaryVpcCidr *string `json:"secondaryVpcCidr,omitempty"`
 
 	// ServicePeeringRange The service peering range. For GCP clusters only.
@@ -1333,8 +1345,10 @@ type Cluster struct {
 	Type ClusterType `json:"type"`
 
 	// UpdatedAt The time when the cluster was last updated in UTC. formatted as `YYYY-MM-DDTHH:MM:SSZ`.
-	UpdatedAt      time.Time `json:"updatedAt"`
-	VpcSubnetRange string    `json:"vpcSubnetRange"`
+	UpdatedAt time.Time `json:"updatedAt"`
+
+	// VpcSubnetRange The VPC subnet range.
+	VpcSubnetRange string `json:"vpcSubnetRange"`
 
 	// WorkspaceIds The list of Workspaces that are authorized to the cluster.
 	WorkspaceIds *[]string `json:"workspaceIds,omitempty"`
@@ -1525,16 +1539,16 @@ type CreateAwsClusterRequest struct {
 	// DbInstanceType The type of database instance that is used for the cluster. Required for Hybrid clusters.
 	DbInstanceType *string `json:"dbInstanceType,omitempty"`
 
-	// DrRegion The secondary region for Disaster Recovery. For AWS clusters only.
+	// DrRegion The secondary region for Disaster Recovery.
 	DrRegion *string `json:"drRegion,omitempty"`
 
-	// DrSecondaryVpcCidr The secondary CIDR for the DR region. Defaults to the primary secondary CIDR if not specified.
+	// DrSecondaryVpcCidr The secondary CIDR for the DR region. Defaults to the primary secondary CIDR if not specified. For AWS clusters only.
 	DrSecondaryVpcCidr *string `json:"drSecondaryVpcCidr,omitempty"`
 
-	// DrVpcSubnetRange The VPC subnet range for the DR region. Defaults to the primary VPC subnet range if not specified. For AWS clusters only.
+	// DrVpcSubnetRange The VPC subnet range for the DR region. Defaults to the primary VPC subnet range if not specified.
 	DrVpcSubnetRange *string `json:"drVpcSubnetRange,omitempty"`
 
-	// EnableReplicationTimeControl Whether S3 Replication Time Control should be enabled for DR for SLA backed 15 minute RPO on task logs.
+	// EnableReplicationTimeControl Whether Bucket Storage Replication Time Control should be enabled for DR on task logs.
 	EnableReplicationTimeControl *bool `json:"enableReplicationTimeControl,omitempty"`
 
 	// K8sTags The Kubernetes tags in the cluster.
@@ -1579,11 +1593,14 @@ type CreateAzureClusterRequest struct {
 	// DbInstanceType The type of database instance that is used for the cluster. Required for Hybrid clusters.
 	DbInstanceType *string `json:"dbInstanceType,omitempty"`
 
-	// DrRegion The secondary region for Disaster Recovery. For AWS clusters only.
+	// DrRegion The secondary region for Disaster Recovery.
 	DrRegion *string `json:"drRegion,omitempty"`
 
-	// DrVpcSubnetRange The VPC subnet range for the DR region. Defaults to the primary VPC subnet range if not specified. For AWS clusters only.
+	// DrVpcSubnetRange The VPC subnet range for the DR region. Defaults to the primary VPC subnet range if not specified.
 	DrVpcSubnetRange *string `json:"drVpcSubnetRange,omitempty"`
+
+	// EnableReplicationTimeControl Whether Bucket Storage Replication Time Control should be enabled for DR on task logs.
+	EnableReplicationTimeControl *bool `json:"enableReplicationTimeControl,omitempty"`
 
 	// K8sTags The Kubernetes tags in the cluster.
 	K8sTags *[]ClusterK8sTag `json:"k8sTags,omitempty"`
@@ -1626,7 +1643,7 @@ type CreateClusterRequest struct {
 
 // CreateDagDurationAlertProperties defines model for CreateDagDurationAlertProperties.
 type CreateDagDurationAlertProperties struct {
-	// DagDurationSeconds The duration of the DAG in seconds.
+	// DagDurationSeconds The duration of the DAG in seconds. Min 60 (1 minute), max 604800 (7 days).
 	DagDurationSeconds int `json:"dagDurationSeconds"`
 
 	// DeploymentId The ID of the deployment to which the alert is scoped.
@@ -2147,11 +2164,23 @@ type CreateGcpClusterRequest struct {
 	// DbInstanceType The type of database instance that is used for the cluster. Required for Hybrid clusters.
 	DbInstanceType *string `json:"dbInstanceType,omitempty"`
 
-	// DrRegion The secondary region for Disaster Recovery. For AWS clusters only.
+	// DrPodSubnetRange The disaster recovery subnet range for Pods. For GCP clusters only.
+	DrPodSubnetRange *string `json:"drPodSubnetRange,omitempty"`
+
+	// DrRegion The secondary region for Disaster Recovery.
 	DrRegion *string `json:"drRegion,omitempty"`
 
-	// DrVpcSubnetRange The VPC subnet range for the DR region. Defaults to the primary VPC subnet range if not specified. For AWS clusters only.
+	// DrServicePeeringRange The disaster recovery service peering range. For GCP clusters only.
+	DrServicePeeringRange *string `json:"drServicePeeringRange,omitempty"`
+
+	// DrServiceSubnetRange The disaster recovery service subnet range. For GCP clusters only.
+	DrServiceSubnetRange *string `json:"drServiceSubnetRange,omitempty"`
+
+	// DrVpcSubnetRange The VPC subnet range for the DR region. Defaults to the primary VPC subnet range if not specified.
 	DrVpcSubnetRange *string `json:"drVpcSubnetRange,omitempty"`
+
+	// EnableReplicationTimeControl Whether Bucket Storage Replication Time Control should be enabled for DR on task logs.
+	EnableReplicationTimeControl *bool `json:"enableReplicationTimeControl,omitempty"`
 
 	// K8sTags The Kubernetes tags in the cluster.
 	K8sTags *[]ClusterK8sTag `json:"k8sTags,omitempty"`
@@ -3362,6 +3391,9 @@ type Organization struct {
 	Product      *OrganizationProduct       `json:"product,omitempty"`
 	ProductPlans *[]OrganizationProductPlan `json:"productPlans,omitempty"`
 
+	// ShouldEnforceDedicatedClusters When true, only dedicated cluster deployments can be created.
+	ShouldEnforceDedicatedClusters bool `json:"shouldEnforceDedicatedClusters"`
+
 	// Status The Organization's status.
 	Status *OrganizationStatus `json:"status,omitempty"`
 
@@ -3485,6 +3517,9 @@ type ProviderRegion struct {
 	// Limited Whether the region is limited.
 	Limited *bool `json:"limited,omitempty"`
 
+	// Location The multi-region location code for DR compatibility.
+	Location *string `json:"location,omitempty"`
+
 	// Name The name of the region.
 	Name string `json:"name"`
 }
@@ -3574,7 +3609,7 @@ type UpdateClusterRequest struct {
 
 // UpdateDagDurationAlertProperties defines model for UpdateDagDurationAlertProperties.
 type UpdateDagDurationAlertProperties struct {
-	// DagDurationSeconds The duration of the DAG in seconds.
+	// DagDurationSeconds The duration of the DAG in seconds. Min 60 (1 minute), max 604800 (7 days).
 	DagDurationSeconds *int `json:"dagDurationSeconds,omitempty"`
 }
 
@@ -3729,8 +3764,26 @@ type UpdateDedicatedClusterRequest struct {
 	// DbInstanceType The cluster's database instance type. Required for Hybrid clusters.
 	DbInstanceType *string `json:"dbInstanceType,omitempty"`
 
+	// DrPodSubnetRange The disaster recovery subnet range for Pods. For GCP clusters only.
+	DrPodSubnetRange *string `json:"drPodSubnetRange,omitempty"`
+
+	// DrRegion The secondary region for Disaster Recovery.
+	DrRegion *string `json:"drRegion,omitempty"`
+
+	// DrServicePeeringRange The disaster recovery service peering range. For GCP clusters only.
+	DrServicePeeringRange *string `json:"drServicePeeringRange,omitempty"`
+
+	// DrServiceSubnetRange The disaster recovery service subnet range. For GCP clusters only.
+	DrServiceSubnetRange *string `json:"drServiceSubnetRange,omitempty"`
+
+	// DrVpcSubnetRange The VPC subnet range for the DR region. Defaults to the primary VPC subnet range if not specified.
+	DrVpcSubnetRange *string `json:"drVpcSubnetRange,omitempty"`
+
 	// EnableDr Set to false to disable Disaster Recovery. Enabling DR on existing clusters is only supported via the admin API.
 	EnableDr *bool `json:"enableDr,omitempty"`
+
+	// EnableReplicationTimeControl Whether Bucket Storage Replication Time Control should be enabled for DR on task logs.
+	EnableReplicationTimeControl *bool `json:"enableReplicationTimeControl,omitempty"`
 
 	// IsFailedOver Whether to trigger a DR failover for the cluster.
 	IsFailedOver *bool `json:"isFailedOver,omitempty"`
@@ -4123,6 +4176,9 @@ type UpdateOrganizationRequest struct {
 
 	// Name The name of the Organization.
 	Name string `json:"name"`
+
+	// ShouldEnforceDedicatedClusters When true, only dedicated cluster deployments can be created. Requires Team tier or higher.
+	ShouldEnforceDedicatedClusters *bool `json:"shouldEnforceDedicatedClusters,omitempty"`
 }
 
 // UpdatePagerDutyNotificationChannelRequest defines model for UpdatePagerDutyNotificationChannelRequest.
@@ -5208,7 +5264,7 @@ func (t CreateNotificationChannelRequest) AsCreateDagTriggerNotificationChannelR
 
 // FromCreateDagTriggerNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreateDagTriggerNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) FromCreateDagTriggerNotificationChannelRequest(v CreateDagTriggerNotificationChannelRequest) error {
-	v.Type = "DAG_TRIGGER"
+	v.Type = "CreateDagTriggerNotificationChannelRequest"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5216,7 +5272,7 @@ func (t *CreateNotificationChannelRequest) FromCreateDagTriggerNotificationChann
 
 // MergeCreateDagTriggerNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateDagTriggerNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreateDagTriggerNotificationChannelRequest(v CreateDagTriggerNotificationChannelRequest) error {
-	v.Type = "DAG_TRIGGER"
+	v.Type = "CreateDagTriggerNotificationChannelRequest"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5236,7 +5292,7 @@ func (t CreateNotificationChannelRequest) AsCreateEmailNotificationChannelReques
 
 // FromCreateEmailNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreateEmailNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) FromCreateEmailNotificationChannelRequest(v CreateEmailNotificationChannelRequest) error {
-	v.Type = "EMAIL"
+	v.Type = "CreateEmailNotificationChannelRequest"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5244,7 +5300,7 @@ func (t *CreateNotificationChannelRequest) FromCreateEmailNotificationChannelReq
 
 // MergeCreateEmailNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateEmailNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreateEmailNotificationChannelRequest(v CreateEmailNotificationChannelRequest) error {
-	v.Type = "EMAIL"
+	v.Type = "CreateEmailNotificationChannelRequest"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5264,7 +5320,7 @@ func (t CreateNotificationChannelRequest) AsCreateOpsgenieNotificationChannelReq
 
 // FromCreateOpsgenieNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreateOpsgenieNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) FromCreateOpsgenieNotificationChannelRequest(v CreateOpsgenieNotificationChannelRequest) error {
-	v.Type = "OPSGENIE"
+	v.Type = "CreateOpsgenieNotificationChannelRequest"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5272,7 +5328,7 @@ func (t *CreateNotificationChannelRequest) FromCreateOpsgenieNotificationChannel
 
 // MergeCreateOpsgenieNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateOpsgenieNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreateOpsgenieNotificationChannelRequest(v CreateOpsgenieNotificationChannelRequest) error {
-	v.Type = "OPSGENIE"
+	v.Type = "CreateOpsgenieNotificationChannelRequest"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5292,7 +5348,7 @@ func (t CreateNotificationChannelRequest) AsCreatePagerDutyNotificationChannelRe
 
 // FromCreatePagerDutyNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreatePagerDutyNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) FromCreatePagerDutyNotificationChannelRequest(v CreatePagerDutyNotificationChannelRequest) error {
-	v.Type = "PAGERDUTY"
+	v.Type = "CreatePagerDutyNotificationChannelRequest"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5300,7 +5356,7 @@ func (t *CreateNotificationChannelRequest) FromCreatePagerDutyNotificationChanne
 
 // MergeCreatePagerDutyNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreatePagerDutyNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreatePagerDutyNotificationChannelRequest(v CreatePagerDutyNotificationChannelRequest) error {
-	v.Type = "PAGERDUTY"
+	v.Type = "CreatePagerDutyNotificationChannelRequest"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5320,7 +5376,7 @@ func (t CreateNotificationChannelRequest) AsCreateSlackNotificationChannelReques
 
 // FromCreateSlackNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreateSlackNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) FromCreateSlackNotificationChannelRequest(v CreateSlackNotificationChannelRequest) error {
-	v.Type = "SLACK"
+	v.Type = "CreateSlackNotificationChannelRequest"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5328,7 +5384,7 @@ func (t *CreateNotificationChannelRequest) FromCreateSlackNotificationChannelReq
 
 // MergeCreateSlackNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateSlackNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreateSlackNotificationChannelRequest(v CreateSlackNotificationChannelRequest) error {
-	v.Type = "SLACK"
+	v.Type = "CreateSlackNotificationChannelRequest"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5353,15 +5409,15 @@ func (t CreateNotificationChannelRequest) ValueByDiscriminator() (interface{}, e
 		return nil, err
 	}
 	switch discriminator {
-	case "DAG_TRIGGER":
+	case "CreateDagTriggerNotificationChannelRequest":
 		return t.AsCreateDagTriggerNotificationChannelRequest()
-	case "EMAIL":
+	case "CreateEmailNotificationChannelRequest":
 		return t.AsCreateEmailNotificationChannelRequest()
-	case "OPSGENIE":
+	case "CreateOpsgenieNotificationChannelRequest":
 		return t.AsCreateOpsgenieNotificationChannelRequest()
-	case "PAGERDUTY":
+	case "CreatePagerDutyNotificationChannelRequest":
 		return t.AsCreatePagerDutyNotificationChannelRequest()
-	case "SLACK":
+	case "CreateSlackNotificationChannelRequest":
 		return t.AsCreateSlackNotificationChannelRequest()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
@@ -5973,15 +6029,15 @@ func (t UpdateNotificationChannelRequest) ValueByDiscriminator() (interface{}, e
 		return nil, err
 	}
 	switch discriminator {
-	case "DAG_TRIGGER":
+	case "UpdateDagTriggerNotificationChannelRequest":
 		return t.AsUpdateDagTriggerNotificationChannelRequest()
-	case "EMAIL":
+	case "UpdateEmailNotificationChannelRequest":
 		return t.AsUpdateEmailNotificationChannelRequest()
-	case "OPSGENIE":
+	case "UpdateOpsgenieNotificationChannelRequest":
 		return t.AsUpdateOpsgenieNotificationChannelRequest()
-	case "PAGERDUTY":
+	case "UpdatePagerDutyNotificationChannelRequest":
 		return t.AsUpdatePagerDutyNotificationChannelRequest()
-	case "SLACK":
+	case "UpdateSlackNotificationChannelRequest":
 		return t.AsUpdateSlackNotificationChannelRequest()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
