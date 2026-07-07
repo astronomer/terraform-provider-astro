@@ -580,6 +580,7 @@ func TestAcc_ResourceClusterGcpWithDr(t *testing.T) {
 						IsDrEnabled:      true,
 						DrRegion:         "us-east1",
 						DrVpcSubnetRange: "172.24.0.0/20",
+						DrPodSubnetRange: "172.25.0.0/19",
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(gcpResourceVar, "name", gcpClusterName),
@@ -878,6 +879,7 @@ type clusterInput struct {
 	IsDrEnabled                        bool
 	DrRegion                           string
 	DrVpcSubnetRange                   string
+	DrPodSubnetRange                   string
 	DrSecondaryVpcCidr                 string
 	EnableReplicationTimeControl       bool
 }
@@ -907,6 +909,10 @@ func cluster(input clusterInput) string {
 		if input.DrVpcSubnetRange != "" {
 			drFields += fmt.Sprintf(`
 	dr_vpc_subnet_range = "%v"`, input.DrVpcSubnetRange)
+		}
+		if input.DrPodSubnetRange != "" {
+			drFields += fmt.Sprintf(`
+	dr_pod_subnet_range = "%v"`, input.DrPodSubnetRange)
 		}
 		if input.DrSecondaryVpcCidr != "" {
 			drFields += fmt.Sprintf(`

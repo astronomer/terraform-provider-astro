@@ -752,6 +752,12 @@ func validateGcpConfig(ctx context.Context, data *models.ClusterResource) diag.D
 				"Please set dr_vpc_subnet_range",
 			)
 		}
+		if data.DrPodSubnetRange.IsNull() || data.DrPodSubnetRange.IsUnknown() {
+			diags.AddError(
+				"dr_pod_subnet_range is required for 'GCP' cluster when is_dr_enabled is true",
+				"Please set dr_pod_subnet_range",
+			)
+		}
 	}
 
 	if !data.IsDrEnabled.IsNull() && !data.IsDrEnabled.ValueBool() {
