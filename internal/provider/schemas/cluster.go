@@ -348,15 +348,15 @@ func ClusterDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 			MarkdownDescription: "Whether the cluster is currently failed over to the DR region",
 			Computed:            true,
 		},
-		"dr_pod_subnet_range": resourceSchema.StringAttribute{
+		"dr_pod_subnet_range": datasourceSchema.StringAttribute{
 			MarkdownDescription: "The disaster recovery subnet range for pods (GCP Only).",
 			Computed:            true,
 		},
-		"dr_service_peering_range": resourceSchema.StringAttribute{
+		"dr_service_peering_range": datasourceSchema.StringAttribute{
 			MarkdownDescription: "The disaster recovery service peering range (GCP Only).",
 			Computed:            true,
 		},
-		"dr_service_subnet_range": resourceSchema.StringAttribute{
+		"dr_service_subnet_range": datasourceSchema.StringAttribute{
 			MarkdownDescription: "The disaster recovery service subnet range (GCP Only).",
 			Computed:            true,
 		},
