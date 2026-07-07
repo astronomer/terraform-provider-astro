@@ -1,0 +1,188 @@
+{{- /*
+  FORKED TEMPLATE — do not re-sync from upstream without re-applying the customizations below.
+
+  Forked from: oapi-codegen v2.1.0 — pkg/codegen/templates/union.tmpl
+    https://github.com/deepmap/oapi-codegen/blob/v2.1.0/pkg/codegen/templates/union.tmpl
+  Kept in sync with: DESIRED_OAPI_CODEGEN_VERSION in the Makefile.
+
+  Customization (the From and Merge methods below): when a discriminator mapping value
+  differs from the schema name, inject the discriminator into the marshaled JSON
+  (obj["<jsonProp>"] = "<wireValue>") instead of assigning t.<GoField> = "<wireValue>".
+  Rationale: Core marks some discriminator fields optional (e.g. the alert update
+  requests), which oapi-codegen renders as pointer/absent Go fields. The upstream direct
+  assignment then fails to compile. JSON injection works whether the field is required
+  (value) or optional (pointer). The (ne $value $element) guard skips injection for
+  identity-keyed mappings (mapping value == schema name = no real wire mapping).
+
+  ON OAPI-CODEGEN UPGRADE: diff the new upstream union.tmpl, then re-apply the injection
+  blocks (the else branches under "if $hasProperty") and the (ne $value $element) guard.
+*/ -}}
+{{range .Types}}
+    {{$typeName := .TypeName -}}
+    {{$discriminator := .Schema.Discriminator}}
+    {{$properties := .Schema.Properties -}}
+    {{range .Schema.UnionElements}}
+        {{$element := . -}}
+        // As{{ .Method }} returns the union data inside the {{$typeName}} as a {{.}}
+        func (t {{$typeName}}) As{{ .Method }}() ({{.}}, error) {
+            var body {{.}}
+            err := json.Unmarshal(t.union, &body)
+            return body, err
+        }
+
+        // From{{ .Method }} overwrites any union data inside the {{$typeName}} as the provided {{.}}
+        func (t *{{$typeName}}) From{{ .Method }} (v {{.}}) error {
+            b, err := json.Marshal(v)
+            if err != nil {
+                return err
+            }
+            {{if $discriminator -}}
+            {{range $value, $type := $discriminator.Mapping -}}
+                {{if and (eq $type $element) (ne $value $element) -}}
+                    {{$hasProperty := false -}}
+                    {{range $properties -}}
+                        {{if eq .GoFieldName $discriminator.PropertyName -}}
+                            {{$hasProperty = true -}}
+                        {{end -}}
+                    {{end -}}
+                    {{if $hasProperty -}}
+            t.{{$discriminator.PropertyName}} = "{{$value}}"
+                    {{else -}}
+            // Inject discriminator into the marshaled JSON so this works whether
+            // the variant's discriminator field is required (value) or optional (pointer).
+            obj := make(map[string]json.RawMessage)
+            if err = json.Unmarshal(b, &obj); err != nil {
+                return err
+            }
+            obj["{{$discriminator.Property}}"] = json.RawMessage(`"{{$value}}"`)
+            b, err = json.Marshal(obj)
+            if err != nil {
+                return err
+            }
+                    {{end -}}
+                {{end -}}
+            {{end -}}
+            {{end -}}
+            t.union = b
+            return err
+        }
+
+        // Merge{{ .Method }} performs a merge with any union data inside the {{$typeName}}, using the provided {{.}}
+        func (t *{{$typeName}}) Merge{{ .Method }} (v {{.}}) error {
+            b, err := json.Marshal(v)
+            if err != nil {
+                return err
+            }
+            {{if $discriminator -}}
+            {{range $value, $type := $discriminator.Mapping -}}
+                {{if and (eq $type $element) (ne $value $element) -}}
+                    {{$hasProperty := false -}}
+                    {{range $properties -}}
+                        {{if eq .GoFieldName $discriminator.PropertyName -}}
+                            {{$hasProperty = true -}}
+                        {{end -}}
+                    {{end -}}
+                    {{if $hasProperty -}}
+            t.{{$discriminator.PropertyName}} = "{{$value}}"
+                    {{else -}}
+            // Inject discriminator into the marshaled JSON so this works whether
+            // the variant's discriminator field is required (value) or optional (pointer).
+            obj := make(map[string]json.RawMessage)
+            if err = json.Unmarshal(b, &obj); err != nil {
+                return err
+            }
+            obj["{{$discriminator.Property}}"] = json.RawMessage(`"{{$value}}"`)
+            b, err = json.Marshal(obj)
+            if err != nil {
+                return err
+            }
+                    {{end -}}
+                {{end -}}
+            {{end -}}
+            {{end -}}
+
+            merged, err := runtime.JSONMerge(t.union, b)
+            t.union = merged
+            return err
+        }
+    {{end}}
+
+    {{if $discriminator}}
+        func (t {{.TypeName}}) Discriminator() (string, error) {
+            var discriminator struct {
+                Discriminator string {{$discriminator.JSONTag}}
+            }
+            err := json.Unmarshal(t.union, &discriminator)
+            return discriminator.Discriminator, err
+        }
+
+        {{if ne 0 (len $discriminator.Mapping)}}
+            func (t {{.TypeName}}) ValueByDiscriminator() (interface{}, error) {
+                discriminator, err := t.Discriminator()
+                if err != nil {
+                    return nil, err
+                }
+                switch discriminator{
+                    {{range $value, $type := $discriminator.Mapping -}}
+                        case "{{$value}}":
+                            return t.As{{$type}}()
+                    {{end -}}
+                    default:
+                        return nil, errors.New("unknown discriminator value: "+discriminator)
+                }
+            }
+        {{end}}
+    {{end}}
+
+    {{if not .Schema.HasAdditionalProperties}}
+
+    func (t {{.TypeName}}) MarshalJSON() ([]byte, error) {
+        b, err := t.union.MarshalJSON()
+        {{if ne 0 (len .Schema.Properties) -}}
+            if err != nil {
+                return nil, err
+            }
+            object := make(map[string]json.RawMessage)
+            if t.union != nil {
+              err = json.Unmarshal(b, &object)
+              if err != nil {
+                return nil, err
+              }
+            }
+            {{range .Schema.Properties}}
+            {{if not .Required}}if t.{{.GoFieldName}} != nil { {{end}}
+                object["{{.JsonFieldName}}"], err = json.Marshal(t.{{.GoFieldName}})
+                if err != nil {
+                    return nil, fmt.Errorf("error marshaling '{{.JsonFieldName}}': %w", err)
+                }
+            {{if not .Required}} }{{end}}
+            {{end -}}
+            b, err = json.Marshal(object)
+        {{end -}}
+        return b, err
+    }
+
+    func (t *{{.TypeName}}) UnmarshalJSON(b []byte) error {
+        err := t.union.UnmarshalJSON(b)
+        {{if ne 0 (len .Schema.Properties) -}}
+            if err != nil {
+                return err
+            }
+            object := make(map[string]json.RawMessage)
+            err = json.Unmarshal(b, &object)
+            if err != nil {
+                return err
+            }
+            {{range .Schema.Properties}}
+                if raw, found := object["{{.JsonFieldName}}"]; found {
+                    err = json.Unmarshal(raw, &t.{{.GoFieldName}})
+                    if err != nil {
+                        return fmt.Errorf("error reading '{{.JsonFieldName}}': %w", err)
+                    }
+                }
+            {{end}}
+        {{end -}}
+        return err
+    }
+    {{end}}
+{{end}}

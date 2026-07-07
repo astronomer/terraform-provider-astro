@@ -95,7 +95,10 @@ api_client_gen:
 	else \
 		echo "Correct version of oapi-codegen is already installed."; \
 	fi
+	# Both clients below use the forked union template (-templates ./internal/clients/oapi-templates,
+	# see union.tmpl) which injects discriminator values into marshaled JSON so Core's optional
+	# discriminator fields compile. Re-apply that fork when bumping DESIRED_OAPI_CODEGEN_VERSION.
 	@echo "Generating IAM API client..."
-	oapi-codegen -include-tags=User,Invite,Team,ApiToken,AgentToken,Role -generate=types,client -package=iam "$(CORE_IAM_OPENAPI_SPEC)" > ./internal/clients/iam/api.gen.go
+	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=User,Invite,Team,ApiToken,AgentToken,Role -generate=types,client -package=iam "$(CORE_IAM_OPENAPI_SPEC)" > ./internal/clients/iam/api.gen.go
 	@echo "Generating Platform API client..."
-	oapi-codegen -include-tags=Organization,Workspace,Cluster,Options,Deployment,Role,Environment,Alerts,NotificationChannels -generate=types,client -package=platform "$(CORE_PLATFORM_OPENAPI_SPEC)" > ./internal/clients/platform/api.gen.go
+	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Organization,Workspace,Cluster,Options,Deployment,Role,Environment,Alerts,NotificationChannels -generate=types,client -package=platform "$(CORE_PLATFORM_OPENAPI_SPEC)" > ./internal/clients/platform/api.gen.go
