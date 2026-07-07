@@ -574,11 +574,12 @@ func TestAcc_ResourceClusterGcpWithDr(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					cluster(clusterInput{
-						Name:          gcpClusterName,
-						Region:        "us-central1",
-						CloudProvider: "GCP",
-						IsDrEnabled:   true,
-						DrRegion:      "us-east1",
+						Name:             gcpClusterName,
+						Region:           "us-central1",
+						CloudProvider:    "GCP",
+						IsDrEnabled:      true,
+						DrRegion:         "us-east1",
+						DrVpcSubnetRange: "172.24.0.0/20",
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(gcpResourceVar, "name", gcpClusterName),
@@ -702,6 +703,7 @@ resource "astro_cluster" "%v" {
 	type = "DEDICATED"
 	region = "us-central1"
 	cloud_provider = "GCP"
+	vpc_subnet_range = "172.20.0.0/20"
 	pod_subnet_range = "172.21.0.0/19"
 	service_peering_range = "172.23.0.0/20"
 	service_subnet_range = "172.22.0.0/22"
@@ -720,6 +722,7 @@ resource "astro_cluster" "%v" {
 	type = "DEDICATED"
 	region = "us-central1"
 	cloud_provider = "GCP"
+	vpc_subnet_range = "172.20.0.0/20"
 	pod_subnet_range = "172.21.0.0/19"
 	service_peering_range = "172.23.0.0/20"
 	service_subnet_range = "172.22.0.0/22"
@@ -738,6 +741,7 @@ resource "astro_cluster" "%v" {
 	type = "DEDICATED"
 	region = "us-central1"
 	cloud_provider = "GCP"
+	vpc_subnet_range = "172.20.0.0/20"
 	pod_subnet_range = "172.21.0.0/19"
 	service_peering_range = "172.23.0.0/20"
 	service_subnet_range = "172.22.0.0/22"

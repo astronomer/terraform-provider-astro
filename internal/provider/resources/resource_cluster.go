@@ -746,6 +746,12 @@ func validateGcpConfig(ctx context.Context, data *models.ClusterResource) diag.D
 				"Please set dr_region to the secondary region for Disaster Recovery",
 			)
 		}
+		if data.DrVpcSubnetRange.IsNull() || data.DrVpcSubnetRange.IsUnknown() {
+			diags.AddError(
+				"dr_vpc_subnet_range is required for 'GCP' cluster when is_dr_enabled is true",
+				"Please set dr_vpc_subnet_range",
+			)
+		}
 	}
 
 	if !data.IsDrEnabled.IsNull() && !data.IsDrEnabled.ValueBool() {
