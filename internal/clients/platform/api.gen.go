@@ -5264,7 +5264,7 @@ func (t CreateNotificationChannelRequest) AsCreateDagTriggerNotificationChannelR
 
 // FromCreateDagTriggerNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreateDagTriggerNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) FromCreateDagTriggerNotificationChannelRequest(v CreateDagTriggerNotificationChannelRequest) error {
-	v.Type = "CreateDagTriggerNotificationChannelRequest"
+	v.Type = "DAG_TRIGGER"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5272,7 +5272,7 @@ func (t *CreateNotificationChannelRequest) FromCreateDagTriggerNotificationChann
 
 // MergeCreateDagTriggerNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateDagTriggerNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreateDagTriggerNotificationChannelRequest(v CreateDagTriggerNotificationChannelRequest) error {
-	v.Type = "CreateDagTriggerNotificationChannelRequest"
+	v.Type = "DAG_TRIGGER"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5292,7 +5292,7 @@ func (t CreateNotificationChannelRequest) AsCreateEmailNotificationChannelReques
 
 // FromCreateEmailNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreateEmailNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) FromCreateEmailNotificationChannelRequest(v CreateEmailNotificationChannelRequest) error {
-	v.Type = "CreateEmailNotificationChannelRequest"
+	v.Type = "EMAIL"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5300,7 +5300,7 @@ func (t *CreateNotificationChannelRequest) FromCreateEmailNotificationChannelReq
 
 // MergeCreateEmailNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateEmailNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreateEmailNotificationChannelRequest(v CreateEmailNotificationChannelRequest) error {
-	v.Type = "CreateEmailNotificationChannelRequest"
+	v.Type = "EMAIL"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5320,7 +5320,7 @@ func (t CreateNotificationChannelRequest) AsCreateOpsgenieNotificationChannelReq
 
 // FromCreateOpsgenieNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreateOpsgenieNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) FromCreateOpsgenieNotificationChannelRequest(v CreateOpsgenieNotificationChannelRequest) error {
-	v.Type = "CreateOpsgenieNotificationChannelRequest"
+	v.Type = "OPSGENIE"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5328,7 +5328,7 @@ func (t *CreateNotificationChannelRequest) FromCreateOpsgenieNotificationChannel
 
 // MergeCreateOpsgenieNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateOpsgenieNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreateOpsgenieNotificationChannelRequest(v CreateOpsgenieNotificationChannelRequest) error {
-	v.Type = "CreateOpsgenieNotificationChannelRequest"
+	v.Type = "OPSGENIE"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5348,7 +5348,7 @@ func (t CreateNotificationChannelRequest) AsCreatePagerDutyNotificationChannelRe
 
 // FromCreatePagerDutyNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreatePagerDutyNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) FromCreatePagerDutyNotificationChannelRequest(v CreatePagerDutyNotificationChannelRequest) error {
-	v.Type = "CreatePagerDutyNotificationChannelRequest"
+	v.Type = "PAGERDUTY"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5356,7 +5356,7 @@ func (t *CreateNotificationChannelRequest) FromCreatePagerDutyNotificationChanne
 
 // MergeCreatePagerDutyNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreatePagerDutyNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreatePagerDutyNotificationChannelRequest(v CreatePagerDutyNotificationChannelRequest) error {
-	v.Type = "CreatePagerDutyNotificationChannelRequest"
+	v.Type = "PAGERDUTY"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5376,7 +5376,7 @@ func (t CreateNotificationChannelRequest) AsCreateSlackNotificationChannelReques
 
 // FromCreateSlackNotificationChannelRequest overwrites any union data inside the CreateNotificationChannelRequest as the provided CreateSlackNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) FromCreateSlackNotificationChannelRequest(v CreateSlackNotificationChannelRequest) error {
-	v.Type = "CreateSlackNotificationChannelRequest"
+	v.Type = "SLACK"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -5384,7 +5384,7 @@ func (t *CreateNotificationChannelRequest) FromCreateSlackNotificationChannelReq
 
 // MergeCreateSlackNotificationChannelRequest performs a merge with any union data inside the CreateNotificationChannelRequest, using the provided CreateSlackNotificationChannelRequest
 func (t *CreateNotificationChannelRequest) MergeCreateSlackNotificationChannelRequest(v CreateSlackNotificationChannelRequest) error {
-	v.Type = "CreateSlackNotificationChannelRequest"
+	v.Type = "SLACK"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5409,15 +5409,15 @@ func (t CreateNotificationChannelRequest) ValueByDiscriminator() (interface{}, e
 		return nil, err
 	}
 	switch discriminator {
-	case "CreateDagTriggerNotificationChannelRequest":
+	case "DAG_TRIGGER":
 		return t.AsCreateDagTriggerNotificationChannelRequest()
-	case "CreateEmailNotificationChannelRequest":
+	case "EMAIL":
 		return t.AsCreateEmailNotificationChannelRequest()
-	case "CreateOpsgenieNotificationChannelRequest":
+	case "OPSGENIE":
 		return t.AsCreateOpsgenieNotificationChannelRequest()
-	case "CreatePagerDutyNotificationChannelRequest":
+	case "PAGERDUTY":
 		return t.AsCreatePagerDutyNotificationChannelRequest()
-	case "CreateSlackNotificationChannelRequest":
+	case "SLACK":
 		return t.AsCreateSlackNotificationChannelRequest()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
@@ -6029,15 +6029,15 @@ func (t UpdateNotificationChannelRequest) ValueByDiscriminator() (interface{}, e
 		return nil, err
 	}
 	switch discriminator {
-	case "UpdateDagTriggerNotificationChannelRequest":
+	case "DAG_TRIGGER":
 		return t.AsUpdateDagTriggerNotificationChannelRequest()
-	case "UpdateEmailNotificationChannelRequest":
+	case "EMAIL":
 		return t.AsUpdateEmailNotificationChannelRequest()
-	case "UpdateOpsgenieNotificationChannelRequest":
+	case "OPSGENIE":
 		return t.AsUpdateOpsgenieNotificationChannelRequest()
-	case "UpdatePagerDutyNotificationChannelRequest":
+	case "PAGERDUTY":
 		return t.AsUpdatePagerDutyNotificationChannelRequest()
-	case "UpdateSlackNotificationChannelRequest":
+	case "SLACK":
 		return t.AsUpdateSlackNotificationChannelRequest()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
