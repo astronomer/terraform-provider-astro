@@ -156,16 +156,21 @@ func (r *ClusterResource) Create(
 		}
 	case platform.ClusterCloudProviderGCP:
 		createGcpDedicatedClusterRequest := platform.CreateGcpClusterRequest{
-			CloudProvider:       platform.CreateGcpClusterRequestCloudProvider(data.CloudProvider.ValueString()),
-			Name:                data.Name.ValueString(),
-			NodePools:           nil,
-			PodSubnetRange:      data.PodSubnetRange.ValueString(),
-			ProviderAccount:     data.ProviderAccount.ValueStringPointer(),
-			Region:              data.Region.ValueString(),
-			ServicePeeringRange: data.ServicePeeringRange.ValueString(),
-			ServiceSubnetRange:  data.ServiceSubnetRange.ValueString(),
-			Type:                platform.CreateGcpClusterRequestType(data.Type.ValueString()),
-			VpcSubnetRange:      data.VpcSubnetRange.ValueString(),
+			CloudProvider:         platform.CreateGcpClusterRequestCloudProvider(data.CloudProvider.ValueString()),
+			Name:                  data.Name.ValueString(),
+			NodePools:             nil,
+			PodSubnetRange:        data.PodSubnetRange.ValueString(),
+			ProviderAccount:       data.ProviderAccount.ValueStringPointer(),
+			Region:                data.Region.ValueString(),
+			ServicePeeringRange:   data.ServicePeeringRange.ValueString(),
+			ServiceSubnetRange:    data.ServiceSubnetRange.ValueString(),
+			Type:                  platform.CreateGcpClusterRequestType(data.Type.ValueString()),
+			VpcSubnetRange:        data.VpcSubnetRange.ValueString(),
+			DrRegion:              data.DrRegion.ValueStringPointer(),
+			DrVpcSubnetRange:      data.DrVpcSubnetRange.ValueStringPointer(),
+			DrPodSubnetRange:      data.DrPodSubnetRange.ValueStringPointer(),
+			DrServicePeeringRange: data.DrServicePeeringRange.ValueStringPointer(),
+			DrServiceSubnetRange:  data.DrServiceSubnetRange.ValueStringPointer(),
 		}
 
 		// workspaceIds
@@ -554,6 +559,24 @@ func validateAwsConfig(ctx context.Context, data *models.ClusterResource) diag.D
 			"Please remove service_subnet_range",
 		)
 	}
+	if !data.DrPodSubnetRange.IsNull() {
+		diags.AddError(
+			"dr_pod_subnet_range is not allowed for 'AWS' cluster",
+			"Please remove dr_pod_subnet_range",
+		)
+	}
+	if !data.DrServicePeeringRange.IsNull() {
+		diags.AddError(
+			"dr_service_peering_range is not allowed for 'AWS' cluster",
+			"Please remove dr_service_peering_range",
+		)
+	}
+	if !data.DrServiceSubnetRange.IsNull() {
+		diags.AddError(
+			"dr_service_subnet_range is not allowed for 'AWS' cluster",
+			"Please remove dr_service_subnet_range",
+		)
+	}
 
 	// DR validation
 	if !data.IsDrEnabled.IsNull() && !data.IsDrEnabled.IsUnknown() && data.IsDrEnabled.ValueBool() {
@@ -650,6 +673,24 @@ func validateAzureConfig(ctx context.Context, data *models.ClusterResource) diag
 			"Please remove enable_replication_time_control",
 		)
 	}
+	if !data.DrPodSubnetRange.IsNull() {
+		diags.AddError(
+			"dr_pod_subnet_range is not allowed for 'AZURE' cluster",
+			"Please remove dr_pod_subnet_range",
+		)
+	}
+	if !data.DrServicePeeringRange.IsNull() {
+		diags.AddError(
+			"dr_service_peering_range is not allowed for 'AZURE' cluster",
+			"Please remove dr_service_peering_range",
+		)
+	}
+	if !data.DrServiceSubnetRange.IsNull() {
+		diags.AddError(
+			"dr_service_subnet_range is not allowed for 'AZURE' cluster",
+			"Please remove dr_service_subnet_range",
+		)
+	}
 
 	return diags
 }
@@ -690,37 +731,78 @@ func validateGcpConfig(ctx context.Context, data *models.ClusterResource) diag.D
 			"Please remove secondary_vpc_cidr",
 		)
 	}
-
-	// DR is not supported for GCP clusters
-	if !data.IsDrEnabled.IsNull() && data.IsDrEnabled.ValueBool() {
-		diags.AddError(
-			"Disaster Recovery is not supported for 'GCP' clusters",
-			"Please remove is_dr_enabled, dr_region, dr_vpc_subnet_range, and dr_secondary_vpc_cidr",
-		)
-	}
-	if !data.DrRegion.IsNull() {
-		diags.AddError(
-			"dr_region is not allowed for 'GCP' cluster",
-			"Please remove dr_region",
-		)
-	}
-	if !data.DrVpcSubnetRange.IsNull() {
-		diags.AddError(
-			"dr_vpc_subnet_range is not allowed for 'GCP' cluster",
-			"Please remove dr_vpc_subnet_range",
-		)
-	}
 	if !data.DrSecondaryVpcCidr.IsNull() {
 		diags.AddError(
 			"dr_secondary_vpc_cidr is not allowed for 'GCP' cluster",
 			"Please remove dr_secondary_vpc_cidr",
 		)
 	}
-	if !data.EnableReplicationTimeControl.IsNull() {
-		diags.AddError(
-			"enable_replication_time_control is not allowed for 'GCP' cluster",
-			"Please remove enable_replication_time_control",
-		)
+
+	// DR validation
+	if !data.IsDrEnabled.IsNull() && data.IsDrEnabled.ValueBool() {
+		if data.DrRegion.IsNull() || data.DrRegion.IsUnknown() {
+			diags.AddError(
+				"dr_region is required when is_dr_enabled is true",
+				"Please set dr_region to the secondary region for Disaster Recovery",
+			)
+		}
+		if data.DrVpcSubnetRange.IsNull() || data.DrVpcSubnetRange.IsUnknown() {
+			diags.AddError(
+				"dr_vpc_subnet_range is required for 'GCP' cluster when is_dr_enabled is true",
+				"Please set dr_vpc_subnet_range",
+			)
+		}
+		if data.DrPodSubnetRange.IsNull() || data.DrPodSubnetRange.IsUnknown() {
+			diags.AddError(
+				"dr_pod_subnet_range is required for 'GCP' cluster when is_dr_enabled is true",
+				"Please set dr_pod_subnet_range",
+			)
+		}
+		if data.DrServicePeeringRange.IsNull() || data.DrServicePeeringRange.IsUnknown() {
+			diags.AddError(
+				"dr_service_peering_range is required for 'GCP' cluster when is_dr_enabled is true",
+				"Please set dr_service_peering_range",
+			)
+		}
+		if data.DrServiceSubnetRange.IsNull() || data.DrServiceSubnetRange.IsUnknown() {
+			diags.AddError(
+				"dr_service_subnet_range is required for 'GCP' cluster when is_dr_enabled is true",
+				"Please set dr_service_subnet_range",
+			)
+		}
+	}
+
+	if !data.IsDrEnabled.IsNull() && !data.IsDrEnabled.ValueBool() {
+		if !data.DrVpcSubnetRange.IsNull() {
+			diags.AddError(
+				"dr_vpc_subnet_range is only valid when is_dr_enabled is true",
+				"Please remove dr_vpc_subnet_range or set is_dr_enabled to true",
+			)
+		}
+		if !data.EnableReplicationTimeControl.IsNull() {
+			diags.AddError(
+				"enable_replication_time_control is only valid when is_dr_enabled is true",
+				"Please remove enable_replication_time_control or set is_dr_enabled to true",
+			)
+		}
+		if !data.DrPodSubnetRange.IsNull() {
+			diags.AddError(
+				"dr_pod_subnet_range is only valid when is_dr_enabled is true",
+				"Please remove dr_pod_subnet_range or set is_dr_enabled to true",
+			)
+		}
+		if !data.DrServicePeeringRange.IsNull() {
+			diags.AddError(
+				"dr_service_peering_range is only valid when is_dr_enabled is true",
+				"Please remove dr_service_peering_range or set is_dr_enabled to true",
+			)
+		}
+		if !data.DrServiceSubnetRange.IsNull() {
+			diags.AddError(
+				"dr_service_subnet_range is only valid when is_dr_enabled is true",
+				"Please remove dr_service_subnet_range or set is_dr_enabled to true",
+			)
+		}
 	}
 
 	return diags

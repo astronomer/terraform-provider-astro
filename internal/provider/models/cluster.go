@@ -42,6 +42,9 @@ type ClusterResource struct {
 	EnableReplicationTimeControl types.Bool     `tfsdk:"enable_replication_time_control"`
 	IsFailedOver                 types.Bool     `tfsdk:"is_failed_over"`
 	Timeouts                     timeouts.Value `tfsdk:"timeouts"` // To allow users to set timeouts for the resource.
+	DrPodSubnetRange             types.String   `tfsdk:"dr_pod_subnet_range"`
+	DrServicePeeringRange        types.String   `tfsdk:"dr_service_peering_range"`
+	DrServiceSubnetRange         types.String   `tfsdk:"dr_service_subnet_range"`
 }
 
 // ClusterDataSource describes the data source data model.
@@ -74,6 +77,9 @@ type ClusterDataSource struct {
 	DrSecondaryVpcCidr           types.String `tfsdk:"dr_secondary_vpc_cidr"`
 	EnableReplicationTimeControl types.Bool   `tfsdk:"enable_replication_time_control"`
 	IsFailedOver                 types.Bool   `tfsdk:"is_failed_over"`
+	DrPodSubnetRange             types.String `tfsdk:"dr_pod_subnet_range"`
+	DrServicePeeringRange        types.String `tfsdk:"dr_service_peering_range"`
+	DrServiceSubnetRange         types.String `tfsdk:"dr_service_subnet_range"`
 }
 
 type ClusterTag struct {
@@ -161,6 +167,9 @@ func (data *ClusterResource) ReadFromResponse(
 		data.DrVpcSubnetRange = types.StringPointerValue(cluster.DrVpcSubnetRange)
 		data.DrSecondaryVpcCidr = types.StringPointerValue(cluster.DrSecondaryVpcCidr)
 		data.EnableReplicationTimeControl = types.BoolPointerValue(cluster.EnableReplicationTimeControl)
+		data.DrPodSubnetRange = types.StringPointerValue(cluster.DrPodSubnetRange)
+		data.DrServicePeeringRange = types.StringPointerValue(cluster.DrServicePeeringRange)
+		data.DrServiceSubnetRange = types.StringPointerValue(cluster.DrServiceSubnetRange)
 	} else {
 		data.IsDrEnabled = types.BoolValue(false)
 		data.DrRegion = types.StringNull()
@@ -168,6 +177,9 @@ func (data *ClusterResource) ReadFromResponse(
 		data.DrVpcSubnetRange = types.StringNull()
 		data.DrSecondaryVpcCidr = types.StringNull()
 		data.EnableReplicationTimeControl = types.BoolNull()
+		data.DrPodSubnetRange = types.StringNull()
+		data.DrServicePeeringRange = types.StringNull()
+		data.DrServiceSubnetRange = types.StringNull()
 	}
 
 	return nil
@@ -227,6 +239,9 @@ func (data *ClusterDataSource) ReadFromResponse(
 		data.DrVpcSubnetRange = types.StringPointerValue(cluster.DrVpcSubnetRange)
 		data.DrSecondaryVpcCidr = types.StringPointerValue(cluster.DrSecondaryVpcCidr)
 		data.EnableReplicationTimeControl = types.BoolPointerValue(cluster.EnableReplicationTimeControl)
+		data.DrPodSubnetRange = types.StringPointerValue(cluster.DrPodSubnetRange)
+		data.DrServicePeeringRange = types.StringPointerValue(cluster.DrServicePeeringRange)
+		data.DrServiceSubnetRange = types.StringPointerValue(cluster.DrServiceSubnetRange)
 	} else {
 		data.IsDrEnabled = types.BoolValue(false)
 		data.DrRegion = types.StringNull()
@@ -234,6 +249,9 @@ func (data *ClusterDataSource) ReadFromResponse(
 		data.DrVpcSubnetRange = types.StringNull()
 		data.DrSecondaryVpcCidr = types.StringNull()
 		data.EnableReplicationTimeControl = types.BoolNull()
+		data.DrPodSubnetRange = types.StringNull()
+		data.DrServicePeeringRange = types.StringNull()
+		data.DrServiceSubnetRange = types.StringNull()
 	}
 
 	return nil
