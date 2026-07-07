@@ -575,23 +575,23 @@ func TestAcc_ResourceClusterGcpWithDr(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					cluster(clusterInput{
 						Name:                  gcpClusterName,
-						Region:                "us-central1",
+						Region:                "us-west1",
 						CloudProvider:         "GCP",
 						IsDrEnabled:           true,
-						DrRegion:              "us-east1",
+						DrRegion:              "us-west2",
 						DrVpcSubnetRange:      "172.24.0.0/20",
-						DrPodSubnetRange:      "172.25.0.0/19",
-						DrServicePeeringRange: "172.27.0.0/20",
-						DrServiceSubnetRange:  "172.26.0.0/22",
+						DrPodSubnetRange:      "100.67.0.0/16",
+						DrServicePeeringRange: "100.69.0.0/21",
+						DrServiceSubnetRange:  "100.68.0.0/22",
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(gcpResourceVar, "name", gcpClusterName),
-					resource.TestCheckResourceAttr(gcpResourceVar, "region", "us-central1"),
+					resource.TestCheckResourceAttr(gcpResourceVar, "region", "us-west1"),
 					resource.TestCheckResourceAttr(gcpResourceVar, "cloud_provider", "GCP"),
 					resource.TestCheckResourceAttrSet(gcpResourceVar, "pod_subnet_range"),
 					// Check DR fields
 					resource.TestCheckResourceAttr(gcpResourceVar, "is_dr_enabled", "true"),
-					resource.TestCheckResourceAttr(gcpResourceVar, "dr_region", "us-east1"),
+					resource.TestCheckResourceAttr(gcpResourceVar, "dr_region", "us-west2"),
 					resource.TestCheckResourceAttrSet(gcpResourceVar, "is_failed_over"),
 
 					testAccCheckClusterExistence(t, gcpClusterName, true, true),
@@ -896,9 +896,9 @@ func cluster(input clusterInput) string {
 	}
 	if input.CloudProvider == string(platform.ClusterCloudProviderGCP) {
 		gcpNetworkFields = `
-	pod_subnet_range = "172.21.0.0/19"
-	service_peering_range = "172.23.0.0/20"
-	service_subnet_range =  "172.22.0.0/22"`
+	pod_subnet_range = "100.64.0.0/16"
+	service_peering_range = "100.66.0.0/21"
+	service_subnet_range =  "100.65.0.0/22"`
 	}
 	secondaryVpcCidrField := ""
 	if input.SecondaryVpcCidr != "" {
