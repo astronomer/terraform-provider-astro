@@ -574,13 +574,15 @@ func TestAcc_ResourceClusterGcpWithDr(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					cluster(clusterInput{
-						Name:             gcpClusterName,
-						Region:           "us-central1",
-						CloudProvider:    "GCP",
-						IsDrEnabled:      true,
-						DrRegion:         "us-east1",
-						DrVpcSubnetRange: "172.24.0.0/20",
-						DrPodSubnetRange: "172.25.0.0/19",
+						Name:                  gcpClusterName,
+						Region:                "us-central1",
+						CloudProvider:         "GCP",
+						IsDrEnabled:           true,
+						DrRegion:              "us-east1",
+						DrVpcSubnetRange:      "172.24.0.0/20",
+						DrPodSubnetRange:      "172.25.0.0/19",
+						DrServicePeeringRange: "172.27.0.0/20",
+						DrServiceSubnetRange:  "172.26.0.0/22",
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(gcpResourceVar, "name", gcpClusterName),
@@ -880,6 +882,8 @@ type clusterInput struct {
 	DrRegion                           string
 	DrVpcSubnetRange                   string
 	DrPodSubnetRange                   string
+	DrServicePeeringRange              string
+	DrServiceSubnetRange               string
 	DrSecondaryVpcCidr                 string
 	EnableReplicationTimeControl       bool
 }
@@ -913,6 +917,14 @@ func cluster(input clusterInput) string {
 		if input.DrPodSubnetRange != "" {
 			drFields += fmt.Sprintf(`
 	dr_pod_subnet_range = "%v"`, input.DrPodSubnetRange)
+		}
+		if input.DrServicePeeringRange != "" {
+			drFields += fmt.Sprintf(`
+	dr_service_peering_range = "%v"`, input.DrServicePeeringRange)
+		}
+		if input.DrServiceSubnetRange != "" {
+			drFields += fmt.Sprintf(`
+	dr_service_subnet_range = "%v"`, input.DrServiceSubnetRange)
 		}
 		if input.DrSecondaryVpcCidr != "" {
 			drFields += fmt.Sprintf(`

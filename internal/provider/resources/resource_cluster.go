@@ -758,6 +758,18 @@ func validateGcpConfig(ctx context.Context, data *models.ClusterResource) diag.D
 				"Please set dr_pod_subnet_range",
 			)
 		}
+		if data.DrServicePeeringRange.IsNull() || data.DrServicePeeringRange.IsUnknown() {
+			diags.AddError(
+				"dr_service_peering_range is required for 'GCP' cluster when is_dr_enabled is true",
+				"Please set dr_service_peering_range",
+			)
+		}
+		if data.DrServiceSubnetRange.IsNull() || data.DrServiceSubnetRange.IsUnknown() {
+			diags.AddError(
+				"dr_service_subnet_range is required for 'GCP' cluster when is_dr_enabled is true",
+				"Please set dr_service_subnet_range",
+			)
+		}
 	}
 
 	if !data.IsDrEnabled.IsNull() && !data.IsDrEnabled.ValueBool() {
