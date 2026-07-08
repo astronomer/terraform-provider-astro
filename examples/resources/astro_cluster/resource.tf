@@ -46,6 +46,24 @@ resource "astro_cluster" "gcp_example" {
   workspace_ids         = []
 }
 
+resource "astro_cluster" "gcp_dr_example" {
+  type                     = "DEDICATED"
+  name                     = "my dr-enabled gcp cluster"
+  region                   = "us-central1"
+  cloud_provider           = "GCP"
+  pod_subnet_range         = "172.21.0.0/19"
+  service_peering_range    = "172.23.0.0/20"
+  service_subnet_range     = "172.22.0.0/22"
+  vpc_subnet_range         = "172.20.0.0/22"
+  workspace_ids            = []
+  is_dr_enabled            = true
+  dr_region                = "us-east1"
+  dr_vpc_subnet_range      = "172.20.4.0/22"
+  dr_pod_subnet_range      = "100.67.0.0/16"
+  dr_service_peering_range = "100.69.0.0/21"
+  dr_service_subnet_range  = "100.68.0.0/22"
+}
+
 // Import an existing cluster
 import {
   id = "clozc036j01to01jrlgvuf98d" // ID of the existing cluster

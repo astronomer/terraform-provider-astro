@@ -61,6 +61,24 @@ resource "astro_cluster" "gcp_example" {
   workspace_ids         = []
 }
 
+resource "astro_cluster" "gcp_dr_example" {
+  type                     = "DEDICATED"
+  name                     = "my dr-enabled gcp cluster"
+  region                   = "us-central1"
+  cloud_provider           = "GCP"
+  pod_subnet_range         = "172.21.0.0/19"
+  service_peering_range    = "172.23.0.0/20"
+  service_subnet_range     = "172.22.0.0/22"
+  vpc_subnet_range         = "172.20.0.0/22"
+  workspace_ids            = []
+  is_dr_enabled            = true
+  dr_region                = "us-east1"
+  dr_vpc_subnet_range      = "172.20.4.0/22"
+  dr_pod_subnet_range      = "100.67.0.0/16"
+  dr_service_peering_range = "100.69.0.0/21"
+  dr_service_subnet_range  = "100.68.0.0/22"
+}
+
 // Import an existing cluster
 import {
   id = "clozc036j01to01jrlgvuf98d" // ID of the existing cluster
@@ -93,8 +111,11 @@ resource "astro_cluster" "imported_cluster" {
 
 ### Optional
 
+- `dr_pod_subnet_range` (String) The disaster recovery subnet range for pods (GCP Only).
 - `dr_region` (String) The secondary region for Disaster Recovery. Required when `is_dr_enabled` is true. Cannot be changed once set.
 - `dr_secondary_vpc_cidr` (String) Secondary CIDR for pod networking in the DR region (AWS only). Cannot be changed once set.
+- `dr_service_peering_range` (String) The disaster recovery service peering range (GCP Only).
+- `dr_service_subnet_range` (String) The disaster recovery service subnet range (GCP Only).
 - `dr_vpc_subnet_range` (String) The VPC subnet range for the Disaster Recovery region. Only valid when `is_dr_enabled` is true. Cannot be changed once set.
 - `enable_replication_time_control` (Boolean) Whether to enable S3 Replication Time Control for Disaster Recovery. Only valid when `is_dr_enabled` is true (AWS only).
 - `is_dr_enabled` (Boolean) Whether Disaster Recovery is enabled on the cluster. Only supported for AWS clusters. Can only be enabled at cluster creation time. Can be set to `false` to disable DR on an existing cluster.

@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
@@ -386,23 +387,30 @@ func AlertNotificationChannelsTypesSet(ctx context.Context, channels any) (types
 // AlertRulesResourceTypesObject maps platform.AlertRules into a Terraform types.Object matching the resource schema.
 func AlertRulesResourceTypesObject(ctx context.Context, rules any) (types.Object, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	// Convert rules into *platform.AlertRules
-	var rulesPtr *platform.AlertRules
-	switch v := rules.(type) {
-	case platform.AlertRules:
-		rulesPtr = &v
-	case *platform.AlertRules:
-		rulesPtr = v
-	default:
-		tflog.Error(ctx, "Unexpected type passed into AlertRulesResourceTypesObject", map[string]interface{}{"value": rules})
+	// Alert rules have the same JSON shape across API clients (platform, labs), so round-trip through
+	// JSON to map any of them without coupling this helper to a specific generated type.
+	var parsed struct {
+		Properties     map[string]interface{} `json:"properties"`
+		PatternMatches []struct {
+			EntityType   string   `json:"entityType"`
+			OperatorType string   `json:"operatorType"`
+			Values       []string `json:"values"`
+		} `json:"patternMatches"`
+	}
+	raw, err := json.Marshal(rules)
+	if err != nil {
 		return types.Object{}, diag.Diagnostics{
-			diag.NewErrorDiagnostic("Internal Error", "AlertRulesResourceTypesObject expects a platform.AlertRules type"),
+			diag.NewErrorDiagnostic("Internal Error", fmt.Sprintf("failed to marshal alert rules: %s", err)),
 		}
 	}
-	// Build properties nested object from raw map
-	propMap := make(map[string]interface{})
-	if m, ok := rulesPtr.Properties.(map[string]interface{}); ok {
-		propMap = m
+	if err := json.Unmarshal(raw, &parsed); err != nil {
+		return types.Object{}, diag.Diagnostics{
+			diag.NewErrorDiagnostic("Internal Error", fmt.Sprintf("failed to parse alert rules: %s", err)),
+		}
+	}
+	propMap := parsed.Properties
+	if propMap == nil {
+		propMap = make(map[string]interface{})
 	}
 	// extract values
 	depsId, _ := propMap["deploymentId"].(string)
@@ -485,8 +493,8 @@ func AlertRulesResourceTypesObject(ctx context.Context, rules any) (types.Object
 	// Build pattern_matches list
 	pmAttrTypes := schemas.AlertRulesPatternMatchAttributeTypes()
 	var patternMatchValues []attr.Value
-	if rulesPtr.PatternMatches != nil {
-		for _, patternMatch := range *rulesPtr.PatternMatches {
+	if len(parsed.PatternMatches) > 0 {
+		for _, patternMatch := range parsed.PatternMatches {
 			values := make([]attr.Value, len(patternMatch.Values))
 			for i, val := range patternMatch.Values {
 				values[i] = types.StringValue(val)

@@ -3,12 +3,15 @@
 page_title: "astro_alert Resource - astro"
 subcategory: ""
 description: |-
-  Alert resource
+  Manage a single alert.
+  ~> Deprecated Use the astro_alerts resource instead, which manages one or many alerts in a single resource. Do not manage the same alert with both astro_alert and astro_alerts — they conflict on every apply.
 ---
 
 # astro_alert (Resource)
 
-Alert resource
+Manage a single alert.
+
+~> **Deprecated** Use the `astro_alerts` resource instead, which manages one or many alerts in a single resource. Do not manage the same alert with both `astro_alert` and `astro_alerts` — they conflict on every apply.
 
 ## Example Usage
 

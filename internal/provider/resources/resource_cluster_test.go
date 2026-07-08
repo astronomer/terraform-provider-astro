@@ -416,7 +416,7 @@ func TestAcc_ResourceClusterGcpWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttrSet(gcpResourceVar, "service_peering_range"),
 					resource.TestCheckResourceAttrSet(gcpResourceVar, "service_subnet_range"),
 					resource.TestCheckResourceAttr(gcpResourceVar, "workspace_ids.#", "1"),
-					// Check DR fields are not set for GCP cluster
+					// Check DR fields are not set for non-DR cluster
 					resource.TestCheckResourceAttr(gcpResourceVar, "is_dr_enabled", "false"),
 
 					// Check via API that cluster exists
@@ -556,6 +556,59 @@ func TestAcc_ResourceClusterAwsWithDr(t *testing.T) {
 	})
 }
 
+func TestAcc_ResourceClusterGcpWithDr(t *testing.T) {
+	if os.Getenv(SKIP_CLUSTER_RESOURCE_TESTS) == "True" {
+		t.Skip(SKIP_CLUSTER_RESOURCE_TESTS_REASON)
+	}
+
+	namePrefix := utils.GenerateTestResourceName(10)
+	gcpClusterName := fmt.Sprintf("%v_gcp_dr", namePrefix)
+	gcpResourceVar := fmt.Sprintf("astro_cluster.%v", gcpClusterName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckClusterExistence(t, gcpClusterName, true, false),
+		Steps: []resource.TestStep{
+			// Create GCP cluster with DR enabled
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					cluster(clusterInput{
+						Name:                  gcpClusterName,
+						Region:                "us-west1",
+						CloudProvider:         "GCP",
+						IsDrEnabled:           true,
+						DrRegion:              "us-west2",
+						DrVpcSubnetRange:      "172.24.0.0/20",
+						DrPodSubnetRange:      "100.67.0.0/16",
+						DrServicePeeringRange: "100.69.0.0/21",
+						DrServiceSubnetRange:  "100.68.0.0/22",
+					}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(gcpResourceVar, "name", gcpClusterName),
+					resource.TestCheckResourceAttr(gcpResourceVar, "region", "us-west1"),
+					resource.TestCheckResourceAttr(gcpResourceVar, "cloud_provider", "GCP"),
+					resource.TestCheckResourceAttrSet(gcpResourceVar, "pod_subnet_range"),
+					// Check DR fields
+					resource.TestCheckResourceAttr(gcpResourceVar, "is_dr_enabled", "true"),
+					resource.TestCheckResourceAttr(gcpResourceVar, "dr_region", "us-west2"),
+					resource.TestCheckResourceAttrSet(gcpResourceVar, "is_failed_over"),
+
+					testAccCheckClusterExistence(t, gcpClusterName, true, true),
+				),
+			},
+			// Import existing DR cluster
+			{
+				PreConfig:               func() { waitForClusterStableState(t, gcpClusterName) },
+				ResourceName:            gcpResourceVar,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"health_status", "health_status.value", "status"},
+			},
+		},
+	})
+}
+
 func TestAcc_ResourceClusterDrValidation(t *testing.T) {
 	if os.Getenv(SKIP_CLUSTER_RESOURCE_TESTS) == "True" {
 		t.Skip(SKIP_CLUSTER_RESOURCE_TESTS_REASON)
@@ -582,6 +635,28 @@ resource "astro_cluster" "%v" {
 `, clusterName, clusterName),
 				ExpectError: regexp.MustCompile(`dr_region is required when is_dr_enabled is true`),
 			},
+			// Test: DR enabled with dr_region derived from an unknown value (e.g. a Terraform
+			// variable or conditional) must not fail validation
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "terraform_data" "dr_region" {
+	input = "us-west-1"
+}
+
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "us-east-1"
+	cloud_provider = "AWS"
+	vpc_subnet_range = "172.20.0.0/20"
+	is_dr_enabled = true
+	dr_region = terraform_data.dr_region.output
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
 			// Test: DR enabled on Azure should fail
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
@@ -598,25 +673,6 @@ resource "astro_cluster" "%v" {
 `, clusterName, clusterName),
 				ExpectError: regexp.MustCompile(`Disaster Recovery is not supported for 'AZURE' clusters`),
 			},
-			// Test: DR enabled on GCP should fail
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
-resource "astro_cluster" "%v" {
-	name = "%v"
-	type = "DEDICATED"
-	region = "us-central1"
-	cloud_provider = "GCP"
-	vpc_subnet_range = "172.20.0.0/20"
-	pod_subnet_range = "172.21.0.0/19"
-	service_peering_range = "172.23.0.0/20"
-	service_subnet_range = "172.22.0.0/22"
-	is_dr_enabled = true
-	dr_region = "us-east1"
-	workspace_ids = []
-}
-`, clusterName, clusterName),
-				ExpectError: regexp.MustCompile(`Disaster Recovery is not supported for 'GCP' clusters`),
-			},
 			// Test: dr_region on Azure should fail
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
@@ -631,24 +687,6 @@ resource "astro_cluster" "%v" {
 }
 `, clusterName, clusterName),
 				ExpectError: regexp.MustCompile(`dr_region is not allowed for 'AZURE' cluster`),
-			},
-			// Test: dr_region on GCP should fail
-			{
-				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
-resource "astro_cluster" "%v" {
-	name = "%v"
-	type = "DEDICATED"
-	region = "us-central1"
-	cloud_provider = "GCP"
-	vpc_subnet_range = "172.20.0.0/20"
-	pod_subnet_range = "172.21.0.0/19"
-	service_peering_range = "172.23.0.0/20"
-	service_subnet_range = "172.22.0.0/22"
-	dr_region = "us-east1"
-	workspace_ids = []
-}
-`, clusterName, clusterName),
-				ExpectError: regexp.MustCompile(`dr_region is not allowed for 'GCP' cluster`),
 			},
 			// Test: DR sub-fields without DR enabled on AWS should fail
 			{
@@ -681,6 +719,63 @@ resource "astro_cluster" "%v" {
 }
 `, clusterName, clusterName),
 				ExpectError: regexp.MustCompile(`enable_replication_time_control is only valid when is_dr_enabled is true`),
+			},
+			// Test: DR sub-fields without DR enabled on GCP should fail
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "us-central1"
+	cloud_provider = "GCP"
+	vpc_subnet_range = "172.20.0.0/20"
+	pod_subnet_range = "172.21.0.0/19"
+	service_peering_range = "172.23.0.0/20"
+	service_subnet_range = "172.22.0.0/22"
+	is_dr_enabled = false
+	dr_pod_subnet_range = "172.21.0.0/19"
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				ExpectError: regexp.MustCompile(`dr_pod_subnet_range is only valid when is_dr_enabled is true`),
+			},
+			// Test: DR sub-fields without DR enabled on GCP should fail
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "us-central1"
+	cloud_provider = "GCP"
+	vpc_subnet_range = "172.20.0.0/20"
+	pod_subnet_range = "172.21.0.0/19"
+	service_peering_range = "172.23.0.0/20"
+	service_subnet_range = "172.22.0.0/22"
+	is_dr_enabled = false
+    dr_service_peering_range = "172.23.0.0/20"
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				ExpectError: regexp.MustCompile(`dr_service_peering_range is only valid when is_dr_enabled is true`),
+			},
+			// Test: DR sub-fields without DR enabled on GCP should fail
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "us-central1"
+	cloud_provider = "GCP"
+	vpc_subnet_range = "172.20.0.0/20"
+	pod_subnet_range = "172.21.0.0/19"
+	service_peering_range = "172.23.0.0/20"
+	service_subnet_range = "172.22.0.0/22"
+	is_dr_enabled = false
+    dr_service_subnet_range  = "172.22.0.0/22"
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				ExpectError: regexp.MustCompile(`dr_service_subnet_range is only valid when is_dr_enabled is true`),
 			},
 		},
 	})
@@ -808,6 +903,9 @@ type clusterInput struct {
 	IsDrEnabled                        bool
 	DrRegion                           string
 	DrVpcSubnetRange                   string
+	DrPodSubnetRange                   string
+	DrServicePeeringRange              string
+	DrServiceSubnetRange               string
 	DrSecondaryVpcCidr                 string
 	EnableReplicationTimeControl       bool
 }
@@ -820,9 +918,9 @@ func cluster(input clusterInput) string {
 	}
 	if input.CloudProvider == string(platform.ClusterCloudProviderGCP) {
 		gcpNetworkFields = `
-	pod_subnet_range = "172.21.0.0/19"
-	service_peering_range = "172.23.0.0/20"
-	service_subnet_range =  "172.22.0.0/22"`
+	pod_subnet_range = "100.64.0.0/16"
+	service_peering_range = "100.66.0.0/21"
+	service_subnet_range =  "100.65.0.0/22"`
 	}
 	secondaryVpcCidrField := ""
 	if input.SecondaryVpcCidr != "" {
@@ -837,6 +935,18 @@ func cluster(input clusterInput) string {
 		if input.DrVpcSubnetRange != "" {
 			drFields += fmt.Sprintf(`
 	dr_vpc_subnet_range = "%v"`, input.DrVpcSubnetRange)
+		}
+		if input.DrPodSubnetRange != "" {
+			drFields += fmt.Sprintf(`
+	dr_pod_subnet_range = "%v"`, input.DrPodSubnetRange)
+		}
+		if input.DrServicePeeringRange != "" {
+			drFields += fmt.Sprintf(`
+	dr_service_peering_range = "%v"`, input.DrServicePeeringRange)
+		}
+		if input.DrServiceSubnetRange != "" {
+			drFields += fmt.Sprintf(`
+	dr_service_subnet_range = "%v"`, input.DrServiceSubnetRange)
 		}
 		if input.DrSecondaryVpcCidr != "" {
 			drFields += fmt.Sprintf(`
