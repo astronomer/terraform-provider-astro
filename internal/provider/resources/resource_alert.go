@@ -46,8 +46,14 @@ func (r *alertResource) Schema(
 ) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Alert resource",
-		Attributes:          schemas.AlertResourceSchemaAttributes(),
+		MarkdownDescription: "Manage a single alert.\n\n" +
+			"~> **Deprecated** Use the `astro_alerts` resource instead, which manages one or many alerts in a " +
+			"single resource. Do not manage the same alert with both `astro_alert` and `astro_alerts` — they " +
+			"conflict on every apply.",
+		DeprecationMessage: "Use the astro_alerts resource instead, which manages one or many alerts in a " +
+			"single resource. Do not manage the same alert with both astro_alert and astro_alerts — they will " +
+			"conflict on every apply. astro_alert may be removed in a future major version.",
+		Attributes: schemas.AlertResourceSchemaAttributes(),
 	}
 }
 

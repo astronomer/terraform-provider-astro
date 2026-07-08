@@ -4,11 +4,14 @@ page_title: "astro_alerts Resource - astro"
 subcategory: ""
 description: |-
   Manage a collection of alerts as a single resource. The resource batches create/update/delete calls and automatically chunks requests that exceed the API's per-request limits (30 for create/update, 20 for delete).
+  ~> Note Do not manage the same alert with both astro_alert and astro_alerts. Each resource claims ownership of the alerts it manages, so overlapping definitions conflict and cause churn on every apply. Use one resource or the other for a given alert.
 ---
 
 # astro_alerts (Resource)
 
 Manage a collection of alerts as a single resource. The resource batches create/update/delete calls and automatically chunks requests that exceed the API's per-request limits (30 for create/update, 20 for delete).
+
+~> **Note** Do not manage the same alert with both `astro_alert` and `astro_alerts`. Each resource claims ownership of the alerts it manages, so overlapping definitions conflict and cause churn on every apply. Use one resource or the other for a given alert.
 
 ## Example Usage
 

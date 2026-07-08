@@ -58,7 +58,10 @@ func (r *alertsResource) Schema(ctx context.Context, req resource.SchemaRequest,
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manage a collection of alerts as a single resource. The resource batches " +
 			"create/update/delete calls and automatically chunks requests that exceed the API's per-request " +
-			"limits (30 for create/update, 20 for delete).",
+			"limits (30 for create/update, 20 for delete).\n\n" +
+			"~> **Note** Do not manage the same alert with both `astro_alert` and `astro_alerts`. Each resource " +
+			"claims ownership of the alerts it manages, so overlapping definitions conflict and cause churn on " +
+			"every apply. Use one resource or the other for a given alert.",
 		Attributes: schemas.AlertsResourceSchemaAttributes(),
 	}
 }
