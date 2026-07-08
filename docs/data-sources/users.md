@@ -3,12 +3,12 @@
 page_title: "astro_users Data Source - astro"
 subcategory: ""
 description: |-
-  Users data source
+  Users data source. Deprecated: use the astro_users_list data source instead.
 ---
 
 # astro_users (Data Source)
 
-Users data source
+Users data source. **Deprecated:** use the `astro_users_list` data source instead.
 
 ## Example Usage
 

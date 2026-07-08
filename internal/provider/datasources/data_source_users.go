@@ -45,7 +45,8 @@ func (d *usersDataSource) Schema(
 ) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Users data source",
+		MarkdownDescription: "Users data source. **Deprecated:** use the `astro_users_list` data source instead.",
+		DeprecationMessage:  "The astro_users data source is deprecated and will be removed in v2.0. Use the astro_users_list data source instead, which returns users as a list for significantly better terraform plan performance on large organizations.",
 		Attributes:          schemas.UsersDataSourceSchemaAttributes(),
 	}
 }
