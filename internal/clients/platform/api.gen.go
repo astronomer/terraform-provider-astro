@@ -3176,9 +3176,12 @@ type EnvironmentObjectsPaginated struct {
 
 // Error defines model for Error.
 type Error struct {
-	Message    string `json:"message"`
-	RequestId  string `json:"requestId"`
-	StatusCode int    `json:"statusCode"`
+	// FieldErrors FieldErrors carries one entry per failed request-validation constraint.
+	// Only present on 400 responses caused by request binding/validation.
+	FieldErrors *[]FieldValidationError `json:"fieldErrors,omitempty"`
+	Message     string                  `json:"message"`
+	RequestId   string                  `json:"requestId"`
+	StatusCode  int                     `json:"statusCode"`
 }
 
 // ExcludeLinkEnvironmentObjectRequest defines model for ExcludeLinkEnvironmentObjectRequest.
@@ -3192,6 +3195,13 @@ type ExcludeLinkEnvironmentObjectRequest struct {
 
 // ExcludeLinkEnvironmentObjectRequestScope Scope of the entity to exclude for environment object
 type ExcludeLinkEnvironmentObjectRequestScope string
+
+// FieldValidationError defines model for FieldValidationError.
+type FieldValidationError struct {
+	Code    string `json:"code"`
+	Field   string `json:"field"`
+	Message string `json:"message"`
+}
 
 // HybridWorkerQueueRequest defines model for HybridWorkerQueueRequest.
 type HybridWorkerQueueRequest struct {
