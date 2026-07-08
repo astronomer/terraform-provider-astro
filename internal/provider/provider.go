@@ -143,6 +143,7 @@ func (p *AstroProvider) Resources(ctx context.Context) []func() resource.Resourc
 		resources.NewAlertsResource,
 		resources.NewNotificationChannelResource,
 		resources.NewCustomRoleResource,
+		resources.NewEnvironmentObjectResource,
 	}
 }
 
@@ -169,6 +170,8 @@ func (p *AstroProvider) DataSources(ctx context.Context) []func() datasource.Dat
 		datasources.NewNotificationChannelDataSource,
 		datasources.NewNotificationChannelsDataSource,
 		datasources.NewCustomRoleDataSource,
+		datasources.NewEnvironmentObjectDataSource,
+		datasources.NewEnvironmentObjectsDataSource,
 	}
 }
 
