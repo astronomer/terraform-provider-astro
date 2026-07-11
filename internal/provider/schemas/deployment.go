@@ -72,12 +72,16 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			},
 		},
 		"original_astro_runtime_version": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment's original Astro Runtime version. The Terraform provider will use this provided Astro runtime version to create the Deployment. If not provided, defaults to the current Astro runtime version. The Astro runtime version can be updated with your Astro project Dockerfile, but if this value is changed, the Deployment will be recreated with this new Astro runtime version.",
+			MarkdownDescription: "Deployment's original Astro Runtime version. The Terraform provider uses this value to create the Deployment. If not provided, defaults to the current Astro runtime version. This value is immutable after the Deployment is created — to upgrade the Astro Runtime version, update your Astro project's Dockerfile and deploy the new image (for example with `astro deploy`). Changing this attribute in Terraform will produce an error at plan time rather than recreate the Deployment, which would destroy connections, DAG history, and other state that is not managed by Terraform.",
 			Optional:            true,
 			Computed:            true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
-				stringplanmodifier.RequiresReplaceIfConfigured(),
+				immutableAfterCreateStringPlanModifier{
+					errorSummary: "original_astro_runtime_version cannot be changed after the Deployment is created",
+					errorDetail: "Updating the Astro Runtime version of an existing Deployment is not supported by the Astro Platform API — the previous Terraform behavior was to destroy and recreate the Deployment, which loses Airflow connections, DAG run history, and other state that is not managed by Terraform.\n\n" +
+						"To upgrade the Astro Runtime version, update the FROM image tag in your Astro project's Dockerfile and deploy the new image (for example with `astro deploy`). If you truly intend to replace the Deployment, remove the astro_deployment resource from your configuration, apply, then add it back with the new runtime version.",
+				},
 			},
 		},
 		"astro_runtime_version": resourceSchema.StringAttribute{
@@ -754,4 +758,43 @@ func WorkerQueueResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			},
 		},
 	}
+}
+
+// immutableAfterCreateStringPlanModifier prevents a string attribute from being
+// changed once the resource has been created. If the configured value differs
+// from the value in state, the modifier adds a plan-time error diagnostic rather
+// than triggering resource replacement. When no value is configured, the state
+// value is preserved (mirroring UseStateForUnknown), so removing the attribute
+// from configuration does not produce an error.
+type immutableAfterCreateStringPlanModifier struct {
+	errorSummary string
+	errorDetail  string
+}
+
+func (m immutableAfterCreateStringPlanModifier) Description(_ context.Context) string {
+	return "Prevents this attribute from being changed after the resource is created."
+}
+
+func (m immutableAfterCreateStringPlanModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (m immutableAfterCreateStringPlanModifier) PlanModifyString(_ context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+	// Resource is being created — no prior state exists, allow any value.
+	if req.State.Raw.IsNull() {
+		return
+	}
+	// Resource is being destroyed — no planned value, nothing to enforce.
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+	// Attribute is absent from configuration — carry the state value forward.
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
+		resp.PlanValue = req.StateValue
+		return
+	}
+	if req.ConfigValue.Equal(req.StateValue) {
+		return
+	}
+	resp.Diagnostics.AddAttributeError(req.Path, m.errorSummary, m.errorDetail)
 }
