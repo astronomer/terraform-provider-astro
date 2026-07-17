@@ -3,9 +3,9 @@ package resources
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/labs"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
@@ -16,9 +16,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// Per-request limit enforced by the Core bulk allowed-ip-address-ranges create endpoint. The
-// resource auto-chunks larger configurations across multiple requests. The API has no documented
-// limit on the delete endpoint, so deletes are chunked at the same size defensively.
+// Per-request limit enforced by the Core bulk allowed-ip-address-ranges create/delete endpoints.
+// The resource auto-chunks larger configurations across multiple requests.
 const (
 	allowedIpAddressRangesBulkLimit = 1000
 	// allowedIpAddressRangesListPageLimit bounds how many ranges we request per list call. The
@@ -36,9 +35,12 @@ func NewAllowedIpAddressRangesResource() resource.Resource {
 }
 
 // allowedIpAddressRangesResource authoritatively manages an organization's IP access list as a
-// single resource, via the labs bulk create/delete endpoints. Ranges not present in
-// ip_address_ranges are removed on apply.
+// single resource. Ranges not present in ip_address_ranges are removed on apply.
+//
+// Writes go through the labs bulk create/delete endpoints, while reads list through the iam
+// v1beta1 endpoint (labs has no list endpoint for this resource).
 type allowedIpAddressRangesResource struct {
+	iamClient      *iam.ClientWithResponses
 	labsClient     *labs.ClientWithResponses
 	organizationId string
 }
@@ -68,6 +70,7 @@ func (r *allowedIpAddressRangesResource) Configure(ctx context.Context, req reso
 		utils.ResourceApiClientConfigureError(ctx, req, resp)
 		return
 	}
+	r.iamClient = apiClients.IamClient
 	r.labsClient = apiClients.LabsClient
 	r.organizationId = apiClients.OrganizationId
 }
@@ -204,11 +207,12 @@ func (r *allowedIpAddressRangesResource) Delete(ctx context.Context, req resourc
 	resp.Diagnostics.Append(r.bulkDelete(ctx, ids)...)
 }
 
-// bulkCreate chunks the given CIDRs by the API's per-request limit and creates them.
+// bulkCreate chunks the given CIDRs by the API's per-request limit and creates them via the labs
+// bulk create endpoint.
 func (r *allowedIpAddressRangesResource) bulkCreate(ctx context.Context, cidrs []string) diag.Diagnostics {
 	var diags diag.Diagnostics
 	for _, chunk := range chunkSlice(cidrs, allowedIpAddressRangesBulkLimit) {
-		createResp, err := r.labsClient.LabsCreateAllowedIpAddressRangesWithResponse(ctx, r.organizationId, labs.CreateAllowedIpAddressRangesRequest{AllowedIpAddressRanges: chunk})
+		createResp, err := r.labsClient.LabsCreateAllowedIpAddressRangesWithResponse(ctx, r.organizationId, labs.BulkCreateAllowedIpAddressRangesRequest{AllowedIpAddressRanges: chunk})
 		if err != nil {
 			tflog.Error(ctx, "failed to bulk create allowed IP address ranges", map[string]interface{}{"error": err})
 			diags.AddError("Client Error", fmt.Sprintf("Unable to bulk create allowed IP address ranges: %s", err))
@@ -222,18 +226,18 @@ func (r *allowedIpAddressRangesResource) bulkCreate(ctx context.Context, cidrs [
 	return diags
 }
 
-// bulkDelete chunks the given range IDs by the API's per-request limit and deletes them.
+// bulkDelete chunks the given range IDs by the API's per-request limit and deletes them via the
+// labs bulk delete endpoint.
 func (r *allowedIpAddressRangesResource) bulkDelete(ctx context.Context, ids []string) diag.Diagnostics {
 	var diags diag.Diagnostics
 	for _, chunk := range chunkSlice(ids, allowedIpAddressRangesBulkLimit) {
-		deleteResp, err := r.labsClient.LabsDeleteAllowedIpAddressRangesWithResponse(ctx, r.organizationId, labs.DeleteAllowedIpAddressRangesRequest{AllowedIpAddressRangeIds: chunk})
+		deleteResp, err := r.labsClient.LabsDeleteAllowedIpAddressRangesWithResponse(ctx, r.organizationId, labs.BulkDeleteAllowedIpAddressRangesRequest{AllowedIpAddressRangeIds: chunk})
 		if err != nil {
 			tflog.Error(ctx, "failed to bulk delete allowed IP address ranges", map[string]interface{}{"error": err})
 			diags.AddError("Client Error", fmt.Sprintf("Unable to bulk delete allowed IP address ranges: %s", err))
 			return diags
 		}
-		statusCode, d := clients.NormalizeAPIError(ctx, deleteResp.HTTPResponse, deleteResp.Body)
-		if statusCode != http.StatusNotFound && d != nil {
+		if _, d := clients.NormalizeAPIError(ctx, deleteResp.HTTPResponse, deleteResp.Body); d != nil {
 			diags.Append(d)
 			return diags
 		}
@@ -241,7 +245,8 @@ func (r *allowedIpAddressRangesResource) bulkDelete(ctx context.Context, ids []s
 	return diags
 }
 
-// listAll pages through the organization's full allowed IP address range list and returns the CIDRs.
+// listAll pages through the organization's full allowed IP address range list (via iam v1beta1)
+// and returns the CIDRs.
 func (r *allowedIpAddressRangesResource) listAll(ctx context.Context) ([]string, diag.Diagnostics) {
 	ranges, diags := r.listAllRanges(ctx)
 	if diags.HasError() {
@@ -273,14 +278,14 @@ func (r *allowedIpAddressRangesResource) idsForCidrs(ctx context.Context, cidrs 
 	return ids, diags
 }
 
-func (r *allowedIpAddressRangesResource) listAllRanges(ctx context.Context) ([]labs.AllowedIpAddressRange, diag.Diagnostics) {
+func (r *allowedIpAddressRangesResource) listAllRanges(ctx context.Context) ([]iam.AllowedIpAddressRange, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	var all []labs.AllowedIpAddressRange
+	var all []iam.AllowedIpAddressRange
 	limit := allowedIpAddressRangesListPageLimit
 	offset := 0
 	for {
-		params := &labs.ListAllowedIpAddressRangesParams{Limit: &limit, Offset: &offset}
-		listResp, err := r.labsClient.LabsListAllowedIpAddressRangesWithResponse(ctx, r.organizationId, params)
+		params := &iam.ListAllowedIpAddressRangesParams{Limit: &limit, Offset: &offset}
+		listResp, err := r.iamClient.ListAllowedIpAddressRangesWithResponse(ctx, r.organizationId, params)
 		if err != nil {
 			tflog.Error(ctx, "failed to list allowed IP address ranges", map[string]interface{}{"error": err})
 			diags.AddError("Client Error", fmt.Sprintf("Unable to list allowed IP address ranges: %s", err))
@@ -294,10 +299,10 @@ func (r *allowedIpAddressRangesResource) listAllRanges(ctx context.Context) ([]l
 			break
 		}
 		all = append(all, listResp.JSON200.AllowedIpAddressRanges...)
-		if len(listResp.JSON200.AllowedIpAddressRanges) < limit {
+		offset += len(listResp.JSON200.AllowedIpAddressRanges)
+		if len(listResp.JSON200.AllowedIpAddressRanges) < limit || offset >= listResp.JSON200.TotalCount {
 			break
 		}
-		offset += limit
 	}
 	return all, diags
 }

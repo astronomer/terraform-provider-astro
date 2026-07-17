@@ -1144,6 +1144,9 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// Hand-added pending codegen (see allowed_ip_address_ranges.go): ListAllowedIpAddressRanges request
+	ListAllowedIpAddressRanges(ctx context.Context, organizationId string, params *ListAllowedIpAddressRangesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListAgentTokens request
 	ListAgentTokens(ctx context.Context, organizationId string, deploymentId string, params *ListAgentTokensParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 

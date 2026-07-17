@@ -100,10 +100,13 @@ api_client_gen:
 	# see union.tmpl) which injects discriminator values into marshaled JSON so Core's optional
 	# discriminator fields compile. Re-apply that fork when bumping DESIRED_OAPI_CODEGEN_VERSION.
 	@echo "Generating IAM API client..."
+	# Adding "AllowedIpAddressRange" here regenerates cleanly but renames the unrelated
+	# ListUsersParamsSorts constants (oapi-codegen v2.1.0 constant-naming collision with
+	# ListAllowedIpAddressRangesParamsSorts's overlapping values), breaking
+	# data_source_users_list.go. Until that's resolved, the iam list binding for allowed IP
+	# address ranges is hand-authored in internal/clients/iam/allowed_ip_address_ranges.go.
 	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=User,Invite,Team,ApiToken,AgentToken,Role -generate=types,client -package=iam "$(CORE_IAM_OPENAPI_SPEC)" > ./internal/clients/iam/api.gen.go
 	@echo "Generating Platform API client..."
 	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Organization,Workspace,Cluster,Options,Deployment,Role,Environment,Alerts,NotificationChannels -generate=types,client -package=platform "$(CORE_PLATFORM_OPENAPI_SPEC)" > ./internal/clients/platform/api.gen.go
 	@echo "Generating Labs API client..."
-	# Once the labs spec exposes an "AllowedIpAddressRanges" tag (astronomer/astro#39781), add it here and
-	# delete internal/clients/labs/allowed_ip_address_ranges.go (hand-authored bindings for that surface).
-	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Alerts -generate=types,client -package=labs "$(CORE_LABS_OPENAPI_SPEC)" > ./internal/clients/labs/api.gen.go
+	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Alerts,AllowedIpAddressRange -generate=types,client -package=labs "$(CORE_LABS_OPENAPI_SPEC)" > ./internal/clients/labs/api.gen.go
