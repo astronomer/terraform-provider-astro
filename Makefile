@@ -104,4 +104,6 @@ api_client_gen:
 	@echo "Generating Platform API client..."
 	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Organization,Workspace,Cluster,Options,Deployment,Role,Environment,Alerts,NotificationChannels -generate=types,client -package=platform "$(CORE_PLATFORM_OPENAPI_SPEC)" > ./internal/clients/platform/api.gen.go
 	@echo "Generating Labs API client..."
+	# Once the labs spec exposes an "AllowedIpAddressRanges" tag (astronomer/astro#39781), add it here and
+	# delete internal/clients/labs/allowed_ip_address_ranges.go (hand-authored bindings for that surface).
 	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Alerts -generate=types,client -package=labs "$(CORE_LABS_OPENAPI_SPEC)" > ./internal/clients/labs/api.gen.go

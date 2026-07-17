@@ -1828,6 +1828,19 @@ type ClientInterface interface {
 	LabsUpdateAlertsWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	LabsUpdateAlerts(ctx context.Context, organizationId string, body LabsUpdateAlertsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// Hand-added pending codegen (see allowed_ip_address_ranges.go): LabsListAllowedIpAddressRanges request
+	LabsListAllowedIpAddressRanges(ctx context.Context, organizationId string, params *ListAllowedIpAddressRangesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// LabsCreateAllowedIpAddressRangesWithBody request with any body
+	LabsCreateAllowedIpAddressRangesWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	LabsCreateAllowedIpAddressRanges(ctx context.Context, organizationId string, body LabsCreateAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// LabsDeleteAllowedIpAddressRangesWithBody request with any body
+	LabsDeleteAllowedIpAddressRangesWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	LabsDeleteAllowedIpAddressRanges(ctx context.Context, organizationId string, body LabsDeleteAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) LabsListAlerts(ctx context.Context, organizationId string, params *LabsListAlertsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
