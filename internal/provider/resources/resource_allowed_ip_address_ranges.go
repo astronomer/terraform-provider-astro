@@ -11,8 +11,10 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -26,8 +28,9 @@ const (
 )
 
 var (
-	_ resource.Resource              = &allowedIpAddressRangesResource{}
-	_ resource.ResourceWithConfigure = &allowedIpAddressRangesResource{}
+	_ resource.Resource                = &allowedIpAddressRangesResource{}
+	_ resource.ResourceWithConfigure   = &allowedIpAddressRangesResource{}
+	_ resource.ResourceWithImportState = &allowedIpAddressRangesResource{}
 )
 
 func NewAllowedIpAddressRangesResource() resource.Resource {
@@ -53,10 +56,16 @@ func (r *allowedIpAddressRangesResource) Schema(ctx context.Context, req resourc
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manage an organization's IP access list as a single resource. This resource is " +
 			"authoritative: any allowed IP address ranges not present in `ip_address_ranges` are removed on apply.\n\n" +
+			"~> **Warning: risk of lockout.** While the access list is empty, access is unrestricted. Adding the " +
+			"first range turns enforcement on, and the API will reject that first apply with a `400` unless the " +
+			"submitted ranges include the public IP address of the machine running Terraform (for example, a CI " +
+			"runner's egress IP). Once enforcement is on, the API does **not** protect you from removing the range " +
+			"that covers your own IP: doing so - or narrowing/replacing it so your IP is no longer covered - locks " +
+			"you (and this provider) out and will fail the apply mid-way. Always keep a range covering the machine " +
+			"that runs Terraform.\n\n" +
 			"~> **Note** Do not manage the IP access list with more than one `astro_allowed_ip_address_ranges` " +
-			"resource, and be careful not to remove the range that includes the machine applying the Terraform " +
-			"configuration - the API rejects changes that would lock out the current caller when the access list " +
-			"is non-empty.",
+			"resource. To adopt an access list that already exists, import it first (see below) rather than " +
+			"re-declaring it, otherwise the first apply will conflict with the existing ranges.",
 		Attributes: schemas.AllowedIpAddressRangesResourceSchemaAttributes(),
 	}
 }
@@ -104,6 +113,7 @@ func (r *allowedIpAddressRangesResource) Create(ctx context.Context, req resourc
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	data.Id = types.StringValue(r.organizationId)
 	data.IpAddressRanges = setVal
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -126,6 +136,7 @@ func (r *allowedIpAddressRangesResource) Read(ctx context.Context, req resource.
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	data.Id = types.StringValue(r.organizationId)
 	data.IpAddressRanges = setVal
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -148,6 +159,18 @@ func (r *allowedIpAddressRangesResource) Update(ctx context.Context, req resourc
 
 	toCreate, toDelete := diffCidrs(planCidrs, stateCidrs)
 
+	// Create before delete so the machine running Terraform never loses coverage mid-update. IP
+	// enforcement is per-request and the API only guards against lockout on the empty -> first-entry
+	// transition (not on deletes), so deleting the caller's covering range before adding its
+	// replacement would lock the caller out and fail the remaining requests. Adding ranges to an
+	// already non-empty list is always safe.
+	if len(toCreate) > 0 {
+		resp.Diagnostics.Append(r.bulkCreate(ctx, toCreate)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	if len(toDelete) > 0 {
 		ids, diags := r.idsForCidrs(ctx, toDelete)
 		resp.Diagnostics.Append(diags...)
@@ -155,13 +178,6 @@ func (r *allowedIpAddressRangesResource) Update(ctx context.Context, req resourc
 			return
 		}
 		resp.Diagnostics.Append(r.bulkDelete(ctx, ids)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
-
-	if len(toCreate) > 0 {
-		resp.Diagnostics.Append(r.bulkCreate(ctx, toCreate)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -178,6 +194,7 @@ func (r *allowedIpAddressRangesResource) Update(ctx context.Context, req resourc
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	plan.Id = types.StringValue(r.organizationId)
 	plan.IpAddressRanges = setVal
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -205,6 +222,14 @@ func (r *allowedIpAddressRangesResource) Delete(ctx context.Context, req resourc
 	}
 
 	resp.Diagnostics.Append(r.bulkDelete(ctx, ids)...)
+}
+
+// ImportState imports the organization's existing IP access list. The resource is a singleton for
+// the organization configured on the provider, so the import ID is only cosmetic (use the
+// organization ID) - the subsequent Read populates ip_address_ranges from the API and sets id to
+// the organization ID regardless of the value passed here.
+func (r *allowedIpAddressRangesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 // bulkCreate chunks the given CIDRs by the API's per-request limit and creates them via the labs

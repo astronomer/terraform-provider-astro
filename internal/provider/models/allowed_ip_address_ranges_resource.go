@@ -6,5 +6,6 @@ import "github.com/hashicorp/terraform-plugin-framework/types"
 // model. The resource authoritatively manages the organization's full IP access list as a single
 // set of CIDR ranges.
 type AllowedIpAddressRangesResource struct {
-	IpAddressRanges types.Set `tfsdk:"ip_address_ranges"`
+	Id              types.String `tfsdk:"id"`
+	IpAddressRanges types.Set    `tfsdk:"ip_address_ranges"`
 }
