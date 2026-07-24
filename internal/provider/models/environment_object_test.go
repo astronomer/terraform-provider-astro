@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 )
@@ -151,7 +151,7 @@ func TestUnit_EnvironmentObject_ReadFromResponse_Connection_Preserve(t *testing.
 // the METRICS_EXPORT preserve rules for fields the API doesn't echo back:
 // password, basic_token, and auth_type.
 func TestUnit_EnvironmentObject_ReadFromResponse_MetricsExport_Preserve(t *testing.T) {
-	authToken := platform.EnvironmentObjectMetricsExportAuthTypeAUTHTOKEN
+	authToken := platform_v1.EnvironmentObjectMetricsExportAuthTypeAUTHTOKEN
 
 	t.Run("basic_token preserved when API returns nil", func(t *testing.T) {
 		obj := newMetricsExportAPIResponse(nil, nil, nil)
@@ -195,15 +195,15 @@ func TestUnit_EnvironmentObject_ReadFromResponse_MetricsExport_Preserve(t *testi
 // per-link override preserve path: secrets, JSON, and auth_type must survive
 // when the API doesn't echo them back. Lookup is keyed by scope:scope_entity_id.
 func TestUnit_EnvironmentObject_ReadFromResponse_LinkOverridesPreserve(t *testing.T) {
-	deploymentScope := platform.EnvironmentObjectLinkScopeDEPLOYMENT
+	deploymentScope := platform_v1.EnvironmentObjectLinkScopeDEPLOYMENT
 	depId := "cmq6m73on0hnl01ktk3xftlwf"
 
 	t.Run("airflow_variable link override: secret value falls back to preserve", func(t *testing.T) {
 		obj := newAirflowVariableAPIResponse("ws_value", false)
-		obj.Links = &[]platform.EnvironmentObjectLink{{
+		obj.Links = &[]platform_v1.EnvironmentObjectLink{{
 			Scope:                    deploymentScope,
 			ScopeEntityId:            depId,
-			AirflowVariableOverrides: &platform.EnvironmentObjectAirflowVariableOverrides{Value: ""},
+			AirflowVariableOverrides: &platform_v1.EnvironmentObjectAirflowVariableOverrides{Value: ""},
 		}}
 		preserve := &models.EnvironmentObjectPreserve{
 			LinkOverrides: map[string]*models.EnvironmentObjectLinkOverridePreserve{
@@ -218,13 +218,13 @@ func TestUnit_EnvironmentObject_ReadFromResponse_LinkOverridesPreserve(t *testin
 	})
 
 	t.Run("metrics_export link override: auth_type + basic_token + password fall back to preserve", func(t *testing.T) {
-		exporter := platform.EnvironmentObjectMetricsExportAuthTypeAUTHTOKEN
+		exporter := platform_v1.EnvironmentObjectMetricsExportAuthTypeAUTHTOKEN
 		_ = exporter
 		obj := newMetricsExportAPIResponse(nil, nil, nil)
-		obj.Links = &[]platform.EnvironmentObjectLink{{
+		obj.Links = &[]platform_v1.EnvironmentObjectLink{{
 			Scope:         deploymentScope,
 			ScopeEntityId: depId,
-			MetricsExportOverrides: &platform.EnvironmentObjectMetricsExportOverrides{
+			MetricsExportOverrides: &platform_v1.EnvironmentObjectMetricsExportOverrides{
 				Endpoint: lo.ToPtr("https://override.example.com/api/v1/write"),
 				// API does NOT echo auth_type, basic_token, password
 			},
@@ -248,10 +248,10 @@ func TestUnit_EnvironmentObject_ReadFromResponse_LinkOverridesPreserve(t *testin
 
 	t.Run("connection link override: extra preserve keeps byte-exact JSON", func(t *testing.T) {
 		obj := newConnectionAPIResponse(connectionAPI{})
-		obj.Links = &[]platform.EnvironmentObjectLink{{
+		obj.Links = &[]platform_v1.EnvironmentObjectLink{{
 			Scope:         deploymentScope,
 			ScopeEntityId: depId,
-			ConnectionOverrides: &platform.EnvironmentObjectConnectionOverrides{
+			ConnectionOverrides: &platform_v1.EnvironmentObjectConnectionOverrides{
 				Host: lo.ToPtr("override.example.com"),
 			},
 		}}
@@ -269,10 +269,10 @@ func TestUnit_EnvironmentObject_ReadFromResponse_LinkOverridesPreserve(t *testin
 
 	t.Run("preserve key mismatch: link present but key doesn't match → fields stay null/empty", func(t *testing.T) {
 		obj := newAirflowVariableAPIResponse("ws_value", false)
-		obj.Links = &[]platform.EnvironmentObjectLink{{
+		obj.Links = &[]platform_v1.EnvironmentObjectLink{{
 			Scope:                    deploymentScope,
 			ScopeEntityId:            depId,
-			AirflowVariableOverrides: &platform.EnvironmentObjectAirflowVariableOverrides{Value: ""},
+			AirflowVariableOverrides: &platform_v1.EnvironmentObjectAirflowVariableOverrides{Value: ""},
 		}}
 		preserve := &models.EnvironmentObjectPreserve{
 			LinkOverrides: map[string]*models.EnvironmentObjectLinkOverridePreserve{
@@ -299,32 +299,32 @@ type connectionAPI struct {
 	Extra    *map[string]interface{}
 }
 
-func newAirflowVariableAPIResponse(value string, isSecret bool) *platform.EnvironmentObject {
+func newAirflowVariableAPIResponse(value string, isSecret bool) *platform_v1.EnvironmentObject {
 	id := "cm6envobjid000airflow"
-	scope := platform.EnvironmentObjectScopeWORKSPACE
-	return &platform.EnvironmentObject{
+	scope := platform_v1.EnvironmentObjectScopeWORKSPACE
+	return &platform_v1.EnvironmentObject{
 		Id:            &id,
 		ObjectKey:     "k",
-		ObjectType:    platform.EnvironmentObjectObjectTypeAIRFLOWVARIABLE,
+		ObjectType:    platform_v1.EnvironmentObjectObjectTypeAIRFLOWVARIABLE,
 		Scope:         scope,
 		ScopeEntityId: "ws_id",
-		AirflowVariable: &platform.EnvironmentObjectAirflowVariable{
+		AirflowVariable: &platform_v1.EnvironmentObjectAirflowVariable{
 			Value:    value,
 			IsSecret: isSecret,
 		},
 	}
 }
 
-func newConnectionAPIResponse(c connectionAPI) *platform.EnvironmentObject {
+func newConnectionAPIResponse(c connectionAPI) *platform_v1.EnvironmentObject {
 	id := "cm6envobjid000conn"
-	scope := platform.EnvironmentObjectScopeWORKSPACE
-	return &platform.EnvironmentObject{
+	scope := platform_v1.EnvironmentObjectScopeWORKSPACE
+	return &platform_v1.EnvironmentObject{
 		Id:            &id,
 		ObjectKey:     "k",
-		ObjectType:    platform.EnvironmentObjectObjectTypeCONNECTION,
+		ObjectType:    platform_v1.EnvironmentObjectObjectTypeCONNECTION,
 		Scope:         scope,
 		ScopeEntityId: "ws_id",
-		Connection: &platform.EnvironmentObjectConnection{
+		Connection: &platform_v1.EnvironmentObjectConnection{
 			Type:     "postgres",
 			Host:     c.Host,
 			Port:     c.Port,
@@ -337,21 +337,21 @@ func newConnectionAPIResponse(c connectionAPI) *platform.EnvironmentObject {
 }
 
 func newMetricsExportAPIResponse(
-	authType *platform.EnvironmentObjectMetricsExportAuthType,
+	authType *platform_v1.EnvironmentObjectMetricsExportAuthType,
 	username *string,
 	basicToken *string,
-) *platform.EnvironmentObject {
+) *platform_v1.EnvironmentObject {
 	id := "cm6envobjid000metric"
-	scope := platform.EnvironmentObjectScopeWORKSPACE
-	return &platform.EnvironmentObject{
+	scope := platform_v1.EnvironmentObjectScopeWORKSPACE
+	return &platform_v1.EnvironmentObject{
 		Id:            &id,
 		ObjectKey:     "k",
-		ObjectType:    platform.EnvironmentObjectObjectTypeMETRICSEXPORT,
+		ObjectType:    platform_v1.EnvironmentObjectObjectTypeMETRICSEXPORT,
 		Scope:         scope,
 		ScopeEntityId: "ws_id",
-		MetricsExport: &platform.EnvironmentObjectMetricsExport{
+		MetricsExport: &platform_v1.EnvironmentObjectMetricsExport{
 			Endpoint:     "https://prom.example.com/api/v1/write",
-			ExporterType: platform.EnvironmentObjectMetricsExportExporterTypePROMETHEUS,
+			ExporterType: platform_v1.EnvironmentObjectMetricsExportExporterTypePROMETHEUS,
 			AuthType:     authType,
 			Username:     username,
 			BasicToken:   basicToken,

@@ -1,7 +1,7 @@
 package schemas
 
 import (
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -20,6 +20,7 @@ func EnvironmentObjectsElementAttributeTypes() map[string]attr.Type {
 		"id":                     types.StringType,
 		"object_key":             types.StringType,
 		"object_type":            types.StringType,
+		"description":            types.StringType,
 		"scope":                  types.StringType,
 		"scope_entity_id":        types.StringType,
 		"source_scope":           types.StringType,
@@ -73,13 +74,14 @@ func EnvironmentObjectsDataSourceSchemaAttributes() map[string]datasourceSchema.
 			Validators:          []validator.String{validators.IsCuid()},
 		},
 		"object_type": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Filter by object type (AIRFLOW_VARIABLE, CONNECTION, METRICS_EXPORT)",
+			MarkdownDescription: "Filter by object type (AIRFLOW_VARIABLE, ENVIRONMENT_VARIABLE, CONNECTION, METRICS_EXPORT)",
 			Optional:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(platform.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE),
-					string(platform.CreateEnvironmentObjectRequestObjectTypeCONNECTION),
-					string(platform.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT),
+					string(platform_v1.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE),
+					string(platform_v1.CreateEnvironmentObjectRequestObjectTypeENVIRONMENTVARIABLE),
+					string(platform_v1.CreateEnvironmentObjectRequestObjectTypeCONNECTION),
+					string(platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT),
 				),
 			},
 		},

@@ -62,7 +62,7 @@ output "environment_objects" {
 
 - `deployment_id` (String) Filter by Deployment ID
 - `object_key` (String) Filter by object key
-- `object_type` (String) Filter by object type (AIRFLOW_VARIABLE, CONNECTION, METRICS_EXPORT)
+- `object_type` (String) Filter by object type (AIRFLOW_VARIABLE, ENVIRONMENT_VARIABLE, CONNECTION, METRICS_EXPORT)
 - `resolve_linked` (Boolean) If true, resolves and returns environment objects linked to the specified Deployment or Workspace
 - `show_secrets` (Boolean) If true, returns the actual values of secret fields in the response
 - `workspace_id` (String) Filter by Workspace ID
@@ -87,18 +87,19 @@ Read-Only:
 - `connection_auth_type` (Attributes) The resolved auth type of the connection (only used when object_type=CONNECTION) (see [below for nested schema](#nestedatt--environment_objects--connection_auth_type))
 - `created_at` (String) Environment Object creation timestamp
 - `created_by` (Attributes) Environment Object creator (see [below for nested schema](#nestedatt--environment_objects--created_by))
+- `description` (String) The description of the environment object
 - `endpoint` (String) The Prometheus endpoint where the metrics are exported (only used when object_type=METRICS_EXPORT)
 - `exclude_links` (Attributes Set) The excluded links for the environment object (see [below for nested schema](#nestedatt--environment_objects--exclude_links))
 - `exporter_type` (String) The type of exporter (only used when object_type=METRICS_EXPORT)
 - `extra` (String) Extra connection details as JSON string (only used when object_type=CONNECTION)
 - `headers` (Map of String) HTTP request headers for the remote endpoint (only used when object_type=METRICS_EXPORT)
 - `host` (String) The host address for the connection (only used when object_type=CONNECTION)
-- `is_secret` (Boolean) Whether the value is a secret (only used when object_type=AIRFLOW_VARIABLE)
+- `is_secret` (Boolean) Whether the value is a secret (used when object_type=AIRFLOW_VARIABLE or ENVIRONMENT_VARIABLE)
 - `labels` (Map of String) Key-value pair metrics labels (only used when object_type=METRICS_EXPORT)
 - `links` (Attributes Set) The Deployments linked to the environment object (see [below for nested schema](#nestedatt--environment_objects--links))
 - `login` (String) The username used for the connection (only used when object_type=CONNECTION)
 - `object_key` (String) The key for the environment object
-- `object_type` (String) The type of environment object (AIRFLOW_VARIABLE, CONNECTION, METRICS_EXPORT)
+- `object_type` (String) The type of environment object (AIRFLOW_VARIABLE, ENVIRONMENT_VARIABLE, CONNECTION, METRICS_EXPORT)
 - `password` (String, Sensitive) The password — the connection password when object_type=CONNECTION, the HTTP Basic-auth password when object_type=METRICS_EXPORT
 - `port` (Number) The port for the connection (only used when object_type=CONNECTION)
 - `schema` (String) The schema for the connection (only used when object_type=CONNECTION)
@@ -110,7 +111,7 @@ Read-Only:
 - `updated_at` (String) Environment Object last updated timestamp
 - `updated_by` (Attributes) Environment Object updater (see [below for nested schema](#nestedatt--environment_objects--updated_by))
 - `username` (String) The username to connect to the remote endpoint (only used when object_type=METRICS_EXPORT)
-- `value` (String, Sensitive) The value of the Airflow variable (only used when object_type=AIRFLOW_VARIABLE)
+- `value` (String, Sensitive) The value of the variable (used when object_type=AIRFLOW_VARIABLE or ENVIRONMENT_VARIABLE)
 
 <a id="nestedatt--environment_objects--connection_auth_type"></a>
 ### Nested Schema for `environment_objects.connection_auth_type`
@@ -194,7 +195,7 @@ Read-Only:
 - `schema` (String) Override schema (only used when object_type=CONNECTION)
 - `type` (String) Override connection type (only used when object_type=CONNECTION)
 - `username` (String) Override username (only used when object_type=METRICS_EXPORT)
-- `value` (String, Sensitive) Override value (only used when object_type=AIRFLOW_VARIABLE)
+- `value` (String, Sensitive) Override value (only used when object_type=AIRFLOW_VARIABLE or ENVIRONMENT_VARIABLE)
 
 
 

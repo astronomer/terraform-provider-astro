@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -24,8 +24,8 @@ func NewEnvironmentObjectDataSource() datasource.DataSource {
 
 // environmentObjectDataSource defines the data source implementation.
 type environmentObjectDataSource struct {
-	PlatformClient platform.ClientWithResponsesInterface
-	OrganizationId string
+	PlatformV1Client platform_v1.ClientWithResponsesInterface
+	OrganizationId   string
 }
 
 func (d *environmentObjectDataSource) Metadata(
@@ -64,7 +64,7 @@ func (d *environmentObjectDataSource) Configure(
 		return
 	}
 
-	d.PlatformClient = apiClients.PlatformClient
+	d.PlatformV1Client = apiClients.PlatformV1Client
 	d.OrganizationId = apiClients.OrganizationId
 }
 
@@ -81,7 +81,7 @@ func (d *environmentObjectDataSource) Read(
 		return
 	}
 
-	environmentObject, err := d.PlatformClient.GetEnvironmentObjectWithResponse(
+	environmentObject, err := d.PlatformV1Client.GetEnvironmentObjectWithResponse(
 		ctx,
 		d.OrganizationId,
 		data.Id.ValueString(),

@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -970,7 +970,7 @@ resource "astro_environment_object" "%s" {
 func testAccCheckEnvironmentObjectExists(t *testing.T, objectKey string) resource.TestCheckFunc {
 	t.Helper()
 	return func(s *terraform.State) error {
-		client, err := utils.GetTestPlatformClient(true)
+		client, err := utils.GetTestPlatformV1Client(true)
 		if err != nil {
 			return fmt.Errorf("failed to get test platform client: %v", err)
 		}
@@ -978,7 +978,7 @@ func testAccCheckEnvironmentObjectExists(t *testing.T, objectKey string) resourc
 		organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
 		ctx := context.Background()
 
-		resp, err := client.ListEnvironmentObjectsWithResponse(ctx, organizationId, &platform.ListEnvironmentObjectsParams{
+		resp, err := client.ListEnvironmentObjectsWithResponse(ctx, organizationId, &platform_v1.ListEnvironmentObjectsParams{
 			ObjectKey: &objectKey,
 			Limit:     lo.ToPtr(10),
 		})
@@ -1002,7 +1002,7 @@ func testAccCheckEnvironmentObjectExists(t *testing.T, objectKey string) resourc
 func testAccCheckEnvironmentObjectDestroyed(t *testing.T, objectKey string) resource.TestCheckFunc {
 	t.Helper()
 	return func(s *terraform.State) error {
-		client, err := utils.GetTestPlatformClient(true)
+		client, err := utils.GetTestPlatformV1Client(true)
 		if err != nil {
 			return fmt.Errorf("failed to get test platform client: %v", err)
 		}
@@ -1010,7 +1010,7 @@ func testAccCheckEnvironmentObjectDestroyed(t *testing.T, objectKey string) reso
 		organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
 		ctx := context.Background()
 
-		resp, err := client.ListEnvironmentObjectsWithResponse(ctx, organizationId, &platform.ListEnvironmentObjectsParams{
+		resp, err := client.ListEnvironmentObjectsWithResponse(ctx, organizationId, &platform_v1.ListEnvironmentObjectsParams{
 			ObjectKey: &objectKey,
 			Limit:     lo.ToPtr(10),
 		})
