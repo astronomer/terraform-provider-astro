@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -21,12 +21,13 @@ type EnvironmentObject struct {
 	Id                  types.String `tfsdk:"id"`
 	ObjectKey           types.String `tfsdk:"object_key"`
 	ObjectType          types.String `tfsdk:"object_type"`
+	Description         types.String `tfsdk:"description"`
 	Scope               types.String `tfsdk:"scope"`
 	ScopeEntityId       types.String `tfsdk:"scope_entity_id"`
 	SourceScope         types.String `tfsdk:"source_scope"`
 	SourceScopeEntityId types.String `tfsdk:"source_scope_entity_id"`
 	AutoLinkDeployments types.Bool   `tfsdk:"auto_link_deployments"`
-	// AIRFLOW_VARIABLE
+	// AIRFLOW_VARIABLE / ENVIRONMENT_VARIABLE (shared: both carry a value + is_secret pair)
 	Value    types.String `tfsdk:"value"`
 	IsSecret types.Bool   `tfsdk:"is_secret"`
 	// CONNECTION
@@ -107,12 +108,13 @@ type EnvironmentObjectOverridesInput struct {
 // resource layer knows which kind of password it's preserving based on the
 // parent object_type.
 type EnvironmentObjectPreserve struct {
-	Password              *string // CONNECTION password OR METRICS_EXPORT basic-auth password (object_type discriminates)
-	AuthTypeId            *string // CONNECTION
-	Extra                 *string // CONNECTION — user's exact JSON string (avoids map round-trip drift)
-	AirflowVariableValue  *string // AIRFLOW_VARIABLE — only meaningful when is_secret=true
-	BasicToken            *string // METRICS_EXPORT
-	MetricsExportAuthType *string // METRICS_EXPORT — API does not echo it back on GET
+	Password                 *string // CONNECTION password OR METRICS_EXPORT basic-auth password (object_type discriminates)
+	AuthTypeId               *string // CONNECTION
+	Extra                    *string // CONNECTION — user's exact JSON string (avoids map round-trip drift)
+	AirflowVariableValue     *string // AIRFLOW_VARIABLE — only meaningful when is_secret=true
+	EnvironmentVariableValue *string // ENVIRONMENT_VARIABLE — same preserve rule as AIRFLOW_VARIABLE
+	BasicToken               *string // METRICS_EXPORT
+	MetricsExportAuthType    *string // METRICS_EXPORT — API does not echo it back on GET
 	// Per-link overrides, keyed by LinkPreserveKey(scope, scope_entity_id).
 	LinkOverrides map[string]*EnvironmentObjectLinkOverridePreserve
 }
@@ -134,13 +136,14 @@ func LinkPreserveKey(scope, scopeEntityId string) string {
 	return scope + ":" + scopeEntityId
 }
 
-func (data *EnvironmentObject) ReadFromResponse(ctx context.Context, obj *platform.EnvironmentObject, preserve *EnvironmentObjectPreserve) diag.Diagnostics {
+func (data *EnvironmentObject) ReadFromResponse(ctx context.Context, obj *platform_v1.EnvironmentObject, preserve *EnvironmentObjectPreserve) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Common / metadata
 	data.Id = types.StringPointerValue(obj.Id)
 	data.ObjectKey = types.StringValue(obj.ObjectKey)
 	data.ObjectType = types.StringValue(string(obj.ObjectType))
+	data.Description = types.StringPointerValue(obj.Description)
 	data.Scope = types.StringValue(string(obj.Scope))
 	data.ScopeEntityId = types.StringValue(obj.ScopeEntityId)
 
@@ -193,6 +196,17 @@ func (data *EnvironmentObject) ReadFromResponse(ctx context.Context, obj *platfo
 		}
 		data.Value = types.StringValue(value)
 		data.IsSecret = types.BoolValue(obj.AirflowVariable.IsSecret)
+	}
+
+	// ENVIRONMENT_VARIABLE follows the same preserve rule as AIRFLOW_VARIABLE:
+	// secret values come back empty; fall back to the caller's preserved plan value.
+	if obj.EnvironmentVariable != nil {
+		value := obj.EnvironmentVariable.Value
+		if preserve != nil && preserve.EnvironmentVariableValue != nil && obj.EnvironmentVariable.IsSecret {
+			value = *preserve.EnvironmentVariableValue
+		}
+		data.Value = types.StringValue(value)
+		data.IsSecret = types.BoolValue(obj.EnvironmentVariable.IsSecret)
 	}
 
 	if obj.Connection != nil {
@@ -282,7 +296,7 @@ func (data *EnvironmentObject) nullAllTypeSpecific() {
 	data.Password = types.StringNull()
 }
 
-func (data *EnvironmentObject) populateConnection(ctx context.Context, conn *platform.EnvironmentObjectConnection, preserve *EnvironmentObjectPreserve) diag.Diagnostics {
+func (data *EnvironmentObject) populateConnection(ctx context.Context, conn *platform_v1.EnvironmentObjectConnection, preserve *EnvironmentObjectPreserve) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// connection_auth_type (Computed nested object)
@@ -338,7 +352,7 @@ func (data *EnvironmentObject) populateConnection(ctx context.Context, conn *pla
 	return nil
 }
 
-func (data *EnvironmentObject) populateMetricsExport(me *platform.EnvironmentObjectMetricsExport, preserve *EnvironmentObjectPreserve) diag.Diagnostics {
+func (data *EnvironmentObject) populateMetricsExport(me *platform_v1.EnvironmentObjectMetricsExport, preserve *EnvironmentObjectPreserve) diag.Diagnostics {
 	// auth_type is not echoed back on GET, so fall back to the user's prior
 	// plan value when we have one (same pattern as auth_type_id for CONNECTION).
 	switch {
@@ -369,9 +383,9 @@ func (data *EnvironmentObject) populateMetricsExport(me *platform.EnvironmentObj
 	return nil
 }
 
-// EnvironmentObjectConnectionAuthTypeTypesObject converts a platform.ConnectionAuthType
+// EnvironmentObjectConnectionAuthTypeTypesObject converts a platform_v1.ConnectionAuthType
 // into a types.Object matching the connection_auth_type schema.
-func EnvironmentObjectConnectionAuthTypeTypesObject(ctx context.Context, cat *platform.ConnectionAuthType) (types.Object, diag.Diagnostics) {
+func EnvironmentObjectConnectionAuthTypeTypesObject(ctx context.Context, cat *platform_v1.ConnectionAuthType) (types.Object, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	paramAttrType := schemas.EnvironmentObjectConnectionAuthTypeParameterAttributeTypes()
@@ -411,11 +425,11 @@ func EnvironmentObjectConnectionAuthTypeTypesObject(ctx context.Context, cat *pl
 	})
 }
 
-// EnvironmentObjectLinkTypesObject converts a platform.EnvironmentObjectLink into a
+// EnvironmentObjectLinkTypesObject converts a platform_v1.EnvironmentObjectLink into a
 // types.Object matching the link schema with a flat `overrides` block. The
 // preserve argument supplies any per-link override secrets/extra JSON that the
 // API does not echo back.
-func EnvironmentObjectLinkTypesObject(ctx context.Context, link *platform.EnvironmentObjectLink, preserve *EnvironmentObjectLinkOverridePreserve) (types.Object, diag.Diagnostics) {
+func EnvironmentObjectLinkTypesObject(ctx context.Context, link *platform_v1.EnvironmentObjectLink, preserve *EnvironmentObjectLinkOverridePreserve) (types.Object, diag.Diagnostics) {
 	overrides, diags := environmentObjectOverridesTypesObject(link, preserve)
 	if diags.HasError() {
 		return types.Object{}, diags
@@ -430,11 +444,12 @@ func EnvironmentObjectLinkTypesObject(ctx context.Context, link *platform.Enviro
 
 // environmentObjectOverridesTypesObject builds the flat `overrides` value for
 // a link by selecting fields from whichever of AirflowVariableOverrides /
-// ConnectionOverrides / MetricsExportOverrides is non-nil on the API response.
-func environmentObjectOverridesTypesObject(link *platform.EnvironmentObjectLink, preserve *EnvironmentObjectLinkOverridePreserve) (types.Object, diag.Diagnostics) {
+// EnvironmentVariableOverrides / ConnectionOverrides / MetricsExportOverrides
+// is non-nil on the API response.
+func environmentObjectOverridesTypesObject(link *platform_v1.EnvironmentObjectLink, preserve *EnvironmentObjectLinkOverridePreserve) (types.Object, diag.Diagnostics) {
 	overridesAttrTypes := schemas.EnvironmentObjectOverridesAttributeTypes()
 
-	hasAny := link.AirflowVariableOverrides != nil || link.ConnectionOverrides != nil || link.MetricsExportOverrides != nil
+	hasAny := link.AirflowVariableOverrides != nil || link.EnvironmentVariableOverrides != nil || link.ConnectionOverrides != nil || link.MetricsExportOverrides != nil
 	if !hasAny {
 		return types.ObjectNull(overridesAttrTypes), nil
 	}
@@ -466,6 +481,15 @@ func environmentObjectOverridesTypesObject(link *platform.EnvironmentObjectLink,
 		// value when the API returned empty (the redaction sentinel). For
 		// non-secret overrides the API returns the real value, which then wins —
 		// so server-side edits surface as drift instead of being silently masked.
+		if value == "" && preserve != nil && preserve.Value != nil {
+			value = *preserve.Value
+		}
+		values["value"] = types.StringValue(value)
+	}
+
+	// Same secret-fallback rule as AirflowVariableOverrides above.
+	if link.EnvironmentVariableOverrides != nil {
+		value := link.EnvironmentVariableOverrides.Value
 		if value == "" && preserve != nil && preserve.Value != nil {
 			value = *preserve.Value
 		}
