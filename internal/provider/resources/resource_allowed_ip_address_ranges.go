@@ -102,19 +102,12 @@ func (r *allowedIpAddressRangesResource) Create(ctx context.Context, req resourc
 		return
 	}
 
-	result, diags := r.listAll(ctx)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	setVal, d := utils.StringSet(&result)
-	resp.Diagnostics.Append(d...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// Store the planned ranges verbatim rather than re-listing from the API. ip_address_ranges is a
+	// Required attribute, so Terraform enforces that the value saved to state equals the planned
+	// (config) value; writing back an API re-list that differs by even a canonicalized CIDR (host
+	// bits set, IPv6 form) would raise "Provider produced inconsistent result after apply" - the same
+	// class as GH #244/#314. Read reconciles any server-side drift on the next refresh.
 	data.Id = types.StringValue(r.organizationId)
-	data.IpAddressRanges = setVal
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -183,19 +176,9 @@ func (r *allowedIpAddressRangesResource) Update(ctx context.Context, req resourc
 		}
 	}
 
-	result, diags := r.listAll(ctx)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	setVal, d := utils.StringSet(&result)
-	resp.Diagnostics.Append(d...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// Store the planned ranges verbatim (see Create) so state equals the Required config value and
+	// avoids an inconsistent-result error; Read reconciles server-side drift on the next refresh.
 	plan.Id = types.StringValue(r.organizationId)
-	plan.IpAddressRanges = setVal
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
