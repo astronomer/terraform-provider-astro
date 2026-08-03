@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -25,8 +25,8 @@ func NewEnvironmentObjectsDataSource() datasource.DataSource {
 
 // environmentObjectsDataSource defines the data source implementation.
 type environmentObjectsDataSource struct {
-	PlatformClient platform.ClientWithResponsesInterface
-	OrganizationId string
+	PlatformV1Client platform_v1.ClientWithResponsesInterface
+	OrganizationId   string
 }
 
 func (d *environmentObjectsDataSource) Metadata(
@@ -65,7 +65,7 @@ func (d *environmentObjectsDataSource) Configure(
 		return
 	}
 
-	d.PlatformClient = apiClients.PlatformClient
+	d.PlatformV1Client = apiClients.PlatformV1Client
 	d.OrganizationId = apiClients.OrganizationId
 }
 
@@ -82,7 +82,7 @@ func (d *environmentObjectsDataSource) Read(
 		return
 	}
 
-	params := &platform.ListEnvironmentObjectsParams{
+	params := &platform_v1.ListEnvironmentObjectsParams{
 		Limit: lo.ToPtr(1000),
 	}
 
@@ -93,7 +93,7 @@ func (d *environmentObjectsDataSource) Read(
 		params.DeploymentId = data.DeploymentId.ValueStringPointer()
 	}
 	if !data.ObjectType.IsNull() && !data.ObjectType.IsUnknown() {
-		ot := platform.ListEnvironmentObjectsParamsObjectType(data.ObjectType.ValueString())
+		ot := platform_v1.ListEnvironmentObjectsParamsObjectType(data.ObjectType.ValueString())
 		params.ObjectType = &ot
 	}
 	if !data.ObjectKey.IsNull() && !data.ObjectKey.IsUnknown() {
@@ -106,11 +106,11 @@ func (d *environmentObjectsDataSource) Read(
 		params.ResolveLinked = data.ResolveLinked.ValueBoolPointer()
 	}
 
-	var allObjects []platform.EnvironmentObject
+	var allObjects []platform_v1.EnvironmentObject
 	offset := 0
 	for {
 		params.Offset = &offset
-		listResp, err := d.PlatformClient.ListEnvironmentObjectsWithResponse(
+		listResp, err := d.PlatformV1Client.ListEnvironmentObjectsWithResponse(
 			ctx,
 			d.OrganizationId,
 			params,

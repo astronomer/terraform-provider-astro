@@ -1,7 +1,7 @@
 package schemas
 
 import (
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -184,7 +184,7 @@ func environmentObjectConnectionAuthTypeDataSourceSchemaAttributes() map[string]
 func environmentObjectOverridesDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
 		"value": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Override value (only used when object_type=AIRFLOW_VARIABLE)",
+			MarkdownDescription: "Override value (only used when object_type=AIRFLOW_VARIABLE or ENVIRONMENT_VARIABLE)",
 			Computed:            true,
 			Sensitive:           true,
 		},
@@ -298,7 +298,11 @@ func EnvironmentObjectDataSourceSchemaAttributes() map[string]datasourceSchema.A
 			Computed:            true,
 		},
 		"object_type": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The type of environment object (AIRFLOW_VARIABLE, CONNECTION, METRICS_EXPORT)",
+			MarkdownDescription: "The type of environment object (AIRFLOW_VARIABLE, ENVIRONMENT_VARIABLE, CONNECTION, METRICS_EXPORT)",
+			Computed:            true,
+		},
+		"description": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The description of the environment object",
 			Computed:            true,
 		},
 		"scope": datasourceSchema.StringAttribute{
@@ -321,14 +325,14 @@ func EnvironmentObjectDataSourceSchemaAttributes() map[string]datasourceSchema.A
 			MarkdownDescription: "Whether to automatically link Deployments to the environment object",
 			Computed:            true,
 		},
-		// AIRFLOW_VARIABLE fields
+		// AIRFLOW_VARIABLE / ENVIRONMENT_VARIABLE fields (shared)
 		"value": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The value of the Airflow variable (only used when object_type=AIRFLOW_VARIABLE)",
+			MarkdownDescription: "The value of the variable (used when object_type=AIRFLOW_VARIABLE or ENVIRONMENT_VARIABLE)",
 			Computed:            true,
 			Sensitive:           true,
 		},
 		"is_secret": datasourceSchema.BoolAttribute{
-			MarkdownDescription: "Whether the value is a secret (only used when object_type=AIRFLOW_VARIABLE)",
+			MarkdownDescription: "Whether the value is a secret (used when object_type=AIRFLOW_VARIABLE or ENVIRONMENT_VARIABLE)",
 			Computed:            true,
 		},
 		// CONNECTION fields
@@ -530,9 +534,9 @@ func environmentObjectConnectionAuthTypeResourceSchemaAttributes() map[string]re
 // based on parent object_type.
 func environmentObjectOverridesResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
-		// AIRFLOW_VARIABLE
+		// AIRFLOW_VARIABLE / ENVIRONMENT_VARIABLE (shared)
 		"value": resourceSchema.StringAttribute{
-			MarkdownDescription: "Override value (only valid when object_type=AIRFLOW_VARIABLE)",
+			MarkdownDescription: "Override value (only valid when object_type=AIRFLOW_VARIABLE or ENVIRONMENT_VARIABLE)",
 			Optional:            true,
 			Sensitive:           true,
 		},
@@ -608,7 +612,7 @@ func environmentObjectExcludeLinkResourceSchemaAttributes() map[string]resourceS
 			MarkdownDescription: "Scope of the excluded entity (DEPLOYMENT)",
 			Required:            true,
 			Validators: []validator.String{
-				stringvalidator.OneOf(string(platform.ExcludeLinkEnvironmentObjectRequestScopeDEPLOYMENT)),
+				stringvalidator.OneOf(string(platform_v1.ExcludeLinkEnvironmentObjectRequestScopeDEPLOYMENT)),
 			},
 		},
 		"scope_entity_id": resourceSchema.StringAttribute{
@@ -625,7 +629,7 @@ func environmentObjectLinkResourceSchemaAttributes() map[string]resourceSchema.A
 			MarkdownDescription: "Scope of the linked entity (DEPLOYMENT)",
 			Required:            true,
 			Validators: []validator.String{
-				stringvalidator.OneOf(string(platform.CreateEnvironmentObjectLinkRequestScopeDEPLOYMENT)),
+				stringvalidator.OneOf(string(platform_v1.CreateEnvironmentObjectLinkRequestScopeDEPLOYMENT)),
 			},
 		},
 		"scope_entity_id": resourceSchema.StringAttribute{
@@ -663,17 +667,26 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 			},
 		},
 		"object_type": resourceSchema.StringAttribute{
-			MarkdownDescription: "The type of environment object (AIRFLOW_VARIABLE, CONNECTION, METRICS_EXPORT). Determines which type-specific fields are required.",
+			MarkdownDescription: "The type of environment object (AIRFLOW_VARIABLE, ENVIRONMENT_VARIABLE, CONNECTION, METRICS_EXPORT). Determines which type-specific fields are required.",
 			Required:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(platform.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE),
-					string(platform.CreateEnvironmentObjectRequestObjectTypeCONNECTION),
-					string(platform.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT),
+					string(platform_v1.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE),
+					string(platform_v1.CreateEnvironmentObjectRequestObjectTypeENVIRONMENTVARIABLE),
+					string(platform_v1.CreateEnvironmentObjectRequestObjectTypeCONNECTION),
+					string(platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT),
 				),
 			},
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
+			},
+		},
+		"description": resourceSchema.StringAttribute{
+			MarkdownDescription: "The description of the environment object",
+			Optional:            true,
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"scope": resourceSchema.StringAttribute{
@@ -681,8 +694,8 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 			Required:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(platform.CreateEnvironmentObjectRequestScopeWORKSPACE),
-					string(platform.CreateEnvironmentObjectRequestScopeDEPLOYMENT),
+					string(platform_v1.CreateEnvironmentObjectRequestScopeWORKSPACE),
+					string(platform_v1.CreateEnvironmentObjectRequestScopeDEPLOYMENT),
 				),
 			},
 			PlanModifiers: []planmodifier.String{
@@ -723,14 +736,14 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 				boolplanmodifier.UseStateForUnknown(),
 			},
 		},
-		// AIRFLOW_VARIABLE fields (only valid when object_type=AIRFLOW_VARIABLE)
+		// AIRFLOW_VARIABLE / ENVIRONMENT_VARIABLE fields (shared)
 		"value": resourceSchema.StringAttribute{
-			MarkdownDescription: "The value of the Airflow variable (only valid when object_type=AIRFLOW_VARIABLE)",
+			MarkdownDescription: "The value of the variable (required when object_type=AIRFLOW_VARIABLE or ENVIRONMENT_VARIABLE)",
 			Optional:            true,
 			Sensitive:           true,
 		},
 		"is_secret": resourceSchema.BoolAttribute{
-			MarkdownDescription: "Whether the value is a secret (only valid when object_type=AIRFLOW_VARIABLE). Immutable on the API; toggling forces resource replacement.",
+			MarkdownDescription: "Whether the value is a secret (only valid when object_type=AIRFLOW_VARIABLE or ENVIRONMENT_VARIABLE). Immutable on the API; toggling forces resource replacement.",
 			Optional:            true,
 			Computed:            true,
 			// No Default — is_secret is type-specific. The API returns null
@@ -814,7 +827,7 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 			Computed:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(platform.CreateEnvironmentObjectMetricsExportRequestExporterTypePROMETHEUS),
+					string(platform_v1.CreateEnvironmentObjectMetricsExportRequestExporterTypePROMETHEUS),
 				),
 			},
 		},
@@ -824,8 +837,8 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 			Computed:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(platform.CreateEnvironmentObjectMetricsExportRequestAuthTypeAUTHTOKEN),
-					string(platform.CreateEnvironmentObjectMetricsExportRequestAuthTypeBASIC),
+					string(platform_v1.CreateEnvironmentObjectMetricsExportRequestAuthTypeAUTHTOKEN),
+					string(platform_v1.CreateEnvironmentObjectMetricsExportRequestAuthTypeBASIC),
 				),
 			},
 		},

@@ -11,10 +11,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 )
 
 var hostedPlatformClient, hybridPlatformClient *platform.ClientWithResponses
+var hostedPlatformV1Client, hybridPlatformV1Client *platform_v1.ClientWithResponses
 var hostedIamClient, hybridIamClient *iam.ClientWithResponses
 
 const TestResourceDescription = "Created by Terraform Acceptance Test - should self-cleanup but can delete manually if needed after 2 hours."
@@ -73,6 +75,31 @@ func GetTestHostedPlatformClient() (*platform.ClientWithResponses, error) {
 	var err error
 	hostedPlatformClient, err = platform.NewPlatformClient(os.Getenv("ASTRO_API_HOST"), os.Getenv("HOSTED_ORGANIZATION_API_TOKEN"), "acceptancetests")
 	return hostedPlatformClient, err
+}
+
+func GetTestPlatformV1Client(isHosted bool) (*platform_v1.ClientWithResponses, error) {
+	if isHosted {
+		return GetTestHostedPlatformV1Client()
+	}
+	return GetTestHybridPlatformV1Client()
+}
+
+func GetTestHybridPlatformV1Client() (*platform_v1.ClientWithResponses, error) {
+	if hybridPlatformV1Client != nil {
+		return hybridPlatformV1Client, nil
+	}
+	var err error
+	hybridPlatformV1Client, err = platform_v1.NewPlatformV1Client(os.Getenv("ASTRO_API_HOST"), os.Getenv("HYBRID_ORGANIZATION_API_TOKEN"), "acceptancetests")
+	return hybridPlatformV1Client, err
+}
+
+func GetTestHostedPlatformV1Client() (*platform_v1.ClientWithResponses, error) {
+	if hostedPlatformV1Client != nil {
+		return hostedPlatformV1Client, nil
+	}
+	var err error
+	hostedPlatformV1Client, err = platform_v1.NewPlatformV1Client(os.Getenv("ASTRO_API_HOST"), os.Getenv("HOSTED_ORGANIZATION_API_TOKEN"), "acceptancetests")
+	return hostedPlatformV1Client, err
 }
 
 // GetDataSourcesLength retrieves the number of elements returned from a data source in the Terraform state.

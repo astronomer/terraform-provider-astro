@@ -245,7 +245,7 @@ import {
 ### Required
 
 - `object_key` (String) The key for the environment object
-- `object_type` (String) The type of environment object (AIRFLOW_VARIABLE, CONNECTION, METRICS_EXPORT). Determines which type-specific fields are required.
+- `object_type` (String) The type of environment object (AIRFLOW_VARIABLE, ENVIRONMENT_VARIABLE, CONNECTION, METRICS_EXPORT). Determines which type-specific fields are required.
 - `scope` (String) The scope of the environment object (WORKSPACE, DEPLOYMENT)
 - `scope_entity_id` (String) The ID of the scope entity where the environment object is created
 
@@ -255,13 +255,14 @@ import {
 - `auth_type_id` (String) The ID for the connection auth type (only valid when object_type=CONNECTION). Provided on create/update; not returned by the API
 - `auto_link_deployments` (Boolean) Whether to automatically link Deployments to the environment object. Only applicable for WORKSPACE scope
 - `basic_token` (String, Sensitive) The bearer token to connect to the remote endpoint (only valid when object_type=METRICS_EXPORT)
+- `description` (String) The description of the environment object
 - `endpoint` (String) The Prometheus endpoint where the metrics are exported (required when object_type=METRICS_EXPORT)
 - `exclude_links` (Attributes Set) The excluded links for the environment object. Only applicable for WORKSPACE scope (see [below for nested schema](#nestedatt--exclude_links))
 - `exporter_type` (String) The type of exporter (required when object_type=METRICS_EXPORT)
 - `extra` (String) Extra connection details as JSON string (only valid when object_type=CONNECTION). Use jsonencode({...})
 - `headers` (Map of String) HTTP request headers for the remote endpoint (only valid when object_type=METRICS_EXPORT)
 - `host` (String) The host address for the connection (only valid when object_type=CONNECTION)
-- `is_secret` (Boolean) Whether the value is a secret (only valid when object_type=AIRFLOW_VARIABLE). Immutable on the API; toggling forces resource replacement.
+- `is_secret` (Boolean) Whether the value is a secret (only valid when object_type=AIRFLOW_VARIABLE or ENVIRONMENT_VARIABLE). Immutable on the API; toggling forces resource replacement.
 - `labels` (Map of String) Key-value pair metrics labels for your export (only valid when object_type=METRICS_EXPORT)
 - `links` (Attributes Set) The Deployments linked to the environment object. Only applicable for WORKSPACE scope (see [below for nested schema](#nestedatt--links))
 - `login` (String) The username used for the connection (only valid when object_type=CONNECTION)
@@ -270,7 +271,7 @@ import {
 - `schema` (String) The schema for the connection (only valid when object_type=CONNECTION)
 - `type` (String) The connection type (required when object_type=CONNECTION). Immutable on the API; changing it forces resource replacement.
 - `username` (String) The username to connect to the remote endpoint (only valid when object_type=METRICS_EXPORT)
-- `value` (String, Sensitive) The value of the Airflow variable (only valid when object_type=AIRFLOW_VARIABLE)
+- `value` (String, Sensitive) The value of the variable (required when object_type=AIRFLOW_VARIABLE or ENVIRONMENT_VARIABLE)
 
 ### Read-Only
 
@@ -323,7 +324,7 @@ Optional:
 - `schema` (String) Override schema (only valid when object_type=CONNECTION)
 - `type` (String) Override connection type (only valid when object_type=CONNECTION)
 - `username` (String) Override username (only valid when object_type=METRICS_EXPORT)
-- `value` (String, Sensitive) Override value (only valid when object_type=AIRFLOW_VARIABLE)
+- `value` (String, Sensitive) Override value (only valid when object_type=AIRFLOW_VARIABLE or ENVIRONMENT_VARIABLE)
 
 
 

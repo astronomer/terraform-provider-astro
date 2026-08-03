@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -21,7 +21,7 @@ type EnvironmentObjects struct {
 	EnvironmentObjects types.Set    `tfsdk:"environment_objects"`
 }
 
-func (data *EnvironmentObjects) ReadFromResponse(ctx context.Context, objects []platform.EnvironmentObject) diag.Diagnostics {
+func (data *EnvironmentObjects) ReadFromResponse(ctx context.Context, objects []platform_v1.EnvironmentObject) diag.Diagnostics {
 	// Hoist the attribute type map out of the loop — it's identical for every
 	// element and was being rebuilt N+1 times.
 	elemAttrTypes := schemas.EnvironmentObjectsElementAttributeTypes()

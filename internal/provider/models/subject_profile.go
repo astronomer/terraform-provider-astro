@@ -5,6 +5,7 @@ import (
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -48,6 +49,25 @@ func SubjectProfileTypesObject(
 			Id:           iamBsp.Id,
 			SubjectType:  (*platform.BasicSubjectProfileSubjectType)(iamBsp.SubjectType),
 			Username:     iamBsp.Username,
+		}
+	case platform_v1.BasicSubjectProfile, *platform_v1.BasicSubjectProfile:
+		// platform_v1 (unified public API) has the same field shape but distinct
+		// types — convert to *platform.BasicSubjectProfile so downstream code stays
+		// unchanged.
+		var v1Bsp *platform_v1.BasicSubjectProfile
+		if nonPtr, ok := v.(platform_v1.BasicSubjectProfile); ok {
+			v1Bsp = &nonPtr
+		} else {
+			v1Bsp = v.(*platform_v1.BasicSubjectProfile)
+		}
+
+		bspPtr = &platform.BasicSubjectProfile{
+			ApiTokenName: v1Bsp.ApiTokenName,
+			AvatarUrl:    v1Bsp.AvatarUrl,
+			FullName:     v1Bsp.FullName,
+			Id:           v1Bsp.Id,
+			SubjectType:  (*platform.BasicSubjectProfileSubjectType)(v1Bsp.SubjectType),
+			Username:     v1Bsp.Username,
 		}
 	default:
 		// Log error and return if none of the types match

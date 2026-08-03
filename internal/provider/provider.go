@@ -7,6 +7,7 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/labs"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/datasources"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/resources"
@@ -113,12 +114,19 @@ func (p *AstroProvider) Configure(
 		resp.Diagnostics.AddError("Failed to create labs client", "failed to create Labs API client")
 		return
 	}
+	platformV1Client, err := platform_v1.NewPlatformV1Client(data.Host.ValueString(), data.Token.ValueString(), p.version)
+	if err != nil {
+		tflog.Error(ctx, "failed to create platform v1 client", map[string]any{"error": err})
+		resp.Diagnostics.AddError("Failed to create platform v1 client", "failed to create Platform v1 API client")
+		return
+	}
 
 	apiClientsModel := models.ApiClientsModel{
-		OrganizationId: data.OrganizationId.ValueString(),
-		PlatformClient: platformClient,
-		IamClient:      iamClient,
-		LabsClient:     labsClient,
+		OrganizationId:   data.OrganizationId.ValueString(),
+		PlatformClient:   platformClient,
+		PlatformV1Client: platformV1Client,
+		IamClient:        iamClient,
+		LabsClient:       labsClient,
 	}
 
 	// Example client configuration for data sources and resources

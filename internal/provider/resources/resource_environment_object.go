@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -33,8 +33,8 @@ func NewEnvironmentObjectResource() resource.Resource {
 
 // environmentObjectResource defines the resource implementation.
 type environmentObjectResource struct {
-	platformClient *platform.ClientWithResponses
-	organizationId string
+	platformV1Client *platform_v1.ClientWithResponses
+	organizationId   string
 }
 
 func (r *environmentObjectResource) Metadata(
@@ -73,7 +73,7 @@ func (r *environmentObjectResource) Configure(
 		return
 	}
 
-	r.platformClient = apiClients.PlatformClient
+	r.platformV1Client = apiClients.PlatformV1Client
 	r.organizationId = apiClients.OrganizationId
 }
 
@@ -102,7 +102,7 @@ func (r *environmentObjectResource) Create(
 		return
 	}
 
-	createResp, err := r.platformClient.CreateEnvironmentObjectWithResponse(ctx, r.organizationId, createReq)
+	createResp, err := r.platformV1Client.CreateEnvironmentObjectWithResponse(ctx, r.organizationId, createReq)
 	if err != nil {
 		tflog.Error(ctx, "failed to create environment object", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create environment object, got error: %s", err))
@@ -127,7 +127,7 @@ func (r *environmentObjectResource) Create(
 	}
 
 	// Create only returns the ID, do a follow-up GET to populate full state
-	getResp, err := r.platformClient.GetEnvironmentObjectWithResponse(ctx, r.organizationId, createResp.JSON200.Id)
+	getResp, err := r.platformV1Client.GetEnvironmentObjectWithResponse(ctx, r.organizationId, createResp.JSON200.Id)
 	if err != nil {
 		tflog.Error(ctx, "failed to get environment object after create", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get environment object after create, got error: %s", err))
@@ -173,7 +173,7 @@ func (r *environmentObjectResource) Read(
 		return
 	}
 
-	envObj, err := r.platformClient.GetEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString())
+	envObj, err := r.platformV1Client.GetEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString())
 	if err != nil {
 		tflog.Error(ctx, "failed to get environment object", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get environment object, got error: %s", err))
@@ -229,7 +229,7 @@ func (r *environmentObjectResource) Update(
 		return
 	}
 
-	updateResp, err := r.platformClient.UpdateEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString(), updateReq)
+	updateResp, err := r.platformV1Client.UpdateEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString(), updateReq)
 	if err != nil {
 		tflog.Error(ctx, "failed to update environment object", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update environment object, got error: %s", err))
@@ -241,7 +241,7 @@ func (r *environmentObjectResource) Update(
 		return
 	}
 
-	getResp, err := r.platformClient.GetEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString())
+	getResp, err := r.platformV1Client.GetEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString())
 	if err != nil {
 		tflog.Error(ctx, "failed to get environment object after update", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get environment object after update, got error: %s", err))
@@ -281,7 +281,7 @@ func (r *environmentObjectResource) Delete(
 		return
 	}
 
-	envObj, err := r.platformClient.DeleteEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString())
+	envObj, err := r.platformV1Client.DeleteEnvironmentObjectWithResponse(ctx, r.organizationId, data.Id.ValueString())
 	if err != nil {
 		tflog.Error(ctx, "failed to delete environment object", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete environment object, got error: %s", err))
@@ -306,23 +306,29 @@ func (r *environmentObjectResource) ImportState(
 
 // --- Request builders ---
 
-func buildCreateRequest(ctx context.Context, data *models.EnvironmentObject) (platform.CreateEnvironmentObjectJSONRequestBody, diag.Diagnostics) {
-	req := platform.CreateEnvironmentObjectRequest{
+func buildCreateRequest(ctx context.Context, data *models.EnvironmentObject) (platform_v1.CreateEnvironmentObjectJSONRequestBody, diag.Diagnostics) {
+	req := platform_v1.CreateEnvironmentObjectRequest{
 		ObjectKey:           data.ObjectKey.ValueString(),
-		ObjectType:          platform.CreateEnvironmentObjectRequestObjectType(data.ObjectType.ValueString()),
-		Scope:               platform.CreateEnvironmentObjectRequestScope(data.Scope.ValueString()),
+		ObjectType:          platform_v1.CreateEnvironmentObjectRequestObjectType(data.ObjectType.ValueString()),
+		Description:         data.Description.ValueStringPointer(),
+		Scope:               platform_v1.CreateEnvironmentObjectRequestScope(data.Scope.ValueString()),
 		ScopeEntityId:       data.ScopeEntityId.ValueString(),
 		AutoLinkDeployments: data.AutoLinkDeployments.ValueBoolPointer(),
 	}
 
-	switch platform.CreateEnvironmentObjectRequestObjectType(data.ObjectType.ValueString()) {
-	case platform.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE:
-		req.AirflowVariable = &platform.CreateEnvironmentObjectAirflowVariableRequest{
+	switch platform_v1.CreateEnvironmentObjectRequestObjectType(data.ObjectType.ValueString()) {
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE:
+		req.AirflowVariable = &platform_v1.CreateEnvironmentObjectAirflowVariableRequest{
 			Value:    data.Value.ValueStringPointer(),
 			IsSecret: data.IsSecret.ValueBoolPointer(),
 		}
-	case platform.CreateEnvironmentObjectRequestObjectTypeCONNECTION:
-		connReq := &platform.CreateEnvironmentObjectConnectionRequest{
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeENVIRONMENTVARIABLE:
+		req.EnvironmentVariable = &platform_v1.CreateEnvironmentObjectEnvironmentVariableRequest{
+			Value:    data.Value.ValueStringPointer(),
+			IsSecret: data.IsSecret.ValueBoolPointer(),
+		}
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeCONNECTION:
+		connReq := &platform_v1.CreateEnvironmentObjectConnectionRequest{
 			Type:       data.Type.ValueString(),
 			Host:       data.Host.ValueStringPointer(),
 			Login:      data.Login.ValueStringPointer(),
@@ -341,16 +347,16 @@ func buildCreateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 			connReq.Extra = &extra
 		}
 		req.Connection = connReq
-	case platform.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
-		meReq := &platform.CreateEnvironmentObjectMetricsExportRequest{
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
+		meReq := &platform_v1.CreateEnvironmentObjectMetricsExportRequest{
 			Endpoint:     data.Endpoint.ValueString(),
-			ExporterType: platform.CreateEnvironmentObjectMetricsExportRequestExporterType(data.ExporterType.ValueString()),
+			ExporterType: platform_v1.CreateEnvironmentObjectMetricsExportRequestExporterType(data.ExporterType.ValueString()),
 			BasicToken:   data.BasicToken.ValueStringPointer(),
 			Username:     data.Username.ValueStringPointer(),
 			Password:     data.Password.ValueStringPointer(),
 		}
 		if !data.AuthType.IsNull() && !data.AuthType.IsUnknown() {
-			meReq.AuthType = lo.ToPtr(platform.CreateEnvironmentObjectMetricsExportRequestAuthType(data.AuthType.ValueString()))
+			meReq.AuthType = lo.ToPtr(platform_v1.CreateEnvironmentObjectMetricsExportRequestAuthType(data.AuthType.ValueString()))
 		}
 		if !data.Headers.IsNull() && !data.Headers.IsUnknown() {
 			h := tfMapToStringMap(data.Headers)
@@ -373,7 +379,7 @@ func buildCreateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 	return req, nil
 }
 
-func buildCreateLinks(ctx context.Context, data *models.EnvironmentObject, req *platform.CreateEnvironmentObjectRequest) diag.Diagnostics {
+func buildCreateLinks(ctx context.Context, data *models.EnvironmentObject, req *platform_v1.CreateEnvironmentObjectRequest) diag.Diagnostics {
 	if data.Links.IsNull() || data.Links.IsUnknown() {
 		return nil
 	}
@@ -381,11 +387,11 @@ func buildCreateLinks(ctx context.Context, data *models.EnvironmentObject, req *
 	if d := data.Links.ElementsAs(ctx, &linkInputs, false); d.HasError() {
 		return d
 	}
-	createLinks := make([]platform.CreateEnvironmentObjectLinkRequest, len(linkInputs))
-	objectType := platform.CreateEnvironmentObjectRequestObjectType(data.ObjectType.ValueString())
+	createLinks := make([]platform_v1.CreateEnvironmentObjectLinkRequest, len(linkInputs))
+	objectType := platform_v1.CreateEnvironmentObjectRequestObjectType(data.ObjectType.ValueString())
 	for i, li := range linkInputs {
-		createLinks[i] = platform.CreateEnvironmentObjectLinkRequest{
-			Scope:         platform.CreateEnvironmentObjectLinkRequestScope(li.Scope.ValueString()),
+		createLinks[i] = platform_v1.CreateEnvironmentObjectLinkRequest{
+			Scope:         platform_v1.CreateEnvironmentObjectLinkRequestScope(li.Scope.ValueString()),
 			ScopeEntityId: li.ScopeEntityId.ValueString(),
 		}
 		overrides, d := buildCreateOverrides(ctx, li.Overrides, objectType)
@@ -400,7 +406,7 @@ func buildCreateLinks(ctx context.Context, data *models.EnvironmentObject, req *
 	return nil
 }
 
-func buildCreateExcludeLinks(ctx context.Context, data *models.EnvironmentObject, req *platform.CreateEnvironmentObjectRequest) diag.Diagnostics {
+func buildCreateExcludeLinks(ctx context.Context, data *models.EnvironmentObject, req *platform_v1.CreateEnvironmentObjectRequest) diag.Diagnostics {
 	if data.ExcludeLinks.IsNull() || data.ExcludeLinks.IsUnknown() {
 		return nil
 	}
@@ -408,10 +414,10 @@ func buildCreateExcludeLinks(ctx context.Context, data *models.EnvironmentObject
 	if d := data.ExcludeLinks.ElementsAs(ctx, &elInputs, false); d.HasError() {
 		return d
 	}
-	excludeLinks := make([]platform.ExcludeLinkEnvironmentObjectRequest, len(elInputs))
+	excludeLinks := make([]platform_v1.ExcludeLinkEnvironmentObjectRequest, len(elInputs))
 	for i, el := range elInputs {
-		excludeLinks[i] = platform.ExcludeLinkEnvironmentObjectRequest{
-			Scope:         platform.ExcludeLinkEnvironmentObjectRequestScope(el.Scope.ValueString()),
+		excludeLinks[i] = platform_v1.ExcludeLinkEnvironmentObjectRequest{
+			Scope:         platform_v1.ExcludeLinkEnvironmentObjectRequestScope(el.Scope.ValueString()),
 			ScopeEntityId: el.ScopeEntityId.ValueString(),
 		}
 	}
@@ -419,18 +425,25 @@ func buildCreateExcludeLinks(ctx context.Context, data *models.EnvironmentObject
 	return nil
 }
 
-func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (platform.UpdateEnvironmentObjectJSONRequestBody, diag.Diagnostics) {
-	req := platform.UpdateEnvironmentObjectRequest{
+func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (platform_v1.UpdateEnvironmentObjectJSONRequestBody, diag.Diagnostics) {
+	req := platform_v1.UpdateEnvironmentObjectRequest{
+		Description:         data.Description.ValueStringPointer(),
 		AutoLinkDeployments: data.AutoLinkDeployments.ValueBoolPointer(),
 	}
 
-	switch platform.CreateEnvironmentObjectRequestObjectType(data.ObjectType.ValueString()) {
-	case platform.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE:
-		req.AirflowVariable = &platform.UpdateEnvironmentObjectAirflowVariableRequest{
+	switch platform_v1.CreateEnvironmentObjectRequestObjectType(data.ObjectType.ValueString()) {
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE:
+		req.AirflowVariable = &platform_v1.UpdateEnvironmentObjectAirflowVariableRequest{
 			Value: data.Value.ValueStringPointer(),
 		}
-	case platform.CreateEnvironmentObjectRequestObjectTypeCONNECTION:
-		connReq := &platform.UpdateEnvironmentObjectConnectionRequest{
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeENVIRONMENTVARIABLE:
+		// v1 UpdateEnvironmentObjectEnvironmentVariableRequest carries only Value —
+		// is_secret is immutable on the API and forces resource replacement.
+		req.EnvironmentVariable = &platform_v1.UpdateEnvironmentObjectEnvironmentVariableRequest{
+			Value: data.Value.ValueStringPointer(),
+		}
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeCONNECTION:
+		connReq := &platform_v1.UpdateEnvironmentObjectConnectionRequest{
 			Type:       data.Type.ValueString(),
 			Host:       data.Host.ValueStringPointer(),
 			Login:      data.Login.ValueStringPointer(),
@@ -449,18 +462,18 @@ func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 			connReq.Extra = &extra
 		}
 		req.Connection = connReq
-	case platform.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
-		meReq := &platform.UpdateEnvironmentObjectMetricsExportRequest{
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
+		meReq := &platform_v1.UpdateEnvironmentObjectMetricsExportRequest{
 			Endpoint:   data.Endpoint.ValueStringPointer(),
 			BasicToken: data.BasicToken.ValueStringPointer(),
 			Username:   data.Username.ValueStringPointer(),
 			Password:   data.Password.ValueStringPointer(),
 		}
 		if !data.ExporterType.IsNull() && !data.ExporterType.IsUnknown() {
-			meReq.ExporterType = lo.ToPtr(platform.UpdateEnvironmentObjectMetricsExportRequestExporterType(data.ExporterType.ValueString()))
+			meReq.ExporterType = lo.ToPtr(platform_v1.UpdateEnvironmentObjectMetricsExportRequestExporterType(data.ExporterType.ValueString()))
 		}
 		if !data.AuthType.IsNull() && !data.AuthType.IsUnknown() {
-			meReq.AuthType = lo.ToPtr(platform.UpdateEnvironmentObjectMetricsExportRequestAuthType(data.AuthType.ValueString()))
+			meReq.AuthType = lo.ToPtr(platform_v1.UpdateEnvironmentObjectMetricsExportRequestAuthType(data.AuthType.ValueString()))
 		}
 		if !data.Headers.IsNull() && !data.Headers.IsUnknown() {
 			h := tfMapToStringMap(data.Headers)
@@ -483,19 +496,25 @@ func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 	return req, nil
 }
 
-func buildUpdateLinks(ctx context.Context, data *models.EnvironmentObject, req *platform.UpdateEnvironmentObjectRequest) diag.Diagnostics {
+func buildUpdateLinks(ctx context.Context, data *models.EnvironmentObject, req *platform_v1.UpdateEnvironmentObjectRequest) diag.Diagnostics {
+	// The API endpoint replaces the whole links list on update — sending nothing
+	// leaves the existing links in place. To let users clear links by removing
+	// them from config, always emit the list; when unset in the plan, send an
+	// empty slice so the API strips prior entries.
 	if data.Links.IsNull() || data.Links.IsUnknown() {
+		empty := []platform_v1.UpdateEnvironmentObjectLinkRequest{}
+		req.Links = &empty
 		return nil
 	}
 	var linkInputs []models.EnvironmentObjectLinkInput
 	if d := data.Links.ElementsAs(ctx, &linkInputs, false); d.HasError() {
 		return d
 	}
-	updateLinks := make([]platform.UpdateEnvironmentObjectLinkRequest, len(linkInputs))
-	objectType := platform.CreateEnvironmentObjectRequestObjectType(data.ObjectType.ValueString())
+	updateLinks := make([]platform_v1.UpdateEnvironmentObjectLinkRequest, len(linkInputs))
+	objectType := platform_v1.CreateEnvironmentObjectRequestObjectType(data.ObjectType.ValueString())
 	for i, li := range linkInputs {
-		updateLinks[i] = platform.UpdateEnvironmentObjectLinkRequest{
-			Scope:         platform.UpdateEnvironmentObjectLinkRequestScope(li.Scope.ValueString()),
+		updateLinks[i] = platform_v1.UpdateEnvironmentObjectLinkRequest{
+			Scope:         platform_v1.UpdateEnvironmentObjectLinkRequestScope(li.Scope.ValueString()),
 			ScopeEntityId: li.ScopeEntityId.ValueString(),
 		}
 		overrides, d := buildUpdateOverrides(ctx, li.Overrides, objectType)
@@ -510,18 +529,22 @@ func buildUpdateLinks(ctx context.Context, data *models.EnvironmentObject, req *
 	return nil
 }
 
-func buildUpdateExcludeLinks(ctx context.Context, data *models.EnvironmentObject, req *platform.UpdateEnvironmentObjectRequest) diag.Diagnostics {
+func buildUpdateExcludeLinks(ctx context.Context, data *models.EnvironmentObject, req *platform_v1.UpdateEnvironmentObjectRequest) diag.Diagnostics {
+	// Same "emit empty to clear" rule as buildUpdateLinks above — without this
+	// the API keeps prior exclude_links after the user removes them from config.
 	if data.ExcludeLinks.IsNull() || data.ExcludeLinks.IsUnknown() {
+		empty := []platform_v1.ExcludeLinkEnvironmentObjectRequest{}
+		req.ExcludeLinks = &empty
 		return nil
 	}
 	var elInputs []models.EnvironmentObjectExcludeLinkInput
 	if d := data.ExcludeLinks.ElementsAs(ctx, &elInputs, false); d.HasError() {
 		return d
 	}
-	excludeLinks := make([]platform.ExcludeLinkEnvironmentObjectRequest, len(elInputs))
+	excludeLinks := make([]platform_v1.ExcludeLinkEnvironmentObjectRequest, len(elInputs))
 	for i, el := range elInputs {
-		excludeLinks[i] = platform.ExcludeLinkEnvironmentObjectRequest{
-			Scope:         platform.ExcludeLinkEnvironmentObjectRequestScope(el.Scope.ValueString()),
+		excludeLinks[i] = platform_v1.ExcludeLinkEnvironmentObjectRequest{
+			Scope:         platform_v1.ExcludeLinkEnvironmentObjectRequestScope(el.Scope.ValueString()),
 			ScopeEntityId: el.ScopeEntityId.ValueString(),
 		}
 	}
@@ -532,7 +555,7 @@ func buildUpdateExcludeLinks(ctx context.Context, data *models.EnvironmentObject
 // buildCreateOverrides unpacks the flat per-link `overrides` block into the
 // API's CreateEnvironmentObjectOverridesRequest, picking the right sub-struct
 // based on the parent object_type. Returns nil when overrides is null/unknown.
-func buildCreateOverrides(ctx context.Context, overrides types.Object, objectType platform.CreateEnvironmentObjectRequestObjectType) (*platform.CreateEnvironmentObjectOverridesRequest, diag.Diagnostics) {
+func buildCreateOverrides(ctx context.Context, overrides types.Object, objectType platform_v1.CreateEnvironmentObjectRequestObjectType) (*platform_v1.CreateEnvironmentObjectOverridesRequest, diag.Diagnostics) {
 	if overrides.IsNull() || overrides.IsUnknown() {
 		return nil, nil
 	}
@@ -541,18 +564,25 @@ func buildCreateOverrides(ctx context.Context, overrides types.Object, objectTyp
 		return nil, d
 	}
 
-	out := &platform.CreateEnvironmentObjectOverridesRequest{}
+	out := &platform_v1.CreateEnvironmentObjectOverridesRequest{}
 
 	switch objectType {
-	case platform.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE:
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE:
 		if ov.Value.IsNull() {
 			return nil, nil
 		}
-		out.AirflowVariable = &platform.CreateEnvironmentObjectAirflowVariableOverridesRequest{
+		out.AirflowVariable = &platform_v1.CreateEnvironmentObjectAirflowVariableOverridesRequest{
 			Value: ov.Value.ValueStringPointer(),
 		}
-	case platform.CreateEnvironmentObjectRequestObjectTypeCONNECTION:
-		connOvr := &platform.CreateEnvironmentObjectConnectionOverridesRequest{
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeENVIRONMENTVARIABLE:
+		if ov.Value.IsNull() {
+			return nil, nil
+		}
+		out.EnvironmentVariable = &platform_v1.CreateEnvironmentObjectEnvironmentVariableOverridesRequest{
+			Value: ov.Value.ValueStringPointer(),
+		}
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeCONNECTION:
+		connOvr := &platform_v1.CreateEnvironmentObjectConnectionOverridesRequest{
 			Type:     ov.Type.ValueStringPointer(),
 			Host:     ov.Host.ValueStringPointer(),
 			Login:    ov.Login.ValueStringPointer(),
@@ -570,18 +600,18 @@ func buildCreateOverrides(ctx context.Context, overrides types.Object, objectTyp
 			connOvr.Extra = &extra
 		}
 		out.Connection = connOvr
-	case platform.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
-		meOvr := &platform.CreateEnvironmentObjectMetricsExportOverridesRequest{
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
+		meOvr := &platform_v1.CreateEnvironmentObjectMetricsExportOverridesRequest{
 			Endpoint:   ov.Endpoint.ValueStringPointer(),
 			BasicToken: ov.BasicToken.ValueStringPointer(),
 			Username:   ov.Username.ValueStringPointer(),
 			Password:   ov.Password.ValueStringPointer(),
 		}
 		if !ov.AuthType.IsNull() && !ov.AuthType.IsUnknown() {
-			meOvr.AuthType = lo.ToPtr(platform.CreateEnvironmentObjectMetricsExportOverridesRequestAuthType(ov.AuthType.ValueString()))
+			meOvr.AuthType = lo.ToPtr(platform_v1.CreateEnvironmentObjectMetricsExportOverridesRequestAuthType(ov.AuthType.ValueString()))
 		}
 		if !ov.ExporterType.IsNull() && !ov.ExporterType.IsUnknown() {
-			meOvr.ExporterType = lo.ToPtr(platform.CreateEnvironmentObjectMetricsExportOverridesRequestExporterType(ov.ExporterType.ValueString()))
+			meOvr.ExporterType = lo.ToPtr(platform_v1.CreateEnvironmentObjectMetricsExportOverridesRequestExporterType(ov.ExporterType.ValueString()))
 		}
 		if !ov.Headers.IsNull() && !ov.Headers.IsUnknown() {
 			h := tfMapToStringMap(ov.Headers)
@@ -598,7 +628,7 @@ func buildCreateOverrides(ctx context.Context, overrides types.Object, objectTyp
 }
 
 // buildUpdateOverrides is the Update counterpart to buildCreateOverrides.
-func buildUpdateOverrides(ctx context.Context, overrides types.Object, objectType platform.CreateEnvironmentObjectRequestObjectType) (*platform.UpdateEnvironmentObjectOverridesRequest, diag.Diagnostics) {
+func buildUpdateOverrides(ctx context.Context, overrides types.Object, objectType platform_v1.CreateEnvironmentObjectRequestObjectType) (*platform_v1.UpdateEnvironmentObjectOverridesRequest, diag.Diagnostics) {
 	if overrides.IsNull() || overrides.IsUnknown() {
 		return nil, nil
 	}
@@ -607,19 +637,24 @@ func buildUpdateOverrides(ctx context.Context, overrides types.Object, objectTyp
 		return nil, d
 	}
 
-	out := &platform.UpdateEnvironmentObjectOverridesRequest{}
+	out := &platform_v1.UpdateEnvironmentObjectOverridesRequest{}
 
 	switch objectType {
-	case platform.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE:
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE:
 		// Always emit the AirflowVariable sub-struct so the user can clear a
 		// previously-set value override (Value=nil → API clears). The Create
 		// counterpart still early-returns nil because "create with no value"
 		// is unambiguous.
-		out.AirflowVariable = &platform.UpdateEnvironmentObjectAirflowVariableOverridesRequest{
+		out.AirflowVariable = &platform_v1.UpdateEnvironmentObjectAirflowVariableOverridesRequest{
 			Value: ov.Value.ValueStringPointer(),
 		}
-	case platform.CreateEnvironmentObjectRequestObjectTypeCONNECTION:
-		connOvr := &platform.UpdateEnvironmentObjectConnectionOverridesRequest{
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeENVIRONMENTVARIABLE:
+		// Same "always emit to allow clearing" rule as AIRFLOW_VARIABLE above.
+		out.EnvironmentVariable = &platform_v1.UpdateEnvironmentObjectEnvironmentVariableOverridesRequest{
+			Value: ov.Value.ValueStringPointer(),
+		}
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeCONNECTION:
+		connOvr := &platform_v1.UpdateEnvironmentObjectConnectionOverridesRequest{
 			Type:     ov.Type.ValueStringPointer(),
 			Host:     ov.Host.ValueStringPointer(),
 			Login:    ov.Login.ValueStringPointer(),
@@ -637,18 +672,18 @@ func buildUpdateOverrides(ctx context.Context, overrides types.Object, objectTyp
 			connOvr.Extra = &extra
 		}
 		out.Connection = connOvr
-	case platform.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
-		meOvr := &platform.UpdateEnvironmentObjectMetricsExportOverridesRequest{
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
+		meOvr := &platform_v1.UpdateEnvironmentObjectMetricsExportOverridesRequest{
 			Endpoint:   ov.Endpoint.ValueStringPointer(),
 			BasicToken: ov.BasicToken.ValueStringPointer(),
 			Username:   ov.Username.ValueStringPointer(),
 			Password:   ov.Password.ValueStringPointer(),
 		}
 		if !ov.AuthType.IsNull() && !ov.AuthType.IsUnknown() {
-			meOvr.AuthType = lo.ToPtr(platform.UpdateEnvironmentObjectMetricsExportOverridesRequestAuthType(ov.AuthType.ValueString()))
+			meOvr.AuthType = lo.ToPtr(platform_v1.UpdateEnvironmentObjectMetricsExportOverridesRequestAuthType(ov.AuthType.ValueString()))
 		}
 		if !ov.ExporterType.IsNull() && !ov.ExporterType.IsUnknown() {
-			meOvr.ExporterType = lo.ToPtr(platform.UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType(ov.ExporterType.ValueString()))
+			meOvr.ExporterType = lo.ToPtr(platform_v1.UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType(ov.ExporterType.ValueString()))
 		}
 		if !ov.Headers.IsNull() && !ov.Headers.IsUnknown() {
 			h := tfMapToStringMap(ov.Headers)
@@ -685,18 +720,23 @@ func tfMapToStringMap(m types.Map) map[string]string {
 func buildPreserveFromModel(ctx context.Context, data *models.EnvironmentObject) (*models.EnvironmentObjectPreserve, diag.Diagnostics) {
 	preserve := &models.EnvironmentObjectPreserve{}
 
-	switch platform.CreateEnvironmentObjectRequestObjectType(data.ObjectType.ValueString()) {
-	case platform.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE:
+	switch platform_v1.CreateEnvironmentObjectRequestObjectType(data.ObjectType.ValueString()) {
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE:
 		// Preserve value when secret (API returns empty for secrets) OR when caller
 		// supplied a value (handles is_secret toggle edge cases).
 		if data.IsSecret.ValueBool() || !data.Value.IsNull() {
 			preserve.AirflowVariableValue = data.Value.ValueStringPointer()
 		}
-	case platform.CreateEnvironmentObjectRequestObjectTypeCONNECTION:
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeENVIRONMENTVARIABLE:
+		// Same preserve rule as AIRFLOW_VARIABLE (secrets come back empty).
+		if data.IsSecret.ValueBool() || !data.Value.IsNull() {
+			preserve.EnvironmentVariableValue = data.Value.ValueStringPointer()
+		}
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeCONNECTION:
 		preserve.Password = data.Password.ValueStringPointer()
 		preserve.AuthTypeId = data.AuthTypeId.ValueStringPointer()
 		preserve.Extra = data.Extra.ValueStringPointer()
-	case platform.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
+	case platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
 		preserve.Password = data.Password.ValueStringPointer()
 		preserve.BasicToken = data.BasicToken.ValueStringPointer()
 		preserve.MetricsExportAuthType = data.AuthType.ValueStringPointer()
@@ -762,19 +802,21 @@ func (r *environmentObjectResource) ValidateConfig(
 	// Skip type-level validation when object_type is unknown (rare —
 	// typically interpolated from another resource).
 	if !data.ObjectType.IsUnknown() && !data.ObjectType.IsNull() {
-		switch platform.CreateEnvironmentObjectRequestObjectType(data.ObjectType.ValueString()) {
-		case platform.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE:
-			resp.Diagnostics.Append(validateAirflowVariableFields(&data)...)
-		case platform.CreateEnvironmentObjectRequestObjectTypeCONNECTION:
+		switch platform_v1.CreateEnvironmentObjectRequestObjectType(data.ObjectType.ValueString()) {
+		case platform_v1.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE:
+			resp.Diagnostics.Append(validateVariableFields(&data, "AIRFLOW_VARIABLE")...)
+		case platform_v1.CreateEnvironmentObjectRequestObjectTypeENVIRONMENTVARIABLE:
+			resp.Diagnostics.Append(validateVariableFields(&data, "ENVIRONMENT_VARIABLE")...)
+		case platform_v1.CreateEnvironmentObjectRequestObjectTypeCONNECTION:
 			resp.Diagnostics.Append(validateConnectionFields(&data)...)
-		case platform.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
+		case platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
 			resp.Diagnostics.Append(validateMetricsExportFields(&data)...)
 		}
 	}
 
 	// scope=DEPLOYMENT can't carry workspace-only attributes.
 	if !data.Scope.IsUnknown() && !data.Scope.IsNull() &&
-		data.Scope.ValueString() == string(platform.CreateEnvironmentObjectRequestScopeDEPLOYMENT) {
+		data.Scope.ValueString() == string(platform_v1.CreateEnvironmentObjectRequestScopeDEPLOYMENT) {
 		if !data.AutoLinkDeployments.IsNull() && !data.AutoLinkDeployments.IsUnknown() {
 			resp.Diagnostics.AddAttributeError(path.Root("auto_link_deployments"),
 				"Conflicting attribute",
@@ -793,13 +835,15 @@ func (r *environmentObjectResource) ValidateConfig(
 	}
 }
 
-// validateAirflowVariableFields enforces: `value` is required, and connection
-// + metrics_export fields are absent. `is_secret` defaults to false via the API.
-func validateAirflowVariableFields(data *models.EnvironmentObject) diag.Diagnostics {
+// validateVariableFields enforces the invariants for both AIRFLOW_VARIABLE and
+// ENVIRONMENT_VARIABLE (which share the same top-level `value` + `is_secret`
+// fields): `value` is required, and connection + metrics_export fields are
+// absent. `is_secret` defaults to false via the API.
+func validateVariableFields(data *models.EnvironmentObject, objectTypeLabel string) diag.Diagnostics {
 	var diags diag.Diagnostics
 	if data.Value.IsNull() && !data.Value.IsUnknown() {
 		diags.AddAttributeError(path.Root("value"), "Missing required field",
-			"value is required when object_type=AIRFLOW_VARIABLE")
+			fmt.Sprintf("value is required when object_type=%s", objectTypeLabel))
 	}
 	for _, f := range connectionOnlyFields(data) {
 		diags.AddAttributeError(path.Root(f.name), "Conflicting field",
@@ -829,9 +873,9 @@ func validateConnectionFields(data *models.EnvironmentObject) diag.Diagnostics {
 				fmt.Sprintf("extra must be a JSON object string (use jsonencode({...})). Parse error: %s", err))
 		}
 	}
-	for _, f := range airflowVariableOnlyFields(data) {
+	for _, f := range variableOnlyFields(data) {
 		diags.AddAttributeError(path.Root(f.name), "Conflicting field",
-			fmt.Sprintf("%s is only valid when object_type=AIRFLOW_VARIABLE", f.name))
+			fmt.Sprintf("%s is only valid when object_type=AIRFLOW_VARIABLE or ENVIRONMENT_VARIABLE", f.name))
 	}
 	for _, f := range metricsExportOnlyFields(data) {
 		diags.AddAttributeError(path.Root(f.name), "Conflicting field",
@@ -840,7 +884,7 @@ func validateConnectionFields(data *models.EnvironmentObject) diag.Diagnostics {
 	return diags
 }
 
-// validateMetricsExportFields enforces: airflow_variable + connection fields
+// validateMetricsExportFields enforces: variable + connection fields
 // are absent, and `endpoint` + `exporter_type` are required.
 func validateMetricsExportFields(data *models.EnvironmentObject) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -852,9 +896,9 @@ func validateMetricsExportFields(data *models.EnvironmentObject) diag.Diagnostic
 		diags.AddAttributeError(path.Root("exporter_type"), "Missing required field",
 			"exporter_type is required when object_type=METRICS_EXPORT")
 	}
-	for _, f := range airflowVariableOnlyFields(data) {
+	for _, f := range variableOnlyFields(data) {
 		diags.AddAttributeError(path.Root(f.name), "Conflicting field",
-			fmt.Sprintf("%s is only valid when object_type=AIRFLOW_VARIABLE", f.name))
+			fmt.Sprintf("%s is only valid when object_type=AIRFLOW_VARIABLE or ENVIRONMENT_VARIABLE", f.name))
 	}
 	for _, f := range connectionOnlyFields(data) {
 		diags.AddAttributeError(path.Root(f.name), "Conflicting field",
@@ -869,7 +913,10 @@ type namedField struct {
 	set  bool
 }
 
-func airflowVariableOnlyFields(data *models.EnvironmentObject) []namedField {
+// variableOnlyFields reports the top-level fields that only apply to the
+// AIRFLOW_VARIABLE / ENVIRONMENT_VARIABLE object types (they share the same
+// value + is_secret pair).
+func variableOnlyFields(data *models.EnvironmentObject) []namedField {
 	var out []namedField
 	if isUserSet(data.Value) {
 		out = append(out, namedField{name: "value", set: true})
