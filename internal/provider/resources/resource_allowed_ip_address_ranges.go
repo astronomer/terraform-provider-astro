@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strings"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
@@ -226,6 +228,33 @@ func (r *allowedIpAddressRangesResource) bulkCreate(ctx context.Context, cidrs [
 			diags.AddError("Client Error", fmt.Sprintf("Unable to bulk create allowed IP address ranges: %s", err))
 			return diags
 		}
+		// The bulk create is atomic, so a 409 means one or more CIDRs in the chunk already exist.
+		// This is reachable when retrying after a multi-chunk create where an earlier chunk committed
+		// but a later one failed: the retry re-submits the committed chunk and conflicts. Treat 409 as
+		// success only when every CIDR in the chunk is in fact already present (the desired state is
+		// met, so the create is idempotent); otherwise fall through and surface the conflict.
+		if createResp.StatusCode() == http.StatusConflict {
+			existing, d := r.listAllRanges(ctx)
+			if d.HasError() {
+				diags.Append(d...)
+				return diags
+			}
+			present := make(map[string]bool, len(existing))
+			for _, rng := range existing {
+				present[rng.IpAddressRange] = true
+			}
+			allPresent := true
+			for _, c := range chunk {
+				if !present[c] {
+					allPresent = false
+					break
+				}
+			}
+			if allPresent {
+				tflog.Debug(ctx, "bulk create returned 409 but all ranges are already present; treating as idempotent success", map[string]interface{}{"count": len(chunk)})
+				continue
+			}
+		}
 		if _, d := clients.NormalizeAPIError(ctx, createResp.HTTPResponse, createResp.Body); d != nil {
 			diags.Append(d)
 			return diags
@@ -278,10 +307,21 @@ func (r *allowedIpAddressRangesResource) idsForCidrs(ctx context.Context, cidrs 
 		byCidr[rng.IpAddressRange] = rng.Id
 	}
 	ids := make([]string, 0, len(cidrs))
+	var missing []string
 	for _, c := range cidrs {
 		if id, ok := byCidr[c]; ok {
 			ids = append(ids, id)
+		} else {
+			missing = append(missing, c)
 		}
+	}
+	// An authoritative delete that can't resolve a range to an ID would silently under-delete, leaving
+	// a range in place on a security-sensitive allowlist with no signal. Warn so the drift is visible.
+	if len(missing) > 0 {
+		diags.AddWarning(
+			"Some allowed IP address ranges could not be resolved for deletion",
+			fmt.Sprintf("The following ranges were expected in the organization's current list but were not found, so they were not deleted: %s", strings.Join(missing, ", ")),
+		)
 	}
 	return ids, diags
 }
@@ -303,8 +343,12 @@ func (r *allowedIpAddressRangesResource) listAllRanges(ctx context.Context) ([]i
 			diags.Append(d)
 			return all, diags
 		}
+		// A success status with no parseable JSON body (e.g. a proxy/gateway 200 with an HTML page, or
+		// a 204) must not be read as "the list is empty" - for this authoritative resource that would
+		// silently wipe every managed range from state and plan their deletion. Surface it as an error.
 		if listResp.JSON200 == nil {
-			break
+			diags.AddError("Client Error", "Unable to list allowed IP address ranges: the API returned a success status with no parseable response body")
+			return all, diags
 		}
 		all = append(all, listResp.JSON200.AllowedIpAddressRanges...)
 		offset += len(listResp.JSON200.AllowedIpAddressRanges)
