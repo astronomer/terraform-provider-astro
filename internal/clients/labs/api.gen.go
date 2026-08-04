@@ -435,6 +435,32 @@ type AlertsList struct {
 	Alerts []Alert `json:"alerts"`
 }
 
+// AllowedIpAddressRange defines model for AllowedIpAddressRange.
+type AllowedIpAddressRange struct {
+	// CreatedAt The time the range was created in UTC.
+	CreatedAt time.Time            `json:"createdAt"`
+	CreatedBy *BasicSubjectProfile `json:"createdBy,omitempty"`
+
+	// Id The allowed IP address range's ID.
+	Id string `json:"id"`
+
+	// IpAddressRange The CIDR range.
+	IpAddressRange string `json:"ipAddressRange"`
+
+	// OrganizationId The ID of the organization the range belongs to.
+	OrganizationId string `json:"organizationId"`
+
+	// UpdatedAt The time the range was last updated in UTC.
+	UpdatedAt time.Time            `json:"updatedAt"`
+	UpdatedBy *BasicSubjectProfile `json:"updatedBy,omitempty"`
+}
+
+// AllowedIpAddressRangesList defines model for AllowedIpAddressRangesList.
+type AllowedIpAddressRangesList struct {
+	// AllowedIpAddressRanges The ranges that were created.
+	AllowedIpAddressRanges []AllowedIpAddressRange `json:"allowedIpAddressRanges"`
+}
+
 // BasicSubjectProfile defines model for BasicSubjectProfile.
 type BasicSubjectProfile struct {
 	// ApiTokenName The API token's name. Returned only when `SubjectType` is `SERVICEKEY`.
@@ -458,6 +484,18 @@ type BasicSubjectProfile struct {
 
 // BasicSubjectProfileSubjectType The subject type.
 type BasicSubjectProfileSubjectType string
+
+// BulkCreateAllowedIpAddressRangesRequest defines model for BulkCreateAllowedIpAddressRangesRequest.
+type BulkCreateAllowedIpAddressRangesRequest struct {
+	// AllowedIpAddressRanges The CIDR ranges to create. At most 1000 per request.
+	AllowedIpAddressRanges []string `json:"allowedIpAddressRanges"`
+}
+
+// BulkDeleteAllowedIpAddressRangesRequest defines model for BulkDeleteAllowedIpAddressRangesRequest.
+type BulkDeleteAllowedIpAddressRangesRequest struct {
+	// AllowedIpAddressRangeIds The IDs of the ranges to delete. At most 1000 per request.
+	AllowedIpAddressRangeIds []string `json:"allowedIpAddressRangeIds"`
+}
 
 // CreateAlertRequest defines model for CreateAlertRequest.
 type CreateAlertRequest struct {
@@ -1046,6 +1084,12 @@ type LabsListAlertsParams struct {
 	// Limit The maximum number of results to return.
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
+
+// LabsDeleteAllowedIpAddressRangesJSONRequestBody defines body for LabsDeleteAllowedIpAddressRanges for application/json ContentType.
+type LabsDeleteAllowedIpAddressRangesJSONRequestBody = BulkDeleteAllowedIpAddressRangesRequest
+
+// LabsCreateAllowedIpAddressRangesJSONRequestBody defines body for LabsCreateAllowedIpAddressRanges for application/json ContentType.
+type LabsCreateAllowedIpAddressRangesJSONRequestBody = BulkCreateAllowedIpAddressRangesRequest
 
 // LabsCreateAlertsJSONRequestBody defines body for LabsCreateAlerts for application/json ContentType.
 type LabsCreateAlertsJSONRequestBody = CreateAlertsRequest
@@ -1814,6 +1858,16 @@ type ClientInterface interface {
 	// LabsListAlerts request
 	LabsListAlerts(ctx context.Context, organizationId string, params *LabsListAlertsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// LabsDeleteAllowedIpAddressRangesWithBody request with any body
+	LabsDeleteAllowedIpAddressRangesWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	LabsDeleteAllowedIpAddressRanges(ctx context.Context, organizationId string, body LabsDeleteAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// LabsCreateAllowedIpAddressRangesWithBody request with any body
+	LabsCreateAllowedIpAddressRangesWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	LabsCreateAllowedIpAddressRanges(ctx context.Context, organizationId string, body LabsCreateAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// LabsCreateAlertsWithBody request with any body
 	LabsCreateAlertsWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1832,6 +1886,54 @@ type ClientInterface interface {
 
 func (c *Client) LabsListAlerts(ctx context.Context, organizationId string, params *LabsListAlertsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewLabsListAlertsRequest(c.Server, organizationId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) LabsDeleteAllowedIpAddressRangesWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLabsDeleteAllowedIpAddressRangesRequestWithBody(c.Server, organizationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) LabsDeleteAllowedIpAddressRanges(ctx context.Context, organizationId string, body LabsDeleteAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLabsDeleteAllowedIpAddressRangesRequest(c.Server, organizationId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) LabsCreateAllowedIpAddressRangesWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLabsCreateAllowedIpAddressRangesRequestWithBody(c.Server, organizationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) LabsCreateAllowedIpAddressRanges(ctx context.Context, organizationId string, body LabsCreateAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLabsCreateAllowedIpAddressRangesRequest(c.Server, organizationId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2014,6 +2116,100 @@ func NewLabsListAlertsRequest(server string, organizationId string, params *Labs
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewLabsDeleteAllowedIpAddressRangesRequest calls the generic LabsDeleteAllowedIpAddressRanges builder with application/json body
+func NewLabsDeleteAllowedIpAddressRangesRequest(server string, organizationId string, body LabsDeleteAllowedIpAddressRangesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewLabsDeleteAllowedIpAddressRangesRequestWithBody(server, organizationId, "application/json", bodyReader)
+}
+
+// NewLabsDeleteAllowedIpAddressRangesRequestWithBody generates requests for LabsDeleteAllowedIpAddressRanges with any type of body
+func NewLabsDeleteAllowedIpAddressRangesRequestWithBody(server string, organizationId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/allowed-ip-address-ranges", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewLabsCreateAllowedIpAddressRangesRequest calls the generic LabsCreateAllowedIpAddressRanges builder with application/json body
+func NewLabsCreateAllowedIpAddressRangesRequest(server string, organizationId string, body LabsCreateAllowedIpAddressRangesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewLabsCreateAllowedIpAddressRangesRequestWithBody(server, organizationId, "application/json", bodyReader)
+}
+
+// NewLabsCreateAllowedIpAddressRangesRequestWithBody generates requests for LabsCreateAllowedIpAddressRanges with any type of body
+func NewLabsCreateAllowedIpAddressRangesRequestWithBody(server string, organizationId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/allowed-ip-address-ranges", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -2205,6 +2401,16 @@ type ClientWithResponsesInterface interface {
 	// LabsListAlertsWithResponse request
 	LabsListAlertsWithResponse(ctx context.Context, organizationId string, params *LabsListAlertsParams, reqEditors ...RequestEditorFn) (*LabsListAlertsResponse, error)
 
+	// LabsDeleteAllowedIpAddressRangesWithBodyWithResponse request with any body
+	LabsDeleteAllowedIpAddressRangesWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LabsDeleteAllowedIpAddressRangesResponse, error)
+
+	LabsDeleteAllowedIpAddressRangesWithResponse(ctx context.Context, organizationId string, body LabsDeleteAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*LabsDeleteAllowedIpAddressRangesResponse, error)
+
+	// LabsCreateAllowedIpAddressRangesWithBodyWithResponse request with any body
+	LabsCreateAllowedIpAddressRangesWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LabsCreateAllowedIpAddressRangesResponse, error)
+
+	LabsCreateAllowedIpAddressRangesWithResponse(ctx context.Context, organizationId string, body LabsCreateAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*LabsCreateAllowedIpAddressRangesResponse, error)
+
 	// LabsCreateAlertsWithBodyWithResponse request with any body
 	LabsCreateAlertsWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LabsCreateAlertsResponse, error)
 
@@ -2242,6 +2448,59 @@ func (r LabsListAlertsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r LabsListAlertsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type LabsDeleteAllowedIpAddressRangesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r LabsDeleteAllowedIpAddressRangesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r LabsDeleteAllowedIpAddressRangesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type LabsCreateAllowedIpAddressRangesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AllowedIpAddressRangesList
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON409      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r LabsCreateAllowedIpAddressRangesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r LabsCreateAllowedIpAddressRangesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2335,6 +2594,40 @@ func (c *ClientWithResponses) LabsListAlertsWithResponse(ctx context.Context, or
 		return nil, err
 	}
 	return ParseLabsListAlertsResponse(rsp)
+}
+
+// LabsDeleteAllowedIpAddressRangesWithBodyWithResponse request with arbitrary body returning *LabsDeleteAllowedIpAddressRangesResponse
+func (c *ClientWithResponses) LabsDeleteAllowedIpAddressRangesWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LabsDeleteAllowedIpAddressRangesResponse, error) {
+	rsp, err := c.LabsDeleteAllowedIpAddressRangesWithBody(ctx, organizationId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLabsDeleteAllowedIpAddressRangesResponse(rsp)
+}
+
+func (c *ClientWithResponses) LabsDeleteAllowedIpAddressRangesWithResponse(ctx context.Context, organizationId string, body LabsDeleteAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*LabsDeleteAllowedIpAddressRangesResponse, error) {
+	rsp, err := c.LabsDeleteAllowedIpAddressRanges(ctx, organizationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLabsDeleteAllowedIpAddressRangesResponse(rsp)
+}
+
+// LabsCreateAllowedIpAddressRangesWithBodyWithResponse request with arbitrary body returning *LabsCreateAllowedIpAddressRangesResponse
+func (c *ClientWithResponses) LabsCreateAllowedIpAddressRangesWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LabsCreateAllowedIpAddressRangesResponse, error) {
+	rsp, err := c.LabsCreateAllowedIpAddressRangesWithBody(ctx, organizationId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLabsCreateAllowedIpAddressRangesResponse(rsp)
+}
+
+func (c *ClientWithResponses) LabsCreateAllowedIpAddressRangesWithResponse(ctx context.Context, organizationId string, body LabsCreateAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*LabsCreateAllowedIpAddressRangesResponse, error) {
+	rsp, err := c.LabsCreateAllowedIpAddressRanges(ctx, organizationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLabsCreateAllowedIpAddressRangesResponse(rsp)
 }
 
 // LabsCreateAlertsWithBodyWithResponse request with arbitrary body returning *LabsCreateAlertsResponse
@@ -2436,6 +2729,121 @@ func ParseLabsListAlertsResponse(rsp *http.Response) (*LabsListAlertsResponse, e
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseLabsDeleteAllowedIpAddressRangesResponse parses an HTTP response from a LabsDeleteAllowedIpAddressRangesWithResponse call
+func ParseLabsDeleteAllowedIpAddressRangesResponse(rsp *http.Response) (*LabsDeleteAllowedIpAddressRangesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &LabsDeleteAllowedIpAddressRangesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseLabsCreateAllowedIpAddressRangesResponse parses an HTTP response from a LabsCreateAllowedIpAddressRangesWithResponse call
+func ParseLabsCreateAllowedIpAddressRangesResponse(rsp *http.Response) (*LabsCreateAllowedIpAddressRangesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &LabsCreateAllowedIpAddressRangesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AllowedIpAddressRangesList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest Error
