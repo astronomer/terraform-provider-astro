@@ -186,6 +186,11 @@ func (data *DeploymentResource) ReadFromResponse(
 	if deployment.SchedulerAu != nil {
 		deploymentSchedulerAu := int64(*deployment.SchedulerAu)
 		data.SchedulerAu = types.Int64Value(deploymentSchedulerAu)
+	} else {
+		// scheduler_au is Optional+Computed - when the API doesn't return a value (e.g. STANDARD/DEDICATED
+		// deployments), it must be explicitly set to null. Otherwise it's left as whatever the prior
+		// plan/state value was (often unknown), which Terraform rejects as an invalid apply result.
+		data.SchedulerAu = types.Int64Null()
 	}
 	data.SchedulerReplicas = types.Int64Value(int64(deployment.SchedulerReplicas))
 	data.ImageTag = types.StringValue(deployment.ImageTag)
@@ -314,6 +319,8 @@ func (data *DeploymentDataSource) ReadFromResponse(
 	if deployment.SchedulerAu != nil {
 		deploymentSchedulerAu := int64(*deployment.SchedulerAu)
 		data.SchedulerAu = types.Int64Value(deploymentSchedulerAu)
+	} else {
+		data.SchedulerAu = types.Int64Null()
 	}
 	data.SchedulerReplicas = types.Int64Value(int64(deployment.SchedulerReplicas))
 	data.ImageTag = types.StringValue(deployment.ImageTag)
