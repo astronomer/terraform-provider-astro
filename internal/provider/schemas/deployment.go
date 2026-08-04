@@ -224,6 +224,7 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 		"scheduler_au": resourceSchema.Int64Attribute{
 			MarkdownDescription: "Deployment scheduler AU - required for 'HYBRID' deployments",
 			Optional:            true,
+			Computed:            true,
 			Validators: []validator.Int64{
 				int64validator.Between(5, 24),
 			},
