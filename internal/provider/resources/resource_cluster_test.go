@@ -609,6 +609,127 @@ func TestAcc_ResourceClusterGcpWithDr(t *testing.T) {
 	})
 }
 
+func TestAcc_ResourceClusterAzureWithDr(t *testing.T) {
+	if os.Getenv(SKIP_CLUSTER_RESOURCE_TESTS) == "True" {
+		t.Skip(SKIP_CLUSTER_RESOURCE_TESTS_REASON)
+	}
+	namePrefix := utils.GenerateTestResourceName(10)
+
+	azureClusterName := fmt.Sprintf("%v_azure_dr", namePrefix)
+	azureResourceVar := fmt.Sprintf("astro_cluster.%v", azureClusterName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckClusterExistence(t, azureClusterName, true, false),
+		Steps: []resource.TestStep{
+			// Create Azure cluster with DR enabled at creation time
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					cluster(clusterInput{
+						Name:          azureClusterName,
+						Region:        "westus2",
+						CloudProvider: "AZURE",
+						IsDrEnabled:   true,
+						DrRegion:      "eastus2",
+					}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(azureResourceVar, "name", azureClusterName),
+					resource.TestCheckResourceAttr(azureResourceVar, "region", "westus2"),
+					resource.TestCheckResourceAttr(azureResourceVar, "cloud_provider", "AZURE"),
+					resource.TestCheckResourceAttrSet(azureResourceVar, "vpc_subnet_range"),
+					// Check DR fields
+					resource.TestCheckResourceAttr(azureResourceVar, "is_dr_enabled", "true"),
+					resource.TestCheckResourceAttr(azureResourceVar, "dr_region", "eastus2"),
+					resource.TestCheckResourceAttrSet(azureResourceVar, "is_failed_over"),
+					resource.TestCheckResourceAttr(azureResourceVar, "enable_replication_time_control", "true"),
+
+					testAccCheckClusterExistence(t, azureClusterName, true, true),
+				),
+			},
+			// Import existing DR cluster
+			{
+				PreConfig:               func() { waitForClusterStableState(t, azureClusterName) },
+				ResourceName:            azureResourceVar,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"health_status", "health_status.value", "status"},
+			},
+		},
+	})
+}
+
+// TestAcc_ResourceClusterAzureEnableDrOnExistingCluster verifies the Azure-specific
+// behavior called out in SQDPREL-275: unlike AWS and GCP, DR can be enabled (and
+// disabled) on an existing Azure cluster via a single update, with no separate
+// replication-lag phase required.
+func TestAcc_ResourceClusterAzureEnableDrOnExistingCluster(t *testing.T) {
+	if os.Getenv(SKIP_CLUSTER_RESOURCE_TESTS) == "True" {
+		t.Skip(SKIP_CLUSTER_RESOURCE_TESTS_REASON)
+	}
+	namePrefix := utils.GenerateTestResourceName(10)
+
+	azureClusterName := fmt.Sprintf("%v_azure_dr_update", namePrefix)
+	azureResourceVar := fmt.Sprintf("astro_cluster.%v", azureClusterName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckClusterExistence(t, azureClusterName, true, false),
+		Steps: []resource.TestStep{
+			// Create Azure cluster without DR
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					cluster(clusterInput{
+						Name:          azureClusterName,
+						Region:        "westus2",
+						CloudProvider: "AZURE",
+					}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(azureResourceVar, "is_dr_enabled", "false"),
+					testAccCheckClusterExistence(t, azureClusterName, true, true),
+				),
+			},
+			// Enable DR on the existing cluster via update
+			{
+				PreConfig: func() { waitForClusterStableState(t, azureClusterName) },
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					cluster(clusterInput{
+						Name:          azureClusterName,
+						Region:        "westus2",
+						CloudProvider: "AZURE",
+						IsDrEnabled:   true,
+						DrRegion:      "eastus2",
+					}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(azureResourceVar, "is_dr_enabled", "true"),
+					resource.TestCheckResourceAttr(azureResourceVar, "dr_region", "eastus2"),
+				),
+			},
+			// Disable DR on the existing cluster via update
+			// (the cluster() helper omits is_dr_enabled entirely when false, so this
+			// step needs an explicit `is_dr_enabled = false` to exercise the disable path)
+			{
+				PreConfig: func() { waitForClusterStableState(t, azureClusterName) },
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "westus2"
+	cloud_provider = "AZURE"
+	vpc_subnet_range = "172.20.0.0/20"
+	is_dr_enabled = false
+	workspace_ids = []
+}
+`, azureClusterName, azureClusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(azureResourceVar, "is_dr_enabled", "false"),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_ResourceClusterDrValidation(t *testing.T) {
 	if os.Getenv(SKIP_CLUSTER_RESOURCE_TESTS) == "True" {
 		t.Skip(SKIP_CLUSTER_RESOURCE_TESTS_REASON)
@@ -657,7 +778,7 @@ resource "astro_cluster" "%v" {
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			},
-			// Test: DR enabled on Azure should fail
+			// Test: DR enabled on Azure without dr_region should fail
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
 resource "astro_cluster" "%v" {
@@ -667,13 +788,12 @@ resource "astro_cluster" "%v" {
 	cloud_provider = "AZURE"
 	vpc_subnet_range = "172.20.0.0/20"
 	is_dr_enabled = true
-	dr_region = "eastus2"
 	workspace_ids = []
 }
 `, clusterName, clusterName),
-				ExpectError: regexp.MustCompile(`Disaster Recovery is not supported for 'AZURE' clusters`),
+				ExpectError: regexp.MustCompile(`dr_region is required when is_dr_enabled is true`),
 			},
-			// Test: dr_region on Azure should fail
+			// Test: DR sub-fields without DR enabled on Azure should fail
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
 resource "astro_cluster" "%v" {
@@ -682,11 +802,113 @@ resource "astro_cluster" "%v" {
 	region = "westus2"
 	cloud_provider = "AZURE"
 	vpc_subnet_range = "172.20.0.0/20"
-	dr_region = "eastus2"
+	is_dr_enabled = false
+	dr_vpc_subnet_range = "172.21.0.0/20"
 	workspace_ids = []
 }
 `, clusterName, clusterName),
-				ExpectError: regexp.MustCompile(`dr_region is not allowed for 'AZURE' cluster`),
+				ExpectError: regexp.MustCompile(`dr_vpc_subnet_range is only valid when is_dr_enabled is true`),
+			},
+			// Test: enable_replication_time_control without DR enabled on Azure should fail
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "westus2"
+	cloud_provider = "AZURE"
+	vpc_subnet_range = "172.20.0.0/20"
+	is_dr_enabled = false
+	enable_replication_time_control = true
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				ExpectError: regexp.MustCompile(`enable_replication_time_control is only valid when is_dr_enabled is true`),
+			},
+			// Test: dr_pod_subnet_range (GCP only) on Azure should fail
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "westus2"
+	cloud_provider = "AZURE"
+	vpc_subnet_range = "172.20.0.0/20"
+	dr_pod_subnet_range = "100.67.0.0/16"
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				ExpectError: regexp.MustCompile(`dr_pod_subnet_range is not allowed for 'AZURE' cluster`),
+			},
+			// Test: dr_secondary_vpc_cidr (AWS only) on Azure should fail
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "westus2"
+	cloud_provider = "AZURE"
+	vpc_subnet_range = "172.20.0.0/20"
+	dr_secondary_vpc_cidr = "100.64.0.0/19"
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				ExpectError: regexp.MustCompile(`dr_secondary_vpc_cidr is not allowed for 'AZURE' cluster`),
+			},
+			// Test: explicitly setting enable_replication_time_control to true on Azure with
+			// region/dr_region on different continents should fail
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "eastus2"
+	cloud_provider = "AZURE"
+	vpc_subnet_range = "172.20.0.0/20"
+	is_dr_enabled = true
+	dr_region = "westeurope"
+	enable_replication_time_control = true
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				ExpectError: regexp.MustCompile(`Replication time control requires regions on the same continent`),
+			},
+			// Test: leaving enable_replication_time_control unset with a continent-mismatched
+			// region pair does not fail - the provider simply won't send true to the API
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "eastus2"
+	cloud_provider = "AZURE"
+	vpc_subnet_range = "172.20.0.0/20"
+	is_dr_enabled = true
+	dr_region = "westeurope"
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			// Test: same continent-mismatch pair does not fail when enable_replication_time_control
+			// is explicitly set to false
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "eastus2"
+	cloud_provider = "AZURE"
+	vpc_subnet_range = "172.20.0.0/20"
+	is_dr_enabled = true
+	dr_region = "westeurope"
+	enable_replication_time_control = false
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
 			},
 			// Test: DR sub-fields without DR enabled on AWS should fail
 			{

@@ -41,7 +41,7 @@ output "cluster" {
 - `dr_service_peering_range` (String) The disaster recovery service peering range (GCP Only).
 - `dr_service_subnet_range` (String) The disaster recovery service subnet range (GCP Only).
 - `dr_vpc_subnet_range` (String) The VPC subnet range for the Disaster Recovery region
-- `enable_replication_time_control` (Boolean) Whether S3 Replication Time Control is enabled for Disaster Recovery (AWS only)
+- `enable_replication_time_control` (Boolean) Whether Replication Time Control is enabled for Disaster Recovery task log replication
 - `health_status` (Attributes) Cluster health status (see [below for nested schema](#nestedatt--health_status))
 - `is_dr_enabled` (Boolean) Whether Disaster Recovery is enabled on the cluster
 - `is_failed_over` (Boolean) Whether the cluster is currently failed over to the DR region

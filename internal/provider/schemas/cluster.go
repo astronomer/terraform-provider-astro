@@ -168,7 +168,7 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 			Computed:            true,
 		},
 		"is_dr_enabled": resourceSchema.BoolAttribute{
-			MarkdownDescription: "Whether Disaster Recovery is enabled on the cluster. Only supported for AWS clusters. Can only be enabled at cluster creation time. Can be set to `false` to disable DR on an existing cluster.",
+			MarkdownDescription: "Whether Disaster Recovery is enabled on the cluster. Supported for `AWS`, `GCP`, and `AZURE` clusters. For `AWS` and `GCP`, DR can only be enabled at cluster creation time; enabling DR on an existing `AWS` or `GCP` cluster requires the admin API. For `AZURE`, DR can be enabled or disabled on an existing cluster via this resource. Can be set to `false` to disable DR on an existing cluster for any provider.",
 			Optional:            true,
 			Computed:            true,
 		},
@@ -188,7 +188,7 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 			Computed:            true,
 		},
 		"enable_replication_time_control": resourceSchema.BoolAttribute{
-			MarkdownDescription: "Whether to enable S3 Replication Time Control for Disaster Recovery. Only valid when `is_dr_enabled` is true (AWS only).",
+			MarkdownDescription: "Whether to enable Replication Time Control for Disaster Recovery task log replication. Only valid when `is_dr_enabled` is true. For `AZURE` clusters: if left unset, this is automatically enabled when `region` and `dr_region` are on the same continent, and left disabled otherwise. Explicitly setting this to `true` when `region` and `dr_region` are on different continents will fail at plan time. You may always explicitly set this to `false`, regardless of the region pair.",
 			Optional:            true,
 			Computed:            true,
 		},
@@ -341,7 +341,7 @@ func ClusterDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 			Computed:            true,
 		},
 		"enable_replication_time_control": datasourceSchema.BoolAttribute{
-			MarkdownDescription: "Whether S3 Replication Time Control is enabled for Disaster Recovery (AWS only)",
+			MarkdownDescription: "Whether Replication Time Control is enabled for Disaster Recovery task log replication",
 			Computed:            true,
 		},
 		"is_failed_over": datasourceSchema.BoolAttribute{

@@ -127,14 +127,17 @@ func (r *ClusterResource) Create(
 		}
 	case platform.ClusterCloudProviderAZURE:
 		createAzureDedicatedClusterRequest := platform.CreateAzureClusterRequest{
-			CloudProvider:   platform.CreateAzureClusterRequestCloudProvider(data.CloudProvider.ValueString()),
-			Name:            data.Name.ValueString(),
-			NodePools:       nil,
-			ProviderAccount: data.ProviderAccount.ValueStringPointer(),
-			Region:          data.Region.ValueString(),
-			TenantId:        data.TenantId.ValueStringPointer(),
-			Type:            platform.CreateAzureClusterRequestType(data.Type.ValueString()),
-			VpcSubnetRange:  data.VpcSubnetRange.ValueString(),
+			CloudProvider:                platform.CreateAzureClusterRequestCloudProvider(data.CloudProvider.ValueString()),
+			Name:                         data.Name.ValueString(),
+			NodePools:                    nil,
+			ProviderAccount:              data.ProviderAccount.ValueStringPointer(),
+			Region:                       data.Region.ValueString(),
+			TenantId:                     data.TenantId.ValueStringPointer(),
+			Type:                         platform.CreateAzureClusterRequestType(data.Type.ValueString()),
+			VpcSubnetRange:               data.VpcSubnetRange.ValueString(),
+			DrRegion:                     data.DrRegion.ValueStringPointer(),
+			DrVpcSubnetRange:             data.DrVpcSubnetRange.ValueStringPointer(),
+			EnableReplicationTimeControl: azureEffectiveEnableReplicationTimeControl(&data),
 		}
 
 		// workspaceIds
@@ -328,6 +331,16 @@ func (r *ClusterResource) Update(
 	if !data.IsDrEnabled.IsNull() && !data.IsDrEnabled.IsUnknown() && !data.IsDrEnabled.ValueBool() {
 		enableDr := false
 		updateDedicatedClusterRequest.EnableDr = &enableDr
+	}
+	// Unlike AWS and GCP, Azure has no replication-lag phase, so DR can be enabled
+	// on an existing cluster in a single update request.
+	if platform.ClusterCloudProvider(data.CloudProvider.ValueString()) == platform.ClusterCloudProviderAZURE &&
+		!data.IsDrEnabled.IsNull() && !data.IsDrEnabled.IsUnknown() && data.IsDrEnabled.ValueBool() {
+		enableDr := true
+		updateDedicatedClusterRequest.EnableDr = &enableDr
+		updateDedicatedClusterRequest.DrRegion = data.DrRegion.ValueStringPointer()
+		updateDedicatedClusterRequest.DrVpcSubnetRange = data.DrVpcSubnetRange.ValueStringPointer()
+		updateDedicatedClusterRequest.EnableReplicationTimeControl = azureEffectiveEnableReplicationTimeControl(&data)
 	}
 	// Set IsFailedOver if specified (must be an explicit value, not null or unknown)
 	if !data.IsFailedOver.IsNull() && !data.IsFailedOver.IsUnknown() {
@@ -634,31 +647,11 @@ func validateAzureConfig(ctx context.Context, data *models.ClusterResource) diag
 		)
 	}
 
-	// secondary_vpc_cidr is AWS only
+	// secondary_vpc_cidr / dr_secondary_vpc_cidr are AWS only
 	if !data.SecondaryVpcCidr.IsNull() {
 		diags.AddError(
 			"secondary_vpc_cidr is not allowed for 'AZURE' cluster",
 			"Please remove secondary_vpc_cidr",
-		)
-	}
-
-	// DR is not supported for Azure clusters
-	if !data.IsDrEnabled.IsNull() && data.IsDrEnabled.ValueBool() {
-		diags.AddError(
-			"Disaster Recovery is not supported for 'AZURE' clusters",
-			"Please remove is_dr_enabled, dr_region, dr_vpc_subnet_range, and dr_secondary_vpc_cidr",
-		)
-	}
-	if !data.DrRegion.IsNull() {
-		diags.AddError(
-			"dr_region is not allowed for 'AZURE' cluster",
-			"Please remove dr_region",
-		)
-	}
-	if !data.DrVpcSubnetRange.IsNull() {
-		diags.AddError(
-			"dr_vpc_subnet_range is not allowed for 'AZURE' cluster",
-			"Please remove dr_vpc_subnet_range",
 		)
 	}
 	if !data.DrSecondaryVpcCidr.IsNull() {
@@ -667,12 +660,8 @@ func validateAzureConfig(ctx context.Context, data *models.ClusterResource) diag
 			"Please remove dr_secondary_vpc_cidr",
 		)
 	}
-	if !data.EnableReplicationTimeControl.IsNull() {
-		diags.AddError(
-			"enable_replication_time_control is not allowed for 'AZURE' cluster",
-			"Please remove enable_replication_time_control",
-		)
-	}
+
+	// dr_pod_subnet_range, dr_service_peering_range, dr_service_subnet_range are GCP only
 	if !data.DrPodSubnetRange.IsNull() {
 		diags.AddError(
 			"dr_pod_subnet_range is not allowed for 'AZURE' cluster",
@@ -692,7 +681,123 @@ func validateAzureConfig(ctx context.Context, data *models.ClusterResource) diag
 		)
 	}
 
+	// DR validation
+	if !data.IsDrEnabled.IsNull() && !data.IsDrEnabled.IsUnknown() && data.IsDrEnabled.ValueBool() {
+		if data.DrRegion.IsNull() {
+			diags.AddError(
+				"dr_region is required when is_dr_enabled is true",
+				"Please set dr_region to the secondary region for Disaster Recovery",
+			)
+		}
+		diags.Append(validateAzureReplicationTimeControlRegionPair(data)...)
+	}
+	if !data.IsDrEnabled.IsNull() && !data.IsDrEnabled.ValueBool() {
+		if !data.DrVpcSubnetRange.IsNull() {
+			diags.AddError(
+				"dr_vpc_subnet_range is only valid when is_dr_enabled is true",
+				"Please remove dr_vpc_subnet_range or set is_dr_enabled to true",
+			)
+		}
+		if !data.EnableReplicationTimeControl.IsNull() {
+			diags.AddError(
+				"enable_replication_time_control is only valid when is_dr_enabled is true",
+				"Please remove enable_replication_time_control or set is_dr_enabled to true",
+			)
+		}
+	}
+
 	return diags
+}
+
+// validateAzureReplicationTimeControlRegionPair mirrors apps/core's
+// ValidateEnableReplicationTimeControl: Replication Time Control requires the
+// cluster's primary region and dr_region to be on the same continent. This runs
+// client-side (using the same region/continent data as the backend's provider
+// spec) so an invalid region pair is rejected at plan time instead of only
+// surfacing as an apply-time API error.
+//
+// The user may always explicitly set this to `false`, regardless of the region
+// pair. A left-unset value is not validated here at all: the provider computes
+// a safe value itself (see azureEffectiveEnableReplicationTimeControl) instead
+// of requiring the user to pick a compatible region pair up front.
+func validateAzureReplicationTimeControlRegionPair(data *models.ClusterResource) diag.Diagnostics {
+	diags := make(diag.Diagnostics, 0)
+
+	if data.EnableReplicationTimeControl.IsUnknown() || data.EnableReplicationTimeControl.IsNull() {
+		return diags
+	}
+	if !data.EnableReplicationTimeControl.ValueBool() {
+		// Explicitly opted out of Replication Time Control - always allowed.
+		return diags
+	}
+	if data.Region.IsUnknown() || data.DrRegion.IsNull() || data.DrRegion.IsUnknown() {
+		// Region values aren't known yet (e.g. derived from another resource); defer to apply-time validation.
+		return diags
+	}
+
+	region := data.Region.ValueString()
+	drRegion := data.DrRegion.ValueString()
+
+	regionContinent, regionOk := azureRegionContinent(region)
+	if !regionOk {
+		diags.AddError(
+			fmt.Sprintf("Region %s has no defined location", region),
+			"Please use a supported Azure region, or set enable_replication_time_control to false.",
+		)
+		return diags
+	}
+	drRegionContinent, drRegionOk := azureRegionContinent(drRegion)
+	if !drRegionOk {
+		diags.AddError(
+			fmt.Sprintf("Region %s has no defined location", drRegion),
+			"Please use a supported Azure region, or set enable_replication_time_control to false.",
+		)
+		return diags
+	}
+
+	if regionContinent != drRegionContinent {
+		diags.AddError(
+			"Replication time control requires regions on the same continent",
+			"enable_replication_time_control cannot be set to true for this region pair. Set it explicitly to false, or choose a dr_region on the same continent as region.",
+		)
+	}
+
+	return diags
+}
+
+// azureEffectiveEnableReplicationTimeControl determines the value to send to the
+// API for enable_replication_time_control on an Azure cluster.
+//
+// If the user set the value explicitly, it is sent as-is (validateAzureConfig
+// already ensures an explicit `true` is only allowed when region and dr_region
+// share a continent; `false` is always allowed). If the user left it unset, the
+// API no longer defaults this to a region-aware value, so the provider computes
+// one: `true` only when region and dr_region are on the same continent,
+// otherwise nothing is sent (leaving the field, and Replication Time Control,
+// off).
+func azureEffectiveEnableReplicationTimeControl(data *models.ClusterResource) *bool {
+	if data.EnableReplicationTimeControl.IsUnknown() {
+		return nil
+	}
+	if !data.EnableReplicationTimeControl.IsNull() {
+		return data.EnableReplicationTimeControl.ValueBoolPointer()
+	}
+
+	if data.Region.IsUnknown() || data.DrRegion.IsNull() || data.DrRegion.IsUnknown() {
+		return nil
+	}
+
+	regionContinent, regionOk := azureRegionContinent(data.Region.ValueString())
+	if !regionOk {
+		return nil
+	}
+	drRegionContinent, drRegionOk := azureRegionContinent(data.DrRegion.ValueString())
+	if !drRegionOk || regionContinent != drRegionContinent {
+		return nil
+	}
+
+	enable := true
+	return &enable
 }
 
 func validateGcpConfig(ctx context.Context, data *models.ClusterResource) diag.Diagnostics {

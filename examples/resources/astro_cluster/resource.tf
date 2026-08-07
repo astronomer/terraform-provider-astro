@@ -22,6 +22,21 @@ resource "astro_cluster" "azure_example" {
   workspace_ids    = ["clv4wcf6f003u01m3zp7gsvzg"]
 }
 
+resource "astro_cluster" "azure_dr_example" {
+  type                = "DEDICATED"
+  name                = "my dr-enabled azure cluster"
+  region              = "westus2"
+  cloud_provider      = "AZURE"
+  vpc_subnet_range    = "172.20.0.0/20"
+  workspace_ids       = []
+  is_dr_enabled       = true
+  dr_region           = "eastus2"
+  dr_vpc_subnet_range = "172.21.0.0/20"
+  # enable_replication_time_control is unset here: the provider will send true only if
+  # region and dr_region are on the same continent (americas, in this example), and
+  # otherwise leaves it disabled. You may always explicitly set this to false.
+}
+
 resource "astro_cluster" "aws_dr_example" {
   type                = "DEDICATED"
   name                = "my dr-enabled cluster"
