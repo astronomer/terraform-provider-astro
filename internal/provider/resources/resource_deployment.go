@@ -312,7 +312,7 @@ func (r *DeploymentResource) Create(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, deployment.HTTPResponse, deployment.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, deployment.HTTPResponse, deployment.Body, deployment.JSON200, "create deployment")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return
@@ -363,7 +363,7 @@ func (r *DeploymentResource) Read(
 		)
 		return
 	}
-	statusCode, diagnostic := clients.NormalizeAPIError(ctx, deployment.HTTPResponse, deployment.Body)
+	statusCode, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, deployment.HTTPResponse, deployment.Body, deployment.JSON200, "read deployment")
 	// If the resource no longer exists, it is recommended to ignore the errors
 	// and call RemoveResource to remove the resource from the state. The next Terraform plan will recreate the resource.
 	if statusCode == http.StatusNotFound {
@@ -607,7 +607,7 @@ func (r *DeploymentResource) Update(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, deployment.HTTPResponse, deployment.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, deployment.HTTPResponse, deployment.Body, deployment.JSON200, "update deployment")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return
@@ -1231,11 +1231,11 @@ func (r *DeploymentResource) GetLatestAstroRuntimeVersion(ctx context.Context, d
 			fmt.Sprintf("Unable to get deployment options for deployment creation, got error: %s", err),
 		)
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, deploymentOptions.HTTPResponse, deploymentOptions.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, deploymentOptions.HTTPResponse, deploymentOptions.Body, deploymentOptions.JSON200, "read deployment options")
 	if diagnostic != nil {
 		return "", diagnostic
 	}
-	if deploymentOptions.JSON200 == nil || len(deploymentOptions.JSON200.RuntimeReleases) == 0 {
+	if len(deploymentOptions.JSON200.RuntimeReleases) == 0 {
 		return "", diag.NewErrorDiagnostic(
 			"Client Error",
 			"Unable to get runtime releases for deployment creation, got empty runtime releases",

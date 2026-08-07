@@ -86,14 +86,9 @@ func (d *userDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, user.HTTPResponse, user.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, user.HTTPResponse, user.Body, user.JSON200, "read user")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if user.JSON200 == nil {
-		tflog.Error(ctx, "failed to get user", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError("Client Error", "Unable to read user, got nil response")
 		return
 	}
 

@@ -40,7 +40,7 @@ func (data *Organization) ReadFromResponse(
 	if diags.HasError() {
 		return diags
 	}
-	data.UpdatedBy, diags = SubjectProfileTypesObject(ctx, organization.CreatedBy)
+	data.UpdatedBy, diags = SubjectProfileTypesObject(ctx, organization.UpdatedBy)
 	if diags.HasError() {
 		return diags
 	}

@@ -103,7 +103,7 @@ func (r *alertResource) Create(
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create alert: %s", err))
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, alertResp.HTTPResponse, alertResp.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, alertResp.HTTPResponse, alertResp.Body, alertResp.JSON200, "create alert")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return
@@ -150,7 +150,7 @@ func (r *alertResource) Read(
 		)
 		return
 	}
-	statusCode, diagnostic := clients.NormalizeAPIError(ctx, alert.HTTPResponse, alert.Body)
+	statusCode, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, alert.HTTPResponse, alert.Body, alert.JSON200, "read alert")
 	// If the resource no longer exists, it is recommended to ignore the errors
 	// and call RemoveResource to remove the resource from the state. The next Terraform plan will recreate the resource.
 	if statusCode == http.StatusNotFound {
@@ -200,7 +200,7 @@ func (r *alertResource) Update(
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update alert: %s", err))
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, alertResp.HTTPResponse, alertResp.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, alertResp.HTTPResponse, alertResp.Body, alertResp.JSON200, "update alert")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return

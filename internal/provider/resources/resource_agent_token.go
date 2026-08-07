@@ -109,14 +109,9 @@ func (r *AgentTokenResource) Create(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, createResp.HTTPResponse, createResp.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, createResp.HTTPResponse, createResp.Body, createResp.JSON200, "create agent token")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if createResp.JSON200 == nil {
-		tflog.Error(ctx, "failed to create agent token", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError("Client Error", "Unable to create agent token, got nil response")
 		return
 	}
 	if createResp.JSON200.Token == nil {
@@ -158,7 +153,7 @@ func (r *AgentTokenResource) Read(
 		)
 		return
 	}
-	statusCode, diagnostic := clients.NormalizeAPIError(ctx, getResp.HTTPResponse, getResp.Body)
+	statusCode, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, getResp.HTTPResponse, getResp.Body, getResp.JSON200, "read agent token")
 	if statusCode == http.StatusNotFound {
 		resp.State.RemoveResource(ctx)
 		return

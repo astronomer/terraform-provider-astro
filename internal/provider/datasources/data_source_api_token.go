@@ -86,14 +86,9 @@ func (d *apiTokenDataSource) Read(ctx context.Context, req datasource.ReadReques
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, apiToken.HTTPResponse, apiToken.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, apiToken.HTTPResponse, apiToken.Body, apiToken.JSON200, "read API token")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if apiToken.JSON200 == nil {
-		tflog.Error(ctx, "failed to get api token", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError("Client Error", "Unable to read api token, got nil response")
 		return
 	}
 

@@ -10,6 +10,7 @@ import (
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/samber/lo"
@@ -35,6 +36,27 @@ func TestSubjectProfileTypesObject(t *testing.T) {
 				_, diags := models.SubjectProfileTypesObject(ctx, tc.input)
 				assert.True(t, diags.HasError())
 				assert.Contains(t, diags[0].Detail(), "SubjectProfileTypesObject expects a BasicSubjectProfile type but did not receive one")
+			})
+		}
+	})
+
+	// A typed nil is real API data (an omitted field); an untyped nil is a caller bug and
+	// still errors above.
+	t.Run("should return null object if subject profile is a typed nil", func(t *testing.T) {
+		tests := []struct {
+			name  string
+			input any
+		}{
+			{"nil *platform.BasicSubjectProfile", (*platform.BasicSubjectProfile)(nil)},
+			{"nil *iam.BasicSubjectProfile", (*iam.BasicSubjectProfile)(nil)},
+			{"nil *platform_v1.BasicSubjectProfile", (*platform_v1.BasicSubjectProfile)(nil)},
+		}
+
+		for _, tc := range tests {
+			t.Run(tc.name, func(t *testing.T) {
+				subjectProfileModel, diags := models.SubjectProfileTypesObject(ctx, tc.input)
+				assert.False(t, diags.HasError())
+				assert.Equal(t, types.ObjectNull(schemas.SubjectProfileAttributeTypes()), subjectProfileModel)
 			})
 		}
 	})
@@ -96,6 +118,36 @@ func TestSubjectProfileTypesObject(t *testing.T) {
 			{
 				"just id - iam.BasicSubjectProfile",
 				iam.BasicSubjectProfile{Id: "id"},
+				models.SubjectProfile{
+					Id:           types.StringValue("id"),
+					SubjectType:  types.StringNull(),
+					Username:     types.StringNull(),
+					FullName:     types.StringNull(),
+					AvatarUrl:    types.StringNull(),
+					ApiTokenName: types.StringNull(),
+				},
+			},
+			{
+				"user - &platform_v1.BasicSubjectProfile",
+				&platform_v1.BasicSubjectProfile{
+					AvatarUrl:   lo.ToPtr("avatar_url"),
+					FullName:    lo.ToPtr("full_name"),
+					Id:          "id",
+					SubjectType: (*platform_v1.BasicSubjectProfileSubjectType)(lo.ToPtr("USER")),
+					Username:    lo.ToPtr("username"),
+				},
+				models.SubjectProfile{
+					Id:           types.StringValue("id"),
+					SubjectType:  types.StringValue("USER"),
+					Username:     types.StringValue("username"),
+					FullName:     types.StringValue("full_name"),
+					AvatarUrl:    types.StringValue("avatar_url"),
+					ApiTokenName: types.StringNull(),
+				},
+			},
+			{
+				"just id - platform_v1.BasicSubjectProfile",
+				platform_v1.BasicSubjectProfile{Id: "id"},
 				models.SubjectProfile{
 					Id:           types.StringValue("id"),
 					SubjectType:  types.StringNull(),

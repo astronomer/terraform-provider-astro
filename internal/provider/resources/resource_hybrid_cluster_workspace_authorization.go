@@ -114,7 +114,7 @@ func (r *hybridClusterWorkspaceAuthorizationResource) MutateRoles(
 		)
 		return diags
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, cluster.HTTPResponse, cluster.Body, cluster.JSON200, "update hybrid cluster workspace authorization")
 	if diagnostic != nil {
 		diags.Append(diagnostic)
 		return diags
@@ -187,7 +187,7 @@ func (r *hybridClusterWorkspaceAuthorizationResource) Read(
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get cluster, got error: %s", err))
 		return
 	}
-	statusCode, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
+	statusCode, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, cluster.HTTPResponse, cluster.Body, cluster.JSON200, "read hybrid cluster workspace authorization")
 	// If the resource no longer exists, it is recommended to ignore the errors
 	// and call RemoveResource to remove the resource from the state. The next Terraform plan will recreate the resource.
 	if statusCode == http.StatusNotFound {
@@ -275,7 +275,7 @@ func (r *hybridClusterWorkspaceAuthorizationResource) Delete(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, cluster.HTTPResponse, cluster.Body, cluster.JSON200, "delete hybrid cluster workspace authorization")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return

@@ -131,14 +131,9 @@ func (d *deploymentsDataSource) Read(
 			)
 			return
 		}
-		_, diagnostic := clients.NormalizeAPIError(ctx, deploymentsResp.HTTPResponse, deploymentsResp.Body)
+		_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, deploymentsResp.HTTPResponse, deploymentsResp.Body, deploymentsResp.JSON200, "read deployments")
 		if diagnostic != nil {
 			resp.Diagnostics.Append(diagnostic)
-			return
-		}
-		if deploymentsResp.JSON200 == nil {
-			tflog.Error(ctx, "failed to list deployments", map[string]interface{}{"error": "nil response"})
-			resp.Diagnostics.AddError("Client Error", "Unable to read deployments, got nil response")
 			return
 		}
 

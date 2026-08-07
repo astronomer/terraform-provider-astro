@@ -160,14 +160,9 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 			)}
 		}
 
-		_, diagnostic := clients.NormalizeAPIError(ctx, listDeployments.HTTPResponse, listDeployments.Body)
+		_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, listDeployments.HTTPResponse, listDeployments.Body, listDeployments.JSON200, "list deployments")
 		if diagnostic != nil {
 			return diag.Diagnostics{diagnostic}
-		}
-
-		if listDeployments.JSON200 == nil {
-			return diag.Diagnostics{diag.NewErrorDiagnostic(
-				"Client Error", "Unable to list deployments, got nil response")}
 		}
 
 		// Handle an empty page, breaking early

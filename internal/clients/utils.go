@@ -89,3 +89,32 @@ func NormalizeAPIError(
 	}
 	return httpResp.StatusCode, nil
 }
+
+// NormalizeAPIResponseWithBody is NormalizeAPIError plus a required-body check. The generated
+// clients fill JSON200 only for a JSON 200, so 201, 204, and non-JSON 200s pass the status check
+// with a nil JSON200 that panics the provider when read into a model. json200 is a parameter so
+// the check can't be skipped; status is returned for the 404 -> RemoveResource path.
+func NormalizeAPIResponseWithBody[T any](
+	ctx context.Context,
+	httpResp *http.Response,
+	body []byte,
+	json200 *T,
+	operation string,
+) (int, diag.Diagnostic) {
+	statusCode, diagnostic := NormalizeAPIError(ctx, httpResp, body)
+	if diagnostic != nil {
+		return statusCode, diagnostic
+	}
+	if json200 == nil {
+		tflog.Error(
+			ctx,
+			"API response contained no body",
+			map[string]interface{}{"operation": operation, "status": statusCode},
+		)
+		return statusCode, diag.NewErrorDiagnostic(
+			"Client error",
+			fmt.Sprintf("Unable to %s, got status %v with no response body", operation, statusCode),
+		)
+	}
+	return statusCode, nil
+}

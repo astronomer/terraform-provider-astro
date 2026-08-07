@@ -75,3 +75,86 @@ func TestUnit_NormalizeAPIError(t *testing.T) {
 		})
 	}
 }
+
+func TestUnit_NormalizeAPIResponseWithBody(t *testing.T) {
+	ctx := context.Background()
+
+	type payload struct{ Id string }
+
+	tests := []struct {
+		name           string
+		resp           *http.Response
+		body           []byte
+		json200        *payload
+		expectedStatus int
+		expectError    bool
+		errorContains  string
+	}{
+		{
+			name:           "SuccessWithBody",
+			resp:           &http.Response{StatusCode: http.StatusOK},
+			json200:        &payload{Id: "id"},
+			expectedStatus: http.StatusOK,
+			expectError:    false,
+		},
+		{
+			name:           "OkWithoutParsedBody",
+			resp:           &http.Response{StatusCode: http.StatusOK},
+			json200:        nil,
+			expectedStatus: http.StatusOK,
+			expectError:    true,
+			errorContains:  "no response body",
+		},
+		{
+			name:           "NoContentHasNoBody",
+			resp:           &http.Response{StatusCode: http.StatusNoContent},
+			json200:        nil,
+			expectedStatus: http.StatusNoContent,
+			expectError:    true,
+			errorContains:  "no response body",
+		},
+		{
+			name:           "CreatedWithoutParsedBody",
+			resp:           &http.Response{StatusCode: http.StatusCreated},
+			json200:        nil,
+			expectedStatus: http.StatusCreated,
+			expectError:    true,
+			errorContains:  "no response body",
+		},
+		{
+			// The status error wins; the body check is never reached
+			name:           "HttpResponseNilTakesPrecedence",
+			resp:           nil,
+			json200:        nil,
+			expectedStatus: http.StatusInternalServerError,
+			expectError:    true,
+			errorContains:  "failed to perform request",
+		},
+		{
+			// 404 must still reach the caller for RemoveResource
+			name:           "StatusErrorTakesPrecedence",
+			resp:           &http.Response{StatusCode: http.StatusNotFound},
+			body:           []byte(`{"message": "not found", "requestId": "123"}`),
+			json200:        nil,
+			expectedStatus: http.StatusNotFound,
+			expectError:    true,
+			errorContains:  "requestId: 123",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			status, diag := clients.NormalizeAPIResponseWithBody(ctx, tt.resp, tt.body, tt.json200, "read thing")
+
+			assert.Equal(t, tt.expectedStatus, status)
+			if tt.expectError {
+				assert.NotNil(t, diag)
+				if tt.errorContains != "" {
+					assert.Contains(t, diag.Detail(), tt.errorContains)
+				}
+			} else {
+				assert.Nil(t, diag)
+			}
+		})
+	}
+}

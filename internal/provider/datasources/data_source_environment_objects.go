@@ -120,14 +120,9 @@ func (d *environmentObjectsDataSource) Read(
 			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to list environment objects: %s", err))
 			return
 		}
-		_, diagnostic := clients.NormalizeAPIError(ctx, listResp.HTTPResponse, listResp.Body)
+		_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, listResp.HTTPResponse, listResp.Body, listResp.JSON200, "list environment objects")
 		if diagnostic != nil {
 			resp.Diagnostics.Append(diagnostic)
-			return
-		}
-		if listResp.JSON200 == nil {
-			tflog.Error(ctx, "failed to list environment objects", map[string]interface{}{"error": "nil response"})
-			resp.Diagnostics.AddError("Client Error", "Unable to list environment objects, got nil response")
 			return
 		}
 

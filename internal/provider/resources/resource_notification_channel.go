@@ -229,7 +229,7 @@ func (r *notificationChannelResource) Create(
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create notification channel: %s", err))
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, notificationChannelResp.HTTPResponse, notificationChannelResp.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, notificationChannelResp.HTTPResponse, notificationChannelResp.Body, notificationChannelResp.JSON200, "create notification channel")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return
@@ -276,7 +276,7 @@ func (r *notificationChannelResource) Read(
 		)
 		return
 	}
-	statusCode, diagnostic := clients.NormalizeAPIError(ctx, notificationChannel.HTTPResponse, notificationChannel.Body)
+	statusCode, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, notificationChannel.HTTPResponse, notificationChannel.Body, notificationChannel.JSON200, "read notification channel")
 	// If the resource no longer exists, it is recommended to ignore the errors
 	// and call RemoveResource to remove the resource from the state. The next Terraform plan will recreate the resource.
 	if statusCode == http.StatusNotFound {
@@ -456,7 +456,7 @@ func (r *notificationChannelResource) Update(
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Failed to update notification channel: %s", err))
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, notificationChannelResp.HTTPResponse, notificationChannelResp.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, notificationChannelResp.HTTPResponse, notificationChannelResp.Body, notificationChannelResp.JSON200, "update notification channel")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return

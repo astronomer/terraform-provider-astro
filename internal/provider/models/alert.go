@@ -281,6 +281,11 @@ func AlertRulesTypesObject(
 		}
 	}
 
+	// Rules can be omitted by the API, arriving as a typed nil
+	if rulesPtr == nil {
+		return types.ObjectNull(schemas.AlertRulesAttributeTypes()), nil
+	}
+
 	// Convert properties to types.Map
 	propertiesMap := make(map[string]interface{})
 	if m, ok := rulesPtr.Properties.(map[string]interface{}); ok {
@@ -333,12 +338,12 @@ func AlertRulesTypesObject(
 func AlertNotificationChannelsTypesSet(ctx context.Context, channels any) (types.Set, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	// Attempt to convert channels to slice
-	var slice []platform.AlertNotificationChannel
+	var slicePtr *[]platform.AlertNotificationChannel
 	switch v := channels.(type) {
 	case []platform.AlertNotificationChannel:
-		slice = v
+		slicePtr = &v
 	case *[]platform.AlertNotificationChannel:
-		slice = *v
+		slicePtr = v
 	default:
 		tflog.Error(ctx, "Unexpected type passed into alert notification channels", map[string]interface{}{"value": channels})
 		return types.Set{}, diag.Diagnostics{
@@ -348,8 +353,14 @@ func AlertNotificationChannelsTypesSet(ctx context.Context, channels any) (types
 			),
 		}
 	}
+
+	// notificationChannels is omitempty, so this can be a typed nil
+	if slicePtr == nil {
+		return types.SetNull(types.ObjectType{AttrTypes: schemas.NotificationChannelsElementAttributeTypes()}), nil
+	}
+
 	var notificationChannelValues []attr.Value
-	for _, anc := range slice {
+	for _, anc := range *slicePtr {
 		// Map AlertNotificationChannel fields into NotificationChannelDataSource via temporary platform.NotificationChannel
 		pc := platform.NotificationChannel{
 			CreatedAt:      anc.CreatedAt,
@@ -401,6 +412,13 @@ func AlertRulesResourceTypesObject(ctx context.Context, rules any) (types.Object
 	if err != nil {
 		return types.Object{}, diag.Diagnostics{
 			diag.NewErrorDiagnostic("Internal Error", fmt.Sprintf("failed to marshal alert rules: %s", err)),
+		}
+	}
+	// rules is Required on the resource, so unlike the data source path a null cannot be
+	// projected into state. Catches both untyped and typed nils without a type switch.
+	if string(raw) == "null" {
+		return types.Object{}, diag.Diagnostics{
+			diag.NewErrorDiagnostic("Internal Error", "AlertRulesResourceTypesObject received nil alert rules"),
 		}
 	}
 	if err := json.Unmarshal(raw, &parsed); err != nil {

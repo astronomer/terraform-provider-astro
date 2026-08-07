@@ -108,14 +108,9 @@ func (r *environmentObjectResource) Create(
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create environment object, got error: %s", err))
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, createResp.HTTPResponse, createResp.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, createResp.HTTPResponse, createResp.Body, createResp.JSON200, "create environment object")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if createResp.JSON200 == nil {
-		tflog.Error(ctx, "failed to create environment object", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError("Client Error", "Unable to create environment object, got nil response")
 		return
 	}
 
@@ -133,14 +128,9 @@ func (r *environmentObjectResource) Create(
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get environment object after create, got error: %s", err))
 		return
 	}
-	_, diagnostic = clients.NormalizeAPIError(ctx, getResp.HTTPResponse, getResp.Body)
+	_, diagnostic = clients.NormalizeAPIResponseWithBody(ctx, getResp.HTTPResponse, getResp.Body, getResp.JSON200, "create and get environment object")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if getResp.JSON200 == nil {
-		tflog.Error(ctx, "failed to get environment object after create", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError("Client Error", "Unable to get environment object after create, got nil response")
 		return
 	}
 
@@ -179,18 +169,13 @@ func (r *environmentObjectResource) Read(
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get environment object, got error: %s", err))
 		return
 	}
-	statusCode, diagnostic := clients.NormalizeAPIError(ctx, envObj.HTTPResponse, envObj.Body)
+	statusCode, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, envObj.HTTPResponse, envObj.Body, envObj.JSON200, "read environment object")
 	if statusCode == http.StatusNotFound {
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if envObj.JSON200 == nil {
-		tflog.Error(ctx, "failed to get environment object", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError("Client Error", "Unable to get environment object, got nil response")
 		return
 	}
 
@@ -247,14 +232,9 @@ func (r *environmentObjectResource) Update(
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get environment object after update, got error: %s", err))
 		return
 	}
-	_, diagnostic = clients.NormalizeAPIError(ctx, getResp.HTTPResponse, getResp.Body)
+	_, diagnostic = clients.NormalizeAPIResponseWithBody(ctx, getResp.HTTPResponse, getResp.Body, getResp.JSON200, "update and get environment object")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if getResp.JSON200 == nil {
-		tflog.Error(ctx, "failed to get environment object after update", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError("Client Error", "Unable to get environment object after update, got nil response")
 		return
 	}
 

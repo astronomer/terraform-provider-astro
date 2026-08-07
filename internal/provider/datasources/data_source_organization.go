@@ -94,14 +94,9 @@ func (d *organizationDataSource) Read(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, organization.HTTPResponse, organization.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, organization.HTTPResponse, organization.Body, organization.JSON200, "read organization")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if organization.JSON200 == nil {
-		tflog.Error(ctx, "failed to get organization", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError("Client Error", "Unable to read organization, got nil response")
 		return
 	}
 

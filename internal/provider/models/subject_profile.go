@@ -34,41 +34,14 @@ func SubjectProfileTypesObject(
 		bspPtr = &v
 	case *platform.BasicSubjectProfile:
 		bspPtr = v
-	case iam.BasicSubjectProfile, *iam.BasicSubjectProfile:
-		var iamBsp *iam.BasicSubjectProfile
-		if nonPtr, ok := v.(iam.BasicSubjectProfile); ok {
-			iamBsp = &nonPtr
-		} else {
-			iamBsp = v.(*iam.BasicSubjectProfile)
-		}
-
-		bspPtr = &platform.BasicSubjectProfile{
-			ApiTokenName: iamBsp.ApiTokenName,
-			AvatarUrl:    iamBsp.AvatarUrl,
-			FullName:     iamBsp.FullName,
-			Id:           iamBsp.Id,
-			SubjectType:  (*platform.BasicSubjectProfileSubjectType)(iamBsp.SubjectType),
-			Username:     iamBsp.Username,
-		}
-	case platform_v1.BasicSubjectProfile, *platform_v1.BasicSubjectProfile:
-		// platform_v1 (unified public API) has the same field shape but distinct
-		// types — convert to *platform.BasicSubjectProfile so downstream code stays
-		// unchanged.
-		var v1Bsp *platform_v1.BasicSubjectProfile
-		if nonPtr, ok := v.(platform_v1.BasicSubjectProfile); ok {
-			v1Bsp = &nonPtr
-		} else {
-			v1Bsp = v.(*platform_v1.BasicSubjectProfile)
-		}
-
-		bspPtr = &platform.BasicSubjectProfile{
-			ApiTokenName: v1Bsp.ApiTokenName,
-			AvatarUrl:    v1Bsp.AvatarUrl,
-			FullName:     v1Bsp.FullName,
-			Id:           v1Bsp.Id,
-			SubjectType:  (*platform.BasicSubjectProfileSubjectType)(v1Bsp.SubjectType),
-			Username:     v1Bsp.Username,
-		}
+	case iam.BasicSubjectProfile:
+		bspPtr = iamSubjectProfileToPlatform(&v)
+	case *iam.BasicSubjectProfile:
+		bspPtr = iamSubjectProfileToPlatform(v)
+	case platform_v1.BasicSubjectProfile:
+		bspPtr = platformV1SubjectProfileToPlatform(&v)
+	case *platform_v1.BasicSubjectProfile:
+		bspPtr = platformV1SubjectProfileToPlatform(v)
 	default:
 		// Log error and return if none of the types match
 		tflog.Error(
@@ -84,6 +57,11 @@ func SubjectProfileTypesObject(
 		}
 	}
 
+	// The API omits fields like a Team's updatedBy, which arrive here as typed nils
+	if bspPtr == nil {
+		return types.ObjectNull(schemas.SubjectProfileAttributeTypes()), nil
+	}
+
 	subjectProfile := SubjectProfile{
 		Id:           types.StringValue(bspPtr.Id),
 		SubjectType:  types.StringPointerValue((*string)(bspPtr.SubjectType)),
@@ -94,4 +72,33 @@ func SubjectProfileTypesObject(
 	}
 
 	return types.ObjectValueFrom(ctx, schemas.SubjectProfileAttributeTypes(), subjectProfile)
+}
+
+func iamSubjectProfileToPlatform(bsp *iam.BasicSubjectProfile) *platform.BasicSubjectProfile {
+	if bsp == nil {
+		return nil
+	}
+	return &platform.BasicSubjectProfile{
+		ApiTokenName: bsp.ApiTokenName,
+		AvatarUrl:    bsp.AvatarUrl,
+		FullName:     bsp.FullName,
+		Id:           bsp.Id,
+		SubjectType:  (*platform.BasicSubjectProfileSubjectType)(bsp.SubjectType),
+		Username:     bsp.Username,
+	}
+}
+
+// platform_v1 has the same field shape but distinct types.
+func platformV1SubjectProfileToPlatform(bsp *platform_v1.BasicSubjectProfile) *platform.BasicSubjectProfile {
+	if bsp == nil {
+		return nil
+	}
+	return &platform.BasicSubjectProfile{
+		ApiTokenName: bsp.ApiTokenName,
+		AvatarUrl:    bsp.AvatarUrl,
+		FullName:     bsp.FullName,
+		Id:           bsp.Id,
+		SubjectType:  (*platform.BasicSubjectProfileSubjectType)(bsp.SubjectType),
+		Username:     bsp.Username,
+	}
 }

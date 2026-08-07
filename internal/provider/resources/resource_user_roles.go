@@ -136,7 +136,7 @@ func (r *UserRolesResource) MutateRoles(
 		)
 		return diags
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, userRoles.HTTPResponse, userRoles.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, userRoles.HTTPResponse, userRoles.Body, userRoles.JSON200, "update user roles")
 	if diagnostic != nil {
 		diags.Append(diagnostic)
 		return diags
@@ -202,13 +202,15 @@ func (r *UserRolesResource) Read(
 		)
 		return
 	}
-	// Check if the response is valid before accessing fields
-	if userRoles.JSON200 == nil {
-		tflog.Error(ctx, "failed to get user_roles", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to get user_roles for user '%s', got nil response", userId),
-		)
+	statusCode, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, userRoles.HTTPResponse, userRoles.Body, userRoles.JSON200, "read user roles")
+	// If the resource no longer exists, it is recommended to ignore the errors
+	// and call RemoveResource to remove the resource from the state. The next Terraform plan will recreate the resource.
+	if statusCode == http.StatusNotFound {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+	if diagnostic != nil {
+		resp.Diagnostics.Append(diagnostic)
 		return
 	}
 
@@ -221,21 +223,10 @@ func (r *UserRolesResource) Read(
 		)
 		return
 	}
-	statusCode, diagnostic := clients.NormalizeAPIError(ctx, userRoles.HTTPResponse, userRoles.Body)
-	// If the resource no longer exists, it is recommended to ignore the errors
-	// and call RemoveResource to remove the resource from the state. The next Terraform plan will recreate the resource.
-	if statusCode == http.StatusNotFound {
-		resp.State.RemoveResource(ctx)
-		return
-	}
-	if diagnostic != nil {
-		resp.Diagnostics.Append(diagnostic)
-		return
-	}
 
 	// Generate subjectRoles from the get user API response
 	subjectRoles := iam.SubjectRoles{
-		OrganizationRole: lo.ToPtr(string(*userRoles.JSON200.OrganizationRole)),
+		OrganizationRole: (*string)(userRoles.JSON200.OrganizationRole),
 		WorkspaceRoles:   userRoles.JSON200.WorkspaceRoles,
 		DeploymentRoles:  userRoles.JSON200.DeploymentRoles,
 		DagRoles:         userRoles.JSON200.DagRoles,
@@ -312,7 +303,7 @@ func (r *UserRolesResource) Delete(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, userRoles.HTTPResponse, userRoles.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, userRoles.HTTPResponse, userRoles.Body, userRoles.JSON200, "delete user roles")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return

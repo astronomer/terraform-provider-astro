@@ -339,15 +339,10 @@ func (r *allowedIpAddressRangesResource) listAllRanges(ctx context.Context) ([]i
 			diags.AddError("Client Error", fmt.Sprintf("Unable to list allowed IP address ranges: %s", err))
 			return all, diags
 		}
-		if _, d := clients.NormalizeAPIError(ctx, listResp.HTTPResponse, listResp.Body); d != nil {
+		// A missing body must not read as "the list is empty" - for this authoritative resource
+		// that would wipe every managed range from state and plan their deletion.
+		if _, d := clients.NormalizeAPIResponseWithBody(ctx, listResp.HTTPResponse, listResp.Body, listResp.JSON200, "list allowed IP address ranges"); d != nil {
 			diags.Append(d)
-			return all, diags
-		}
-		// A success status with no parseable JSON body (e.g. a proxy/gateway 200 with an HTML page, or
-		// a 204) must not be read as "the list is empty" - for this authoritative resource that would
-		// silently wipe every managed range from state and plan their deletion. Surface it as an error.
-		if listResp.JSON200 == nil {
-			diags.AddError("Client Error", "Unable to list allowed IP address ranges: the API returned a success status with no parseable response body")
 			return all, diags
 		}
 		all = append(all, listResp.JSON200.AllowedIpAddressRanges...)

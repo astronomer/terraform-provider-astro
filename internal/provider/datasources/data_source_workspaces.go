@@ -124,14 +124,9 @@ func (d *workspacesDataSource) Read(
 			)
 			return
 		}
-		_, diagnostic := clients.NormalizeAPIError(ctx, workspacesResp.HTTPResponse, workspacesResp.Body)
+		_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, workspacesResp.HTTPResponse, workspacesResp.Body, workspacesResp.JSON200, "read workspaces")
 		if diagnostic != nil {
 			resp.Diagnostics.Append(diagnostic)
-			return
-		}
-		if workspacesResp.JSON200 == nil {
-			tflog.Error(ctx, "failed to list workspaces", map[string]interface{}{"error": "nil response"})
-			resp.Diagnostics.AddError("Client Error", "Unable to read workspaces, got nil response")
 			return
 		}
 

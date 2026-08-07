@@ -129,17 +129,9 @@ func (r *customRoleResource) Create(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, customRole.HTTPResponse, customRole.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, customRole.HTTPResponse, customRole.Body, customRole.JSON200, "create custom role")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if customRole.JSON200 == nil {
-		tflog.Error(ctx, "failed to create custom role", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			"Unable to create custom role, got nil response",
-		)
 		return
 	}
 
@@ -183,7 +175,7 @@ func (r *customRoleResource) Read(
 		)
 		return
 	}
-	statusCode, diagnostic := clients.NormalizeAPIError(ctx, customRole.HTTPResponse, customRole.Body)
+	statusCode, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, customRole.HTTPResponse, customRole.Body, customRole.JSON200, "read custom role")
 	// If the resource no longer exists, it is recommended to ignore the errors
 	// and call RemoveResource to remove the resource from the state. The next Terraform plan will recreate the resource.
 	if statusCode == http.StatusNotFound {
@@ -192,14 +184,6 @@ func (r *customRoleResource) Read(
 	}
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if customRole.JSON200 == nil {
-		tflog.Error(ctx, "failed to get custom role", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			"Unable to get custom role, got nil response",
-		)
 		return
 	}
 
@@ -272,17 +256,9 @@ func (r *customRoleResource) Update(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, customRole.HTTPResponse, customRole.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, customRole.HTTPResponse, customRole.Body, customRole.JSON200, "update custom role")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if customRole.JSON200 == nil {
-		tflog.Error(ctx, "failed to update custom role", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			"Unable to update custom role, got nil response",
-		)
 		return
 	}
 

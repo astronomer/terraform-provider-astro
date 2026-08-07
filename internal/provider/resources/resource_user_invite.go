@@ -107,7 +107,7 @@ func (r *UserInviteResource) Create(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, userInvite.HTTPResponse, userInvite.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, userInvite.HTTPResponse, userInvite.Body, userInvite.JSON200, "create user invite")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return
@@ -179,7 +179,7 @@ func (r *UserInviteResource) Read(
 		)
 		return
 	}
-	statusCode, diagnostic := clients.NormalizeAPIError(ctx, user.HTTPResponse, user.Body)
+	statusCode, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, user.HTTPResponse, user.Body, user.JSON200, "read user invite")
 	// If the resource no longer exists, it is recommended to ignore the errors
 	// and call RemoveResource to remove the resource from the state. The next Terraform plan will recreate the resource.
 	if statusCode == http.StatusNotFound {
@@ -298,7 +298,7 @@ func (r *UserInviteResource) Update(
 		)
 		return
 	}
-	_, diagnostic = clients.NormalizeAPIError(ctx, userInvite.HTTPResponse, userInvite.Body)
+	_, diagnostic = clients.NormalizeAPIResponseWithBody(ctx, userInvite.HTTPResponse, userInvite.Body, userInvite.JSON200, "update user invite")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return

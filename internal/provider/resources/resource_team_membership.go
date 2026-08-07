@@ -149,17 +149,13 @@ func (r *teamMembershipResource) Read(
 			)
 			return
 		}
-		statusCode, diagnostic := clients.NormalizeAPIError(ctx, membersResp.HTTPResponse, membersResp.Body)
+		statusCode, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, membersResp.HTTPResponse, membersResp.Body, membersResp.JSON200, "list team members")
 		if statusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			return
 		}
 		if diagnostic != nil {
 			resp.Diagnostics.Append(diagnostic)
-			return
-		}
-		if membersResp.JSON200 == nil {
-			resp.Diagnostics.AddError("Client Error", "Unable to list team members, got nil response")
 			return
 		}
 
