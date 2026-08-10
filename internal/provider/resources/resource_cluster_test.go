@@ -627,11 +627,12 @@ func TestAcc_ResourceClusterAzureWithDr(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					cluster(clusterInput{
-						Name:          azureClusterName,
-						Region:        "westus2",
-						CloudProvider: "AZURE",
-						IsDrEnabled:   true,
-						DrRegion:      "eastus2",
+						Name:             azureClusterName,
+						Region:           "westus2",
+						CloudProvider:    "AZURE",
+						IsDrEnabled:      true,
+						DrRegion:         "eastus2",
+						DrVpcSubnetRange: "172.21.0.0/20",
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(azureResourceVar, "name", azureClusterName),
@@ -641,6 +642,7 @@ func TestAcc_ResourceClusterAzureWithDr(t *testing.T) {
 					// Check DR fields
 					resource.TestCheckResourceAttr(azureResourceVar, "is_dr_enabled", "true"),
 					resource.TestCheckResourceAttr(azureResourceVar, "dr_region", "eastus2"),
+					resource.TestCheckResourceAttr(azureResourceVar, "dr_vpc_subnet_range", "172.21.0.0/20"),
 					resource.TestCheckResourceAttrSet(azureResourceVar, "is_failed_over"),
 					resource.TestCheckResourceAttr(azureResourceVar, "enable_replication_time_control", "true"),
 
@@ -695,15 +697,17 @@ func TestAcc_ResourceClusterAzureEnableDrOnExistingCluster(t *testing.T) {
 				PreConfig: func() { waitForClusterStableState(t, azureClusterName) },
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					cluster(clusterInput{
-						Name:          azureClusterName,
-						Region:        "westus2",
-						CloudProvider: "AZURE",
-						IsDrEnabled:   true,
-						DrRegion:      "eastus2",
+						Name:             azureClusterName,
+						Region:           "westus2",
+						CloudProvider:    "AZURE",
+						IsDrEnabled:      true,
+						DrRegion:         "eastus2",
+						DrVpcSubnetRange: "172.21.0.0/20",
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(azureResourceVar, "is_dr_enabled", "true"),
 					resource.TestCheckResourceAttr(azureResourceVar, "dr_region", "eastus2"),
+					resource.TestCheckResourceAttr(azureResourceVar, "dr_vpc_subnet_range", "172.21.0.0/20"),
 				),
 			},
 			// Disable DR on the existing cluster via update
