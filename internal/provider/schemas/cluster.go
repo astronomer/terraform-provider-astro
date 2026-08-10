@@ -636,15 +636,15 @@ func (m nullWhenDrDisabledBoolPlanModifier) MarkdownDescription(ctx context.Cont
 
 func (m nullWhenDrDisabledBoolPlanModifier) PlanModifyBool(ctx context.Context, req planmodifier.BoolRequest, resp *planmodifier.BoolResponse) {
 	// Check if is_dr_enabled is being set to false in the plan
-	var isDrEnabled types.Bool
-	diags := req.Plan.GetAttribute(ctx, path.Root("is_dr_enabled"), &isDrEnabled)
+	var isDrEnabledPlan types.Bool
+	diags := req.Plan.GetAttribute(ctx, path.Root("is_dr_enabled"), &isDrEnabledPlan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	// If DR is being disabled, plan this attribute as null
-	if !isDrEnabled.IsNull() && !isDrEnabled.IsUnknown() && !isDrEnabled.ValueBool() {
+	if !isDrEnabledPlan.IsNull() && !isDrEnabledPlan.IsUnknown() && !isDrEnabledPlan.ValueBool() {
 		resp.PlanValue = types.BoolNull()
 		return
 	}
@@ -657,5 +657,25 @@ func (m nullWhenDrDisabledBoolPlanModifier) PlanModifyBool(ctx context.Context, 
 	if req.State.Raw.IsNull() {
 		return
 	}
+
+	// If DR is being enabled on a cluster that previously had it disabled (e.g.
+	// enabling DR on an existing Azure cluster via update), the prior state's
+	// value is stale - it is null only because DR was off, not because that's
+	// what this attribute will actually be once DR is on (the API will return a
+	// real true/false). Reusing that stale null here would cause a "provider
+	// produced inconsistent result after apply" error once the API responds
+	// with a concrete value, so leave the plan unknown to be recomputed instead.
+	var isDrEnabledState types.Bool
+	diags = req.State.GetAttribute(ctx, path.Root("is_dr_enabled"), &isDrEnabledState)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	drNewlyEnabled := (isDrEnabledState.IsNull() || !isDrEnabledState.ValueBool()) &&
+		!isDrEnabledPlan.IsNull() && !isDrEnabledPlan.IsUnknown() && isDrEnabledPlan.ValueBool()
+	if drNewlyEnabled {
+		return
+	}
+
 	resp.PlanValue = req.StateValue
 }
