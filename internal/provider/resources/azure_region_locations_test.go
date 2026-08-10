@@ -249,6 +249,12 @@ func TestAzureEffectiveEnableReplicationTimeControl_UnknownValuesDeferred(t *tes
 	}
 	assert.Nil(t, azureEffectiveEnableReplicationTimeControl(data))
 
+	// enable_replication_time_control itself unknown: this is the normal plan-time
+	// state for "left unset" on an Optional+Computed attribute with no plan
+	// modifiers (Create, or Update with no prior explicit value) - it must be
+	// treated the same as unset-and-null and computed from the region pair, not
+	// deferred. Region/dr_region are on the same continent here, so this computes
+	// to true.
 	dataUnknownRTC := &models.ClusterResource{
 		CloudProvider:                types.StringValue("AZURE"),
 		Region:                       types.StringValue("eastus2"),
@@ -256,7 +262,10 @@ func TestAzureEffectiveEnableReplicationTimeControl_UnknownValuesDeferred(t *tes
 		DrRegion:                     types.StringValue("westus2"),
 		EnableReplicationTimeControl: types.BoolUnknown(),
 	}
-	assert.Nil(t, azureEffectiveEnableReplicationTimeControl(dataUnknownRTC))
+	got := azureEffectiveEnableReplicationTimeControl(dataUnknownRTC)
+	if assert.NotNil(t, got) {
+		assert.True(t, *got)
+	}
 }
 
 func TestValidateAzureConfig_ReplicationTimeControlSkipsUnknownValues(t *testing.T) {

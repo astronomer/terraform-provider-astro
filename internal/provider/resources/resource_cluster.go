@@ -775,11 +775,16 @@ func validateAzureReplicationTimeControlRegionPair(data *models.ClusterResource)
 // one: `true` only when region and dr_region are on the same continent,
 // otherwise nothing is sent (leaving the field, and Replication Time Control,
 // off).
+//
+// data is populated from the plan (req.Plan.Get), not the config. This attribute
+// is Optional+Computed with no plan modifiers, so when the user leaves it unset,
+// the framework's default "proposed new state" logic plans it as Unknown, not
+// Null — Null is really only ever seen here if it's read from config elsewhere.
+// Both must be treated as "not explicitly set": bailing out only on Unknown (as
+// this used to) skips the compute-from-continent logic below on every Create,
+// since that IS the unset case at plan time.
 func azureEffectiveEnableReplicationTimeControl(data *models.ClusterResource) *bool {
-	if data.EnableReplicationTimeControl.IsUnknown() {
-		return nil
-	}
-	if !data.EnableReplicationTimeControl.IsNull() {
+	if !data.EnableReplicationTimeControl.IsNull() && !data.EnableReplicationTimeControl.IsUnknown() {
 		return data.EnableReplicationTimeControl.ValueBoolPointer()
 	}
 
