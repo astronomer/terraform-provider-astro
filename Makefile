@@ -15,7 +15,7 @@ $(ENVTEST_ASSETS_DIR):
 	mkdir -p $(ENVTEST_ASSETS_DIR)
 OAPI_CODEGEN ?= $(ENVTEST_ASSETS_DIR)/oapi-codegen
 
-MOCKERY_VERSION := 2.42.0
+MOCKERY_VERSION := 2.53.4
 
 # Run acceptance tests
 .PHONY: testacc
@@ -61,6 +61,10 @@ generate-mocks:
 		--dir=./internal/clients/platform \
 		--output=./internal/mocks/platform \
 		--outpkg=mocks_platform
+	@mockery --name=ClientWithResponsesInterface \
+		--dir=./internal/clients/labs \
+		--output=./internal/mocks/labs \
+		--outpkg=mocks_labs
 	@echo "Mocks generated successfully."
 
 .PHONY: validate-fmt

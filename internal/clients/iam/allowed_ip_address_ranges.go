@@ -9,8 +9,11 @@ package iam
 // ListAllowedIpAddressRangesParamsSorts collide in the tool's constant-naming pass), which breaks
 // internal/provider/datasources/data_source_users_list.go. That's outside the scope of this
 // change, so this binding is hand-written instead - matching the shape oapi-codegen produces
-// elsewhere in this package - until the coegen/tag collision is resolved upstream (or the two
+// elsewhere in this package - until the codegen/tag collision is resolved upstream (or the two
 // enums are reconciled) and `make api_client_gen` can pick this endpoint up cleanly.
+//
+// When regenerating, remember to keep ListAllowedIpAddressRangesWithResponse in both ClientInterface
+// and ClientWithResponsesInterface in api.gen.go, and regenerate the mock (`make mock`).
 
 import (
 	"context"

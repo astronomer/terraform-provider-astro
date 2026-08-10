@@ -3763,6 +3763,9 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// Hand-added pending codegen (see allowed_ip_address_ranges.go): ListAllowedIpAddressRanges request
+	ListAllowedIpAddressRangesWithResponse(ctx context.Context, organizationId string, params *ListAllowedIpAddressRangesParams, reqEditors ...RequestEditorFn) (*ListAllowedIpAddressRangesResponse, error)
+
 	// ListAgentTokensWithResponse request
 	ListAgentTokensWithResponse(ctx context.Context, organizationId string, deploymentId string, params *ListAgentTokensParams, reqEditors ...RequestEditorFn) (*ListAgentTokensResponse, error)
 
