@@ -43,8 +43,10 @@ func NewAllowedIpAddressRangesResource() resource.Resource {
 // Writes go through the labs bulk create/delete endpoints, while reads list through the iam
 // v1beta1 endpoint (labs has no list endpoint for this resource).
 type allowedIpAddressRangesResource struct {
-	iamClient      *iam.ClientWithResponses
-	labsClient     *labs.ClientWithResponses
+	// Interface-typed so unit tests can inject mocks (see resource_allowed_ip_address_ranges_test.go).
+	// Configure assigns the concrete generated clients, which satisfy these interfaces.
+	iamClient      iam.ClientWithResponsesInterface
+	labsClient     labs.ClientWithResponsesInterface
 	organizationId string
 }
 
@@ -152,28 +154,9 @@ func (r *allowedIpAddressRangesResource) Update(ctx context.Context, req resourc
 
 	toCreate, toDelete := diffCidrs(planCidrs, stateCidrs)
 
-	// Create before delete so the machine running Terraform never loses coverage mid-update. IP
-	// enforcement is per-request and the API only guards against lockout on the empty -> first-entry
-	// transition (not on deletes), so deleting the caller's covering range before adding its
-	// replacement would lock the caller out and fail the remaining requests. Adding ranges to an
-	// already non-empty list is always safe.
-	if len(toCreate) > 0 {
-		resp.Diagnostics.Append(r.bulkCreate(ctx, toCreate)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
-
-	if len(toDelete) > 0 {
-		ids, diags := r.idsForCidrs(ctx, toDelete)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		resp.Diagnostics.Append(r.bulkDelete(ctx, ids)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	resp.Diagnostics.Append(r.applyChanges(ctx, toCreate, toDelete)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	// Store the submitted plan value rather than re-listing (see Create for why): the API stores
@@ -214,6 +197,32 @@ func (r *allowedIpAddressRangesResource) Delete(ctx context.Context, req resourc
 // the organization ID regardless of the value passed here.
 func (r *allowedIpAddressRangesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+// applyChanges reconciles a computed diff by creating the added ranges before deleting the removed
+// ones. Create-before-delete keeps the machine running Terraform covered throughout the update: IP
+// enforcement is per-request and the API only guards against lockout on the empty -> first-entry
+// transition (not on deletes), so deleting the caller's covering range before adding its replacement
+// would lock the caller out and fail the remaining requests. Adding ranges to an already non-empty
+// list is always safe.
+func (r *allowedIpAddressRangesResource) applyChanges(ctx context.Context, toCreate, toDelete []string) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if len(toCreate) > 0 {
+		diags.Append(r.bulkCreate(ctx, toCreate)...)
+		if diags.HasError() {
+			return diags
+		}
+	}
+
+	if len(toDelete) > 0 {
+		ids, d := r.idsForCidrs(ctx, toDelete)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+		diags.Append(r.bulkDelete(ctx, ids)...)
+	}
+	return diags
 }
 
 // bulkCreate chunks the given CIDRs by the API's per-request limit and creates them via the labs
@@ -282,6 +291,14 @@ func (r *allowedIpAddressRangesResource) idsForCidrs(ctx context.Context, cidrs 
 	for _, c := range cidrs {
 		if id, ok := byCidr[c]; ok {
 			ids = append(ids, id)
+		} else {
+			// The CIDR is tracked in state but absent from the live list (e.g. removed out-of-band).
+			// We can't delete what we can't resolve to an ID; the end state (range gone) still holds,
+			// but warn so a silent under-delete on a security allowlist is visible.
+			diags.AddWarning(
+				"Allowed IP address range not found",
+				fmt.Sprintf("Allowed IP address range %q is tracked in state but was not found in the organization's current list, so it could not be deleted. It may have already been removed outside Terraform.", c),
+			)
 		}
 	}
 	return ids, diags
@@ -304,8 +321,17 @@ func (r *allowedIpAddressRangesResource) listAllRanges(ctx context.Context) ([]i
 			diags.Append(d)
 			return all, diags
 		}
+		// A genuinely empty list still parses into a non-nil JSON200 (with an empty slice), so a nil
+		// JSON200 on an otherwise-OK response means the body was missing or unparseable (e.g. a 204 or
+		// a proxy interstitial served as 200 text/html). Treating that as an empty list would wipe the
+		// authoritative set from state and make the next apply propose deleting every managed range, so
+		// surface it as an error instead.
 		if listResp.JSON200 == nil {
-			break
+			diags.AddError(
+				"Client Error",
+				fmt.Sprintf("Unable to list allowed IP address ranges: received an OK response (status %s) with no parseable body", listResp.Status()),
+			)
+			return all, diags
 		}
 		all = append(all, listResp.JSON200.AllowedIpAddressRanges...)
 		offset += len(listResp.JSON200.AllowedIpAddressRanges)
