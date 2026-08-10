@@ -1,9 +1,12 @@
 package schemas
 
 import (
+	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -25,6 +28,9 @@ func AllowedIpAddressRangesResourceSchemaAttributes() map[string]resourceSchema.
 				"are removed on apply. An empty set removes all restrictions.",
 			Required:    true,
 			ElementType: types.StringType,
+			Validators: []validator.Set{
+				setvalidator.ValueStringsAre(validators.IsCidr()),
+			},
 		},
 	}
 }

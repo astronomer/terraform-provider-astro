@@ -102,19 +102,12 @@ func (r *allowedIpAddressRangesResource) Create(ctx context.Context, req resourc
 		return
 	}
 
-	result, diags := r.listAll(ctx)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	setVal, d := utils.StringSet(&result)
-	resp.Diagnostics.Append(d...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// Store the submitted plan value rather than re-listing from the API. The API stores CIDRs
+	// verbatim (it does not canonicalize them), so the plan set is exactly what now exists on the
+	// server - persisting it keeps state == planned, which Terraform core requires for this Required
+	// attribute. It also avoids a post-create list call whose failure would strand the created ranges
+	// with nothing in state. Drift is reconciled by Read.
 	data.Id = types.StringValue(r.organizationId)
-	data.IpAddressRanges = setVal
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -183,19 +176,10 @@ func (r *allowedIpAddressRangesResource) Update(ctx context.Context, req resourc
 		}
 	}
 
-	result, diags := r.listAll(ctx)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	setVal, d := utils.StringSet(&result)
-	resp.Diagnostics.Append(d...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// Store the submitted plan value rather than re-listing (see Create for why): the API stores
+	// CIDRs verbatim, so after the create/delete above the server holds exactly the plan set, and
+	// state == planned is what Terraform core requires here. Read reconciles any drift.
 	plan.Id = types.StringValue(r.organizationId)
-	plan.IpAddressRanges = setVal
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
