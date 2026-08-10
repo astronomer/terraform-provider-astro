@@ -43,8 +43,9 @@ func NewAllowedIpAddressRangesResource() resource.Resource {
 // Writes go through the labs bulk create/delete endpoints, while reads list through the iam
 // v1beta1 endpoint (labs has no list endpoint for this resource).
 type allowedIpAddressRangesResource struct {
-	// Interface-typed so unit tests can inject mocks (see resource_allowed_ip_address_ranges_test.go).
-	// Configure assigns the concrete generated clients, which satisfy these interfaces.
+	// Interface-typed so unit tests can inject mocks (see
+	// resource_allowed_ip_address_ranges_internal_test.go). Configure assigns the concrete generated
+	// clients, which satisfy these interfaces.
 	iamClient      iam.ClientWithResponsesInterface
 	labsClient     labs.ClientWithResponsesInterface
 	organizationId string
@@ -227,6 +228,13 @@ func (r *allowedIpAddressRangesResource) applyChanges(ctx context.Context, toCre
 
 // bulkCreate chunks the given CIDRs by the API's per-request limit and creates them via the labs
 // bulk create endpoint.
+//
+// NOTE (#5): each chunk is a separate request, so a config exceeding the per-request limit is not
+// applied atomically. If a later chunk fails after an earlier one committed, the earlier ranges
+// remain on the server while the apply errors out; a retry re-submits the committed chunk and 409s.
+// This is only reachable above allowedIpAddressRangesBulkLimit CIDRs and is left as a known
+// limitation for now - making multi-chunk writes idempotent (treat duplicate-create as success, or
+// diff against the live list before each retry) is tracked separately.
 func (r *allowedIpAddressRangesResource) bulkCreate(ctx context.Context, cidrs []string) diag.Diagnostics {
 	var diags diag.Diagnostics
 	for _, chunk := range chunkSlice(cidrs, allowedIpAddressRangesBulkLimit) {
