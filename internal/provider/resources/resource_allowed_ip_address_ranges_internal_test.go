@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-const testOrgId = "clzzzzzzzzzzzzzzzzzzzzzzzz"
+const testOrgId = "test-org-id"
 
 // makeRanges builds n AllowedIpAddressRange records with predictable CIDR/ID pairs.
 func makeRanges(n int) []iam.AllowedIpAddressRange {
