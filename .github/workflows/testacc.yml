@@ -58,14 +58,55 @@ jobs:
       - run: go mod download
       - run: go build -v .
 
-  testacc:
-    name: Terraform Provider Acceptance Tests
+  determine-cluster-tests:
+    name: Determine if cluster tests should run
     needs: build
     if: |
       github.event_name == 'push' ||
       github.event_name == 'schedule' ||
       github.event_name == 'pull_request_target'
-    timeout-minutes: 180 # 3 hours since cluster creation and cluster updates can take a while
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Determine if expensive cluster tests should run
+        id: check
+        run: |
+         git fetch --all
+         echo "CHECKING FILES FOR SKIP LOGIC..."
+         SKIP_TESTS="True"
+         FILES_TO_CHECK=(
+           "internal/provider/schemas/deployment.go"
+           "internal/provider/schemas/cluster.go"
+           "internal/provider/models/deployment.go"
+           "internal/provider/models/cluster.go"
+           "internal/provider/resources/resource_cluster.go"
+           "internal/provider/resources/resource_cluster_test.go"
+           "internal/provider/resources/resource_deployment.go"
+           "internal/provider/resources/common_cluster.go"
+         )
+         for file in "${FILES_TO_CHECK[@]}"; do
+           if git diff --name-only origin/${{ github.event.pull_request.base.ref || github.ref_name }} ${{ github.event.pull_request.head.sha || github.sha }} | grep -q "$file"; then
+             SKIP_TESTS="False"
+             break
+           fi
+         done
+         echo "SKIP_CLUSTER_RESOURCE_TESTS=$SKIP_TESTS"
+         echo "skip=$SKIP_TESTS" >> "$GITHUB_OUTPUT"
+
+  testacc:
+    name: Terraform Provider Acceptance Tests
+    needs: [build, determine-cluster-tests]
+    if: |
+      github.event_name == 'push' ||
+      github.event_name == 'schedule' ||
+      github.event_name == 'pull_request_target'
+    timeout-minutes: 60 # cluster resource tests run separately in testacc-cluster
     strategy:
       fail-fast: true
       matrix:
@@ -96,29 +137,6 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: go mod download
-      - name: Determine if expensive tests should run
-        run: |
-         git fetch --all
-         echo "CHECKING FILES FOR SKIP LOGIC..."
-         SKIP_TESTS="True"
-         FILES_TO_CHECK=(
-           "internal/provider/schemas/deployment.go"
-           "internal/provider/schemas/cluster.go"
-           "internal/provider/models/deployment.go"
-           "internal/provider/models/cluster.go"
-           "internal/provider/resources/resource_cluster.go"
-           "internal/provider/resources/resource_cluster_test.go"
-           "internal/provider/resources/resource_deployment.go"
-           "internal/provider/resources/common_cluster.go"
-         )
-         for file in "${FILES_TO_CHECK[@]}"; do
-           if git diff --name-only origin/${{ github.event.pull_request.base.ref || github.ref_name }} ${{ github.event.pull_request.head.sha || github.sha }} | grep -q "$file"; then
-             SKIP_TESTS="False"
-             break
-           fi
-         done
-         echo "SKIP_CLUSTER_RESOURCE_TESTS=$SKIP_TESTS"
-         echo "SKIP_CLUSTER_RESOURCE_TESTS=$SKIP_TESTS" >> $GITHUB_ENV
       - env:
           TF_ACC: "1"
           HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HYBRID_ORGANIZATION_API_TOKEN }}
@@ -143,10 +161,80 @@ jobs:
           HOSTED_NOTIFICATION_CHANNEL_ID: cmbr12fik1m7l01gpln1bgtbb
           HOSTED_DEDICATED_CLUSTER_ID: cm73vsinm07hy01pu4dq1rei2
           HOSTED_CUSTOM_ROLE_ID: cmk64yvat027n01q7f9gn5ghg
-          SKIP_CLUSTER_RESOURCE_TESTS: ${{ env.SKIP_CLUSTER_RESOURCE_TESTS }}
+          # Cluster resource tests run in the dedicated testacc-cluster job instead.
+          SKIP_CLUSTER_RESOURCE_TESTS: "True"
           REMOTE_EXECUTION_DEPLOYMENT_ID: cmng0suky152501ilj9cjlmz3
-          TESTARGS: "-failfast"
+          TESTARGS: "-failfast -parallel 9"
         run: make testacc
+
+  testacc-cluster:
+    name: Cluster tests (${{ matrix.cluster_test }})
+    needs: [build, determine-cluster-tests]
+    if: needs.determine-cluster-tests.outputs.skip == 'False'
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        cluster_test:
+          - TestAcc_ResourceClusterAwsWithDedicatedDeployments
+          - TestAcc_ResourceClusterAzureWithDedicatedDeployments
+          - TestAcc_ResourceClusterGcpWithDedicatedDeployments
+          - TestAcc_ResourceClusterRemovedOutsideOfTerraform
+          - TestAcc_ResourceClusterAwsWithDr
+          - TestAcc_ResourceClusterGcpWithDr
+          - TestAcc_ResourceClusterAzureWithDr
+          - TestAcc_ResourceClusterAzureEnableDrOnExistingCluster
+          - TestAcc_ResourceClusterDrValidation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
+        with:
+          go-version-file: 'go.mod'
+          cache: false
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ env.GOMODCACHE }}
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-mod-
+      - uses: hashicorp/setup-terraform@651471c36a6092792c552e8b1bef71e592b462d8 # v3.1.1
+        with:
+          terraform_version: latest
+          terraform_wrapper: false
+      - run: go mod download
+      - env:
+          TF_ACC: "1"
+          HYBRID_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HYBRID_ORGANIZATION_API_TOKEN }}
+          HYBRID_ORGANIZATION_ID: clx46ca4y061z01jleyku7sr6
+          HOSTED_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HOSTED_ORGANIZATION_API_TOKEN }}
+          HOSTED_ORGANIZATION_ID: clx46acvv060e01ilddqlbsmc
+          HOSTED_SCIM_ORGANIZATION_API_TOKEN: ${{ secrets.STAGE_HOSTED_SCIM_ORGANIZATION_API_TOKEN }}
+          HOSTED_SCIM_ORGANIZATION_ID: clz3blqb500lh01mtkwu9zk5z
+          HYBRID_CLUSTER_ID: cmfn55kzv0x0401mps8d3pw3e
+          HYBRID_DRY_RUN_CLUSTER_ID: cmfn54h0k0vuf01mp52kkfu6d
+          HYBRID_NODE_POOL_ID: cmfn55kzv0x0301mppsx7hwb6
+          ASTRO_API_HOST: https://api.astronomer-stage.io
+          HOSTED_TEAM_ID: clx486hno068301il306nuhsm
+          HOSTED_USER_ID: clz3a95hw00j301jj5jfmcgwd
+          HOSTED_DUMMY_USER_ID: clzawlsb701vv01ikvsqz5mws
+          HOSTED_DEPLOYMENT_ID: cmmf9dpfu15iv01dw00xbakrg
+          HOSTED_DEPLOYMENT_API_TOKEN: ${{ secrets.STAGE_HOSTED_DEPLOYMENT_API_TOKEN }}
+          HOSTED_STANDARD_DEPLOYMENT_ID: cm077ee2807g301kpjkqdoc15
+          HOSTED_WORKSPACE_ID: clx480rvx068u01j9mp7t7fqh
+          HOSTED_API_TOKEN_ID: clxm46ged05b301neuucdqwox
+          HOSTED_ALERT_ID: cmmf9prtm15ya01dww674fosf
+          HOSTED_NOTIFICATION_CHANNEL_ID: cmbr12fik1m7l01gpln1bgtbb
+          HOSTED_DEDICATED_CLUSTER_ID: cm73vsinm07hy01pu4dq1rei2
+          HOSTED_CUSTOM_ROLE_ID: cmk64yvat027n01q7f9gn5ghg
+          REMOTE_EXECUTION_DEPLOYMENT_ID: cmng0suky152501ilj9cjlmz3
+        run: go test ./internal/provider/resources/... -v -run "^${{ matrix.cluster_test }}$" -timeout 100m
 
   testacc-stage:
     # This job runs every Monday.
@@ -212,7 +300,7 @@ jobs:
           HOSTED_DEDICATED_CLUSTER_ID: cm73vsinm07hy01pu4dq1rei2
           HOSTED_CUSTOM_ROLE_ID: cmk64yvat027n01q7f9gn5ghg
           REMOTE_EXECUTION_DEPLOYMENT_ID: cmng0suky152501ilj9cjlmz3
-          TESTARGS: "-failfast"
+          TESTARGS: "-failfast -parallel 9"
         run: make testacc
 
   testacc-dev:
@@ -279,5 +367,5 @@ jobs:
           HOSTED_DEDICATED_CLUSTER_ID: cm1zjsqu008ab01phlcna8swg
           HOSTED_CUSTOM_ROLE_ID: clzlwgj6h001c01hi3gqlk66p
           REMOTE_EXECUTION_DEPLOYMENT_ID: cmng0v65a00xl01ou62ko7836
-          TESTARGS: "-failfast"
+          TESTARGS: "-failfast -parallel 9"
         run: make testacc
