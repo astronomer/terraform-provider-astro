@@ -12,6 +12,10 @@ on:
   schedule:
     - cron: '30 21 * * 1'  # Runs every Monday at 2:30PST for stage environment
     - cron: '30 21 * * 2,5'  # Runs every Tuesday and Friday at 2:30PST for dev environment
+  # Manual trigger for testing workflow changes on a branch before merging to main.
+  # Always runs the cluster tests (skips the diff-based check, which only makes sense
+  # relative to a PR base).
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -64,7 +68,8 @@ jobs:
     if: |
       github.event_name == 'push' ||
       github.event_name == 'schedule' ||
-      github.event_name == 'pull_request_target'
+      github.event_name == 'pull_request_target' ||
+      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -77,25 +82,30 @@ jobs:
       - name: Determine if expensive cluster tests should run
         id: check
         run: |
-         git fetch --all
-         echo "CHECKING FILES FOR SKIP LOGIC..."
-         SKIP_TESTS="True"
-         FILES_TO_CHECK=(
-           "internal/provider/schemas/deployment.go"
-           "internal/provider/schemas/cluster.go"
-           "internal/provider/models/deployment.go"
-           "internal/provider/models/cluster.go"
-           "internal/provider/resources/resource_cluster.go"
-           "internal/provider/resources/resource_cluster_test.go"
-           "internal/provider/resources/resource_deployment.go"
-           "internal/provider/resources/common_cluster.go"
-         )
-         for file in "${FILES_TO_CHECK[@]}"; do
-           if git diff --name-only origin/${{ github.event.pull_request.base.ref || github.ref_name }} ${{ github.event.pull_request.head.sha || github.sha }} | grep -q "$file"; then
-             SKIP_TESTS="False"
-             break
-           fi
-         done
+         if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+           echo "Manual trigger: running cluster tests unconditionally."
+           SKIP_TESTS="False"
+         else
+           git fetch --all
+           echo "CHECKING FILES FOR SKIP LOGIC..."
+           SKIP_TESTS="True"
+           FILES_TO_CHECK=(
+             "internal/provider/schemas/deployment.go"
+             "internal/provider/schemas/cluster.go"
+             "internal/provider/models/deployment.go"
+             "internal/provider/models/cluster.go"
+             "internal/provider/resources/resource_cluster.go"
+             "internal/provider/resources/resource_cluster_test.go"
+             "internal/provider/resources/resource_deployment.go"
+             "internal/provider/resources/common_cluster.go"
+           )
+           for file in "${FILES_TO_CHECK[@]}"; do
+             if git diff --name-only origin/${{ github.event.pull_request.base.ref || github.ref_name }} ${{ github.event.pull_request.head.sha || github.sha }} | grep -q "$file"; then
+               SKIP_TESTS="False"
+               break
+             fi
+           done
+         fi
          echo "SKIP_CLUSTER_RESOURCE_TESTS=$SKIP_TESTS"
          echo "skip=$SKIP_TESTS" >> "$GITHUB_OUTPUT"
 
@@ -105,7 +115,8 @@ jobs:
     if: |
       github.event_name == 'push' ||
       github.event_name == 'schedule' ||
-      github.event_name == 'pull_request_target'
+      github.event_name == 'pull_request_target' ||
+      github.event_name == 'workflow_dispatch'
     timeout-minutes: 60 # cluster resource tests run separately in testacc-cluster
     strategy:
       fail-fast: true
