@@ -694,7 +694,10 @@ func TestAcc_ResourceClusterAzureEnableDrOnExistingCluster(t *testing.T) {
 			},
 			// Enable DR on the existing cluster via update
 			{
-				PreConfig: func() { waitForClusterStableState(t, azureClusterName) },
+				PreConfig: func() {
+					time.Sleep(2 * time.Minute)
+					waitForClusterStableState(t, azureClusterName)
+				},
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
 					cluster(clusterInput{
 						Name:             azureClusterName,
@@ -714,7 +717,14 @@ func TestAcc_ResourceClusterAzureEnableDrOnExistingCluster(t *testing.T) {
 			// (the cluster() helper omits is_dr_enabled entirely when false, so this
 			// step needs an explicit `is_dr_enabled = false` to exercise the disable path)
 			{
-				PreConfig: func() { waitForClusterStableState(t, azureClusterName) },
+				PreConfig: func() {
+					time.Sleep(2 * time.Minute)
+					// The enable-DR step above can leave a background reconciliation workflow
+					// running well past the point where the API reports the cluster CREATED.
+					// Wait for that workflow to reach an actual terminal state - success or
+					// failure - so a failure there is attributed here, not to the disable step.
+					waitForClusterTerminalState(t, azureClusterName)
+				},
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
 resource "astro_cluster" "%v" {
 	name = "%v"
@@ -728,6 +738,10 @@ resource "astro_cluster" "%v" {
 `, azureClusterName, azureClusterName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(azureResourceVar, "is_dr_enabled", "false"),
+					func(*terraform.State) error {
+						waitForClusterTerminalState(t, azureClusterName)
+						return nil
+					},
 				),
 			},
 		},
@@ -1261,6 +1275,54 @@ func waitForClusterStableState(t *testing.T, name string) {
 		time.Sleep(interval)
 	}
 	t.Fatalf("Timed out waiting for cluster %s to reach stable state", name)
+}
+
+// waitForClusterTerminalState polls until the cluster reaches a terminal status:
+// either CREATED (success) or one of the failure statuses (UPDATE_FAILED,
+// CREATE_FAILED, ACCESS_DENIED, FAILOVER_FAILED). Unlike waitForClusterStableState,
+// which only recognizes CREATED and otherwise keeps polling until it times out, this
+// fails the test immediately with the actual status when a failure state is reached,
+// so a background reconciliation failure is attributed to the step that caused it
+// rather than to whichever step happens to be running when it eventually surfaces.
+// Used only by TestAcc_ResourceClusterAzureEnableDrOnExistingCluster.
+func waitForClusterTerminalState(t *testing.T, name string) {
+	t.Helper()
+
+	client, err := utils.GetTestHostedPlatformClient()
+	assert.NoError(t, err)
+
+	organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
+	ctx := context.Background()
+
+	timeout := 60 * time.Minute
+	interval := 30 * time.Second
+	deadline := time.Now().Add(timeout)
+
+	for time.Now().Before(deadline) {
+		resp, err := client.ListClustersWithResponse(ctx, organizationId, &platform.ListClustersParams{
+			Names: &[]string{name},
+		})
+		if err != nil {
+			t.Logf("Error listing clusters: %v, retrying...", err)
+			time.Sleep(interval)
+			continue
+		}
+		if len(resp.JSON200.Clusters) == 1 {
+			status := resp.JSON200.Clusters[0].Status
+			switch status {
+			case platform.ClusterStatusCREATED:
+				t.Logf("Cluster %s is in terminal state: %s", name, status)
+				return
+			case platform.ClusterStatusUPDATEFAILED, platform.ClusterStatusCREATEFAILED,
+				platform.ClusterStatusACCESSDENIED, platform.ClusterStatusFAILOVERFAILED:
+				t.Fatalf("Cluster %s reached a terminal failure state: %s", name, status)
+			default:
+				t.Logf("Cluster %s status: %s, waiting for terminal state...", name, status)
+			}
+		}
+		time.Sleep(interval)
+	}
+	t.Fatalf("Timed out waiting for cluster %s to reach a terminal state", name)
 }
 
 func testAccCheckClusterExistence(t *testing.T, name string, isHosted, shouldExist bool) func(state *terraform.State) error {
