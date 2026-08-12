@@ -168,7 +168,7 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 			Computed:            true,
 		},
 		"is_dr_enabled": resourceSchema.BoolAttribute{
-			MarkdownDescription: "Whether Disaster Recovery is enabled on the cluster. Only supported for AWS clusters. Can only be enabled at cluster creation time. Can be set to `false` to disable DR on an existing cluster.",
+			MarkdownDescription: "Whether Disaster Recovery is enabled on the cluster. Supported for `AWS`, `GCP`, and `AZURE` clusters. For `AWS` and `GCP`, DR can only be enabled at cluster creation time; enabling DR on an existing `AWS` or `GCP` cluster requires the admin API. For `AZURE`, DR can be enabled or disabled on an existing cluster via this resource. Can be set to `false` to disable DR on an existing cluster for any provider.",
 			Optional:            true,
 			Computed:            true,
 		},
@@ -188,7 +188,7 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 			Computed:            true,
 		},
 		"enable_replication_time_control": resourceSchema.BoolAttribute{
-			MarkdownDescription: "Whether to enable S3 Replication Time Control for Disaster Recovery. Only valid when `is_dr_enabled` is true (AWS only).",
+			MarkdownDescription: "Whether to enable Replication Time Control for Disaster Recovery task log replication. Only valid when `is_dr_enabled` is true. For `AZURE` clusters: if left unset, this is automatically enabled when `region` and `dr_region` are on the same continent, and left disabled otherwise. Explicitly setting this to `true` when `region` and `dr_region` are on different continents will fail at plan time. You may always explicitly set this to `false`, regardless of the region pair.",
 			Optional:            true,
 			Computed:            true,
 		},
@@ -341,7 +341,7 @@ func ClusterDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 			Computed:            true,
 		},
 		"enable_replication_time_control": datasourceSchema.BoolAttribute{
-			MarkdownDescription: "Whether S3 Replication Time Control is enabled for Disaster Recovery (AWS only)",
+			MarkdownDescription: "Whether Replication Time Control is enabled for Disaster Recovery task log replication",
 			Computed:            true,
 		},
 		"is_failed_over": datasourceSchema.BoolAttribute{
@@ -636,15 +636,15 @@ func (m nullWhenDrDisabledBoolPlanModifier) MarkdownDescription(ctx context.Cont
 
 func (m nullWhenDrDisabledBoolPlanModifier) PlanModifyBool(ctx context.Context, req planmodifier.BoolRequest, resp *planmodifier.BoolResponse) {
 	// Check if is_dr_enabled is being set to false in the plan
-	var isDrEnabled types.Bool
-	diags := req.Plan.GetAttribute(ctx, path.Root("is_dr_enabled"), &isDrEnabled)
+	var isDrEnabledPlan types.Bool
+	diags := req.Plan.GetAttribute(ctx, path.Root("is_dr_enabled"), &isDrEnabledPlan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	// If DR is being disabled, plan this attribute as null
-	if !isDrEnabled.IsNull() && !isDrEnabled.IsUnknown() && !isDrEnabled.ValueBool() {
+	if !isDrEnabledPlan.IsNull() && !isDrEnabledPlan.IsUnknown() && !isDrEnabledPlan.ValueBool() {
 		resp.PlanValue = types.BoolNull()
 		return
 	}
@@ -657,5 +657,25 @@ func (m nullWhenDrDisabledBoolPlanModifier) PlanModifyBool(ctx context.Context, 
 	if req.State.Raw.IsNull() {
 		return
 	}
+
+	// If DR is being enabled on a cluster that previously had it disabled (e.g.
+	// enabling DR on an existing Azure cluster via update), the prior state's
+	// value is stale - it is null only because DR was off, not because that's
+	// what this attribute will actually be once DR is on (the API will return a
+	// real true/false). Reusing that stale null here would cause a "provider
+	// produced inconsistent result after apply" error once the API responds
+	// with a concrete value, so leave the plan unknown to be recomputed instead.
+	var isDrEnabledState types.Bool
+	diags = req.State.GetAttribute(ctx, path.Root("is_dr_enabled"), &isDrEnabledState)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	drNewlyEnabled := (isDrEnabledState.IsNull() || !isDrEnabledState.ValueBool()) &&
+		!isDrEnabledPlan.IsNull() && !isDrEnabledPlan.IsUnknown() && isDrEnabledPlan.ValueBool()
+	if drNewlyEnabled {
+		return
+	}
+
 	resp.PlanValue = req.StateValue
 }

@@ -37,6 +37,21 @@ resource "astro_cluster" "azure_example" {
   workspace_ids    = ["clv4wcf6f003u01m3zp7gsvzg"]
 }
 
+resource "astro_cluster" "azure_dr_example" {
+  type                = "DEDICATED"
+  name                = "my dr-enabled azure cluster"
+  region              = "westus2"
+  cloud_provider      = "AZURE"
+  vpc_subnet_range    = "172.20.0.0/20"
+  workspace_ids       = []
+  is_dr_enabled       = true
+  dr_region           = "eastus2"
+  dr_vpc_subnet_range = "172.21.0.0/20"
+  # enable_replication_time_control is unset here: the provider will send true only if
+  # region and dr_region are on the same continent (americas, in this example), and
+  # otherwise leaves it disabled. You may always explicitly set this to false.
+}
+
 resource "astro_cluster" "aws_dr_example" {
   type                = "DEDICATED"
   name                = "my dr-enabled cluster"
@@ -117,8 +132,8 @@ resource "astro_cluster" "imported_cluster" {
 - `dr_service_peering_range` (String) The disaster recovery service peering range (GCP Only).
 - `dr_service_subnet_range` (String) The disaster recovery service subnet range (GCP Only).
 - `dr_vpc_subnet_range` (String) The VPC subnet range for the Disaster Recovery region. Only valid when `is_dr_enabled` is true. Cannot be changed once set.
-- `enable_replication_time_control` (Boolean) Whether to enable S3 Replication Time Control for Disaster Recovery. Only valid when `is_dr_enabled` is true (AWS only).
-- `is_dr_enabled` (Boolean) Whether Disaster Recovery is enabled on the cluster. Only supported for AWS clusters. Can only be enabled at cluster creation time. Can be set to `false` to disable DR on an existing cluster.
+- `enable_replication_time_control` (Boolean) Whether to enable Replication Time Control for Disaster Recovery task log replication. Only valid when `is_dr_enabled` is true. For `AZURE` clusters: if left unset, this is automatically enabled when `region` and `dr_region` are on the same continent, and left disabled otherwise. Explicitly setting this to `true` when `region` and `dr_region` are on different continents will fail at plan time. You may always explicitly set this to `false`, regardless of the region pair.
+- `is_dr_enabled` (Boolean) Whether Disaster Recovery is enabled on the cluster. Supported for `AWS`, `GCP`, and `AZURE` clusters. For `AWS` and `GCP`, DR can only be enabled at cluster creation time; enabling DR on an existing `AWS` or `GCP` cluster requires the admin API. For `AZURE`, DR can be enabled or disabled on an existing cluster via this resource. Can be set to `false` to disable DR on an existing cluster for any provider.
 - `is_failed_over` (Boolean) Whether the cluster is currently failed over to the DR region. Set to `true` to trigger failover; set to `false` to fail back.
 - `pod_subnet_range` (String) Cluster pod subnet range - required for 'GCP' clusters. If changed, the cluster will be recreated.
 - `secondary_vpc_cidr` (String) Secondary CIDR for pod networking (AWS only, /16 to /20). Cannot be changed once set.
