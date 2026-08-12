@@ -123,14 +123,9 @@ func (d *usersListDataSource) Read(
 			)
 			return
 		}
-		_, diagnostic := clients.NormalizeAPIError(ctx, usersResp.HTTPResponse, usersResp.Body)
+		_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, usersResp.HTTPResponse, usersResp.Body, usersResp.JSON200, "read users")
 		if diagnostic != nil {
 			resp.Diagnostics.Append(diagnostic)
-			return
-		}
-		if usersResp.JSON200 == nil {
-			tflog.Error(ctx, "failed to list users", map[string]interface{}{"error": "nil response"})
-			resp.Diagnostics.AddError("Client Error", "Unable to read users, got nil response")
 			return
 		}
 

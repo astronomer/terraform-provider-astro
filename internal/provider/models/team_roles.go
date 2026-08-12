@@ -26,7 +26,14 @@ func (data *TeamRoles) ReadFromResponse(
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.TeamId = types.StringValue(teamId)
-	data.OrganizationRole = types.StringPointerValue((*string)(teamRoles.OrganizationRole))
+	// organization_role is Required, so a null here surfaces as an inconsistent-result error
+	if teamRoles.OrganizationRole == nil {
+		return diag.Diagnostics{diag.NewErrorDiagnostic(
+			"Client error",
+			"Unable to read team_roles, got no organization_role in response",
+		)}
+	}
+	data.OrganizationRole = types.StringValue(*teamRoles.OrganizationRole)
 	data.WorkspaceRoles, diags = utils.ObjectSet(ctx, teamRoles.WorkspaceRoles, schemas.WorkspaceRoleAttributeTypes(), WorkspaceRoleTypesObject)
 	if diags.HasError() {
 		return diags

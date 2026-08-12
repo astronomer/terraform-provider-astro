@@ -104,7 +104,7 @@ func (r *workspaceResource) Create(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, workspace.HTTPResponse, workspace.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, workspace.HTTPResponse, workspace.Body, workspace.JSON200, "create workspace")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return
@@ -150,7 +150,7 @@ func (r *workspaceResource) Read(
 		)
 		return
 	}
-	statusCode, diagnostic := clients.NormalizeAPIError(ctx, workspace.HTTPResponse, workspace.Body)
+	statusCode, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, workspace.HTTPResponse, workspace.Body, workspace.JSON200, "read workspace")
 	// If the resource no longer exists, it is recommended to ignore the errors
 	// and call RemoveResource to remove the resource from the state. The next Terraform plan will recreate the resource.
 	if statusCode == http.StatusNotFound {
@@ -208,7 +208,7 @@ func (r *workspaceResource) Update(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, workspace.HTTPResponse, workspace.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, workspace.HTTPResponse, workspace.Body, workspace.JSON200, "update workspace")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return

@@ -91,14 +91,9 @@ func (d *environmentObjectDataSource) Read(
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read environment object: %s", err))
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, environmentObject.HTTPResponse, environmentObject.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, environmentObject.HTTPResponse, environmentObject.Body, environmentObject.JSON200, "read environment object")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if environmentObject.JSON200 == nil {
-		tflog.Error(ctx, "failed to get environment object", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError("Client Error", "Unable to read environment object, got nil response")
 		return
 	}
 

@@ -101,15 +101,10 @@ func (d *clusterOptionsDataSource) Read(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, clusterOptionsResp.HTTPResponse, clusterOptionsResp.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, clusterOptionsResp.HTTPResponse, clusterOptionsResp.Body, clusterOptionsResp.JSON200, "read cluster options")
 
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if clusterOptionsResp.JSON200 == nil {
-		tflog.Error(ctx, "failed to list clusterOptions", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError("Client Error", "Unable to read clusterOptions, got nil response")
 		return
 	}
 	clusterOptions = append(clusterOptions, *clusterOptionsResp.JSON200...)

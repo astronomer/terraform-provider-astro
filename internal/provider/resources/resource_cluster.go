@@ -217,7 +217,7 @@ func (r *ClusterResource) Create(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, cluster.HTTPResponse, cluster.Body, cluster.JSON200, "create cluster")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return
@@ -279,7 +279,7 @@ func (r *ClusterResource) Read(
 		)
 		return
 	}
-	statusCode, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
+	statusCode, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, cluster.HTTPResponse, cluster.Body, cluster.JSON200, "read cluster")
 	// If the resource no longer exists, it is recommended to ignore the errors
 	// and call RemoveResource to remove the resource from the state. The next Terraform plan will recreate the resource.
 	if statusCode == http.StatusNotFound {
@@ -388,7 +388,7 @@ func (r *ClusterResource) Update(
 			tflog.Error(ctx, "failed to update cluster", map[string]interface{}{"error": apiErr})
 			return retry.NonRetryableError(fmt.Errorf("unable to update cluster, got error: %s", apiErr))
 		}
-		statusCode, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
+		statusCode, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, cluster.HTTPResponse, cluster.Body, cluster.JSON200, "update cluster")
 		if statusCode == http.StatusConflict {
 			// Workflow is already running, retry after a delay
 			tflog.Info(ctx, "cluster workflow in progress, retrying update", map[string]interface{}{"clusterId": data.Id.ValueString()})

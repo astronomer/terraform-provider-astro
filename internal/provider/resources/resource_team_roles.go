@@ -157,7 +157,7 @@ func (r *teamRolesResource) MutateRoles(
 		)
 		return diags
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, teamRoles.HTTPResponse, teamRoles.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, teamRoles.HTTPResponse, teamRoles.Body, teamRoles.JSON200, "update team roles")
 	if diagnostic != nil {
 		diags.Append(diagnostic)
 		return diags
@@ -233,7 +233,7 @@ func (r *teamRolesResource) Read(
 		)
 		return
 	}
-	statusCode, diagnostic := clients.NormalizeAPIError(ctx, teamRoles.HTTPResponse, teamRoles.Body)
+	statusCode, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, teamRoles.HTTPResponse, teamRoles.Body, teamRoles.JSON200, "read team roles")
 	// If the resource no longer exists, it is recommended to ignore the errors
 	// and call RemoveResource to remove the resource from the state. The next Terraform plan will recreate the resource.
 	if statusCode == http.StatusNotFound {
@@ -328,7 +328,7 @@ func (r *teamRolesResource) Delete(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, teamRoles.HTTPResponse, teamRoles.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, teamRoles.HTTPResponse, teamRoles.Body, teamRoles.JSON200, "delete team roles")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return

@@ -347,14 +347,24 @@ func (r *alertsResource) bulkCreate(ctx context.Context, reqs []labs.CreateAlert
 			diags.AddError("Client Error", fmt.Sprintf("Unable to bulk create alerts: %s", err))
 			return createdIds, diags
 		}
-		if _, d := clients.NormalizeAPIError(ctx, alertResp.HTTPResponse, alertResp.Body); d != nil {
+		// Callers zip these IDs against request keys by index, so skipping a chunk or taking a
+		// short one would map every later key to the wrong alert. Stop instead, which leaves
+		// createdIds a valid prefix of the requests.
+		if _, d := clients.NormalizeAPIResponseWithBody(ctx, alertResp.HTTPResponse, alertResp.Body, alertResp.JSON200, "bulk create alerts"); d != nil {
 			diags.Append(d)
 			return createdIds, diags
 		}
-		if alertResp.JSON200 != nil {
-			for _, a := range alertResp.JSON200.Alerts {
-				createdIds = append(createdIds, a.Id)
-			}
+		if len(alertResp.JSON200.Alerts) != len(chunk) {
+			tflog.Error(ctx, "bulk create alerts returned an unexpected number of alerts", map[string]interface{}{
+				"requested": len(chunk), "returned": len(alertResp.JSON200.Alerts),
+			})
+			diags.AddError("Client Error", fmt.Sprintf(
+				"Unable to bulk create alerts, requested %d but the API returned %d",
+				len(chunk), len(alertResp.JSON200.Alerts)))
+			return createdIds, diags
+		}
+		for _, a := range alertResp.JSON200.Alerts {
+			createdIds = append(createdIds, a.Id)
 		}
 	}
 	return createdIds, diags

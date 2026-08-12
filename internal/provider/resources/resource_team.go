@@ -199,17 +199,9 @@ func (r *TeamResource) Create(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, team.HTTPResponse, team.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, team.HTTPResponse, team.Body, team.JSON200, "create team")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if team.JSON200 == nil {
-		tflog.Error(ctx, "failed to create Team", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			"Unable to create Team, got nil response",
-		)
 		return
 	}
 
@@ -260,6 +252,11 @@ func (r *TeamResource) Create(
 		)
 		return
 	}
+	_, diagnostic = clients.NormalizeAPIResponseWithBody(ctx, teamResp.HTTPResponse, teamResp.Body, teamResp.JSON200, "create and get team")
+	if diagnostic != nil {
+		resp.Diagnostics.Append(diagnostic)
+		return
+	}
 
 	diags = data.ReadFromResponse(ctx, teamResp.JSON200, memberIdsPtr)
 	if diags.HasError() {
@@ -302,7 +299,7 @@ func (r *TeamResource) Read(
 		)
 		return
 	}
-	statusCode, diagnostic := clients.NormalizeAPIError(ctx, team.HTTPResponse, team.Body)
+	statusCode, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, team.HTTPResponse, team.Body, team.JSON200, "read team")
 	// If the resource no longer exists, it is recommended to ignore the errors
 	// and call RemoveResource to remove the resource from the state. The next Terraform plan will recreate the resource.
 	if statusCode == http.StatusNotFound {
@@ -433,6 +430,11 @@ func (r *TeamResource) Update(
 		)
 		return
 	}
+	_, diagnostic = clients.NormalizeAPIResponseWithBody(ctx, teamResp.HTTPResponse, teamResp.Body, teamResp.JSON200, "update and get team")
+	if diagnostic != nil {
+		resp.Diagnostics.Append(diagnostic)
+		return
+	}
 
 	diags = data.ReadFromResponse(ctx, teamResp.JSON200, newMemberIdsPtr)
 	if diags.HasError() {
@@ -504,17 +506,9 @@ func (r *TeamResource) CheckOrganizationIsScim(ctx context.Context) diag.Diagnos
 			),
 		}
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, org.HTTPResponse, org.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, org.HTTPResponse, org.Body, org.JSON200, "read organization")
 	if diagnostic != nil {
 		return diag.Diagnostics{diagnostic}
-	}
-	if org.JSON200 == nil {
-		tflog.Error(ctx, "failed to get organization", map[string]interface{}{"error": "nil response"})
-		return diag.Diagnostics{
-			diag.NewErrorDiagnostic(
-				"Client Error",
-				fmt.Sprintf("Unable to read organization %v, got nil response", r.OrganizationId)),
-		}
 	}
 	if org.JSON200.IsScimEnabled {
 		return diag.Diagnostics{
@@ -544,7 +538,7 @@ func (r *TeamResource) UpdateTeamMembers(ctx context.Context, data models.TeamRe
 			),
 		}
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, teamMembersResp.HTTPResponse, teamMembersResp.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, teamMembersResp.HTTPResponse, teamMembersResp.Body, teamMembersResp.JSON200, "list team members")
 	if diagnostic != nil {
 		return nil, diag.Diagnostics{diagnostic}
 	}

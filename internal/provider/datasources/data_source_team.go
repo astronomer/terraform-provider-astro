@@ -86,14 +86,9 @@ func (d *teamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, team.HTTPResponse, team.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, team.HTTPResponse, team.Body, team.JSON200, "read team")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if team.JSON200 == nil {
-		tflog.Error(ctx, "failed to get team", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError("Client Error", "Unable to read team, got nil response")
 		return
 	}
 
@@ -106,14 +101,9 @@ func (d *teamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		)
 		return
 	}
-	_, diagnostic = clients.NormalizeAPIError(ctx, teamMembers.HTTPResponse, teamMembers.Body)
+	_, diagnostic = clients.NormalizeAPIResponseWithBody(ctx, teamMembers.HTTPResponse, teamMembers.Body, teamMembers.JSON200, "read team members")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if teamMembers.JSON200 == nil {
-		tflog.Error(ctx, "failed to get team members", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError("Client Error", "Unable to read team members, got nil response")
 		return
 	}
 

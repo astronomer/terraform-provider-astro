@@ -94,14 +94,9 @@ func (d *notificationChannelDataSource) Read(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, notificationChannel.HTTPResponse, notificationChannel.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, notificationChannel.HTTPResponse, notificationChannel.Body, notificationChannel.JSON200, "read notification channel")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if notificationChannel.JSON200 == nil {
-		tflog.Error(ctx, "failed to get notificationChannel", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError("Client Error", "Unable to read notificationChannel, got nil response")
 		return
 	}
 

@@ -86,14 +86,9 @@ func (d *alertDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, alert.HTTPResponse, alert.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, alert.HTTPResponse, alert.Body, alert.JSON200, "read alert")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if alert.JSON200 == nil {
-		tflog.Error(ctx, "failed to get alert", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError("Client Error", "Unable to read alert, got nil response")
 		return
 	}
 

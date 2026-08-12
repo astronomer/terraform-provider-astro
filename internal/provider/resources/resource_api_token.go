@@ -177,17 +177,9 @@ func (r *ApiTokenResource) Create(
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, apiToken.HTTPResponse, apiToken.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, apiToken.HTTPResponse, apiToken.Body, apiToken.JSON200, "create API token")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if apiToken.JSON200 == nil {
-		tflog.Error(ctx, "failed to create API token", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			"Unable to create API token, got nil response",
-		)
 		return
 	}
 	tokenId := apiToken.JSON200.Id
@@ -232,17 +224,9 @@ func (r *ApiTokenResource) Create(
 		)
 		return
 	}
-	_, diagnostic = clients.NormalizeAPIError(ctx, apiTokenResp.HTTPResponse, apiTokenResp.Body)
+	_, diagnostic = clients.NormalizeAPIResponseWithBody(ctx, apiTokenResp.HTTPResponse, apiTokenResp.Body, apiTokenResp.JSON200, "create and get API token")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if apiTokenResp.JSON200 == nil {
-		tflog.Error(ctx, "failed to get API token", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			"Unable to get API token after creation, got nil response",
-		)
 		return
 	}
 	if apiToken.JSON200.Token == nil {
@@ -295,7 +279,7 @@ func (r *ApiTokenResource) Read(
 		)
 		return
 	}
-	statusCode, diagnostic := clients.NormalizeAPIError(ctx, apiToken.HTTPResponse, apiToken.Body)
+	statusCode, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, apiToken.HTTPResponse, apiToken.Body, apiToken.JSON200, "read API token")
 	// If the resource no longer exists, it is recommended to ignore the errors
 	// and call RemoveResource to remove the resource from the state. The next Terraform plan will recreate the resource.
 	if statusCode == http.StatusNotFound {
@@ -459,6 +443,11 @@ func (r *ApiTokenResource) Update(
 			"Client Error",
 			fmt.Sprintf("Unable to update API token and get API token, got error: %s", err),
 		)
+		return
+	}
+	_, diagnostic = clients.NormalizeAPIResponseWithBody(ctx, apiTokenResp.HTTPResponse, apiTokenResp.Body, apiTokenResp.JSON200, "update and get API token")
+	if diagnostic != nil {
+		resp.Diagnostics.Append(diagnostic)
 		return
 	}
 
@@ -689,7 +678,7 @@ func (r *ApiTokenResource) HasValidWorkspaces(ctx context.Context, workspaceRole
 			),
 		}
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, workspaces.HTTPResponse, workspaces.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, workspaces.HTTPResponse, workspaces.Body, workspaces.JSON200, "list workspaces")
 	if diagnostic != nil {
 		return diag.Diagnostics{diagnostic}
 	}
@@ -741,7 +730,7 @@ func (r *ApiTokenResource) HasValidDeployments(ctx context.Context, deploymentRo
 			),
 		}
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, deployments.HTTPResponse, deployments.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, deployments.HTTPResponse, deployments.Body, deployments.JSON200, "list deployments")
 	if diagnostic != nil {
 		return diag.Diagnostics{diagnostic}
 	}

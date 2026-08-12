@@ -113,14 +113,9 @@ func (d *teamsDataSource) Read(
 			)
 			return
 		}
-		_, diagnostic := clients.NormalizeAPIError(ctx, teamsResp.HTTPResponse, teamsResp.Body)
+		_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, teamsResp.HTTPResponse, teamsResp.Body, teamsResp.JSON200, "read teams")
 		if diagnostic != nil {
 			resp.Diagnostics.Append(diagnostic)
-			return
-		}
-		if teamsResp.JSON200 == nil {
-			tflog.Error(ctx, "failed to list teams", map[string]interface{}{"error": "nil response"})
-			resp.Diagnostics.AddError("Client Error", "Unable to read teams, got nil response")
 			return
 		}
 
@@ -145,14 +140,9 @@ func (d *teamsDataSource) Read(
 			)
 			return
 		}
-		_, diagnostic := clients.NormalizeAPIError(ctx, teamMembers.HTTPResponse, teamMembers.Body)
+		_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, teamMembers.HTTPResponse, teamMembers.Body, teamMembers.JSON200, "read team members")
 		if diagnostic != nil {
 			resp.Diagnostics.Append(diagnostic)
-			return
-		}
-		if teamMembers.JSON200 == nil {
-			tflog.Error(ctx, "failed to get team members", map[string]interface{}{"error": "nil response", "team_id": team.Id})
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read team members for team %s, got nil response", team.Id))
 			return
 		}
 		teamsWithMembers[team.Id] = teamMembers.JSON200.TeamMembers

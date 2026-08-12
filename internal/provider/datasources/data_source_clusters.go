@@ -118,14 +118,9 @@ func (d *clustersDataSource) Read(
 			)
 			return
 		}
-		_, diagnostic := clients.NormalizeAPIError(ctx, clustersResp.HTTPResponse, clustersResp.Body)
+		_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, clustersResp.HTTPResponse, clustersResp.Body, clustersResp.JSON200, "read clusters")
 		if diagnostic != nil {
 			resp.Diagnostics.Append(diagnostic)
-			return
-		}
-		if clustersResp.JSON200 == nil {
-			tflog.Error(ctx, "failed to list clusters", map[string]interface{}{"error": "nil response"})
-			resp.Diagnostics.AddError("Client Error", "Unable to read clusters, got nil response")
 			return
 		}
 

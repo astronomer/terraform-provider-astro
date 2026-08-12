@@ -86,14 +86,9 @@ func (d *customRoleDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		)
 		return
 	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, customRole.HTTPResponse, customRole.Body)
+	_, diagnostic := clients.NormalizeAPIResponseWithBody(ctx, customRole.HTTPResponse, customRole.Body, customRole.JSON200, "read custom role")
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
-		return
-	}
-	if customRole.JSON200 == nil {
-		tflog.Error(ctx, "failed to get custom role", map[string]interface{}{"error": "nil response"})
-		resp.Diagnostics.AddError("Client Error", "Unable to read custom role, got nil response")
 		return
 	}
 
