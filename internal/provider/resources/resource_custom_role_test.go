@@ -199,7 +199,7 @@ func TestAcc_ResourceCustomRoleDirectAccessTokenConflict(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
-		CheckDestroy: testAccCheckCustomRoleExistence(t, customRoleName, false),
+		CheckDestroy:             testAccCheckCustomRoleExistence(t, customRoleName, false),
 		Steps: []resource.TestStep{
 			// Create the custom role, then attach a Direct Access Token to it outside of Terraform.
 			{
