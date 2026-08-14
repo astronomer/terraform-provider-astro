@@ -231,28 +231,13 @@ func testAccCreateDirectAccessTokenForRole(t *testing.T, organizationId, deploym
 		assert.NoError(t, err)
 
 		ctx := context.Background()
-		rolesResp, err := client.ListRolesWithResponse(ctx, organizationId, &iam.ListRolesParams{})
-		if err != nil {
-			return fmt.Errorf("failed to list roles: %w", err)
-		}
-		var customRoleId string
-		if rolesResp.JSON200 != nil {
-			for _, role := range rolesResp.JSON200.Roles {
-				if role.Name == customRoleName {
-					customRoleId = role.Id
-					break
-				}
-			}
-		}
-		if customRoleId == "" {
-			return fmt.Errorf("custom role %s should exist but list roles did not find it", customRoleName)
-		}
-
+		// CreateApiTokenRequest.Role takes the role's name, not its ID (token role
+		// assignments are keyed by role name, matching what ApiTokenRole.Role returns).
 		createResp, err := client.CreateApiTokenWithResponse(ctx, organizationId, iam.CreateApiTokenRequest{
 			Name:     fmt.Sprintf("%s-dat", customRoleName),
 			Type:     iam.CreateApiTokenRequestTypeDEPLOYMENT,
 			EntityId: &deploymentId,
-			Role:     customRoleId,
+			Role:     customRoleName,
 			Kind:     lo.ToPtr(iam.CreateApiTokenRequestKind(iam.ApiTokenKindDIRECTACCESS)),
 		})
 		if err != nil {
