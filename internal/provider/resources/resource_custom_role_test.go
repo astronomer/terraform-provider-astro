@@ -199,10 +199,7 @@ func TestAcc_ResourceCustomRoleDirectAccessTokenConflict(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckCustomRoleExistence(t, customRoleName, false),
-			testAccDeleteDirectAccessTokenIfExists(t, &directAccessTokenId),
-		),
+		CheckDestroy: testAccCheckCustomRoleExistence(t, customRoleName, false),
 		Steps: []resource.TestStep{
 			// Create the custom role, then attach a Direct Access Token to it outside of Terraform.
 			{
@@ -216,6 +213,13 @@ func TestAcc_ResourceCustomRoleDirectAccessTokenConflict(t *testing.T) {
 			{
 				Config:      astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + customRole("test", customRoleName, utils.TestResourceDescription, "DEPLOYMENT", []string{"deployment.get", "deployment.update"}),
 				ExpectError: regexp.MustCompile("Custom role has Direct Access Tokens attached"),
+			},
+			// No-op step (state is unchanged from step 1 since step 2 failed at plan) that
+			// deletes the out-of-band token before Terraform's end-of-test destroy runs,
+			// since the API also refuses to delete a role that a token still references.
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + customRole("test", customRoleName, utils.TestResourceDescription, "DEPLOYMENT", []string{"deployment.get"}),
+				Check:  testAccDeleteDirectAccessTokenIfExists(t, &directAccessTokenId),
 			},
 		},
 	})
