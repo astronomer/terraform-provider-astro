@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
@@ -21,6 +22,10 @@ import (
 var _ resource.Resource = &customRoleResource{}
 var _ resource.ResourceWithImportState = &customRoleResource{}
 var _ resource.ResourceWithConfigure = &customRoleResource{}
+var _ resource.ResourceWithModifyPlan = &customRoleResource{}
+
+// maxListedTokensInDiagnostic caps how many tokens are named in the ModifyPlan error.
+const maxListedTokensInDiagnostic = 10
 
 func NewCustomRoleResource() resource.Resource {
 	return &customRoleResource{}
@@ -70,6 +75,139 @@ func (r *customRoleResource) Configure(
 
 	r.IamClient = apiClients.IamClient
 	r.OrganizationId = apiClients.OrganizationId
+}
+
+// ModifyPlan surfaces role/Direct Access Token permission conflicts at plan time instead of
+// a confusing failure at apply.
+func (r *customRoleResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() {
+		return
+	}
+
+	var state, plan models.CustomRoleResource
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if state.Permissions.Equal(plan.Permissions) {
+		return
+	}
+
+	if r.IamClient == nil {
+		return
+	}
+
+	roleId := state.Id.ValueString()
+	roleName := state.Name.ValueString()
+	// Token role assignments reference the role by name, not by ID.
+	conflictingTokens, err := findDirectAccessTokensUsingRole(ctx, r.IamClient, r.OrganizationId, roleName)
+	if err != nil {
+		tflog.Warn(ctx, "failed to check for Direct Access Tokens attached to custom role", map[string]interface{}{"error": err})
+		return
+	}
+	if len(conflictingTokens) == 0 {
+		return
+	}
+
+	resp.Diagnostics.AddAttributeError(
+		path.Root("permissions"),
+		"Custom role has Direct Access Tokens attached",
+		fmt.Sprintf(
+			"Custom role %q (id: %s) is referenced by %d Direct Access Token(s): %s. "+
+				"Direct Access Tokens capture a role's permissions at creation time, so the API rejects permission "+
+				"changes to a role while any Direct Access Token references it, and this apply would fail. "+
+				"Delete and recreate the affected token(s) (outside of Terraform, e.g. with `astro deployment token`) "+
+				"so they pick up the new permissions, then re-apply this change.",
+			roleName, roleId, len(conflictingTokens), formatTokenListForDiagnostic(conflictingTokens),
+		),
+	)
+}
+
+// findDirectAccessTokensUsingRole returns the org's Direct Access Tokens assigned roleName.
+// The list endpoint can't filter by role and omits `roles`, so each candidate is re-fetched.
+func findDirectAccessTokensUsingRole(
+	ctx context.Context,
+	client *iam.ClientWithResponses,
+	organizationId string,
+	roleName string,
+) ([]iam.ApiToken, error) {
+	var candidateIds []string
+
+	params := &iam.ListApiTokensParams{
+		Kind:  lo.ToPtr(iam.DIRECTACCESS),
+		Limit: lo.ToPtr(1000),
+	}
+	offset := 0
+	for {
+		params.Offset = &offset
+		tokensResp, err := client.ListApiTokensWithResponse(ctx, organizationId, params)
+		if err != nil {
+			return nil, err
+		}
+		if tokensResp.JSON200 == nil {
+			return nil, fmt.Errorf("unable to list Direct Access Tokens, got status %v", tokensResp.StatusCode())
+		}
+
+		for _, token := range tokensResp.JSON200.Tokens {
+			candidateIds = append(candidateIds, token.Id)
+		}
+
+		if tokensResp.JSON200.TotalCount <= offset {
+			break
+		}
+		offset += 1000
+	}
+
+	var matches []iam.ApiToken
+	for _, tokenId := range candidateIds {
+		tokenResp, err := client.GetApiTokenWithResponse(ctx, organizationId, tokenId)
+		if err != nil {
+			return nil, err
+		}
+		if tokenResp.JSON200 == nil {
+			return nil, fmt.Errorf("unable to get Direct Access Token %s, got status %v", tokenId, tokenResp.StatusCode())
+		}
+
+		token := tokenResp.JSON200
+		if token.Roles == nil {
+			continue
+		}
+		for _, tokenRole := range *token.Roles {
+			if tokenRole.Role == roleName {
+				matches = append(matches, *token)
+				break
+			}
+		}
+	}
+
+	return matches, nil
+}
+
+// formatTokenListForDiagnostic renders a length-capped, human-readable list of tokens.
+func formatTokenListForDiagnostic(tokens []iam.ApiToken) string {
+	shown := tokens
+	truncated := 0
+	if len(shown) > maxListedTokensInDiagnostic {
+		shown = tokens[:maxListedTokensInDiagnostic]
+		truncated = len(tokens) - maxListedTokensInDiagnostic
+	}
+
+	names := make([]string, 0, len(shown))
+	for _, token := range shown {
+		names = append(names, fmt.Sprintf("%s (id: %s)", token.Name, token.Id))
+	}
+
+	list := strings.Join(names, ", ")
+	if truncated > 0 {
+		list = fmt.Sprintf("%s, and %d more", list, truncated)
+	}
+	return list
 }
 
 func (r *customRoleResource) Create(

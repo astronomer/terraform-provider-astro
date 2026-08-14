@@ -37,6 +37,7 @@ output "api_token" {
 - `description` (String) API Token description
 - `end_at` (String) time when the API token will expire in UTC
 - `expiry_period_in_days` (Number) API Token expiry period in days
+- `kind` (String) API Token kind (STANDARD or DIRECT_ACCESS)
 - `last_used_at` (String) API Token last used timestamp
 - `name` (String) API Token name
 - `roles` (Attributes Set) The roles assigned to the API Token (see [below for nested schema](#nestedatt--roles))
