@@ -184,24 +184,24 @@ func TestAcc_CustomRoleRemovedOutsideOfTerraform(t *testing.T) {
 	})
 }
 
-// TestAcc_ResourceCustomRoleDirectAccessTokenConflict verifies that changing the permissions
-// of a custom role that is referenced by a Direct Access Token fails during `terraform plan`
-// (via ModifyPlan) rather than surfacing only as a confusing apply-time API error. Direct
-// Access Tokens are created outside of Terraform (the astro_api_token resource cannot create
-// them), so the conflicting token is created directly via the IAM client.
+// TestAcc_ResourceCustomRoleDirectAccessTokenConflict verifies that changing a custom role's
+// permissions while a Direct Access Token references it fails at plan time, not apply time.
 func TestAcc_ResourceCustomRoleDirectAccessTokenConflict(t *testing.T) {
 	customRoleName := utils.GenerateTestResourceName(10)
 	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
 	organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
 
 	var directAccessTokenId string
+	// Safety net in case the guard regresses and skips the normal cleanup step below.
+	t.Cleanup(func() {
+		testAccForceCleanupDirectAccessTokenAndRole(t, organizationId, &directAccessTokenId, customRoleName)
+	})
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
 		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
 		CheckDestroy:             testAccCheckCustomRoleExistence(t, customRoleName, false),
 		Steps: []resource.TestStep{
-			// Create the custom role, then attach a Direct Access Token to it outside of Terraform.
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + customRole("test", customRoleName, utils.TestResourceDescription, "DEPLOYMENT", []string{"deployment.get"}),
 				Check: resource.ComposeTestCheckFunc(
@@ -209,14 +209,11 @@ func TestAcc_ResourceCustomRoleDirectAccessTokenConflict(t *testing.T) {
 					testAccCreateDirectAccessTokenForRole(t, organizationId, deploymentId, customRoleName, &directAccessTokenId),
 				),
 			},
-			// Adding a permission to the role should now fail at plan time, not apply time.
 			{
 				Config:      astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + customRole("test", customRoleName, utils.TestResourceDescription, "DEPLOYMENT", []string{"deployment.get", "deployment.update"}),
 				ExpectError: regexp.MustCompile("Custom role has Direct Access Tokens attached"),
 			},
-			// No-op step (state is unchanged from step 1 since step 2 failed at plan) that
-			// deletes the out-of-band token before Terraform's end-of-test destroy runs,
-			// since the API also refuses to delete a role that a token still references.
+			// No-op step: deletes the out-of-band token so the role can be destroyed cleanly.
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + customRole("test", customRoleName, utils.TestResourceDescription, "DEPLOYMENT", []string{"deployment.get"}),
 				Check:  testAccDeleteDirectAccessTokenIfExists(t, &directAccessTokenId),
@@ -225,9 +222,8 @@ func TestAcc_ResourceCustomRoleDirectAccessTokenConflict(t *testing.T) {
 	})
 }
 
-// testAccCreateDirectAccessTokenForRole creates a Direct Access Token scoped to deploymentId
-// and assigned to the named custom role, bypassing Terraform (mirroring how a customer would
-// create one via `astro deployment token create --direct-access` or the UI).
+// testAccCreateDirectAccessTokenForRole creates a Direct Access Token outside of Terraform,
+// scoped to deploymentId and assigned to customRoleName.
 func testAccCreateDirectAccessTokenForRole(t *testing.T, organizationId, deploymentId, customRoleName string, tokenId *string) func(state *terraform.State) error {
 	t.Helper()
 	return func(state *terraform.State) error {
@@ -235,8 +231,7 @@ func testAccCreateDirectAccessTokenForRole(t *testing.T, organizationId, deploym
 		assert.NoError(t, err)
 
 		ctx := context.Background()
-		// CreateApiTokenRequest.Role takes the role's name, not its ID (token role
-		// assignments are keyed by role name, matching what ApiTokenRole.Role returns).
+		// Role takes the role's name, not its ID.
 		createResp, err := client.CreateApiTokenWithResponse(ctx, organizationId, iam.CreateApiTokenRequest{
 			Name:     fmt.Sprintf("%s-dat", customRoleName),
 			Type:     iam.CreateApiTokenRequestTypeDEPLOYMENT,
@@ -253,6 +248,31 @@ func testAccCreateDirectAccessTokenForRole(t *testing.T, organizationId, deploym
 		}
 		*tokenId = createResp.JSON200.Id
 		return nil
+	}
+}
+
+// testAccForceCleanupDirectAccessTokenAndRole best-effort deletes the token and role directly.
+func testAccForceCleanupDirectAccessTokenAndRole(t *testing.T, organizationId string, tokenId *string, roleName string) {
+	t.Helper()
+	client, err := utils.GetTestHostedIamClient()
+	if err != nil {
+		return
+	}
+
+	ctx := context.Background()
+	if tokenId != nil && *tokenId != "" {
+		_, _ = client.DeleteApiTokenWithResponse(ctx, organizationId, *tokenId)
+	}
+
+	rolesResp, err := client.ListRolesWithResponse(ctx, organizationId, &iam.ListRolesParams{})
+	if err != nil || rolesResp.JSON200 == nil {
+		return
+	}
+	for _, role := range rolesResp.JSON200.Roles {
+		if role.Name == roleName {
+			_, _ = client.DeleteCustomRoleWithResponse(ctx, organizationId, role.Id)
+			return
+		}
 	}
 }
 

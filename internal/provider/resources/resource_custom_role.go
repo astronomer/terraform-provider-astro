@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
@@ -16,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/samber/lo"
+	"golang.org/x/sync/errgroup"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -24,8 +27,12 @@ var _ resource.ResourceWithImportState = &customRoleResource{}
 var _ resource.ResourceWithConfigure = &customRoleResource{}
 var _ resource.ResourceWithModifyPlan = &customRoleResource{}
 
-// maxListedTokensInDiagnostic caps how many tokens are named in the ModifyPlan error.
-const maxListedTokensInDiagnostic = 10
+const (
+	maxListedTokensInDiagnostic        = 10
+	directAccessTokenLookupTimeout     = 10 * time.Second
+	directAccessTokenListPageSize      = 1000
+	directAccessTokenLookupConcurrency = 8
+)
 
 func NewCustomRoleResource() resource.Resource {
 	return &customRoleResource{}
@@ -77,8 +84,7 @@ func (r *customRoleResource) Configure(
 	r.OrganizationId = apiClients.OrganizationId
 }
 
-// ModifyPlan surfaces role/Direct Access Token permission conflicts at plan time instead of
-// a confusing failure at apply.
+// ModifyPlan catches role/Direct Access Token permission conflicts at plan time.
 func (r *customRoleResource) ModifyPlan(
 	ctx context.Context,
 	req resource.ModifyPlanRequest,
@@ -105,10 +111,21 @@ func (r *customRoleResource) ModifyPlan(
 
 	roleId := state.Id.ValueString()
 	roleName := state.Name.ValueString()
-	// Token role assignments reference the role by name, not by ID.
-	conflictingTokens, err := findDirectAccessTokensUsingRole(ctx, r.IamClient, r.OrganizationId, roleName)
+
+	lookupCtx, cancel := context.WithTimeout(ctx, directAccessTokenLookupTimeout)
+	defer cancel()
+
+	conflictingTokens, err := findDirectAccessTokensUsingRole(lookupCtx, r.IamClient, r.OrganizationId, roleName)
 	if err != nil {
 		tflog.Warn(ctx, "failed to check for Direct Access Tokens attached to custom role", map[string]interface{}{"error": err})
+		resp.Diagnostics.AddWarning(
+			"Unable to verify Direct Access Token compatibility",
+			fmt.Sprintf(
+				"Could not check whether custom role %q is referenced by any Direct Access Tokens before applying this change: %s. "+
+					"If it is, this apply will fail with an error from the API instead of being caught here.",
+				roleName, err,
+			),
+		)
 		return
 	}
 	if len(conflictingTokens) == 0 {
@@ -129,19 +146,33 @@ func (r *customRoleResource) ModifyPlan(
 	)
 }
 
-// findDirectAccessTokensUsingRole returns the org's Direct Access Tokens assigned roleName.
-// The list endpoint can't filter by role and omits `roles`, so each candidate is re-fetched.
 func findDirectAccessTokensUsingRole(
 	ctx context.Context,
 	client *iam.ClientWithResponses,
 	organizationId string,
 	roleName string,
 ) ([]iam.ApiToken, error) {
+	return findDirectAccessTokensUsingRoleWithLimits(
+		ctx, client, organizationId, roleName,
+		directAccessTokenListPageSize, directAccessTokenLookupConcurrency,
+	)
+}
+
+// The list endpoint can't filter by role and omits `roles`, so tokens are listed, then
+// re-fetched individually (up to concurrency at a time) to check role assignments.
+func findDirectAccessTokensUsingRoleWithLimits(
+	ctx context.Context,
+	client *iam.ClientWithResponses,
+	organizationId string,
+	roleName string,
+	pageSize int,
+	concurrency int,
+) ([]iam.ApiToken, error) {
 	var candidateIds []string
 
 	params := &iam.ListApiTokensParams{
 		Kind:  lo.ToPtr(iam.DIRECTACCESS),
-		Limit: lo.ToPtr(1000),
+		Limit: lo.ToPtr(pageSize),
 	}
 	offset := 0
 	for {
@@ -161,29 +192,42 @@ func findDirectAccessTokensUsingRole(
 		if tokensResp.JSON200.TotalCount <= offset {
 			break
 		}
-		offset += 1000
+		offset += pageSize
 	}
 
-	var matches []iam.ApiToken
+	var (
+		mu      sync.Mutex
+		matches []iam.ApiToken
+	)
+	g, gctx := errgroup.WithContext(ctx)
+	g.SetLimit(concurrency)
 	for _, tokenId := range candidateIds {
-		tokenResp, err := client.GetApiTokenWithResponse(ctx, organizationId, tokenId)
-		if err != nil {
-			return nil, err
-		}
-		if tokenResp.JSON200 == nil {
-			return nil, fmt.Errorf("unable to get Direct Access Token %s, got status %v", tokenId, tokenResp.StatusCode())
-		}
-
-		token := tokenResp.JSON200
-		if token.Roles == nil {
-			continue
-		}
-		for _, tokenRole := range *token.Roles {
-			if tokenRole.Role == roleName {
-				matches = append(matches, *token)
-				break
+		g.Go(func() error {
+			tokenResp, err := client.GetApiTokenWithResponse(gctx, organizationId, tokenId)
+			if err != nil {
+				return err
 			}
-		}
+			if tokenResp.JSON200 == nil {
+				return fmt.Errorf("unable to get Direct Access Token %s, got status %v", tokenId, tokenResp.StatusCode())
+			}
+
+			token := tokenResp.JSON200
+			if token.Roles == nil {
+				return nil
+			}
+			for _, tokenRole := range *token.Roles {
+				if tokenRole.Role == roleName {
+					mu.Lock()
+					matches = append(matches, *token)
+					mu.Unlock()
+					break
+				}
+			}
+			return nil
+		})
+	}
+	if err := g.Wait(); err != nil {
+		return nil, err
 	}
 
 	return matches, nil
