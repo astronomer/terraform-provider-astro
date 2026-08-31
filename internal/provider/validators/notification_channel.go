@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -32,9 +31,13 @@ func (v notificationChannelDefinitionValidator) ValidateObject(ctx context.Conte
 		return
 	}
 
-	// Get the channel type from the parent resource
+	// Get the channel type from the sibling "type" attribute. Resolve it relative to this
+	// definition's own path (parent + "type") rather than the resource root, so the validator works
+	// both for the singular astro_notification_channel resource (type at the root) and for each
+	// element of the astro_notification_channels map (type nested under the element).
+	typePath := req.Path.ParentPath().AtName("type")
 	var channelType types.String
-	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("type"), &channelType)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, typePath, &channelType)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
