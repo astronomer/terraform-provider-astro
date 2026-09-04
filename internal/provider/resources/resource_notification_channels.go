@@ -247,19 +247,35 @@ func (r *notificationChannelsResource) Update(ctx context.Context, req resource.
 		}
 	}
 
+	// desired holds the values whose sensitive fields (which the API never returns) should be
+	// written to state per key. It starts from the plan; a channel whose update fails is reverted
+	// to its prior state below so a failed update — including a sensitive-only change — is not
+	// persisted as if it had succeeded.
+	desired := make(map[string]models.NotificationChannelsResourceElementModel, len(planElems))
+	for k, e := range planElems {
+		desired[k] = e
+	}
+
 	// Labs has no bulk-update endpoint for notification channels; update each changed channel
-	// through the single-channel platform endpoint (CPP-968).
+	// through the single-channel platform endpoint (CPP-968). Channels whose configuration is
+	// unchanged are skipped so an edit to one channel does not re-write the others.
 	for _, k := range updateKeys {
 		id := stateElems[k].Id.ValueString()
 		if id == "" {
 			continue
 		}
+		if notificationChannelElementUnchanged(planElems[k], stateElems[k]) {
+			continue
+		}
 		if d := r.updateChannel(ctx, id, planElems[k]); d.HasError() {
 			writeDiags.Append(d...)
+			// The channel still holds its prior server-side values; keep them (including sensitive
+			// fields) instead of persisting the failed new values.
+			desired[k] = stateElems[k]
 		}
 	}
 
-	r.persistFromIds(ctx, &resp.State, &resp.Diagnostics, keyToId, planElems)
+	r.persistFromIds(ctx, &resp.State, &resp.Diagnostics, keyToId, desired)
 	resp.Diagnostics.Append(writeDiags...)
 }
 
@@ -286,6 +302,17 @@ func (r *notificationChannelsResource) Delete(ctx context.Context, req resource.
 		return
 	}
 	resp.Diagnostics.Append(r.bulkDelete(ctx, ids)...)
+}
+
+// notificationChannelElementUnchanged reports whether two elements carry the same configurable
+// values, so an unchanged channel can be skipped during a bulk update.
+func notificationChannelElementUnchanged(a, b models.NotificationChannelsResourceElementModel) bool {
+	return a.Name.Equal(b.Name) &&
+		a.Type.Equal(b.Type) &&
+		a.EntityId.Equal(b.EntityId) &&
+		a.EntityType.Equal(b.EntityType) &&
+		a.IsShared.Equal(b.IsShared) &&
+		a.Definition.Equal(b.Definition)
 }
 
 // refreshState fetches the current server state for the channels identified by keyToId and maps each

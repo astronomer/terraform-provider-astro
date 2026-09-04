@@ -47,8 +47,15 @@ func (r *notificationChannelResource) Schema(
 ) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Notification Channel resource",
-		Attributes:          schemas.NotificationChannelResourceSchemaAttributes(),
+		MarkdownDescription: "Manage a single notification channel.\n\n" +
+			"~> **Deprecated** Use the `astro_notification_channels` resource instead, which manages one or " +
+			"many notification channels in a single resource. Do not manage the same channel with both " +
+			"`astro_notification_channel` and `astro_notification_channels` — they conflict on every apply.",
+		DeprecationMessage: "Use the astro_notification_channels resource instead, which manages one or many " +
+			"notification channels in a single resource. Do not manage the same channel with both " +
+			"astro_notification_channel and astro_notification_channels — they will conflict on every apply. " +
+			"astro_notification_channel may be removed in a future major version.",
+		Attributes: schemas.NotificationChannelResourceSchemaAttributes(),
 	}
 }
 

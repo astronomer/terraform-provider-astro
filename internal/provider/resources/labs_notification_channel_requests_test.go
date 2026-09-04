@@ -161,3 +161,44 @@ func TestUnit_BuildLabsCreateNotificationChannelRequest_UnsupportedType(t *testi
 	_, diags := BuildLabsCreateNotificationChannelRequest(context.Background(), channel)
 	assert.True(t, diags.HasError())
 }
+
+func TestUnit_notificationChannelElementUnchanged(t *testing.T) {
+	base := models.NotificationChannelsResourceElementModel{
+		Id:         types.StringValue("cmid"),
+		Name:       types.StringValue("chan"),
+		Type:       types.StringValue("SLACK"),
+		EntityId:   types.StringValue("clentity"),
+		EntityType: types.StringValue("DEPLOYMENT"),
+		IsShared:   types.BoolValue(false),
+		Definition: definitionObject(t, map[string]attr.Value{"webhook_url": types.StringValue("https://hooks.slack.com/x")}),
+	}
+
+	t.Run("identical elements are unchanged", func(t *testing.T) {
+		other := base
+		assert.True(t, notificationChannelElementUnchanged(base, other))
+	})
+
+	t.Run("differing id is ignored (still unchanged)", func(t *testing.T) {
+		other := base
+		other.Id = types.StringValue("different")
+		assert.True(t, notificationChannelElementUnchanged(base, other))
+	})
+
+	t.Run("name change is detected", func(t *testing.T) {
+		other := base
+		other.Name = types.StringValue("renamed")
+		assert.False(t, notificationChannelElementUnchanged(base, other))
+	})
+
+	t.Run("is_shared change is detected", func(t *testing.T) {
+		other := base
+		other.IsShared = types.BoolValue(true)
+		assert.False(t, notificationChannelElementUnchanged(base, other))
+	})
+
+	t.Run("sensitive definition change is detected", func(t *testing.T) {
+		other := base
+		other.Definition = definitionObject(t, map[string]attr.Value{"webhook_url": types.StringValue("https://hooks.slack.com/CHANGED")})
+		assert.False(t, notificationChannelElementUnchanged(base, other))
+	})
+}
