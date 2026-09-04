@@ -424,6 +424,7 @@ func handleWorkspaces(ctx context.Context, platformClient *platform.ClientWithRe
 	for _, workspaceId := range workspaceIds {
 		workspaceImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_workspace.workspace_%v
 }`, workspaceId, workspaceId)
@@ -469,6 +470,7 @@ func handleDeployments(ctx context.Context, platformClient *platform.ClientWithR
 	for _, deploymentId := range deploymentIds {
 		deploymentImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_deployment.deployment_%v
 }`, deploymentId, deploymentId)
@@ -520,12 +522,14 @@ func handleClusters(ctx context.Context, platformClient *platform.ClientWithResp
 		if clusterType != platform.ClusterTypeHYBRID {
 			clusterImportString = fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_cluster.cluster_%v
 }`, clusterId, clusterId)
 		} else {
 			clusterImportString = fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_hybrid_cluster_workspace_authorization.cluster_%v
 }`, clusterId, clusterId)
@@ -573,6 +577,7 @@ func handleApiTokens(ctx context.Context, platformClient *platform.ClientWithRes
 	for _, apiTokenId := range apiTokenIds {
 		apiTokenImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_api_token.api_token_%v
 }`, apiTokenId, apiTokenId)
@@ -655,6 +660,7 @@ func handleAgentTokens(ctx context.Context, platformClient *platform.ClientWithR
 	for agentTokenId, compositeKey := range agentTokenIds {
 		agentTokenImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_agent_token.agent_token_%v
 }`, compositeKey, agentTokenId)
@@ -725,6 +731,7 @@ func handleTeams(ctx context.Context, platformClient *platform.ClientWithRespons
 	for _, teamId := range teamIds {
 		teamImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_team.team_%v
 }`, teamId, teamId)
@@ -771,6 +778,7 @@ func handleTeamRoles(ctx context.Context, platformClient *platform.ClientWithRes
 	for _, teamId := range teamIds {
 		teamImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_team_roles.team_%v
 }`, teamId, teamId)
@@ -817,6 +825,7 @@ func handleUserRoles(ctx context.Context, platformClient *platform.ClientWithRes
 	for _, userId := range userIds {
 		userImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_user_roles.user_%v
 }`, userId, userId)
@@ -889,6 +898,7 @@ func handleAlerts(ctx context.Context, platformClient *platform.ClientWithRespon
 	for _, alertId := range alertIds {
 		alertImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_alert.alert_%v
 }`, alertId, alertId)
@@ -930,6 +940,7 @@ func handleNotificationChannels(ctx context.Context, platformClient *platform.Cl
 	for _, channelId := range channelIds {
 		channelImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_notification_channel.notification_channel_%v
 }`, channelId, channelId)

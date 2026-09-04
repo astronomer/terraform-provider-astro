@@ -114,6 +114,10 @@ api_client_gen:
 	@echo "Generating Platform API client..."
 	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Organization,Workspace,Cluster,Options,Deployment,Role,Environment,Alerts,NotificationChannels -generate=types,client -package=platform "$(CORE_PLATFORM_OPENAPI_SPEC)" > ./internal/clients/platform/api.gen.go
 	@echo "Generating Labs API client..."
-	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Alerts,AllowedIpAddressRange -generate=types,client -package=labs "$(CORE_LABS_OPENAPI_SPEC)" > ./internal/clients/labs/api.gen.go
+	# Adding "NotificationChannels" prefixes the AlertNotificationChannelType constants
+	# (EMAIL -> AlertNotificationChannelTypeEMAIL, etc.) because the bulk notification-channel
+	# types reuse the same bare enum values. No provider code references the bare labs constants,
+	# so the rename is safe; the bulk NC resource uses the NotificationChannelType enum.
+	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Alerts,AllowedIpAddressRange,NotificationChannels -generate=types,client -package=labs "$(CORE_LABS_OPENAPI_SPEC)" > ./internal/clients/labs/api.gen.go
 	@echo "Generating Platform v1 (unified public API) client..."
 	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Environment -generate=types,client -package=platform_v1 "$(CORE_PLATFORM_V1_OPENAPI_SPEC)" > ./internal/clients/platform_v1/api.gen.go

@@ -51,6 +51,7 @@ func HandleWorkspaces(ctx context.Context, platformClient *mocksPlatform.ClientW
 	for _, workspaceId := range workspaceIds {
 		workspaceImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_workspace.workspace_%v
 }`, workspaceId, workspaceId)
@@ -96,6 +97,7 @@ func HandleDeployments(ctx context.Context, platformClient *mocksPlatform.Client
 	for _, deploymentId := range deploymentIds {
 		deploymentImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_deployment.deployment_%v
 }`, deploymentId, deploymentId)
@@ -145,6 +147,7 @@ func HandleClusters(ctx context.Context, platformClient *mocksPlatform.ClientWit
 	for clusterId, clusterType := range clusterMap {
 		clusterImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_cluster.cluster_%v
 }`, clusterId, clusterId)
@@ -153,6 +156,7 @@ import {
 			log.Printf("Importing hybrid cluster workspace authorization for cluster %s", clusterId)
 			clusterImportString += fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_hybrid_cluster_workspace_authorization.cluster_%v
 }`, clusterId, clusterId)
@@ -200,6 +204,7 @@ func HandleApiTokens(ctx context.Context, platformClient *mocksPlatform.ClientWi
 	for _, apiTokenId := range apiTokenIds {
 		apiTokenImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_api_token.api_token_%v
 }`, apiTokenId, apiTokenId)
@@ -246,6 +251,7 @@ func HandleTeams(ctx context.Context, platformClient *mocksPlatform.ClientWithRe
 	for _, teamId := range teamIds {
 		teamImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_team.team_%v
 }`, teamId, teamId)
@@ -292,6 +298,7 @@ func HandleTeamRoles(ctx context.Context, platformClient *mocksPlatform.ClientWi
 	for _, teamId := range teamIds {
 		teamImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_team_roles.team_%v
 }`, teamId, teamId)
@@ -338,6 +345,7 @@ func HandleUserRoles(ctx context.Context, platformClient *mocksPlatform.ClientWi
 	for _, userId := range userIds {
 		userImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_user_roles.user_%v
 }`, userId, userId)
@@ -410,6 +418,7 @@ func HandleAlerts(ctx context.Context, platformClient *mocksPlatform.ClientWithR
 	for _, alertId := range alertIds {
 		alertImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_alert.alert_%v
 }`, alertId, alertId)
@@ -451,6 +460,7 @@ func HandleNotificationChannels(ctx context.Context, platformClient *mocksPlatfo
 	for _, channelId := range channelIds {
 		channelImportString := fmt.Sprintf(`
 import {
+	provider = astro
 	id = "%v"
 	to = astro_notification_channel.notification_channel_%v
 }`, channelId, channelId)

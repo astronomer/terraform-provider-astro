@@ -150,6 +150,7 @@ func (p *AstroProvider) Resources(ctx context.Context) []func() resource.Resourc
 		resources.NewAlertResource,
 		resources.NewAlertsResource,
 		resources.NewNotificationChannelResource,
+		resources.NewNotificationChannelsResource,
 		resources.NewCustomRoleResource,
 		resources.NewEnvironmentObjectResource,
 		resources.NewAllowedIpAddressRangesResource,
