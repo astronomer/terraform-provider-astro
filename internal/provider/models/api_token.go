@@ -42,7 +42,6 @@ type ApiTokenResource struct {
 	CreatedBy          types.Object `tfsdk:"created_by"`
 	UpdatedBy          types.Object `tfsdk:"updated_by"`
 	ExpiryPeriodInDays types.Int64  `tfsdk:"expiry_period_in_days"`
-	LastUsedAt         types.String `tfsdk:"last_used_at"`
 	Roles              types.Set    `tfsdk:"roles"`
 	Token              types.String `tfsdk:"token"`
 }
@@ -116,11 +115,6 @@ func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *ia
 	}
 	if apiToken.ExpiryPeriodInDays != nil {
 		data.ExpiryPeriodInDays = types.Int64Value(int64(*apiToken.ExpiryPeriodInDays))
-	}
-	if apiToken.LastUsedAt == nil {
-		data.LastUsedAt = types.StringNull()
-	} else {
-		data.LastUsedAt = types.StringValue(apiToken.LastUsedAt.String())
 	}
 	data.Roles, diags = utils.ObjectSet(ctx, apiToken.Roles, schemas.ApiTokenRoleAttributeTypes(), ApiTokenRoleTypesObject)
 	if diags.HasError() {
