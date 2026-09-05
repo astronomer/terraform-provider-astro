@@ -66,6 +66,7 @@ func DeploymentsElementAttributeTypes() map[string]attr.Type {
 		"is_high_availability":  types.BoolType,
 		"is_development_mode":   types.BoolType,
 		"workload_identity":     types.StringType,
+		"dr_workload_identity":  types.StringType,
 		"external_ips": types.SetType{
 			ElemType: types.StringType,
 		},
