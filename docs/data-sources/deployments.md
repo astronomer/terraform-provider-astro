@@ -67,6 +67,7 @@ Read-Only:
 - `default_task_pod_memory` (String) Deployment default task pod memory
 - `description` (String) Deployment description
 - `desired_dag_tarball_version` (String) Deployment desired DAG tarball version
+- `dr_workload_identity` (String) Deployment disaster recovery workload identity
 - `environment_variables` (Attributes Set) Deployment environment variables (see [below for nested schema](#nestedatt--deployments--environment_variables))
 - `executor` (String) Deployment executor. Allowed values: `CELERY`, `KUBERNETES`, `ASTRO`.
 - `external_ips` (Set of String) Deployment external IPs

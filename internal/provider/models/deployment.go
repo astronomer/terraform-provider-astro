@@ -51,6 +51,8 @@ type DeploymentResource struct {
 	IsDagDeployEnabled          types.Bool   `tfsdk:"is_dag_deploy_enabled"`
 	DesiredWorkloadIdentity     types.String `tfsdk:"desired_workload_identity"`
 	WorkloadIdentity            types.String `tfsdk:"workload_identity"`
+	DesiredDrWorkloadIdentity   types.String `tfsdk:"desired_dr_workload_identity"`
+	DrWorkloadIdentity          types.String `tfsdk:"dr_workload_identity"`
 	ExternalIps                 types.Set    `tfsdk:"external_ips"`
 	OidcIssuerUrl               types.String `tfsdk:"oidc_issuer_url"`
 	WorkerQueues                types.Set    `tfsdk:"worker_queues"`
@@ -110,6 +112,7 @@ type DeploymentDataSource struct {
 	IsCicdEnforced           types.Bool   `tfsdk:"is_cicd_enforced"`
 	IsDagDeployEnabled       types.Bool   `tfsdk:"is_dag_deploy_enabled"`
 	WorkloadIdentity         types.String `tfsdk:"workload_identity"`
+	DrWorkloadIdentity       types.String `tfsdk:"dr_workload_identity"`
 	ExternalIps              types.Set    `tfsdk:"external_ips"`
 	OidcIssuerUrl            types.String `tfsdk:"oidc_issuer_url"`
 	WorkerQueues             types.Set    `tfsdk:"worker_queues"`
@@ -237,6 +240,7 @@ func (data *DeploymentResource) ReadFromResponse(
 	data.IsCicdEnforced = types.BoolValue(deployment.IsCicdEnforced)
 	data.IsDagDeployEnabled = types.BoolValue(deployment.IsDagDeployEnabled)
 	data.WorkloadIdentity = types.StringPointerValue(deployment.WorkloadIdentity)
+	data.DrWorkloadIdentity = types.StringPointerValue(deployment.DrWorkloadIdentity)
 	data.ExternalIps, diags = utils.StringSet(deployment.ExternalIPs)
 	if diags.HasError() {
 		return diags
@@ -340,6 +344,7 @@ func (data *DeploymentDataSource) ReadFromResponse(
 	data.IsCicdEnforced = types.BoolValue(deployment.IsCicdEnforced)
 	data.IsDagDeployEnabled = types.BoolValue(deployment.IsDagDeployEnabled)
 	data.WorkloadIdentity = types.StringPointerValue(deployment.WorkloadIdentity)
+	data.DrWorkloadIdentity = types.StringPointerValue(deployment.DrWorkloadIdentity)
 	data.ExternalIps, diags = utils.StringSet(deployment.ExternalIPs)
 	if diags.HasError() {
 		return diags

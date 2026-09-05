@@ -227,6 +227,7 @@ resource "astro_deployment" "imported_deployment" {
 - `cluster_id` (String) Deployment cluster identifier - required for 'HYBRID' and 'DEDICATED' deployments. If changing this value, the deployment will be recreated in the new cluster
 - `default_task_pod_cpu` (String) Deployment default task pod CPU - required for 'STANDARD' and 'DEDICATED' deployments
 - `default_task_pod_memory` (String) Deployment default task pod memory - required for 'STANDARD' and 'DEDICATED' deployments
+- `desired_dr_workload_identity` (String) Deployment's desired disaster recovery workload identity. Only applies when the Deployment's cluster has Disaster Recovery enabled. The Terraform provider will use this provided workload identity to create the Deployment. If it is not provided the disaster recovery workload identity will be assigned automatically.
 - `desired_workload_identity` (String) Deployment's desired workload identity. The Terraform provider will use this provided workload identity to create the Deployment. If it is not provided the workload identity will be assigned automatically.
 - `is_development_mode` (Boolean) Deployment development mode - required for 'STANDARD' and 'DEDICATED' deployments. If changing from 'False' to 'True', the deployment will be recreated
 - `is_high_availability` (Boolean) Deployment high availability - required for 'STANDARD' and 'DEDICATED' deployments
@@ -250,6 +251,7 @@ resource "astro_deployment" "imported_deployment" {
 - `created_by` (Attributes) Deployment creator (see [below for nested schema](#nestedatt--created_by))
 - `dag_tarball_version` (String) Deployment DAG tarball version
 - `desired_dag_tarball_version` (String) Deployment desired DAG tarball version
+- `dr_workload_identity` (String) Deployment disaster recovery workload identity. Only set when the Deployment's cluster has Disaster Recovery enabled. This value can be changed via the Astro API if applicable.
 - `external_ips` (Set of String) Deployment external IPs
 - `id` (String) Deployment identifier
 - `image_repository` (String) Deployment image repository

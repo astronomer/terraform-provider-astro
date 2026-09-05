@@ -200,6 +200,14 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			MarkdownDescription: "Deployment workload identity. This value can be changed via the Astro API if applicable.",
 			Computed:            true,
 		},
+		"desired_dr_workload_identity": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment's desired disaster recovery workload identity. Only applies when the Deployment's cluster has Disaster Recovery enabled. The Terraform provider will use this provided workload identity to create the Deployment. If it is not provided the disaster recovery workload identity will be assigned automatically.",
+			Optional:            true,
+		},
+		"dr_workload_identity": resourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment disaster recovery workload identity. Only set when the Deployment's cluster has Disaster Recovery enabled. This value can be changed via the Astro API if applicable.",
+			Computed:            true,
+		},
 		"type": resourceSchema.StringAttribute{
 			MarkdownDescription: "Deployment type - if changing this value, the deployment will be recreated with the new type",
 			Required:            true,
@@ -523,6 +531,10 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 		},
 		"workload_identity": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Deployment workload identity",
+			Computed:            true,
+		},
+		"dr_workload_identity": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Deployment disaster recovery workload identity",
 			Computed:            true,
 		},
 		"external_ips": datasourceSchema.SetAttribute{

@@ -107,6 +107,7 @@ func (r *DeploymentResource) Create(
 	}
 
 	desiredWorkloadIdentity := data.DesiredWorkloadIdentity.ValueString()
+	desiredDrWorkloadIdentity := data.DesiredDrWorkloadIdentity.ValueString()
 
 	switch data.Type.ValueString() {
 	case string(platform.DeploymentTypeSTANDARD):
@@ -131,6 +132,9 @@ func (r *DeploymentResource) Create(
 		}
 		if desiredWorkloadIdentity != "" {
 			createStandardDeploymentRequest.WorkloadIdentity = &desiredWorkloadIdentity
+		}
+		if desiredDrWorkloadIdentity != "" {
+			createStandardDeploymentRequest.DrWorkloadIdentity = &desiredDrWorkloadIdentity
 		}
 
 		// contact emails
@@ -194,6 +198,9 @@ func (r *DeploymentResource) Create(
 		}
 		if desiredWorkloadIdentity != "" {
 			createDedicatedDeploymentRequest.WorkloadIdentity = &desiredWorkloadIdentity
+		}
+		if desiredDrWorkloadIdentity != "" {
+			createDedicatedDeploymentRequest.DrWorkloadIdentity = &desiredDrWorkloadIdentity
 		}
 
 		// contact emails
@@ -263,6 +270,9 @@ func (r *DeploymentResource) Create(
 
 		if desiredWorkloadIdentity != "" {
 			createHybridDeploymentRequest.WorkloadIdentity = &desiredWorkloadIdentity
+		}
+		if desiredDrWorkloadIdentity != "" {
+			createHybridDeploymentRequest.DrWorkloadIdentity = &desiredDrWorkloadIdentity
 		}
 
 		// contact emails
@@ -406,6 +416,7 @@ func (r *DeploymentResource) Update(
 	var envVars []platform.DeploymentEnvironmentVariableRequest
 
 	desiredWorkloadIdentity := data.DesiredWorkloadIdentity.ValueString()
+	desiredDrWorkloadIdentity := data.DesiredDrWorkloadIdentity.ValueString()
 
 	switch data.Type.ValueString() {
 	case string(platform.DeploymentTypeSTANDARD):
@@ -428,6 +439,9 @@ func (r *DeploymentResource) Update(
 
 		if desiredWorkloadIdentity != "" {
 			updateStandardDeploymentRequest.WorkloadIdentity = &desiredWorkloadIdentity
+		}
+		if desiredDrWorkloadIdentity != "" {
+			updateStandardDeploymentRequest.DrWorkloadIdentity = &desiredDrWorkloadIdentity
 		}
 
 		// contact emails
@@ -490,6 +504,9 @@ func (r *DeploymentResource) Update(
 
 		if desiredWorkloadIdentity != "" {
 			updateDedicatedDeploymentRequest.WorkloadIdentity = &desiredWorkloadIdentity
+		}
+		if desiredDrWorkloadIdentity != "" {
+			updateDedicatedDeploymentRequest.DrWorkloadIdentity = &desiredDrWorkloadIdentity
 		}
 
 		// contact emails
@@ -557,6 +574,9 @@ func (r *DeploymentResource) Update(
 
 		if desiredWorkloadIdentity != "" {
 			updateHybridDeploymentRequest.WorkloadIdentity = &desiredWorkloadIdentity
+		}
+		if desiredDrWorkloadIdentity != "" {
+			updateHybridDeploymentRequest.DrWorkloadIdentity = &desiredDrWorkloadIdentity
 		}
 
 		// contact emails
