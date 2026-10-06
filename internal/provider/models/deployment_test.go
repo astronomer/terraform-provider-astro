@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -37,7 +37,7 @@ func TestUnit_HibernationOverrideTypesObject_PreservesConfiguredOffset(t *testin
 
 	obj, diags := models.HibernationOverrideTypesObject(
 		context.Background(),
-		&platform.DeploymentHibernationOverride{OverrideUntil: &until},
+		&platform_v1.DeploymentHibernationOverride{OverrideUntil: &until},
 		types.StringValue("2075-04-25T12:58:00+05:30"),
 	)
 	assert.False(t, diags.HasError())
@@ -51,7 +51,7 @@ func TestUnit_HibernationOverrideTypesObject_DifferentInstantUsesApiValue(t *tes
 
 	obj, diags := models.HibernationOverrideTypesObject(
 		context.Background(),
-		&platform.DeploymentHibernationOverride{OverrideUntil: &until},
+		&platform_v1.DeploymentHibernationOverride{OverrideUntil: &until},
 		types.StringValue("2075-04-26T12:58:00+05:30"),
 	)
 	assert.False(t, diags.HasError())
@@ -64,7 +64,7 @@ func TestUnit_HibernationOverrideTypesObject_NoConfiguredValue(t *testing.T) {
 
 	obj, diags := models.HibernationOverrideTypesObject(
 		context.Background(),
-		&platform.DeploymentHibernationOverride{OverrideUntil: &until},
+		&platform_v1.DeploymentHibernationOverride{OverrideUntil: &until},
 		types.StringNull(),
 	)
 	assert.False(t, diags.HasError())
@@ -77,7 +77,7 @@ func TestUnit_HibernationOverrideTypesObject_UnparseableConfiguredValue(t *testi
 
 	obj, diags := models.HibernationOverrideTypesObject(
 		context.Background(),
-		&platform.DeploymentHibernationOverride{OverrideUntil: &until},
+		&platform_v1.DeploymentHibernationOverride{OverrideUntil: &until},
 		types.StringValue("not-a-timestamp"),
 	)
 	assert.False(t, diags.HasError())
@@ -101,7 +101,7 @@ func TestUnit_ConfiguredOverrideUntil_RoundTrip(t *testing.T) {
 
 	override, diags := models.HibernationOverrideTypesObject(
 		ctx,
-		&platform.DeploymentHibernationOverride{OverrideUntil: &until},
+		&platform_v1.DeploymentHibernationOverride{OverrideUntil: &until},
 		types.StringValue("2075-04-25T12:58:00+05:30"),
 	)
 	require.False(t, diags.HasError())
