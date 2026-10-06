@@ -1293,5 +1293,31 @@ func (r *DeploymentResource) GetLatestAstroRuntimeVersion(ctx context.Context, d
 			"Unable to get runtime releases for deployment creation, got empty runtime releases",
 		)
 	}
-	return deploymentOptions.JSON200.RuntimeReleases[0].Version, nil
+
+	return LatestStableRuntimeVersion(ctx, deploymentOptions.JSON200.RuntimeReleases), nil
+}
+
+// stableRuntimeReleaseChannel is the channel Core marks generally-available runtime releases
+// with. Deployment options also advertise pre-release channels (alpha, beta, nightly) that the
+// create deployment endpoint then rejects as invalid runtime versions, so taking the first
+// release off the list is not safe.
+const stableRuntimeReleaseChannel = "stable"
+
+// LatestStableRuntimeVersion picks the newest stable release out of the deployment options.
+// The list arrives sorted newest-first, so the first stable entry is the latest one. If no
+// release is marked stable the newest release is returned regardless, preserving the previous
+// behaviour rather than failing a create that might still have succeeded.
+func LatestStableRuntimeVersion(ctx context.Context, runtimeReleases []platform.RuntimeRelease) string {
+	for _, runtimeRelease := range runtimeReleases {
+		if runtimeRelease.Channel == stableRuntimeReleaseChannel {
+			return runtimeRelease.Version
+		}
+	}
+
+	tflog.Warn(ctx, "no stable Astro Runtime release in deployment options, falling back to the newest release", map[string]interface{}{
+		"count":   len(runtimeReleases),
+		"version": runtimeReleases[0].Version,
+		"channel": runtimeReleases[0].Channel,
+	})
+	return runtimeReleases[0].Version
 }
