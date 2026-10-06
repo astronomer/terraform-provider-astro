@@ -11,6 +11,7 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 type DeploymentResource struct {
@@ -265,7 +266,8 @@ func (data *DeploymentResource) ReadFromResponse(
 	if diags.HasError() {
 		return diags
 	}
-	data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, deployment.ScalingSpec)
+	configuredOverrideUntil := ConfiguredOverrideUntil(ctx, data.ScalingSpec)
+	data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, deployment.ScalingSpec, configuredOverrideUntil)
 	if diags.HasError() {
 		return diags
 	}
@@ -368,7 +370,7 @@ func (data *DeploymentDataSource) ReadFromResponse(
 	if diags.HasError() {
 		return diags
 	}
-	data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, deployment.ScalingSpec)
+	data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, deployment.ScalingSpec, types.StringNull())
 	if diags.HasError() {
 		return diags
 	}
@@ -518,6 +520,7 @@ func HibernationStatusTypesObject(
 func HibernationOverrideTypesObject(
 	ctx context.Context,
 	hibernationOverride *platform.DeploymentHibernationOverride,
+	configuredOverrideUntil types.String,
 ) (types.Object, diag.Diagnostics) {
 	if hibernationOverride == nil {
 		return types.ObjectNull(schemas.HibernationOverrideAttributeTypes()), nil
@@ -528,8 +531,56 @@ func HibernationOverrideTypesObject(
 	}
 	if hibernationOverride.OverrideUntil != nil {
 		obj.OverrideUntil = types.StringValue(hibernationOverride.OverrideUntil.Format(time.RFC3339))
+
+		// The API normalizes override_until to UTC, so a value configured in another offset
+		// comes back as a different string for the same instant ("2075-04-25T12:58:00+05:30"
+		// -> "2075-04-25T07:28:00Z"). override_until is Optional, so Terraform compares the
+		// applied string against the configured one and rejects the apply as an inconsistent
+		// result. Keep the configured spelling whenever it denotes the same instant.
+		if !configuredOverrideUntil.IsNull() && !configuredOverrideUntil.IsUnknown() {
+			configured, err := time.Parse(time.RFC3339, configuredOverrideUntil.ValueString())
+			if err == nil && configured.Equal(*hibernationOverride.OverrideUntil) {
+				obj.OverrideUntil = configuredOverrideUntil
+			}
+		}
 	}
 	return types.ObjectValueFrom(ctx, schemas.HibernationOverrideAttributeTypes(), obj)
+}
+
+// ConfiguredOverrideUntil digs scaling_spec.hibernation_spec.override.override_until out of a
+// scaling spec object as it was supplied in configuration, so the API response can be
+// reconciled against it. Returns a null string when any level is absent.
+func ConfiguredOverrideUntil(ctx context.Context, scalingSpecObj types.Object) types.String {
+	objectAsOptions := basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	}
+
+	if scalingSpecObj.IsNull() || scalingSpecObj.IsUnknown() {
+		return types.StringNull()
+	}
+	var scalingSpec DeploymentScalingSpec
+	if diags := scalingSpecObj.As(ctx, &scalingSpec, objectAsOptions); diags.HasError() {
+		return types.StringNull()
+	}
+
+	if scalingSpec.HibernationSpec.IsNull() || scalingSpec.HibernationSpec.IsUnknown() {
+		return types.StringNull()
+	}
+	var hibernationSpec HibernationSpec
+	if diags := scalingSpec.HibernationSpec.As(ctx, &hibernationSpec, objectAsOptions); diags.HasError() {
+		return types.StringNull()
+	}
+
+	if hibernationSpec.Override.IsNull() || hibernationSpec.Override.IsUnknown() {
+		return types.StringNull()
+	}
+	var override HibernationSpecOverride
+	if diags := hibernationSpec.Override.As(ctx, &override, objectAsOptions); diags.HasError() {
+		return types.StringNull()
+	}
+
+	return override.OverrideUntil
 }
 
 func HibernationScheduleTypesObject(
@@ -548,12 +599,13 @@ func HibernationScheduleTypesObject(
 func HibernationSpecTypesObject(
 	ctx context.Context,
 	hibernationSpec *platform.DeploymentHibernationSpec,
+	configuredOverrideUntil types.String,
 ) (types.Object, diag.Diagnostics) {
 	if hibernationSpec == nil || (hibernationSpec.Override == nil && hibernationSpec.Schedules == nil) {
 		return types.ObjectNull(schemas.HibernationSpecAttributeTypes()), nil
 	}
 
-	override, diags := HibernationOverrideTypesObject(ctx, hibernationSpec.Override)
+	override, diags := HibernationOverrideTypesObject(ctx, hibernationSpec.Override, configuredOverrideUntil)
 	if diags.HasError() {
 		return types.ObjectNull(schemas.HibernationSpecAttributeTypes()), diags
 	}
@@ -589,12 +641,13 @@ func ScalingStatusTypesObject(
 func ScalingSpecTypesObject(
 	ctx context.Context,
 	scalingSpec *platform.DeploymentScalingSpec,
+	configuredOverrideUntil types.String,
 ) (types.Object, diag.Diagnostics) {
 	if scalingSpec == nil {
 		return types.ObjectNull(schemas.ScalingSpecAttributeTypes()), nil
 	}
 
-	hibernationSpec, diags := HibernationSpecTypesObject(ctx, scalingSpec.HibernationSpec)
+	hibernationSpec, diags := HibernationSpecTypesObject(ctx, scalingSpec.HibernationSpec, configuredOverrideUntil)
 	if diags.HasError() {
 		return types.ObjectNull(schemas.ScalingSpecAttributeTypes()), diags
 	}

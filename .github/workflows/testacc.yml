@@ -174,7 +174,7 @@ jobs:
           HOSTED_CUSTOM_ROLE_ID: cmk64yvat027n01q7f9gn5ghg
           # Cluster resource tests run in the dedicated testacc-cluster job instead.
           SKIP_CLUSTER_RESOURCE_TESTS: "True"
-          REMOTE_EXECUTION_DEPLOYMENT_ID: cmng0suky152501ilj9cjlmz3
+          REMOTE_EXECUTION_DEPLOYMENT_ID: cmuwwjnrm02s601l1ir6trswn
           TESTARGS: "-failfast -parallel 9"
         run: make testacc
 
@@ -244,7 +244,7 @@ jobs:
           HOSTED_NOTIFICATION_CHANNEL_ID: cmbr12fik1m7l01gpln1bgtbb
           HOSTED_DEDICATED_CLUSTER_ID: cm73vsinm07hy01pu4dq1rei2
           HOSTED_CUSTOM_ROLE_ID: cmk64yvat027n01q7f9gn5ghg
-          REMOTE_EXECUTION_DEPLOYMENT_ID: cmng0suky152501ilj9cjlmz3
+          REMOTE_EXECUTION_DEPLOYMENT_ID: cmuwwjnrm02s601l1ir6trswn
         run: go test ./internal/provider/resources/... -v -run "^${{ matrix.cluster_test }}$" -timeout 100m
 
   testacc-stage:
@@ -310,7 +310,7 @@ jobs:
           HOSTED_NOTIFICATION_CHANNEL_ID: cmbr12fik1m7l01gpln1bgtbb
           HOSTED_DEDICATED_CLUSTER_ID: cm73vsinm07hy01pu4dq1rei2
           HOSTED_CUSTOM_ROLE_ID: cmk64yvat027n01q7f9gn5ghg
-          REMOTE_EXECUTION_DEPLOYMENT_ID: cmng0suky152501ilj9cjlmz3
+          REMOTE_EXECUTION_DEPLOYMENT_ID: cmuwwjnrm02s601l1ir6trswn
           TESTARGS: "-failfast -parallel 9"
         run: make testacc
 
