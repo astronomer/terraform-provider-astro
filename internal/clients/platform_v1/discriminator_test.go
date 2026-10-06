@@ -29,7 +29,8 @@ func TestDeploymentRequestDiscriminatorSerialization(t *testing.T) {
 			name: "Standard",
 			build: func() (CreateDeploymentRequest, error) {
 				var u CreateDeploymentRequest
-				return u, u.FromCreateStandardDeploymentRequest(CreateStandardDeploymentRequest{})
+				err := u.FromCreateStandardDeploymentRequest(CreateStandardDeploymentRequest{})
+				return u, err
 			},
 			wantType:   "STANDARD",
 			wantGoType: reflect.TypeOf(CreateStandardDeploymentRequest{}),
@@ -38,7 +39,8 @@ func TestDeploymentRequestDiscriminatorSerialization(t *testing.T) {
 			name: "Dedicated",
 			build: func() (CreateDeploymentRequest, error) {
 				var u CreateDeploymentRequest
-				return u, u.FromCreateDedicatedDeploymentRequest(CreateDedicatedDeploymentRequest{})
+				err := u.FromCreateDedicatedDeploymentRequest(CreateDedicatedDeploymentRequest{})
+				return u, err
 			},
 			wantType:   "DEDICATED",
 			wantGoType: reflect.TypeOf(CreateDedicatedDeploymentRequest{}),
@@ -47,7 +49,8 @@ func TestDeploymentRequestDiscriminatorSerialization(t *testing.T) {
 			name: "Hybrid",
 			build: func() (CreateDeploymentRequest, error) {
 				var u CreateDeploymentRequest
-				return u, u.FromCreateHybridDeploymentRequest(CreateHybridDeploymentRequest{})
+				err := u.FromCreateHybridDeploymentRequest(CreateHybridDeploymentRequest{})
+				return u, err
 			},
 			wantType:   "HYBRID",
 			wantGoType: reflect.TypeOf(CreateHybridDeploymentRequest{}),
@@ -74,7 +77,8 @@ func TestDeploymentRequestDiscriminatorSerialization(t *testing.T) {
 			name: "Standard",
 			build: func() (UpdateDeploymentRequest, error) {
 				var u UpdateDeploymentRequest
-				return u, u.FromUpdateStandardDeploymentRequest(UpdateStandardDeploymentRequest{})
+				err := u.FromUpdateStandardDeploymentRequest(UpdateStandardDeploymentRequest{})
+				return u, err
 			},
 			wantType:   "STANDARD",
 			wantGoType: reflect.TypeOf(UpdateStandardDeploymentRequest{}),
@@ -83,7 +87,8 @@ func TestDeploymentRequestDiscriminatorSerialization(t *testing.T) {
 			name: "Dedicated",
 			build: func() (UpdateDeploymentRequest, error) {
 				var u UpdateDeploymentRequest
-				return u, u.FromUpdateDedicatedDeploymentRequest(UpdateDedicatedDeploymentRequest{})
+				err := u.FromUpdateDedicatedDeploymentRequest(UpdateDedicatedDeploymentRequest{})
+				return u, err
 			},
 			wantType:   "DEDICATED",
 			wantGoType: reflect.TypeOf(UpdateDedicatedDeploymentRequest{}),
@@ -92,7 +97,8 @@ func TestDeploymentRequestDiscriminatorSerialization(t *testing.T) {
 			name: "Hybrid",
 			build: func() (UpdateDeploymentRequest, error) {
 				var u UpdateDeploymentRequest
-				return u, u.FromUpdateHybridDeploymentRequest(UpdateHybridDeploymentRequest{})
+				err := u.FromUpdateHybridDeploymentRequest(UpdateHybridDeploymentRequest{})
+				return u, err
 			},
 			wantType:   "HYBRID",
 			wantGoType: reflect.TypeOf(UpdateHybridDeploymentRequest{}),

@@ -126,4 +126,10 @@ api_client_gen:
 	# constants, so the rename is safe. Do NOT add "Options" here: it renames the
 	# WorkerQueueRequestAstroMachine constants that schemas/deployment.go depends on, so
 	# GetDeploymentOptions stays on the v1beta1 platform client for now.
+	# The Deployment tag also CREATES bare package-level constants in platform_v1 --
+	# ASTRO/CELERY/KUBERNETES, SMALL/MEDIUM/LARGE/EXTRALARGE, STANDARD/DEDICATED/HYBRID (the
+	# UpdateStandardDeploymentRequest enums won the un-prefixed names). They are the next
+	# thing a new tag will silently rename, so do not reference them; resource_deployment.go
+	# pins the discriminator via UpdateStandardDeploymentRequestType(DeploymentTypeSTANDARD)
+	# instead.
 	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Environment,Deployment -generate=types,client -package=platform_v1 "$(CORE_PLATFORM_V1_OPENAPI_SPEC)" > ./internal/clients/platform_v1/api.gen.go
