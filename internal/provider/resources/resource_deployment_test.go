@@ -327,9 +327,6 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile(`worker_queue names must be unique`),
 			},
-			// CELERY requires at least one worker queue. Core enforces this too; without the
-			// plan-time check the API synthesizes a default queue that Terraform never planned
-			// for, which surfaces as a confusing inconsistent-result error at apply time.
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName + "_no_wq",

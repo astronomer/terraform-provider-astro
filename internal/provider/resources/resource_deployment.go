@@ -35,13 +35,9 @@ func NewDeploymentResource() resource.Resource {
 
 // DeploymentResource defines the resource implementation.
 type DeploymentResource struct {
-	// platformV1Client serves the Deployment CRUD operations, which have graduated to the
-	// unified public /v1 API.
 	platformV1Client *platform_v1.ClientWithResponses
-	// platformClient is still needed for GetDeploymentOptions, which stays on platform/v1beta1
-	// until the Options tag can be generated into the platform_v1 client (see the Makefile).
-	platformClient *platform.ClientWithResponses
-	organizationId string
+	platformClient   *platform.ClientWithResponses
+	organizationId   string
 }
 
 func (r *DeploymentResource) Metadata(
@@ -702,16 +698,6 @@ func (r *DeploymentResource) ValidateConfig(
 		return
 	}
 
-	// CELERY needs at least one worker queue, for every deployment type. Core requires it
-	// (`required_if=Executor CELERY` on the request binding) and a CELERY deployment with no
-	// queues has nothing to run tasks on. v1beta1 accepted the omission and created a
-	// queue-less deployment; v1 synthesizes a default queue instead, which Terraform would
-	// then report as an inconsistent result against a null config. Catching it at plan time
-	// gives a clear error instead of a confusing apply-time one.
-	//
-	// Skipped when worker_queues is unknown (e.g. supplied via a variable or local) — the
-	// value is checked once it resolves — and when remote_execution is set, which is only
-	// valid with the ASTRO executor and is reported by validateHostedConfig instead.
 	if data.Executor.ValueString() == string(platform_v1.DeploymentExecutorCELERY) &&
 		data.RemoteExecution.IsNull() && !data.WorkerQueues.IsUnknown() &&
 		len(data.WorkerQueues.Elements()) == 0 {
@@ -1214,10 +1200,6 @@ func RequestHybridWorkerQueues(ctx context.Context, workerQueuesObjSet types.Set
 	return &platformWorkerQueues, nil
 }
 
-// RequestHostedUpdateWorkerQueues converts a Terraform set to a list of platform_v1.UpdateWorkerQueueRequest
-// to be used in update requests for standard and dedicated deployments. v1 merged the hosted and
-// hybrid worker queue request bodies into a single type whose astroMachine and nodePoolId are both
-// optional, so each deployment type sets only the field that applies to it.
 func RequestHostedUpdateWorkerQueues(ctx context.Context, workerQueuesObjSet types.Set) (*[]platform_v1.UpdateWorkerQueueRequest, diag.Diagnostics) {
 	workerQueues, diags := workerQueueResources(ctx, workerQueuesObjSet)
 	if workerQueues == nil || diags.HasError() {
@@ -1236,8 +1218,6 @@ func RequestHostedUpdateWorkerQueues(ctx context.Context, workerQueuesObjSet typ
 	return &platformWorkerQueues, nil
 }
 
-// RequestHybridUpdateWorkerQueues converts a Terraform set to a list of platform_v1.UpdateWorkerQueueRequest
-// to be used in update requests for hybrid deployments
 func RequestHybridUpdateWorkerQueues(ctx context.Context, workerQueuesObjSet types.Set) (*[]platform_v1.UpdateWorkerQueueRequest, diag.Diagnostics) {
 	workerQueues, diags := workerQueueResources(ctx, workerQueuesObjSet)
 	if workerQueues == nil || diags.HasError() {
@@ -1256,8 +1236,6 @@ func RequestHybridUpdateWorkerQueues(ctx context.Context, workerQueuesObjSet typ
 	return &platformWorkerQueues, nil
 }
 
-// workerQueueResources decodes the worker queue set shared by every worker queue request builder.
-// It returns a nil slice when the set is empty, which callers translate into an omitted field.
 func workerQueueResources(ctx context.Context, workerQueuesObjSet types.Set) ([]models.WorkerQueueResource, diag.Diagnostics) {
 	if len(workerQueuesObjSet.Elements()) == 0 {
 		return nil, nil

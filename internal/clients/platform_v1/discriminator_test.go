@@ -6,18 +6,6 @@ import (
 	"testing"
 )
 
-// TestDeploymentRequestDiscriminatorSerialization is a regression test for the forked union
-// template (internal/clients/oapi-templates/union.tmpl) as it applies to the Deployment
-// unions, which are the first unions generated into this package.
-//
-// The v1 Create*DeploymentRequest variants declare their discriminator as an optional
-// pointer (`Type *...Type `json:"type,omitempty"“) because v1 relaxed the create requests'
-// required fields, so a caller can build a variant WITHOUT setting Type. The fork injects
-// the discriminator into the marshaled JSON instead of assigning a struct field, so the
-// union still serializes the correct "type" and round-trips through ValueByDiscriminator().
-//
-// Each case below intentionally leaves Type nil (create) or zero (update) to exercise
-// exactly that path.
 func TestDeploymentRequestDiscriminatorSerialization(t *testing.T) {
 	createTests := []struct {
 		name       string
@@ -126,8 +114,6 @@ func assertDiscriminator(
 ) {
 	t.Helper()
 
-	// 1. The marshaled union carries the injected discriminator, even though the caller
-	//    never set the (optional) Type field.
 	b, err := json.Marshal(union)
 	if err != nil {
 		t.Fatalf("json.Marshal(union): %v", err)
@@ -142,7 +128,6 @@ func assertDiscriminator(
 		t.Errorf("marshaled type = %q, want %q (json: %s)", got.Type, wantType, b)
 	}
 
-	// 2. Discriminator() reads the wire value back.
 	disc, err := discriminator()
 	if err != nil {
 		t.Fatalf("Discriminator(): %v", err)
@@ -151,7 +136,6 @@ func assertDiscriminator(
 		t.Errorf("Discriminator() = %q, want %q", disc, wantType)
 	}
 
-	// 3. ValueByDiscriminator() round-trips to the matching concrete variant.
 	val, err := valueByDiscriminator()
 	if err != nil {
 		t.Fatalf("ValueByDiscriminator(): %v", err)
