@@ -702,6 +702,26 @@ func (r *DeploymentResource) ValidateConfig(
 		return
 	}
 
+	// CELERY needs at least one worker queue, for every deployment type. Core requires it
+	// (`required_if=Executor CELERY` on the request binding) and a CELERY deployment with no
+	// queues has nothing to run tasks on. v1beta1 accepted the omission and created a
+	// queue-less deployment; v1 synthesizes a default queue instead, which Terraform would
+	// then report as an inconsistent result against a null config. Catching it at plan time
+	// gives a clear error instead of a confusing apply-time one.
+	//
+	// Skipped when worker_queues is unknown (e.g. supplied via a variable or local) — the
+	// value is checked once it resolves — and when remote_execution is set, which is only
+	// valid with the ASTRO executor and is reported by validateHostedConfig instead.
+	if data.Executor.ValueString() == string(platform_v1.DeploymentExecutorCELERY) &&
+		data.RemoteExecution.IsNull() && !data.WorkerQueues.IsUnknown() &&
+		len(data.WorkerQueues.Elements()) == 0 {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("worker_queues"),
+			"worker_queues is required for 'CELERY' executor",
+			"Please provide at least one worker_queue for CELERY executor.",
+		)
+	}
+
 	// Type specific validation
 	switch platform_v1.DeploymentType(data.Type.ValueString()) {
 	case platform_v1.DeploymentTypeSTANDARD:
