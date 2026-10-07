@@ -9,7 +9,7 @@ import (
 	"github.com/samber/lo"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -28,8 +28,8 @@ func NewDeploymentsDataSource() datasource.DataSource {
 
 // deploymentsDataSource defines the data source implementation.
 type deploymentsDataSource struct {
-	PlatformClient platform.ClientWithResponsesInterface
-	OrganizationId string
+	PlatformV1Client platform_v1.ClientWithResponsesInterface
+	OrganizationId   string
 }
 
 func (d *deploymentsDataSource) Metadata(
@@ -68,7 +68,7 @@ func (d *deploymentsDataSource) Configure(
 		return
 	}
 
-	d.PlatformClient = apiClients.PlatformClient
+	d.PlatformV1Client = apiClients.PlatformV1Client
 	d.OrganizationId = apiClients.OrganizationId
 }
 
@@ -85,7 +85,7 @@ func (d *deploymentsDataSource) Read(
 		return
 	}
 
-	params := &platform.ListDeploymentsParams{
+	params := &platform_v1.ListDeploymentsParams{
 		Limit: lo.ToPtr(1000),
 	}
 	var diags diag.Diagnostics
@@ -114,11 +114,11 @@ func (d *deploymentsDataSource) Read(
 		return
 	}
 
-	var deployments []platform.Deployment
+	var deployments []platform_v1.Deployment
 	offset := 0
 	for {
 		params.Offset = &offset
-		deploymentsResp, err := d.PlatformClient.ListDeploymentsWithResponse(
+		deploymentsResp, err := d.PlatformV1Client.ListDeploymentsWithResponse(
 			ctx,
 			d.OrganizationId,
 			params,

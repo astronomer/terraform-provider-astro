@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -111,7 +111,7 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			MarkdownDescription: "Deployment executor. Allowed values: `CELERY`, `KUBERNETES`, `ASTRO`.",
 			Required:            true,
 			Validators: []validator.String{
-				stringvalidator.OneOf(string(platform.DeploymentExecutorCELERY), string(platform.DeploymentExecutorKUBERNETES), string(platform.DeploymentExecutorASTRO)),
+				stringvalidator.OneOf(string(platform_v1.DeploymentExecutorCELERY), string(platform_v1.DeploymentExecutorKUBERNETES), string(platform_v1.DeploymentExecutorASTRO)),
 			},
 		},
 		"scheduler_cpu": resourceSchema.StringAttribute{
@@ -204,7 +204,7 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			MarkdownDescription: "Deployment type - if changing this value, the deployment will be recreated with the new type",
 			Required:            true,
 			Validators: []validator.String{
-				stringvalidator.OneOf(string(platform.DeploymentTypeSTANDARD), string(platform.DeploymentTypeDEDICATED), string(platform.DeploymentTypeHYBRID)),
+				stringvalidator.OneOf(string(platform_v1.DeploymentTypeSTANDARD), string(platform_v1.DeploymentTypeDEDICATED), string(platform_v1.DeploymentTypeHYBRID)),
 			},
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplaceIfConfigured(),
@@ -246,10 +246,10 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			Optional:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(platform.SchedulerMachineNameSMALL),
-					string(platform.SchedulerMachineNameMEDIUM),
-					string(platform.SchedulerMachineNameLARGE),
-					string(platform.SchedulerMachineNameEXTRALARGE),
+					string(platform_v1.DeploymentSchedulerSizeSMALL),
+					string(platform_v1.DeploymentSchedulerSizeMEDIUM),
+					string(platform_v1.DeploymentSchedulerSizeLARGE),
+					string(platform_v1.DeploymentSchedulerSizeEXTRALARGE),
 				),
 			},
 		},
@@ -335,7 +335,7 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 				stringplanmodifier.RequiresReplaceIfConfigured(),
 			},
 			Validators: []validator.String{
-				stringvalidator.OneOf(string(platform.ClusterCloudProviderAWS), string(platform.ClusterCloudProviderAZURE), string(platform.ClusterCloudProviderGCP)),
+				stringvalidator.OneOf(string(platform_v1.DeploymentCloudProviderAWS), string(platform_v1.DeploymentCloudProviderAZURE), string(platform_v1.DeploymentCloudProviderGCP)),
 			},
 		},
 		"cluster_id": resourceSchema.StringAttribute{
@@ -741,13 +741,13 @@ func WorkerQueueResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			Optional:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(platform.WorkerQueueRequestAstroMachineA5),
-					string(platform.WorkerQueueRequestAstroMachineA10),
-					string(platform.WorkerQueueRequestAstroMachineA20),
-					string(platform.WorkerQueueRequestAstroMachineA40),
-					string(platform.WorkerQueueRequestAstroMachineA60),
-					string(platform.WorkerQueueRequestAstroMachineA120),
-					string(platform.WorkerQueueRequestAstroMachineA160),
+					string(platform_v1.WorkerQueueRequestAstroMachineA5),
+					string(platform_v1.WorkerQueueRequestAstroMachineA10),
+					string(platform_v1.WorkerQueueRequestAstroMachineA20),
+					string(platform_v1.WorkerQueueRequestAstroMachineA40),
+					string(platform_v1.WorkerQueueRequestAstroMachineA60),
+					string(platform_v1.WorkerQueueRequestAstroMachineA120),
+					string(platform_v1.WorkerQueueRequestAstroMachineA160),
 				),
 			},
 		},

@@ -327,6 +327,18 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile(`worker_queue names must be unique`),
 			},
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
+					Name:                        awsDeploymentName + "_no_wq",
+					Description:                 utils.TestResourceDescription,
+					Region:                      "us-west-2",
+					CloudProvider:               "AWS",
+					Executor:                    "CELERY",
+					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
+					IncludeEnvironmentVariables: false,
+				}),
+				ExpectError: regexp.MustCompile(`worker_queues is required for 'CELERY' executor`),
+			},
 			// ASTRO executor with Remote Execution enabled should be blocked for STANDARD deployments
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -24,8 +24,8 @@ func NewDeploymentDataSource() datasource.DataSource {
 
 // deploymentDataSource defines the data source implementation.
 type deploymentDataSource struct {
-	PlatformClient platform.ClientWithResponsesInterface
-	OrganizationId string
+	PlatformV1Client platform_v1.ClientWithResponsesInterface
+	OrganizationId   string
 }
 
 func (d *deploymentDataSource) Metadata(
@@ -64,7 +64,7 @@ func (d *deploymentDataSource) Configure(
 		return
 	}
 
-	d.PlatformClient = apiClients.PlatformClient
+	d.PlatformV1Client = apiClients.PlatformV1Client
 	d.OrganizationId = apiClients.OrganizationId
 }
 
@@ -81,7 +81,7 @@ func (d *deploymentDataSource) Read(
 		return
 	}
 
-	deployment, err := d.PlatformClient.GetDeploymentWithResponse(
+	deployment, err := d.PlatformV1Client.GetDeploymentWithResponse(
 		ctx,
 		d.OrganizationId,
 		data.Id.ValueString(),

@@ -16,6 +16,154 @@ type ClientWithResponsesInterface struct {
 	mock.Mock
 }
 
+// AgentActionWithBodyWithResponse provides a mock function with given fields: ctx, organizationId, deploymentId, agentId, contentType, body, reqEditors
+func (_m *ClientWithResponsesInterface) AgentActionWithBodyWithResponse(ctx context.Context, organizationId string, deploymentId string, agentId string, contentType string, body io.Reader, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.AgentActionResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, deploymentId, agentId, contentType, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AgentActionWithBodyWithResponse")
+	}
+
+	var r0 *platform_v1.AgentActionResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string, io.Reader, ...platform_v1.RequestEditorFn) (*platform_v1.AgentActionResponse, error)); ok {
+		return rf(ctx, organizationId, deploymentId, agentId, contentType, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string, io.Reader, ...platform_v1.RequestEditorFn) *platform_v1.AgentActionResponse); ok {
+		r0 = rf(ctx, organizationId, deploymentId, agentId, contentType, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.AgentActionResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, string, io.Reader, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, deploymentId, agentId, contentType, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// AgentActionWithResponse provides a mock function with given fields: ctx, organizationId, deploymentId, agentId, body, reqEditors
+func (_m *ClientWithResponsesInterface) AgentActionWithResponse(ctx context.Context, organizationId string, deploymentId string, agentId string, body platform_v1.AgentActionBody, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.AgentActionResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, deploymentId, agentId, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AgentActionWithResponse")
+	}
+
+	var r0 *platform_v1.AgentActionResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, platform_v1.AgentActionBody, ...platform_v1.RequestEditorFn) (*platform_v1.AgentActionResponse, error)); ok {
+		return rf(ctx, organizationId, deploymentId, agentId, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, platform_v1.AgentActionBody, ...platform_v1.RequestEditorFn) *platform_v1.AgentActionResponse); ok {
+		r0 = rf(ctx, organizationId, deploymentId, agentId, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.AgentActionResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, platform_v1.AgentActionBody, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, deploymentId, agentId, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CreateDeploymentWithBodyWithResponse provides a mock function with given fields: ctx, organizationId, contentType, body, reqEditors
+func (_m *ClientWithResponsesInterface) CreateDeploymentWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.CreateDeploymentResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, contentType, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateDeploymentWithBodyWithResponse")
+	}
+
+	var r0 *platform_v1.CreateDeploymentResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, io.Reader, ...platform_v1.RequestEditorFn) (*platform_v1.CreateDeploymentResponse, error)); ok {
+		return rf(ctx, organizationId, contentType, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, io.Reader, ...platform_v1.RequestEditorFn) *platform_v1.CreateDeploymentResponse); ok {
+		r0 = rf(ctx, organizationId, contentType, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.CreateDeploymentResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, io.Reader, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, contentType, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CreateDeploymentWithResponse provides a mock function with given fields: ctx, organizationId, body, reqEditors
+func (_m *ClientWithResponsesInterface) CreateDeploymentWithResponse(ctx context.Context, organizationId string, body platform_v1.CreateDeploymentRequest, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.CreateDeploymentResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateDeploymentWithResponse")
+	}
+
+	var r0 *platform_v1.CreateDeploymentResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, platform_v1.CreateDeploymentRequest, ...platform_v1.RequestEditorFn) (*platform_v1.CreateDeploymentResponse, error)); ok {
+		return rf(ctx, organizationId, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, platform_v1.CreateDeploymentRequest, ...platform_v1.RequestEditorFn) *platform_v1.CreateDeploymentResponse); ok {
+		r0 = rf(ctx, organizationId, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.CreateDeploymentResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, platform_v1.CreateDeploymentRequest, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateEnvironmentObjectWithBodyWithResponse provides a mock function with given fields: ctx, organizationId, contentType, body, reqEditors
 func (_m *ClientWithResponsesInterface) CreateEnvironmentObjectWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.CreateEnvironmentObjectResponse, error) {
 	_va := make([]interface{}, len(reqEditors))
@@ -83,6 +231,80 @@ func (_m *ClientWithResponsesInterface) CreateEnvironmentObjectWithResponse(ctx 
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, platform_v1.CreateEnvironmentObjectRequest, ...platform_v1.RequestEditorFn) error); ok {
 		r1 = rf(ctx, organizationId, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DeleteDeploymentHibernationOverrideWithResponse provides a mock function with given fields: ctx, organizationId, deploymentId, reqEditors
+func (_m *ClientWithResponsesInterface) DeleteDeploymentHibernationOverrideWithResponse(ctx context.Context, organizationId string, deploymentId string, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.DeleteDeploymentHibernationOverrideResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, deploymentId)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteDeploymentHibernationOverrideWithResponse")
+	}
+
+	var r0 *platform_v1.DeleteDeploymentHibernationOverrideResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) (*platform_v1.DeleteDeploymentHibernationOverrideResponse, error)); ok {
+		return rf(ctx, organizationId, deploymentId, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) *platform_v1.DeleteDeploymentHibernationOverrideResponse); ok {
+		r0 = rf(ctx, organizationId, deploymentId, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.DeleteDeploymentHibernationOverrideResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, deploymentId, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DeleteDeploymentWithResponse provides a mock function with given fields: ctx, organizationId, deploymentId, reqEditors
+func (_m *ClientWithResponsesInterface) DeleteDeploymentWithResponse(ctx context.Context, organizationId string, deploymentId string, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.DeleteDeploymentResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, deploymentId)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteDeploymentWithResponse")
+	}
+
+	var r0 *platform_v1.DeleteDeploymentResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) (*platform_v1.DeleteDeploymentResponse, error)); ok {
+		return rf(ctx, organizationId, deploymentId, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) *platform_v1.DeleteDeploymentResponse); ok {
+		r0 = rf(ctx, organizationId, deploymentId, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.DeleteDeploymentResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, deploymentId, reqEditors...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -201,6 +423,80 @@ func (_m *ClientWithResponsesInterface) ExcludeLinkingEnvironmentObjectWithRespo
 	return r0, r1
 }
 
+// GetDeploymentLogsWithResponse provides a mock function with given fields: ctx, organizationId, deploymentId, params, reqEditors
+func (_m *ClientWithResponsesInterface) GetDeploymentLogsWithResponse(ctx context.Context, organizationId string, deploymentId string, params *platform_v1.GetDeploymentLogsParams, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.GetDeploymentLogsResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, deploymentId, params)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetDeploymentLogsWithResponse")
+	}
+
+	var r0 *platform_v1.GetDeploymentLogsResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, *platform_v1.GetDeploymentLogsParams, ...platform_v1.RequestEditorFn) (*platform_v1.GetDeploymentLogsResponse, error)); ok {
+		return rf(ctx, organizationId, deploymentId, params, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, *platform_v1.GetDeploymentLogsParams, ...platform_v1.RequestEditorFn) *platform_v1.GetDeploymentLogsResponse); ok {
+		r0 = rf(ctx, organizationId, deploymentId, params, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.GetDeploymentLogsResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, *platform_v1.GetDeploymentLogsParams, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, deploymentId, params, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetDeploymentWithResponse provides a mock function with given fields: ctx, organizationId, deploymentId, reqEditors
+func (_m *ClientWithResponsesInterface) GetDeploymentWithResponse(ctx context.Context, organizationId string, deploymentId string, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.GetDeploymentResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, deploymentId)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetDeploymentWithResponse")
+	}
+
+	var r0 *platform_v1.GetDeploymentResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) (*platform_v1.GetDeploymentResponse, error)); ok {
+		return rf(ctx, organizationId, deploymentId, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) *platform_v1.GetDeploymentResponse); ok {
+		r0 = rf(ctx, organizationId, deploymentId, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.GetDeploymentResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, deploymentId, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetEnvironmentObjectWithResponse provides a mock function with given fields: ctx, organizationId, environmentObjectId, reqEditors
 func (_m *ClientWithResponsesInterface) GetEnvironmentObjectWithResponse(ctx context.Context, organizationId string, environmentObjectId string, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.GetEnvironmentObjectResponse, error) {
 	_va := make([]interface{}, len(reqEditors))
@@ -238,6 +534,43 @@ func (_m *ClientWithResponsesInterface) GetEnvironmentObjectWithResponse(ctx con
 	return r0, r1
 }
 
+// ListDeploymentsWithResponse provides a mock function with given fields: ctx, organizationId, params, reqEditors
+func (_m *ClientWithResponsesInterface) ListDeploymentsWithResponse(ctx context.Context, organizationId string, params *platform_v1.ListDeploymentsParams, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.ListDeploymentsResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, params)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListDeploymentsWithResponse")
+	}
+
+	var r0 *platform_v1.ListDeploymentsResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, *platform_v1.ListDeploymentsParams, ...platform_v1.RequestEditorFn) (*platform_v1.ListDeploymentsResponse, error)); ok {
+		return rf(ctx, organizationId, params, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, *platform_v1.ListDeploymentsParams, ...platform_v1.RequestEditorFn) *platform_v1.ListDeploymentsResponse); ok {
+		r0 = rf(ctx, organizationId, params, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.ListDeploymentsResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, *platform_v1.ListDeploymentsParams, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, params, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ListEnvironmentObjectsWithResponse provides a mock function with given fields: ctx, organizationId, params, reqEditors
 func (_m *ClientWithResponsesInterface) ListEnvironmentObjectsWithResponse(ctx context.Context, organizationId string, params *platform_v1.ListEnvironmentObjectsParams, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.ListEnvironmentObjectsResponse, error) {
 	_va := make([]interface{}, len(reqEditors))
@@ -268,6 +601,154 @@ func (_m *ClientWithResponsesInterface) ListEnvironmentObjectsWithResponse(ctx c
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, *platform_v1.ListEnvironmentObjectsParams, ...platform_v1.RequestEditorFn) error); ok {
 		r1 = rf(ctx, organizationId, params, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateDeploymentHibernationOverrideWithBodyWithResponse provides a mock function with given fields: ctx, organizationId, deploymentId, contentType, body, reqEditors
+func (_m *ClientWithResponsesInterface) UpdateDeploymentHibernationOverrideWithBodyWithResponse(ctx context.Context, organizationId string, deploymentId string, contentType string, body io.Reader, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.UpdateDeploymentHibernationOverrideResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, deploymentId, contentType, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateDeploymentHibernationOverrideWithBodyWithResponse")
+	}
+
+	var r0 *platform_v1.UpdateDeploymentHibernationOverrideResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, io.Reader, ...platform_v1.RequestEditorFn) (*platform_v1.UpdateDeploymentHibernationOverrideResponse, error)); ok {
+		return rf(ctx, organizationId, deploymentId, contentType, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, io.Reader, ...platform_v1.RequestEditorFn) *platform_v1.UpdateDeploymentHibernationOverrideResponse); ok {
+		r0 = rf(ctx, organizationId, deploymentId, contentType, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.UpdateDeploymentHibernationOverrideResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, io.Reader, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, deploymentId, contentType, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateDeploymentHibernationOverrideWithResponse provides a mock function with given fields: ctx, organizationId, deploymentId, body, reqEditors
+func (_m *ClientWithResponsesInterface) UpdateDeploymentHibernationOverrideWithResponse(ctx context.Context, organizationId string, deploymentId string, body platform_v1.OverrideDeploymentHibernationBody, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.UpdateDeploymentHibernationOverrideResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, deploymentId, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateDeploymentHibernationOverrideWithResponse")
+	}
+
+	var r0 *platform_v1.UpdateDeploymentHibernationOverrideResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, platform_v1.OverrideDeploymentHibernationBody, ...platform_v1.RequestEditorFn) (*platform_v1.UpdateDeploymentHibernationOverrideResponse, error)); ok {
+		return rf(ctx, organizationId, deploymentId, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, platform_v1.OverrideDeploymentHibernationBody, ...platform_v1.RequestEditorFn) *platform_v1.UpdateDeploymentHibernationOverrideResponse); ok {
+		r0 = rf(ctx, organizationId, deploymentId, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.UpdateDeploymentHibernationOverrideResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, platform_v1.OverrideDeploymentHibernationBody, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, deploymentId, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateDeploymentWithBodyWithResponse provides a mock function with given fields: ctx, organizationId, deploymentId, contentType, body, reqEditors
+func (_m *ClientWithResponsesInterface) UpdateDeploymentWithBodyWithResponse(ctx context.Context, organizationId string, deploymentId string, contentType string, body io.Reader, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.UpdateDeploymentResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, deploymentId, contentType, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateDeploymentWithBodyWithResponse")
+	}
+
+	var r0 *platform_v1.UpdateDeploymentResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, io.Reader, ...platform_v1.RequestEditorFn) (*platform_v1.UpdateDeploymentResponse, error)); ok {
+		return rf(ctx, organizationId, deploymentId, contentType, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, io.Reader, ...platform_v1.RequestEditorFn) *platform_v1.UpdateDeploymentResponse); ok {
+		r0 = rf(ctx, organizationId, deploymentId, contentType, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.UpdateDeploymentResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, io.Reader, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, deploymentId, contentType, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateDeploymentWithResponse provides a mock function with given fields: ctx, organizationId, deploymentId, body, reqEditors
+func (_m *ClientWithResponsesInterface) UpdateDeploymentWithResponse(ctx context.Context, organizationId string, deploymentId string, body platform_v1.UpdateDeploymentRequest, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.UpdateDeploymentResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, deploymentId, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateDeploymentWithResponse")
+	}
+
+	var r0 *platform_v1.UpdateDeploymentResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, platform_v1.UpdateDeploymentRequest, ...platform_v1.RequestEditorFn) (*platform_v1.UpdateDeploymentResponse, error)); ok {
+		return rf(ctx, organizationId, deploymentId, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, platform_v1.UpdateDeploymentRequest, ...platform_v1.RequestEditorFn) *platform_v1.UpdateDeploymentResponse); ok {
+		r0 = rf(ctx, organizationId, deploymentId, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.UpdateDeploymentResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, platform_v1.UpdateDeploymentRequest, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, deploymentId, body, reqEditors...)
 	} else {
 		r1 = ret.Error(1)
 	}

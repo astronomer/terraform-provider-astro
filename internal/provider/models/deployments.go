@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -20,7 +20,7 @@ type Deployments struct {
 
 func (data *Deployments) ReadFromResponse(
 	ctx context.Context,
-	deployments []platform.Deployment,
+	deployments []platform_v1.Deployment,
 ) diag.Diagnostics {
 	values := make([]attr.Value, len(deployments))
 	for i, deployment := range deployments {

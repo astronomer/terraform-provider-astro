@@ -329,7 +329,7 @@ func buildCreateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 		req.Connection = connReq
 	case platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
 		meReq := &platform_v1.CreateEnvironmentObjectMetricsExportRequest{
-			Endpoint:     data.Endpoint.ValueString(),
+			Endpoint:     data.Endpoint.ValueStringPointer(),
 			ExporterType: platform_v1.CreateEnvironmentObjectMetricsExportRequestExporterType(data.ExporterType.ValueString()),
 			BasicToken:   data.BasicToken.ValueStringPointer(),
 			Username:     data.Username.ValueStringPointer(),

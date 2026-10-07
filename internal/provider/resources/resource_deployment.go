@@ -13,6 +13,7 @@ import (
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -34,8 +35,9 @@ func NewDeploymentResource() resource.Resource {
 
 // DeploymentResource defines the resource implementation.
 type DeploymentResource struct {
-	platformClient *platform.ClientWithResponses
-	organizationId string
+	platformV1Client *platform_v1.ClientWithResponses
+	platformClient   *platform.ClientWithResponses
+	organizationId   string
 }
 
 func (r *DeploymentResource) Metadata(
@@ -74,6 +76,7 @@ func (r *DeploymentResource) Configure(
 		return
 	}
 
+	r.platformV1Client = apiClients.PlatformV1Client
 	r.platformClient = apiClients.PlatformClient
 	r.organizationId = apiClients.OrganizationId
 }
@@ -92,8 +95,8 @@ func (r *DeploymentResource) Create(
 	}
 
 	var diags diag.Diagnostics
-	var createDeploymentRequest platform.CreateDeploymentRequest
-	var envVars []platform.DeploymentEnvironmentVariableRequest
+	var createDeploymentRequest platform_v1.CreateDeploymentRequest
+	var envVars []platform_v1.DeploymentEnvironmentVariableRequest
 
 	originalAstroRuntimeVersion := data.OriginalAstroRuntimeVersion.ValueString()
 	if len(originalAstroRuntimeVersion) == 0 {
@@ -109,24 +112,24 @@ func (r *DeploymentResource) Create(
 	desiredWorkloadIdentity := data.DesiredWorkloadIdentity.ValueString()
 
 	switch data.Type.ValueString() {
-	case string(platform.DeploymentTypeSTANDARD):
-		createStandardDeploymentRequest := platform.CreateStandardDeploymentRequest{
-			AstroRuntimeVersion:  originalAstroRuntimeVersion,
-			CloudProvider:        (*platform.CreateStandardDeploymentRequestCloudProvider)(data.CloudProvider.ValueStringPointer()),
+	case string(platform_v1.DeploymentTypeSTANDARD):
+		createStandardDeploymentRequest := platform_v1.CreateStandardDeploymentRequest{
+			AstroRuntimeVersion:  &originalAstroRuntimeVersion,
+			CloudProvider:        (*platform_v1.CreateStandardDeploymentRequestCloudProvider)(data.CloudProvider.ValueStringPointer()),
 			DefaultTaskPodCpu:    data.DefaultTaskPodCpu.ValueStringPointer(),
 			DefaultTaskPodMemory: data.DefaultTaskPodMemory.ValueStringPointer(),
 			Description:          data.Description.ValueStringPointer(),
-			Executor:             platform.CreateStandardDeploymentRequestExecutor(data.Executor.ValueString()),
-			IsCicdEnforced:       data.IsCicdEnforced.ValueBool(),
-			IsDagDeployEnabled:   data.IsDagDeployEnabled.ValueBool(),
+			Executor:             lo.ToPtr(platform_v1.CreateStandardDeploymentRequestExecutor(data.Executor.ValueString())),
+			IsCicdEnforced:       data.IsCicdEnforced.ValueBoolPointer(),
+			IsDagDeployEnabled:   data.IsDagDeployEnabled.ValueBoolPointer(),
 			IsDevelopmentMode:    data.IsDevelopmentMode.ValueBoolPointer(),
-			IsHighAvailability:   data.IsHighAvailability.ValueBool(),
+			IsHighAvailability:   data.IsHighAvailability.ValueBoolPointer(),
 			Name:                 data.Name.ValueString(),
 			Region:               data.Region.ValueStringPointer(),
 			ResourceQuotaCpu:     data.ResourceQuotaCpu.ValueStringPointer(),
 			ResourceQuotaMemory:  data.ResourceQuotaMemory.ValueStringPointer(),
-			SchedulerSize:        platform.CreateStandardDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString()),
-			Type:                 platform.CreateStandardDeploymentRequestTypeSTANDARD,
+			SchedulerSize:        lo.ToPtr(platform_v1.CreateStandardDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString())),
+			Type:                 lo.ToPtr(platform_v1.CreateStandardDeploymentRequestTypeSTANDARD),
 			WorkspaceId:          data.WorkspaceId.ValueString(),
 		}
 		if desiredWorkloadIdentity != "" {
@@ -173,23 +176,23 @@ func (r *DeploymentResource) Create(
 			return
 		}
 
-	case string(platform.DeploymentTypeDEDICATED):
-		createDedicatedDeploymentRequest := platform.CreateDedicatedDeploymentRequest{
-			AstroRuntimeVersion:  originalAstroRuntimeVersion,
-			ClusterId:            data.ClusterId.ValueString(),
+	case string(platform_v1.DeploymentTypeDEDICATED):
+		createDedicatedDeploymentRequest := platform_v1.CreateDedicatedDeploymentRequest{
+			AstroRuntimeVersion:  &originalAstroRuntimeVersion,
+			ClusterId:            data.ClusterId.ValueStringPointer(),
 			DefaultTaskPodCpu:    data.DefaultTaskPodCpu.ValueStringPointer(),
 			DefaultTaskPodMemory: data.DefaultTaskPodMemory.ValueStringPointer(),
 			Description:          data.Description.ValueStringPointer(),
-			Executor:             platform.CreateDedicatedDeploymentRequestExecutor(data.Executor.ValueString()),
-			IsCicdEnforced:       data.IsCicdEnforced.ValueBool(),
-			IsDagDeployEnabled:   data.IsDagDeployEnabled.ValueBool(),
+			Executor:             lo.ToPtr(platform_v1.CreateDedicatedDeploymentRequestExecutor(data.Executor.ValueString())),
+			IsCicdEnforced:       data.IsCicdEnforced.ValueBoolPointer(),
+			IsDagDeployEnabled:   data.IsDagDeployEnabled.ValueBoolPointer(),
 			IsDevelopmentMode:    data.IsDevelopmentMode.ValueBoolPointer(),
-			IsHighAvailability:   data.IsHighAvailability.ValueBool(),
+			IsHighAvailability:   data.IsHighAvailability.ValueBoolPointer(),
 			Name:                 data.Name.ValueString(),
 			ResourceQuotaCpu:     data.ResourceQuotaCpu.ValueStringPointer(),
 			ResourceQuotaMemory:  data.ResourceQuotaMemory.ValueStringPointer(),
-			SchedulerSize:        platform.CreateDedicatedDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString()),
-			Type:                 platform.CreateDedicatedDeploymentRequestTypeDEDICATED,
+			SchedulerSize:        lo.ToPtr(platform_v1.CreateDedicatedDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString())),
+			Type:                 lo.ToPtr(platform_v1.CreateDedicatedDeploymentRequestTypeDEDICATED),
 			WorkspaceId:          data.WorkspaceId.ValueString(),
 		}
 		if desiredWorkloadIdentity != "" {
@@ -243,21 +246,21 @@ func (r *DeploymentResource) Create(
 			return
 		}
 
-	case string(platform.DeploymentTypeHYBRID):
-		createHybridDeploymentRequest := platform.CreateHybridDeploymentRequest{
-			AstroRuntimeVersion: originalAstroRuntimeVersion,
-			ClusterId:           data.ClusterId.ValueString(),
+	case string(platform_v1.DeploymentTypeHYBRID):
+		createHybridDeploymentRequest := platform_v1.CreateHybridDeploymentRequest{
+			AstroRuntimeVersion: &originalAstroRuntimeVersion,
+			ClusterId:           data.ClusterId.ValueStringPointer(),
 			Description:         data.Description.ValueStringPointer(),
-			Executor:            platform.CreateHybridDeploymentRequestExecutor(data.Executor.ValueString()),
-			IsCicdEnforced:      data.IsCicdEnforced.ValueBool(),
-			IsDagDeployEnabled:  data.IsDagDeployEnabled.ValueBool(),
+			Executor:            lo.ToPtr(platform_v1.CreateHybridDeploymentRequestExecutor(data.Executor.ValueString())),
+			IsCicdEnforced:      data.IsCicdEnforced.ValueBoolPointer(),
+			IsDagDeployEnabled:  data.IsDagDeployEnabled.ValueBoolPointer(),
 			Name:                data.Name.ValueString(),
-			Scheduler: platform.DeploymentInstanceSpecRequest{
-				Au:       int(data.SchedulerAu.ValueInt64()),
-				Replicas: int(data.SchedulerReplicas.ValueInt64()),
+			Scheduler: &platform_v1.CreateDeploymentInstanceSpecRequest{
+				Au:       lo.ToPtr(int(data.SchedulerAu.ValueInt64())),
+				Replicas: lo.ToPtr(int(data.SchedulerReplicas.ValueInt64())),
 			},
 			TaskPodNodePoolId: data.TaskPodNodePoolId.ValueStringPointer(),
-			Type:              platform.CreateHybridDeploymentRequestTypeHYBRID,
+			Type:              lo.ToPtr(platform_v1.CreateHybridDeploymentRequestTypeHYBRID),
 			WorkspaceId:       data.WorkspaceId.ValueString(),
 		}
 
@@ -299,7 +302,7 @@ func (r *DeploymentResource) Create(
 		}
 	}
 
-	deployment, err := r.platformClient.CreateDeploymentWithResponse(
+	deployment, err := r.platformV1Client.CreateDeploymentWithResponse(
 		ctx,
 		r.organizationId,
 		createDeploymentRequest,
@@ -350,7 +353,7 @@ func (r *DeploymentResource) Read(
 	}
 
 	// get request
-	deployment, err := r.platformClient.GetDeploymentWithResponse(
+	deployment, err := r.platformV1Client.GetDeploymentWithResponse(
 		ctx,
 		r.organizationId,
 		data.Id.ValueString(),
@@ -402,18 +405,18 @@ func (r *DeploymentResource) Update(
 
 	// update request
 	diags := make(diag.Diagnostics, 0)
-	var updateDeploymentRequest platform.UpdateDeploymentRequest
-	var envVars []platform.DeploymentEnvironmentVariableRequest
+	var updateDeploymentRequest platform_v1.UpdateDeploymentRequest
+	var envVars []platform_v1.DeploymentEnvironmentVariableRequest
 
 	desiredWorkloadIdentity := data.DesiredWorkloadIdentity.ValueString()
 
 	switch data.Type.ValueString() {
-	case string(platform.DeploymentTypeSTANDARD):
-		updateStandardDeploymentRequest := platform.UpdateStandardDeploymentRequest{
+	case string(platform_v1.DeploymentTypeSTANDARD):
+		updateStandardDeploymentRequest := platform_v1.UpdateStandardDeploymentRequest{
 			DefaultTaskPodCpu:    data.DefaultTaskPodCpu.ValueStringPointer(),
 			DefaultTaskPodMemory: data.DefaultTaskPodMemory.ValueStringPointer(),
 			Description:          data.Description.ValueStringPointer(),
-			Executor:             platform.UpdateStandardDeploymentRequestExecutor(data.Executor.ValueString()),
+			Executor:             platform_v1.UpdateStandardDeploymentRequestExecutor(data.Executor.ValueString()),
 			IsCicdEnforced:       data.IsCicdEnforced.ValueBool(),
 			IsDagDeployEnabled:   data.IsDagDeployEnabled.ValueBool(),
 			IsDevelopmentMode:    data.IsDevelopmentMode.ValueBoolPointer(),
@@ -421,8 +424,8 @@ func (r *DeploymentResource) Update(
 			Name:                 data.Name.ValueString(),
 			ResourceQuotaCpu:     data.ResourceQuotaCpu.ValueStringPointer(),
 			ResourceQuotaMemory:  data.ResourceQuotaMemory.ValueStringPointer(),
-			SchedulerSize:        platform.UpdateStandardDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString()),
-			Type:                 platform.UpdateStandardDeploymentRequestTypeSTANDARD,
+			SchedulerSize:        platform_v1.UpdateStandardDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString()),
+			Type:                 platform_v1.UpdateStandardDeploymentRequestType(platform_v1.DeploymentTypeSTANDARD),
 			WorkspaceId:          data.WorkspaceId.ValueString(),
 		}
 
@@ -447,7 +450,7 @@ func (r *DeploymentResource) Update(
 		updateStandardDeploymentRequest.EnvironmentVariables = envVars
 
 		// worker queues
-		updateStandardDeploymentRequest.WorkerQueues, diags = RequestHostedWorkerQueues(ctx, data.WorkerQueues)
+		updateStandardDeploymentRequest.WorkerQueues, diags = RequestHostedUpdateWorkerQueues(ctx, data.WorkerQueues)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -470,12 +473,12 @@ func (r *DeploymentResource) Update(
 			return
 		}
 
-	case string(platform.DeploymentTypeDEDICATED):
-		updateDedicatedDeploymentRequest := platform.UpdateDedicatedDeploymentRequest{
+	case string(platform_v1.DeploymentTypeDEDICATED):
+		updateDedicatedDeploymentRequest := platform_v1.UpdateDedicatedDeploymentRequest{
 			DefaultTaskPodCpu:    data.DefaultTaskPodCpu.ValueStringPointer(),
 			DefaultTaskPodMemory: data.DefaultTaskPodMemory.ValueStringPointer(),
 			Description:          data.Description.ValueStringPointer(),
-			Executor:             platform.UpdateDedicatedDeploymentRequestExecutor(data.Executor.ValueString()),
+			Executor:             platform_v1.UpdateDedicatedDeploymentRequestExecutor(data.Executor.ValueString()),
 			IsCicdEnforced:       data.IsCicdEnforced.ValueBool(),
 			IsDagDeployEnabled:   data.IsDagDeployEnabled.ValueBool(),
 			IsDevelopmentMode:    data.IsDevelopmentMode.ValueBoolPointer(),
@@ -483,8 +486,8 @@ func (r *DeploymentResource) Update(
 			Name:                 data.Name.ValueString(),
 			ResourceQuotaCpu:     data.ResourceQuotaCpu.ValueStringPointer(),
 			ResourceQuotaMemory:  data.ResourceQuotaMemory.ValueStringPointer(),
-			SchedulerSize:        platform.UpdateDedicatedDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString()),
-			Type:                 platform.UpdateDedicatedDeploymentRequestTypeDEDICATED,
+			SchedulerSize:        platform_v1.UpdateDedicatedDeploymentRequestSchedulerSize(data.SchedulerSize.ValueString()),
+			Type:                 platform_v1.UpdateDedicatedDeploymentRequestTypeDEDICATED,
 			WorkspaceId:          data.WorkspaceId.ValueString(),
 		}
 
@@ -509,7 +512,7 @@ func (r *DeploymentResource) Update(
 		updateDedicatedDeploymentRequest.EnvironmentVariables = envVars
 
 		// worker queues
-		updateDedicatedDeploymentRequest.WorkerQueues, diags = RequestHostedWorkerQueues(ctx, data.WorkerQueues)
+		updateDedicatedDeploymentRequest.WorkerQueues, diags = RequestHostedUpdateWorkerQueues(ctx, data.WorkerQueues)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -539,19 +542,19 @@ func (r *DeploymentResource) Update(
 			return
 		}
 
-	case string(platform.DeploymentTypeHYBRID):
-		updateHybridDeploymentRequest := platform.UpdateHybridDeploymentRequest{
+	case string(platform_v1.DeploymentTypeHYBRID):
+		updateHybridDeploymentRequest := platform_v1.UpdateHybridDeploymentRequest{
 			Description:        data.Description.ValueStringPointer(),
-			Executor:           platform.UpdateHybridDeploymentRequestExecutor(data.Executor.ValueString()),
+			Executor:           platform_v1.UpdateHybridDeploymentRequestExecutor(data.Executor.ValueString()),
 			IsCicdEnforced:     data.IsCicdEnforced.ValueBool(),
 			IsDagDeployEnabled: data.IsDagDeployEnabled.ValueBool(),
 			Name:               data.Name.ValueString(),
-			Scheduler: platform.DeploymentInstanceSpecRequest{
+			Scheduler: platform_v1.UpdateDeploymentInstanceSpecRequest{
 				Au:       int(data.SchedulerAu.ValueInt64()),
 				Replicas: int(data.SchedulerReplicas.ValueInt64()),
 			},
 			TaskPodNodePoolId: data.TaskPodNodePoolId.ValueStringPointer(),
-			Type:              platform.UpdateHybridDeploymentRequestTypeHYBRID,
+			Type:              platform_v1.UpdateHybridDeploymentRequestTypeHYBRID,
 			WorkspaceId:       data.WorkspaceId.ValueString(),
 		}
 
@@ -576,7 +579,7 @@ func (r *DeploymentResource) Update(
 		updateHybridDeploymentRequest.EnvironmentVariables = envVars
 
 		// worker queues
-		updateHybridDeploymentRequest.WorkerQueues, diags = RequestHybridWorkerQueues(ctx, data.WorkerQueues)
+		updateHybridDeploymentRequest.WorkerQueues, diags = RequestHybridUpdateWorkerQueues(ctx, data.WorkerQueues)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -593,7 +596,7 @@ func (r *DeploymentResource) Update(
 		}
 	}
 
-	deployment, err := r.platformClient.UpdateDeploymentWithResponse(
+	deployment, err := r.platformV1Client.UpdateDeploymentWithResponse(
 		ctx,
 		r.organizationId,
 		data.Id.ValueString(),
@@ -639,7 +642,7 @@ func (r *DeploymentResource) Delete(
 		return
 	}
 
-	deployment, deleteErr := r.platformClient.DeleteDeploymentWithResponse(
+	deployment, deleteErr := r.platformV1Client.DeleteDeploymentWithResponse(
 		ctx,
 		r.organizationId,
 		data.Id.ValueString(),
@@ -685,8 +688,8 @@ func (r *DeploymentResource) ValidateConfig(
 	}
 
 	// Block ASTRO executor for HYBRID deployments
-	if data.Executor.ValueString() == string(platform.DeploymentExecutorASTRO) &&
-		data.Type.ValueString() == string(platform.DeploymentTypeHYBRID) {
+	if data.Executor.ValueString() == string(platform_v1.DeploymentExecutorASTRO) &&
+		data.Type.ValueString() == string(platform_v1.DeploymentTypeHYBRID) {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("executor"),
 			"ASTRO executor is not allowed for HYBRID deployments",
@@ -695,15 +698,25 @@ func (r *DeploymentResource) ValidateConfig(
 		return
 	}
 
+	if data.Executor.ValueString() == string(platform_v1.DeploymentExecutorCELERY) &&
+		data.RemoteExecution.IsNull() && !data.WorkerQueues.IsUnknown() &&
+		len(data.WorkerQueues.Elements()) == 0 {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("worker_queues"),
+			"worker_queues is required for 'CELERY' executor",
+			"Please provide at least one worker_queue for CELERY executor.",
+		)
+	}
+
 	// Type specific validation
-	switch platform.DeploymentType(data.Type.ValueString()) {
-	case platform.DeploymentTypeSTANDARD:
+	switch platform_v1.DeploymentType(data.Type.ValueString()) {
+	case platform_v1.DeploymentTypeSTANDARD:
 		resp.Diagnostics.Append(validateStandardConfig(ctx, &data)...)
 		resp.Diagnostics.Append(validateHostedConfig(ctx, &data)...)
-	case platform.DeploymentTypeDEDICATED:
+	case platform_v1.DeploymentTypeDEDICATED:
 		resp.Diagnostics.Append(validateHostedConfig(ctx, &data)...)
 		resp.Diagnostics.Append(validateClusterIdConfig(ctx, &data)...)
-	case platform.DeploymentTypeHYBRID:
+	case platform_v1.DeploymentTypeHYBRID:
 		resp.Diagnostics.Append(validateHybridConfig(ctx, &data)...)
 		resp.Diagnostics.Append(validateClusterIdConfig(ctx, &data)...)
 	}
@@ -812,7 +825,7 @@ func validateHybridConfig(ctx context.Context, data *models.DeploymentResource) 
 		}
 	}
 
-	if data.Executor.ValueString() == string(platform.DeploymentExecutorKUBERNETES) && data.TaskPodNodePoolId.IsNull() {
+	if data.Executor.ValueString() == string(platform_v1.DeploymentExecutorKUBERNETES) && data.TaskPodNodePoolId.IsNull() {
 		diags.AddError(
 			"task_node_pool_id is required for 'KUBERNETES' executor in 'HYBRID' deployment",
 			"Please provide a task_node_pool_id",
@@ -919,7 +932,7 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 			"Please remove task_node_pool_id",
 		)
 	}
-	if !data.RemoteExecution.IsNull() && data.Executor.ValueString() != string(platform.DeploymentExecutorASTRO) {
+	if !data.RemoteExecution.IsNull() && data.Executor.ValueString() != string(platform_v1.DeploymentExecutorASTRO) {
 		diags.AddError(
 			"remote_execution is only allowed for 'ASTRO' executor",
 			"Please remove remote_execution or change executor to 'ASTRO'",
@@ -983,7 +996,7 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 	}
 
 	// For ASTRO executor without Remote Execution, require at least one worker_queue named 'default'
-	if data.Executor.ValueString() == string(platform.DeploymentExecutorASTRO) && data.RemoteExecution.IsNull() {
+	if data.Executor.ValueString() == string(platform_v1.DeploymentExecutorASTRO) && data.RemoteExecution.IsNull() {
 		// Skip validation if worker_queues is unknown (e.g., provided via a local or variable).
 		// The actual value will be validated at plan/apply time when it's resolved.
 		if data.WorkerQueues.IsUnknown() {
@@ -1042,11 +1055,11 @@ func validateClusterIdConfig(ctx context.Context, data *models.DeploymentResourc
 	return diags
 }
 
-// RequestScalingSpec converts a Terraform object to a platform.DeploymentScalingSpecRequest to be used in create and update requests
-func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*platform.DeploymentScalingSpecRequest, diag.Diagnostics) {
+// RequestScalingSpec converts a Terraform object to a platform_v1.DeploymentScalingSpecRequest to be used in create and update requests
+func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*platform_v1.DeploymentScalingSpecRequest, diag.Diagnostics) {
 	if scalingSpecObj.IsNull() {
 		// If the scaling spec is not set, return an empty scaling spec for the request
-		return &platform.DeploymentScalingSpecRequest{}, nil
+		return &platform_v1.DeploymentScalingSpecRequest{}, nil
 	}
 	var scalingSpec models.DeploymentScalingSpec
 	diags := scalingSpecObj.As(ctx, &scalingSpec, basetypes.ObjectAsOptions{
@@ -1058,7 +1071,7 @@ func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*plat
 		return nil, diags
 	}
 
-	platformScalingSpec := &platform.DeploymentScalingSpecRequest{}
+	platformScalingSpec := &platform_v1.DeploymentScalingSpecRequest{}
 	if scalingSpec.HibernationSpec.IsNull() {
 		// If the hibernation spec is not set, return a scaling spec without hibernation spec for the request
 		platformScalingSpec.HibernationSpec = nil
@@ -1073,7 +1086,7 @@ func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*plat
 		tflog.Error(ctx, "failed to convert hibernation spec", map[string]interface{}{"error": diags})
 		return nil, diags
 	}
-	platformScalingSpec.HibernationSpec = &platform.DeploymentHibernationSpecRequest{}
+	platformScalingSpec.HibernationSpec = &platform_v1.DeploymentHibernationSpecRequest{}
 
 	if hibernationSpec.Override.IsNull() && hibernationSpec.Schedules.IsNull() {
 		// If the hibernation spec is set but both override and schedules are not set, return an error
@@ -1089,7 +1102,7 @@ func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*plat
 			tflog.Error(ctx, "failed to convert hibernation override", map[string]interface{}{"error": diags})
 			return nil, diags
 		}
-		platformScalingSpec.HibernationSpec.Override = &platform.DeploymentHibernationOverrideRequest{
+		platformScalingSpec.HibernationSpec.Override = &platform_v1.DeploymentHibernationOverrideRequest{
 			IsHibernating: override.IsHibernating.ValueBoolPointer(),
 			OverrideUntil: override.OverrideUntil.ValueStringPointer(),
 		}
@@ -1101,8 +1114,8 @@ func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*plat
 			tflog.Error(ctx, "failed to convert hibernation schedules", map[string]interface{}{"error": diags})
 			return nil, diags
 		}
-		requestSchedules := lo.Map(schedules, func(schedule models.HibernationSchedule, _ int) platform.DeploymentHibernationSchedule {
-			return platform.DeploymentHibernationSchedule{
+		requestSchedules := lo.Map(schedules, func(schedule models.HibernationSchedule, _ int) platform_v1.DeploymentHibernationSchedule {
+			return platform_v1.DeploymentHibernationSchedule{
 				Description:     schedule.Description.ValueStringPointer(),
 				HibernateAtCron: schedule.HibernateAtCron.ValueString(),
 				IsEnabled:       schedule.IsEnabled.ValueBool(),
@@ -1115,8 +1128,8 @@ func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*plat
 	return platformScalingSpec, nil
 }
 
-// RequestRemoteExecution converts a Terraform object to a platform.RemoteExecutionRequest to be used in create and update requests
-func RequestRemoteExecution(ctx context.Context, remoteExecutionObj types.Object) (*platform.DeploymentRemoteExecutionRequest, diag.Diagnostics) {
+// RequestRemoteExecution converts a Terraform object to a platform_v1.RemoteExecutionRequest to be used in create and update requests
+func RequestRemoteExecution(ctx context.Context, remoteExecutionObj types.Object) (*platform_v1.DeploymentRemoteExecutionRequest, diag.Diagnostics) {
 	if remoteExecutionObj.IsNull() {
 		return nil, nil
 	}
@@ -1130,7 +1143,7 @@ func RequestRemoteExecution(ctx context.Context, remoteExecutionObj types.Object
 		return nil, diags
 	}
 
-	platformRemoteExecution := &platform.DeploymentRemoteExecutionRequest{
+	platformRemoteExecution := &platform_v1.DeploymentRemoteExecutionRequest{
 		Enabled:           remoteExecution.Enabled.ValueBool(),
 		TaskLogBucket:     remoteExecution.TaskLogBucket.ValueStringPointer(),
 		TaskLogUrlPattern: remoteExecution.TaskLogUrlPattern.ValueStringPointer(),
@@ -1149,20 +1162,15 @@ func RequestRemoteExecution(ctx context.Context, remoteExecutionObj types.Object
 	return platformRemoteExecution, nil
 }
 
-// RequestHostedWorkerQueues converts a Terraform set to a list of platform.WorkerQueueRequest to be used in create and update requests
-func RequestHostedWorkerQueues(ctx context.Context, workerQueuesObjSet types.Set) (*[]platform.WorkerQueueRequest, diag.Diagnostics) {
-	if len(workerQueuesObjSet.Elements()) == 0 {
-		return nil, nil
-	}
-
-	var workerQueues []models.WorkerQueueResource
-	diags := workerQueuesObjSet.ElementsAs(ctx, &workerQueues, false)
-	if diags.HasError() {
+// RequestHostedWorkerQueues converts a Terraform set to a list of platform_v1.WorkerQueueRequest to be used in create and update requests
+func RequestHostedWorkerQueues(ctx context.Context, workerQueuesObjSet types.Set) (*[]platform_v1.WorkerQueueRequest, diag.Diagnostics) {
+	workerQueues, diags := workerQueueResources(ctx, workerQueuesObjSet)
+	if workerQueues == nil || diags.HasError() {
 		return nil, diags
 	}
-	platformWorkerQueues := lo.Map(workerQueues, func(workerQueue models.WorkerQueueResource, _ int) platform.WorkerQueueRequest {
-		return platform.WorkerQueueRequest{
-			AstroMachine:      platform.WorkerQueueRequestAstroMachine(workerQueue.AstroMachine.ValueString()),
+	platformWorkerQueues := lo.Map(workerQueues, func(workerQueue models.WorkerQueueResource, _ int) platform_v1.WorkerQueueRequest {
+		return platform_v1.WorkerQueueRequest{
+			AstroMachine:      platform_v1.WorkerQueueRequestAstroMachine(workerQueue.AstroMachine.ValueString()),
 			IsDefault:         workerQueue.IsDefault.ValueBool(),
 			MaxWorkerCount:    int(workerQueue.MaxWorkerCount.ValueInt64()),
 			MinWorkerCount:    int(workerQueue.MinWorkerCount.ValueInt64()),
@@ -1173,19 +1181,14 @@ func RequestHostedWorkerQueues(ctx context.Context, workerQueuesObjSet types.Set
 	return &platformWorkerQueues, nil
 }
 
-// RequestHybridWorkerQueues converts a Terraform set to a list of platform.WorkerQueueRequest to be used in create and update requests
-func RequestHybridWorkerQueues(ctx context.Context, workerQueuesObjSet types.Set) (*[]platform.HybridWorkerQueueRequest, diag.Diagnostics) {
-	if len(workerQueuesObjSet.Elements()) == 0 {
-		return nil, nil
-	}
-
-	var workerQueues []models.WorkerQueueResource
-	diags := workerQueuesObjSet.ElementsAs(ctx, &workerQueues, false)
-	if diags.HasError() {
+// RequestHybridWorkerQueues converts a Terraform set to a list of platform_v1.WorkerQueueRequest to be used in create and update requests
+func RequestHybridWorkerQueues(ctx context.Context, workerQueuesObjSet types.Set) (*[]platform_v1.HybridWorkerQueueRequest, diag.Diagnostics) {
+	workerQueues, diags := workerQueueResources(ctx, workerQueuesObjSet)
+	if workerQueues == nil || diags.HasError() {
 		return nil, diags
 	}
-	platformWorkerQueues := lo.Map(workerQueues, func(workerQueue models.WorkerQueueResource, _ int) platform.HybridWorkerQueueRequest {
-		return platform.HybridWorkerQueueRequest{
+	platformWorkerQueues := lo.Map(workerQueues, func(workerQueue models.WorkerQueueResource, _ int) platform_v1.HybridWorkerQueueRequest {
+		return platform_v1.HybridWorkerQueueRequest{
 			IsDefault:         workerQueue.IsDefault.ValueBool(),
 			MaxWorkerCount:    int(workerQueue.MaxWorkerCount.ValueInt64()),
 			MinWorkerCount:    int(workerQueue.MinWorkerCount.ValueInt64()),
@@ -1197,10 +1200,59 @@ func RequestHybridWorkerQueues(ctx context.Context, workerQueuesObjSet types.Set
 	return &platformWorkerQueues, nil
 }
 
-// RequestDeploymentEnvironmentVariables converts a Terraform set to a list of platform.DeploymentEnvironmentVariableRequest to be used in create and update requests
-func RequestDeploymentEnvironmentVariables(ctx context.Context, environmentVariablesObjSet types.Set) ([]platform.DeploymentEnvironmentVariableRequest, diag.Diagnostics) {
+func RequestHostedUpdateWorkerQueues(ctx context.Context, workerQueuesObjSet types.Set) (*[]platform_v1.UpdateWorkerQueueRequest, diag.Diagnostics) {
+	workerQueues, diags := workerQueueResources(ctx, workerQueuesObjSet)
+	if workerQueues == nil || diags.HasError() {
+		return nil, diags
+	}
+	platformWorkerQueues := lo.Map(workerQueues, func(workerQueue models.WorkerQueueResource, _ int) platform_v1.UpdateWorkerQueueRequest {
+		return platform_v1.UpdateWorkerQueueRequest{
+			AstroMachine:      lo.ToPtr(platform_v1.UpdateWorkerQueueRequestAstroMachine(workerQueue.AstroMachine.ValueString())),
+			IsDefault:         workerQueue.IsDefault.ValueBool(),
+			MaxWorkerCount:    int(workerQueue.MaxWorkerCount.ValueInt64()),
+			MinWorkerCount:    int(workerQueue.MinWorkerCount.ValueInt64()),
+			Name:              workerQueue.Name.ValueString(),
+			WorkerConcurrency: int(workerQueue.WorkerConcurrency.ValueInt64()),
+		}
+	})
+	return &platformWorkerQueues, nil
+}
+
+func RequestHybridUpdateWorkerQueues(ctx context.Context, workerQueuesObjSet types.Set) (*[]platform_v1.UpdateWorkerQueueRequest, diag.Diagnostics) {
+	workerQueues, diags := workerQueueResources(ctx, workerQueuesObjSet)
+	if workerQueues == nil || diags.HasError() {
+		return nil, diags
+	}
+	platformWorkerQueues := lo.Map(workerQueues, func(workerQueue models.WorkerQueueResource, _ int) platform_v1.UpdateWorkerQueueRequest {
+		return platform_v1.UpdateWorkerQueueRequest{
+			IsDefault:         workerQueue.IsDefault.ValueBool(),
+			MaxWorkerCount:    int(workerQueue.MaxWorkerCount.ValueInt64()),
+			MinWorkerCount:    int(workerQueue.MinWorkerCount.ValueInt64()),
+			Name:              workerQueue.Name.ValueString(),
+			NodePoolId:        lo.ToPtr(workerQueue.NodePoolId.ValueString()),
+			WorkerConcurrency: int(workerQueue.WorkerConcurrency.ValueInt64()),
+		}
+	})
+	return &platformWorkerQueues, nil
+}
+
+func workerQueueResources(ctx context.Context, workerQueuesObjSet types.Set) ([]models.WorkerQueueResource, diag.Diagnostics) {
+	if len(workerQueuesObjSet.Elements()) == 0 {
+		return nil, nil
+	}
+
+	var workerQueues []models.WorkerQueueResource
+	diags := workerQueuesObjSet.ElementsAs(ctx, &workerQueues, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+	return workerQueues, nil
+}
+
+// RequestDeploymentEnvironmentVariables converts a Terraform set to a list of platform_v1.DeploymentEnvironmentVariableRequest to be used in create and update requests
+func RequestDeploymentEnvironmentVariables(ctx context.Context, environmentVariablesObjSet types.Set) ([]platform_v1.DeploymentEnvironmentVariableRequest, diag.Diagnostics) {
 	if len(environmentVariablesObjSet.Elements()) == 0 {
-		return []platform.DeploymentEnvironmentVariableRequest{}, nil
+		return []platform_v1.DeploymentEnvironmentVariableRequest{}, nil
 	}
 
 	var envVars []models.DeploymentEnvironmentVariable
@@ -1208,8 +1260,8 @@ func RequestDeploymentEnvironmentVariables(ctx context.Context, environmentVaria
 	if diags.HasError() {
 		return nil, diags
 	}
-	platformEnvVars := lo.Map(envVars, func(envVar models.DeploymentEnvironmentVariable, _ int) platform.DeploymentEnvironmentVariableRequest {
-		return platform.DeploymentEnvironmentVariableRequest{
+	platformEnvVars := lo.Map(envVars, func(envVar models.DeploymentEnvironmentVariable, _ int) platform_v1.DeploymentEnvironmentVariableRequest {
+		return platform_v1.DeploymentEnvironmentVariableRequest{
 			IsSecret: envVar.IsSecret.ValueBool(),
 			Key:      envVar.Key.ValueString(),
 			Value:    envVar.Value.ValueStringPointer(),
@@ -1241,5 +1293,31 @@ func (r *DeploymentResource) GetLatestAstroRuntimeVersion(ctx context.Context, d
 			"Unable to get runtime releases for deployment creation, got empty runtime releases",
 		)
 	}
-	return deploymentOptions.JSON200.RuntimeReleases[0].Version, nil
+
+	return LatestStableRuntimeVersion(ctx, deploymentOptions.JSON200.RuntimeReleases), nil
+}
+
+// stableRuntimeReleaseChannel is the channel Core marks generally-available runtime releases
+// with. Deployment options also advertise pre-release channels (alpha, beta, nightly) that the
+// create deployment endpoint then rejects as invalid runtime versions, so taking the first
+// release off the list is not safe.
+const stableRuntimeReleaseChannel = "stable"
+
+// LatestStableRuntimeVersion picks the newest stable release out of the deployment options.
+// The list arrives sorted newest-first, so the first stable entry is the latest one. If no
+// release is marked stable the newest release is returned regardless, preserving the previous
+// behaviour rather than failing a create that might still have succeeded.
+func LatestStableRuntimeVersion(ctx context.Context, runtimeReleases []platform.RuntimeRelease) string {
+	for _, runtimeRelease := range runtimeReleases {
+		if runtimeRelease.Channel == stableRuntimeReleaseChannel {
+			return runtimeRelease.Version
+		}
+	}
+
+	tflog.Warn(ctx, "no stable Astro Runtime release in deployment options, falling back to the newest release", map[string]interface{}{
+		"count":   len(runtimeReleases),
+		"version": runtimeReleases[0].Version,
+		"channel": runtimeReleases[0].Channel,
+	})
+	return runtimeReleases[0].Version
 }

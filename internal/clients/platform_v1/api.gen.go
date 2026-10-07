@@ -7,11 +7,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/oapi-codegen/runtime"
 )
@@ -20,10 +22,40 @@ const (
 	JWTScopes = "JWT.Scopes"
 )
 
+// Defines values for AgentStatus.
+const (
+	AgentStatusCORDONED   AgentStatus = "CORDONED"
+	AgentStatusHEALTHY    AgentStatus = "HEALTHY"
+	AgentStatusTERMINATED AgentStatus = "TERMINATED"
+	AgentStatusUNHEALTHY  AgentStatus = "UNHEALTHY"
+)
+
 // Defines values for BasicSubjectProfileSubjectType.
 const (
 	SERVICEKEY BasicSubjectProfileSubjectType = "SERVICEKEY"
 	USER       BasicSubjectProfileSubjectType = "USER"
+)
+
+// Defines values for CreateDedicatedDeploymentRequestExecutor.
+const (
+	CreateDedicatedDeploymentRequestExecutorASTRO      CreateDedicatedDeploymentRequestExecutor = "ASTRO"
+	CreateDedicatedDeploymentRequestExecutorCELERY     CreateDedicatedDeploymentRequestExecutor = "CELERY"
+	CreateDedicatedDeploymentRequestExecutorKUBERNETES CreateDedicatedDeploymentRequestExecutor = "KUBERNETES"
+)
+
+// Defines values for CreateDedicatedDeploymentRequestSchedulerSize.
+const (
+	CreateDedicatedDeploymentRequestSchedulerSizeEXTRALARGE CreateDedicatedDeploymentRequestSchedulerSize = "EXTRA_LARGE"
+	CreateDedicatedDeploymentRequestSchedulerSizeLARGE      CreateDedicatedDeploymentRequestSchedulerSize = "LARGE"
+	CreateDedicatedDeploymentRequestSchedulerSizeMEDIUM     CreateDedicatedDeploymentRequestSchedulerSize = "MEDIUM"
+	CreateDedicatedDeploymentRequestSchedulerSizeSMALL      CreateDedicatedDeploymentRequestSchedulerSize = "SMALL"
+)
+
+// Defines values for CreateDedicatedDeploymentRequestType.
+const (
+	CreateDedicatedDeploymentRequestTypeDEDICATED CreateDedicatedDeploymentRequestType = "DEDICATED"
+	CreateDedicatedDeploymentRequestTypeHYBRID    CreateDedicatedDeploymentRequestType = "HYBRID"
+	CreateDedicatedDeploymentRequestTypeSTANDARD  CreateDedicatedDeploymentRequestType = "STANDARD"
 )
 
 // Defines values for CreateEnvironmentObjectLinkRequestScope.
@@ -38,8 +70,20 @@ const (
 	CreateEnvironmentObjectMetricsExportOverridesRequestAuthTypeSIGV4     CreateEnvironmentObjectMetricsExportOverridesRequestAuthType = "SIGV4"
 )
 
+// Defines values for CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSite.
+const (
+	CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSiteAp1DatadoghqCom CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSite = "ap1.datadoghq.com"
+	CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSiteAp2DatadoghqCom CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSite = "ap2.datadoghq.com"
+	CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSiteDatadoghqCom    CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSite = "datadoghq.com"
+	CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSiteDatadoghqEu     CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSite = "datadoghq.eu"
+	CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSiteDdogGovCom      CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSite = "ddog-gov.com"
+	CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSiteUs3DatadoghqCom CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSite = "us3.datadoghq.com"
+	CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSiteUs5DatadoghqCom CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSite = "us5.datadoghq.com"
+)
+
 // Defines values for CreateEnvironmentObjectMetricsExportOverridesRequestExporterType.
 const (
+	CreateEnvironmentObjectMetricsExportOverridesRequestExporterTypeDATADOG    CreateEnvironmentObjectMetricsExportOverridesRequestExporterType = "DATADOG"
 	CreateEnvironmentObjectMetricsExportOverridesRequestExporterTypePROMETHEUS CreateEnvironmentObjectMetricsExportOverridesRequestExporterType = "PROMETHEUS"
 )
 
@@ -50,8 +94,20 @@ const (
 	CreateEnvironmentObjectMetricsExportRequestAuthTypeSIGV4     CreateEnvironmentObjectMetricsExportRequestAuthType = "SIGV4"
 )
 
+// Defines values for CreateEnvironmentObjectMetricsExportRequestDataDogSite.
+const (
+	CreateEnvironmentObjectMetricsExportRequestDataDogSiteAp1DatadoghqCom CreateEnvironmentObjectMetricsExportRequestDataDogSite = "ap1.datadoghq.com"
+	CreateEnvironmentObjectMetricsExportRequestDataDogSiteAp2DatadoghqCom CreateEnvironmentObjectMetricsExportRequestDataDogSite = "ap2.datadoghq.com"
+	CreateEnvironmentObjectMetricsExportRequestDataDogSiteDatadoghqCom    CreateEnvironmentObjectMetricsExportRequestDataDogSite = "datadoghq.com"
+	CreateEnvironmentObjectMetricsExportRequestDataDogSiteDatadoghqEu     CreateEnvironmentObjectMetricsExportRequestDataDogSite = "datadoghq.eu"
+	CreateEnvironmentObjectMetricsExportRequestDataDogSiteDdogGovCom      CreateEnvironmentObjectMetricsExportRequestDataDogSite = "ddog-gov.com"
+	CreateEnvironmentObjectMetricsExportRequestDataDogSiteUs3DatadoghqCom CreateEnvironmentObjectMetricsExportRequestDataDogSite = "us3.datadoghq.com"
+	CreateEnvironmentObjectMetricsExportRequestDataDogSiteUs5DatadoghqCom CreateEnvironmentObjectMetricsExportRequestDataDogSite = "us5.datadoghq.com"
+)
+
 // Defines values for CreateEnvironmentObjectMetricsExportRequestExporterType.
 const (
+	CreateEnvironmentObjectMetricsExportRequestExporterTypeDATADOG    CreateEnvironmentObjectMetricsExportRequestExporterType = "DATADOG"
 	CreateEnvironmentObjectMetricsExportRequestExporterTypePROMETHEUS CreateEnvironmentObjectMetricsExportRequestExporterType = "PROMETHEUS"
 )
 
@@ -67,6 +123,103 @@ const (
 const (
 	CreateEnvironmentObjectRequestScopeDEPLOYMENT CreateEnvironmentObjectRequestScope = "DEPLOYMENT"
 	CreateEnvironmentObjectRequestScopeWORKSPACE  CreateEnvironmentObjectRequestScope = "WORKSPACE"
+)
+
+// Defines values for CreateHybridDeploymentRequestExecutor.
+const (
+	CreateHybridDeploymentRequestExecutorCELERY     CreateHybridDeploymentRequestExecutor = "CELERY"
+	CreateHybridDeploymentRequestExecutorKUBERNETES CreateHybridDeploymentRequestExecutor = "KUBERNETES"
+)
+
+// Defines values for CreateHybridDeploymentRequestType.
+const (
+	CreateHybridDeploymentRequestTypeDEDICATED CreateHybridDeploymentRequestType = "DEDICATED"
+	CreateHybridDeploymentRequestTypeHYBRID    CreateHybridDeploymentRequestType = "HYBRID"
+	CreateHybridDeploymentRequestTypeSTANDARD  CreateHybridDeploymentRequestType = "STANDARD"
+)
+
+// Defines values for CreateStandardDeploymentRequestCloudProvider.
+const (
+	CreateStandardDeploymentRequestCloudProviderAWS   CreateStandardDeploymentRequestCloudProvider = "AWS"
+	CreateStandardDeploymentRequestCloudProviderAZURE CreateStandardDeploymentRequestCloudProvider = "AZURE"
+	CreateStandardDeploymentRequestCloudProviderGCP   CreateStandardDeploymentRequestCloudProvider = "GCP"
+)
+
+// Defines values for CreateStandardDeploymentRequestExecutor.
+const (
+	CreateStandardDeploymentRequestExecutorASTRO      CreateStandardDeploymentRequestExecutor = "ASTRO"
+	CreateStandardDeploymentRequestExecutorCELERY     CreateStandardDeploymentRequestExecutor = "CELERY"
+	CreateStandardDeploymentRequestExecutorKUBERNETES CreateStandardDeploymentRequestExecutor = "KUBERNETES"
+)
+
+// Defines values for CreateStandardDeploymentRequestSchedulerSize.
+const (
+	CreateStandardDeploymentRequestSchedulerSizeEXTRALARGE CreateStandardDeploymentRequestSchedulerSize = "EXTRA_LARGE"
+	CreateStandardDeploymentRequestSchedulerSizeLARGE      CreateStandardDeploymentRequestSchedulerSize = "LARGE"
+	CreateStandardDeploymentRequestSchedulerSizeMEDIUM     CreateStandardDeploymentRequestSchedulerSize = "MEDIUM"
+	CreateStandardDeploymentRequestSchedulerSizeSMALL      CreateStandardDeploymentRequestSchedulerSize = "SMALL"
+)
+
+// Defines values for CreateStandardDeploymentRequestType.
+const (
+	CreateStandardDeploymentRequestTypeDEDICATED CreateStandardDeploymentRequestType = "DEDICATED"
+	CreateStandardDeploymentRequestTypeHYBRID    CreateStandardDeploymentRequestType = "HYBRID"
+	CreateStandardDeploymentRequestTypeSTANDARD  CreateStandardDeploymentRequestType = "STANDARD"
+)
+
+// Defines values for DeploymentCloudProvider.
+const (
+	DeploymentCloudProviderAWS   DeploymentCloudProvider = "AWS"
+	DeploymentCloudProviderAZURE DeploymentCloudProvider = "AZURE"
+	DeploymentCloudProviderGCP   DeploymentCloudProvider = "GCP"
+)
+
+// Defines values for DeploymentExecutor.
+const (
+	DeploymentExecutorASTRO      DeploymentExecutor = "ASTRO"
+	DeploymentExecutorCELERY     DeploymentExecutor = "CELERY"
+	DeploymentExecutorKUBERNETES DeploymentExecutor = "KUBERNETES"
+)
+
+// Defines values for DeploymentSchedulerSize.
+const (
+	DeploymentSchedulerSizeEXTRALARGE DeploymentSchedulerSize = "EXTRA_LARGE"
+	DeploymentSchedulerSizeLARGE      DeploymentSchedulerSize = "LARGE"
+	DeploymentSchedulerSizeMEDIUM     DeploymentSchedulerSize = "MEDIUM"
+	DeploymentSchedulerSizeSMALL      DeploymentSchedulerSize = "SMALL"
+)
+
+// Defines values for DeploymentStatus.
+const (
+	DeploymentStatusCREATING    DeploymentStatus = "CREATING"
+	DeploymentStatusDEPLOYING   DeploymentStatus = "DEPLOYING"
+	DeploymentStatusHEALTHY     DeploymentStatus = "HEALTHY"
+	DeploymentStatusHIBERNATING DeploymentStatus = "HIBERNATING"
+	DeploymentStatusUNHEALTHY   DeploymentStatus = "UNHEALTHY"
+	DeploymentStatusUNKNOWN     DeploymentStatus = "UNKNOWN"
+)
+
+// Defines values for DeploymentType.
+const (
+	DeploymentTypeDEDICATED DeploymentType = "DEDICATED"
+	DeploymentTypeHYBRID    DeploymentType = "HYBRID"
+	DeploymentTypeSTANDARD  DeploymentType = "STANDARD"
+)
+
+// Defines values for DeploymentHibernationStatusNextEventType.
+const (
+	HIBERNATE DeploymentHibernationStatusNextEventType = "HIBERNATE"
+	WAKE      DeploymentHibernationStatusNextEventType = "WAKE"
+)
+
+// Defines values for DeploymentLogEntrySource.
+const (
+	DeploymentLogEntrySourceApiserver    DeploymentLogEntrySource = "apiserver"
+	DeploymentLogEntrySourceDagProcessor DeploymentLogEntrySource = "dag-processor"
+	DeploymentLogEntrySourceScheduler    DeploymentLogEntrySource = "scheduler"
+	DeploymentLogEntrySourceTriggerer    DeploymentLogEntrySource = "triggerer"
+	DeploymentLogEntrySourceWebserver    DeploymentLogEntrySource = "webserver"
+	DeploymentLogEntrySourceWorker       DeploymentLogEntrySource = "worker"
 )
 
 // Defines values for EnvironmentObjectObjectType.
@@ -106,8 +259,20 @@ const (
 	EnvironmentObjectMetricsExportAuthTypeSIGV4     EnvironmentObjectMetricsExportAuthType = "SIGV4"
 )
 
+// Defines values for EnvironmentObjectMetricsExportDataDogSite.
+const (
+	EnvironmentObjectMetricsExportDataDogSiteAp1DatadoghqCom EnvironmentObjectMetricsExportDataDogSite = "ap1.datadoghq.com"
+	EnvironmentObjectMetricsExportDataDogSiteAp2DatadoghqCom EnvironmentObjectMetricsExportDataDogSite = "ap2.datadoghq.com"
+	EnvironmentObjectMetricsExportDataDogSiteDatadoghqCom    EnvironmentObjectMetricsExportDataDogSite = "datadoghq.com"
+	EnvironmentObjectMetricsExportDataDogSiteDatadoghqEu     EnvironmentObjectMetricsExportDataDogSite = "datadoghq.eu"
+	EnvironmentObjectMetricsExportDataDogSiteDdogGovCom      EnvironmentObjectMetricsExportDataDogSite = "ddog-gov.com"
+	EnvironmentObjectMetricsExportDataDogSiteUs3DatadoghqCom EnvironmentObjectMetricsExportDataDogSite = "us3.datadoghq.com"
+	EnvironmentObjectMetricsExportDataDogSiteUs5DatadoghqCom EnvironmentObjectMetricsExportDataDogSite = "us5.datadoghq.com"
+)
+
 // Defines values for EnvironmentObjectMetricsExportExporterType.
 const (
+	EnvironmentObjectMetricsExportExporterTypeDATADOG    EnvironmentObjectMetricsExportExporterType = "DATADOG"
 	EnvironmentObjectMetricsExportExporterTypePROMETHEUS EnvironmentObjectMetricsExportExporterType = "PROMETHEUS"
 )
 
@@ -118,14 +283,48 @@ const (
 	EnvironmentObjectMetricsExportOverridesAuthTypeSIGV4     EnvironmentObjectMetricsExportOverridesAuthType = "SIGV4"
 )
 
+// Defines values for EnvironmentObjectMetricsExportOverridesDataDogSite.
+const (
+	EnvironmentObjectMetricsExportOverridesDataDogSiteAp1DatadoghqCom EnvironmentObjectMetricsExportOverridesDataDogSite = "ap1.datadoghq.com"
+	EnvironmentObjectMetricsExportOverridesDataDogSiteAp2DatadoghqCom EnvironmentObjectMetricsExportOverridesDataDogSite = "ap2.datadoghq.com"
+	EnvironmentObjectMetricsExportOverridesDataDogSiteDatadoghqCom    EnvironmentObjectMetricsExportOverridesDataDogSite = "datadoghq.com"
+	EnvironmentObjectMetricsExportOverridesDataDogSiteDatadoghqEu     EnvironmentObjectMetricsExportOverridesDataDogSite = "datadoghq.eu"
+	EnvironmentObjectMetricsExportOverridesDataDogSiteDdogGovCom      EnvironmentObjectMetricsExportOverridesDataDogSite = "ddog-gov.com"
+	EnvironmentObjectMetricsExportOverridesDataDogSiteUs3DatadoghqCom EnvironmentObjectMetricsExportOverridesDataDogSite = "us3.datadoghq.com"
+	EnvironmentObjectMetricsExportOverridesDataDogSiteUs5DatadoghqCom EnvironmentObjectMetricsExportOverridesDataDogSite = "us5.datadoghq.com"
+)
+
 // Defines values for EnvironmentObjectMetricsExportOverridesExporterType.
 const (
+	EnvironmentObjectMetricsExportOverridesExporterTypeDATADOG    EnvironmentObjectMetricsExportOverridesExporterType = "DATADOG"
 	EnvironmentObjectMetricsExportOverridesExporterTypePROMETHEUS EnvironmentObjectMetricsExportOverridesExporterType = "PROMETHEUS"
 )
 
 // Defines values for ExcludeLinkEnvironmentObjectRequestScope.
 const (
 	ExcludeLinkEnvironmentObjectRequestScopeDEPLOYMENT ExcludeLinkEnvironmentObjectRequestScope = "DEPLOYMENT"
+)
+
+// Defines values for UpdateDedicatedDeploymentRequestExecutor.
+const (
+	UpdateDedicatedDeploymentRequestExecutorASTRO      UpdateDedicatedDeploymentRequestExecutor = "ASTRO"
+	UpdateDedicatedDeploymentRequestExecutorCELERY     UpdateDedicatedDeploymentRequestExecutor = "CELERY"
+	UpdateDedicatedDeploymentRequestExecutorKUBERNETES UpdateDedicatedDeploymentRequestExecutor = "KUBERNETES"
+)
+
+// Defines values for UpdateDedicatedDeploymentRequestSchedulerSize.
+const (
+	UpdateDedicatedDeploymentRequestSchedulerSizeEXTRALARGE UpdateDedicatedDeploymentRequestSchedulerSize = "EXTRA_LARGE"
+	UpdateDedicatedDeploymentRequestSchedulerSizeLARGE      UpdateDedicatedDeploymentRequestSchedulerSize = "LARGE"
+	UpdateDedicatedDeploymentRequestSchedulerSizeMEDIUM     UpdateDedicatedDeploymentRequestSchedulerSize = "MEDIUM"
+	UpdateDedicatedDeploymentRequestSchedulerSizeSMALL      UpdateDedicatedDeploymentRequestSchedulerSize = "SMALL"
+)
+
+// Defines values for UpdateDedicatedDeploymentRequestType.
+const (
+	UpdateDedicatedDeploymentRequestTypeDEDICATED UpdateDedicatedDeploymentRequestType = "DEDICATED"
+	UpdateDedicatedDeploymentRequestTypeHYBRID    UpdateDedicatedDeploymentRequestType = "HYBRID"
+	UpdateDedicatedDeploymentRequestTypeSTANDARD  UpdateDedicatedDeploymentRequestType = "STANDARD"
 )
 
 // Defines values for UpdateEnvironmentObjectLinkRequestScope.
@@ -140,8 +339,20 @@ const (
 	UpdateEnvironmentObjectMetricsExportOverridesRequestAuthTypeSIGV4     UpdateEnvironmentObjectMetricsExportOverridesRequestAuthType = "SIGV4"
 )
 
+// Defines values for UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSite.
+const (
+	UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSiteAp1DatadoghqCom UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSite = "ap1.datadoghq.com"
+	UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSiteAp2DatadoghqCom UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSite = "ap2.datadoghq.com"
+	UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSiteDatadoghqCom    UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSite = "datadoghq.com"
+	UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSiteDatadoghqEu     UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSite = "datadoghq.eu"
+	UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSiteDdogGovCom      UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSite = "ddog-gov.com"
+	UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSiteUs3DatadoghqCom UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSite = "us3.datadoghq.com"
+	UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSiteUs5DatadoghqCom UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSite = "us5.datadoghq.com"
+)
+
 // Defines values for UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType.
 const (
+	UpdateEnvironmentObjectMetricsExportOverridesRequestExporterTypeDATADOG    UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType = "DATADOG"
 	UpdateEnvironmentObjectMetricsExportOverridesRequestExporterTypePROMETHEUS UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType = "PROMETHEUS"
 )
 
@@ -152,21 +363,116 @@ const (
 	UpdateEnvironmentObjectMetricsExportRequestAuthTypeSIGV4     UpdateEnvironmentObjectMetricsExportRequestAuthType = "SIGV4"
 )
 
+// Defines values for UpdateEnvironmentObjectMetricsExportRequestDataDogSite.
+const (
+	UpdateEnvironmentObjectMetricsExportRequestDataDogSiteAp1DatadoghqCom UpdateEnvironmentObjectMetricsExportRequestDataDogSite = "ap1.datadoghq.com"
+	UpdateEnvironmentObjectMetricsExportRequestDataDogSiteAp2DatadoghqCom UpdateEnvironmentObjectMetricsExportRequestDataDogSite = "ap2.datadoghq.com"
+	UpdateEnvironmentObjectMetricsExportRequestDataDogSiteDatadoghqCom    UpdateEnvironmentObjectMetricsExportRequestDataDogSite = "datadoghq.com"
+	UpdateEnvironmentObjectMetricsExportRequestDataDogSiteDatadoghqEu     UpdateEnvironmentObjectMetricsExportRequestDataDogSite = "datadoghq.eu"
+	UpdateEnvironmentObjectMetricsExportRequestDataDogSiteDdogGovCom      UpdateEnvironmentObjectMetricsExportRequestDataDogSite = "ddog-gov.com"
+	UpdateEnvironmentObjectMetricsExportRequestDataDogSiteUs3DatadoghqCom UpdateEnvironmentObjectMetricsExportRequestDataDogSite = "us3.datadoghq.com"
+	UpdateEnvironmentObjectMetricsExportRequestDataDogSiteUs5DatadoghqCom UpdateEnvironmentObjectMetricsExportRequestDataDogSite = "us5.datadoghq.com"
+)
+
 // Defines values for UpdateEnvironmentObjectMetricsExportRequestExporterType.
 const (
+	UpdateEnvironmentObjectMetricsExportRequestExporterTypeDATADOG    UpdateEnvironmentObjectMetricsExportRequestExporterType = "DATADOG"
 	UpdateEnvironmentObjectMetricsExportRequestExporterTypePROMETHEUS UpdateEnvironmentObjectMetricsExportRequestExporterType = "PROMETHEUS"
+)
+
+// Defines values for UpdateHybridDeploymentRequestExecutor.
+const (
+	UpdateHybridDeploymentRequestExecutorCELERY     UpdateHybridDeploymentRequestExecutor = "CELERY"
+	UpdateHybridDeploymentRequestExecutorKUBERNETES UpdateHybridDeploymentRequestExecutor = "KUBERNETES"
+)
+
+// Defines values for UpdateHybridDeploymentRequestType.
+const (
+	UpdateHybridDeploymentRequestTypeDEDICATED UpdateHybridDeploymentRequestType = "DEDICATED"
+	UpdateHybridDeploymentRequestTypeHYBRID    UpdateHybridDeploymentRequestType = "HYBRID"
+	UpdateHybridDeploymentRequestTypeSTANDARD  UpdateHybridDeploymentRequestType = "STANDARD"
+)
+
+// Defines values for UpdateStandardDeploymentRequestExecutor.
+const (
+	ASTRO      UpdateStandardDeploymentRequestExecutor = "ASTRO"
+	CELERY     UpdateStandardDeploymentRequestExecutor = "CELERY"
+	KUBERNETES UpdateStandardDeploymentRequestExecutor = "KUBERNETES"
+)
+
+// Defines values for UpdateStandardDeploymentRequestSchedulerSize.
+const (
+	EXTRALARGE UpdateStandardDeploymentRequestSchedulerSize = "EXTRA_LARGE"
+	LARGE      UpdateStandardDeploymentRequestSchedulerSize = "LARGE"
+	MEDIUM     UpdateStandardDeploymentRequestSchedulerSize = "MEDIUM"
+	SMALL      UpdateStandardDeploymentRequestSchedulerSize = "SMALL"
+)
+
+// Defines values for UpdateStandardDeploymentRequestType.
+const (
+	DEDICATED UpdateStandardDeploymentRequestType = "DEDICATED"
+	HYBRID    UpdateStandardDeploymentRequestType = "HYBRID"
+	STANDARD  UpdateStandardDeploymentRequestType = "STANDARD"
+)
+
+// Defines values for UpdateWorkerQueueRequestAstroMachine.
+const (
+	UpdateWorkerQueueRequestAstroMachineA10  UpdateWorkerQueueRequestAstroMachine = "A10"
+	UpdateWorkerQueueRequestAstroMachineA120 UpdateWorkerQueueRequestAstroMachine = "A120"
+	UpdateWorkerQueueRequestAstroMachineA160 UpdateWorkerQueueRequestAstroMachine = "A160"
+	UpdateWorkerQueueRequestAstroMachineA20  UpdateWorkerQueueRequestAstroMachine = "A20"
+	UpdateWorkerQueueRequestAstroMachineA40  UpdateWorkerQueueRequestAstroMachine = "A40"
+	UpdateWorkerQueueRequestAstroMachineA5   UpdateWorkerQueueRequestAstroMachine = "A5"
+	UpdateWorkerQueueRequestAstroMachineA60  UpdateWorkerQueueRequestAstroMachine = "A60"
+)
+
+// Defines values for WorkerQueueRequestAstroMachine.
+const (
+	WorkerQueueRequestAstroMachineA10  WorkerQueueRequestAstroMachine = "A10"
+	WorkerQueueRequestAstroMachineA120 WorkerQueueRequestAstroMachine = "A120"
+	WorkerQueueRequestAstroMachineA160 WorkerQueueRequestAstroMachine = "A160"
+	WorkerQueueRequestAstroMachineA20  WorkerQueueRequestAstroMachine = "A20"
+	WorkerQueueRequestAstroMachineA40  WorkerQueueRequestAstroMachine = "A40"
+	WorkerQueueRequestAstroMachineA5   WorkerQueueRequestAstroMachine = "A5"
+	WorkerQueueRequestAstroMachineA60  WorkerQueueRequestAstroMachine = "A60"
+)
+
+// Defines values for AgentActionBodyAction.
+const (
+	CORDON   AgentActionBodyAction = "CORDON"
+	UNCORDON AgentActionBodyAction = "UNCORDON"
+)
+
+// Defines values for ListDeploymentsParamsSorts.
+const (
+	ListDeploymentsParamsSortsCreatedAtAsc  ListDeploymentsParamsSorts = "createdAt:asc"
+	ListDeploymentsParamsSortsCreatedAtDesc ListDeploymentsParamsSorts = "createdAt:desc"
+	ListDeploymentsParamsSortsNameAsc       ListDeploymentsParamsSorts = "name:asc"
+	ListDeploymentsParamsSortsNameDesc      ListDeploymentsParamsSorts = "name:desc"
+	ListDeploymentsParamsSortsUpdatedAtAsc  ListDeploymentsParamsSorts = "updatedAt:asc"
+	ListDeploymentsParamsSortsUpdatedAtDesc ListDeploymentsParamsSorts = "updatedAt:desc"
+)
+
+// Defines values for GetDeploymentLogsParamsSources.
+const (
+	GetDeploymentLogsParamsSourcesApiserver    GetDeploymentLogsParamsSources = "apiserver"
+	GetDeploymentLogsParamsSourcesDagProcessor GetDeploymentLogsParamsSources = "dag-processor"
+	GetDeploymentLogsParamsSourcesScheduler    GetDeploymentLogsParamsSources = "scheduler"
+	GetDeploymentLogsParamsSourcesTriggerer    GetDeploymentLogsParamsSources = "triggerer"
+	GetDeploymentLogsParamsSourcesWebserver    GetDeploymentLogsParamsSources = "webserver"
+	GetDeploymentLogsParamsSourcesWorker       GetDeploymentLogsParamsSources = "worker"
 )
 
 // Defines values for ListEnvironmentObjectsParamsSorts.
 const (
-	CreatedAtAsc   ListEnvironmentObjectsParamsSorts = "createdAt:asc"
-	CreatedAtDesc  ListEnvironmentObjectsParamsSorts = "createdAt:desc"
-	ObjectKeyAsc   ListEnvironmentObjectsParamsSorts = "objectKey:asc"
-	ObjectKeyDesc  ListEnvironmentObjectsParamsSorts = "objectKey:desc"
-	ObjectTypeAsc  ListEnvironmentObjectsParamsSorts = "objectType:asc"
-	ObjectTypeDesc ListEnvironmentObjectsParamsSorts = "objectType:desc"
-	UpdatedAtAsc   ListEnvironmentObjectsParamsSorts = "updatedAt:asc"
-	UpdatedAtDesc  ListEnvironmentObjectsParamsSorts = "updatedAt:desc"
+	ListEnvironmentObjectsParamsSortsCreatedAtAsc   ListEnvironmentObjectsParamsSorts = "createdAt:asc"
+	ListEnvironmentObjectsParamsSortsCreatedAtDesc  ListEnvironmentObjectsParamsSorts = "createdAt:desc"
+	ListEnvironmentObjectsParamsSortsObjectKeyAsc   ListEnvironmentObjectsParamsSorts = "objectKey:asc"
+	ListEnvironmentObjectsParamsSortsObjectKeyDesc  ListEnvironmentObjectsParamsSorts = "objectKey:desc"
+	ListEnvironmentObjectsParamsSortsObjectTypeAsc  ListEnvironmentObjectsParamsSorts = "objectType:asc"
+	ListEnvironmentObjectsParamsSortsObjectTypeDesc ListEnvironmentObjectsParamsSorts = "objectType:desc"
+	ListEnvironmentObjectsParamsSortsUpdatedAtAsc   ListEnvironmentObjectsParamsSorts = "updatedAt:asc"
+	ListEnvironmentObjectsParamsSortsUpdatedAtDesc  ListEnvironmentObjectsParamsSorts = "updatedAt:desc"
 )
 
 // Defines values for ListEnvironmentObjectsParamsObjectType.
@@ -176,6 +482,60 @@ const (
 	ENVIRONMENTVARIABLE ListEnvironmentObjectsParamsObjectType = "ENVIRONMENT_VARIABLE"
 	METRICSEXPORT       ListEnvironmentObjectsParamsObjectType = "METRICS_EXPORT"
 )
+
+// Agent defines model for Agent.
+type Agent struct {
+	// Capabilities The capabilities the agent supports
+	Capabilities []string `json:"capabilities"`
+
+	// CordoningReason The reason the agent is cordoned
+	CordoningReason *string `json:"cordoningReason,omitempty"`
+
+	// CreatedAt The time when the agent was created, in UTC
+	CreatedAt time.Time `json:"createdAt"`
+
+	// DeletedAt The time when the agent was deleted, in UTC
+	DeletedAt *time.Time `json:"deletedAt,omitempty"`
+
+	// Id The agent's ID
+	Id string `json:"id"`
+
+	// IsCordoned Whether the agent is cordoned and not accepting new work
+	IsCordoned bool `json:"isCordoned"`
+
+	// LastHeartbeatAt The time when the agent last sent a heartbeat, in UTC
+	LastHeartbeatAt time.Time `json:"lastHeartbeatAt"`
+
+	// Name The agent's name
+	Name string `json:"name"`
+
+	// Queues The worker queues the agent serves
+	Queues []string `json:"queues"`
+
+	// Slots The agent's task execution slots
+	Slots AgentSlots `json:"slots"`
+
+	// Status The current status of the agent
+	Status AgentStatus `json:"status"`
+
+	// StatusReason The reason for the agent's current status
+	StatusReason *string `json:"statusReason,omitempty"`
+
+	// Version The version of the agent
+	Version string `json:"version"`
+}
+
+// AgentStatus The current status of the agent
+type AgentStatus string
+
+// AgentSlots The agent's task execution slots
+type AgentSlots struct {
+	// Available The number of task execution slots currently available
+	Available int32 `json:"available"`
+
+	// Total The total number of task execution slots on the agent
+	Total int32 `json:"total"`
+}
 
 // BasicSubjectProfile defines model for BasicSubjectProfile.
 type BasicSubjectProfile struct {
@@ -259,6 +619,97 @@ type ConnectionAuthTypeParameter struct {
 
 	// Pattern A regex pattern for the parameter
 	Pattern *string `json:"pattern,omitempty"`
+}
+
+// CreateDedicatedDeploymentRequest defines model for CreateDedicatedDeploymentRequest.
+type CreateDedicatedDeploymentRequest struct {
+	// AstroRuntimeVersion Deployment's Astro Runtime version.
+	AstroRuntimeVersion *string `json:"astroRuntimeVersion,omitempty"`
+
+	// ClusterId The ID of the cluster where the Deployment will be created.
+	ClusterId *string `json:"clusterId,omitempty"`
+
+	// ContactEmails A list of contact emails for the Deployment.
+	ContactEmails *[]string `json:"contactEmails,omitempty"`
+
+	// DefaultTaskPodCpu The default CPU resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in number of CPU cores. Required if Remote Execution is disabled.
+	DefaultTaskPodCpu *string `json:"defaultTaskPodCpu,omitempty"`
+
+	// DefaultTaskPodMemory The default memory resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `DefaultTaskPodCpu`. Required if Remote Execution is disabled.
+	DefaultTaskPodMemory *string `json:"defaultTaskPodMemory,omitempty"`
+
+	// Description The Deployment's description.
+	Description *string `json:"description,omitempty"`
+
+	// DrWorkloadIdentity The Deployment's DR workload identity.
+	DrWorkloadIdentity *string `json:"drWorkloadIdentity,omitempty"`
+
+	// EnvironmentVariables List of environment variables to add to the Deployment.
+	EnvironmentVariables *[]DeploymentEnvironmentVariableRequest `json:"environmentVariables,omitempty"`
+
+	// Executor The Deployment's executor type.
+	Executor *CreateDedicatedDeploymentRequestExecutor `json:"executor,omitempty"`
+
+	// IsCicdEnforced Whether the Deployment requires that all deploys are made through CI/CD.
+	IsCicdEnforced *bool `json:"isCicdEnforced,omitempty"`
+
+	// IsDagDeployEnabled Whether the Deployment has Dag deploys enabled.
+	IsDagDeployEnabled *bool `json:"isDagDeployEnabled,omitempty"`
+
+	// IsDevelopmentMode If true, deployment will be able to use development-only features, such as hibernation, but will not have guaranteed uptime SLAs
+	IsDevelopmentMode *bool `json:"isDevelopmentMode,omitempty"`
+
+	// IsHighAvailability Whether the Deployment is configured for high availability. If `true`, multiple scheduler pods will be online.
+	IsHighAvailability *bool `json:"isHighAvailability,omitempty"`
+
+	// Name The Deployment's name.
+	Name            string                            `json:"name"`
+	RemoteExecution *DeploymentRemoteExecutionRequest `json:"remoteExecution,omitempty"`
+
+	// ResourceQuotaCpu The CPU quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current CPU usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in number of CPU cores. Required if Remote Execution is disabled.
+	ResourceQuotaCpu *string `json:"resourceQuotaCpu,omitempty"`
+
+	// ResourceQuotaMemory The memory quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current memory usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `ResourceQuotaCpu`. Required if Remote Execution is disabled.
+	ResourceQuotaMemory *string                       `json:"resourceQuotaMemory,omitempty"`
+	ScalingSpec         *DeploymentScalingSpecRequest `json:"scalingSpec,omitempty"`
+
+	// SchedulerSize The size of the scheduler Pod.
+	SchedulerSize *CreateDedicatedDeploymentRequestSchedulerSize `json:"schedulerSize,omitempty"`
+
+	// Type The type of the Deployment.
+	Type *CreateDedicatedDeploymentRequestType `json:"type,omitempty"`
+
+	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY` or if Remote Execution is disabled and executor is `ASTRO`. All these Deployments need at least 1 worker queue called `default`.
+	WorkerQueues *[]WorkerQueueRequest `json:"workerQueues,omitempty"`
+
+	// WorkloadIdentity The Deployment's workload identity.
+	WorkloadIdentity *string `json:"workloadIdentity,omitempty"`
+
+	// WorkspaceId The ID of the Workspace to which the Deployment belongs.
+	WorkspaceId string `json:"workspaceId"`
+}
+
+// CreateDedicatedDeploymentRequestExecutor The Deployment's executor type.
+type CreateDedicatedDeploymentRequestExecutor string
+
+// CreateDedicatedDeploymentRequestSchedulerSize The size of the scheduler Pod.
+type CreateDedicatedDeploymentRequestSchedulerSize string
+
+// CreateDedicatedDeploymentRequestType The type of the Deployment.
+type CreateDedicatedDeploymentRequestType string
+
+// CreateDeploymentInstanceSpecRequest defines model for CreateDeploymentInstanceSpecRequest.
+type CreateDeploymentInstanceSpecRequest struct {
+	// Au The number of Astro unit allocated to the Deployment pod. Minimum `5`, Maximum `24`.
+	Au *int `json:"au,omitempty"`
+
+	// Replicas The number of replicas the pod should have. Minimum `1`, Maximum `4`.
+	Replicas *int `json:"replicas,omitempty"`
+}
+
+// CreateDeploymentRequest defines model for CreateDeploymentRequest.
+type CreateDeploymentRequest struct {
+	union json.RawMessage
 }
 
 // CreateEnvironmentObject defines model for CreateEnvironmentObject.
@@ -370,6 +821,12 @@ type CreateEnvironmentObjectMetricsExportOverridesRequest struct {
 	// BasicToken The bearer token to connect to the remote endpoint
 	BasicToken *string `json:"basicToken,omitempty"`
 
+	// DataDogApiKey The Datadog API key used to authenticate the export. Never returned in responses.
+	DataDogApiKey *string `json:"dataDogApiKey,omitempty"`
+
+	// DataDogSite The Datadog site to send metrics to, e.g. datadoghq.com or datadoghq.eu. Datadog exports carry infrastructure metrics only; Airflow metrics continue to be sent by the in-Deployment Datadog sidecar.
+	DataDogSite *CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSite `json:"dataDogSite,omitempty"`
+
 	// Endpoint The Prometheus endpoint where the metrics are exported
 	Endpoint *string `json:"endpoint,omitempty"`
 
@@ -398,6 +855,9 @@ type CreateEnvironmentObjectMetricsExportOverridesRequest struct {
 // CreateEnvironmentObjectMetricsExportOverridesRequestAuthType The type of authentication to use when connecting to the remote endpoint
 type CreateEnvironmentObjectMetricsExportOverridesRequestAuthType string
 
+// CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSite The Datadog site to send metrics to, e.g. datadoghq.com or datadoghq.eu. Datadog exports carry infrastructure metrics only; Airflow metrics continue to be sent by the in-Deployment Datadog sidecar.
+type CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSite string
+
 // CreateEnvironmentObjectMetricsExportOverridesRequestExporterType The type of exporter
 type CreateEnvironmentObjectMetricsExportOverridesRequestExporterType string
 
@@ -409,8 +869,14 @@ type CreateEnvironmentObjectMetricsExportRequest struct {
 	// BasicToken The bearer token to connect to the remote endpoint
 	BasicToken *string `json:"basicToken,omitempty"`
 
-	// Endpoint The Prometheus endpoint where the metrics are exported
-	Endpoint string `json:"endpoint"`
+	// DataDogApiKey The Datadog API key used to authenticate the export. Required for DATADOG exports. Never returned in responses.
+	DataDogApiKey *string `json:"dataDogApiKey,omitempty"`
+
+	// DataDogSite The Datadog site to send metrics to, e.g. datadoghq.com or datadoghq.eu. Required for DATADOG exports. Datadog exports carry infrastructure metrics only; Airflow metrics continue to be sent by the in-Deployment Datadog sidecar.
+	DataDogSite *CreateEnvironmentObjectMetricsExportRequestDataDogSite `json:"dataDogSite,omitempty"`
+
+	// Endpoint The Prometheus endpoint where the metrics are exported. Required for PROMETHEUS exports; not used by DATADOG exports, which derive their intake URL from site.
+	Endpoint *string `json:"endpoint,omitempty"`
 
 	// ExporterType The type of exporter
 	ExporterType CreateEnvironmentObjectMetricsExportRequestExporterType `json:"exporterType"`
@@ -436,6 +902,9 @@ type CreateEnvironmentObjectMetricsExportRequest struct {
 
 // CreateEnvironmentObjectMetricsExportRequestAuthType The type of authentication to use when connecting to the remote endpoint
 type CreateEnvironmentObjectMetricsExportRequestAuthType string
+
+// CreateEnvironmentObjectMetricsExportRequestDataDogSite The Datadog site to send metrics to, e.g. datadoghq.com or datadoghq.eu. Required for DATADOG exports. Datadog exports carry infrastructure metrics only; Airflow metrics continue to be sent by the in-Deployment Datadog sidecar.
+type CreateEnvironmentObjectMetricsExportRequestDataDogSite string
 
 // CreateEnvironmentObjectMetricsExportRequestExporterType The type of exporter
 type CreateEnvironmentObjectMetricsExportRequestExporterType string
@@ -485,6 +954,518 @@ type CreateEnvironmentObjectRequestObjectType string
 
 // CreateEnvironmentObjectRequestScope The scope of the environment object
 type CreateEnvironmentObjectRequestScope string
+
+// CreateHybridDeploymentRequest defines model for CreateHybridDeploymentRequest.
+type CreateHybridDeploymentRequest struct {
+	// AstroRuntimeVersion Deployment's Astro Runtime version.
+	AstroRuntimeVersion *string `json:"astroRuntimeVersion,omitempty"`
+
+	// ClusterId The ID of the cluster where the Deployment will be created.
+	ClusterId *string `json:"clusterId,omitempty"`
+
+	// ContactEmails A list of contact emails for the Deployment.
+	ContactEmails *[]string `json:"contactEmails,omitempty"`
+
+	// Description The Deployment's description.
+	Description *string `json:"description,omitempty"`
+
+	// DrWorkloadIdentity The Deployment's DR workload identity.
+	DrWorkloadIdentity *string `json:"drWorkloadIdentity,omitempty"`
+
+	// EnvironmentVariables List of environment variables to add to the Deployment.
+	EnvironmentVariables *[]DeploymentEnvironmentVariableRequest `json:"environmentVariables,omitempty"`
+
+	// Executor The Deployment's executor type.
+	Executor *CreateHybridDeploymentRequestExecutor `json:"executor,omitempty"`
+
+	// IsCicdEnforced Whether the Deployment requires that all deploys are made through CI/CD.
+	IsCicdEnforced *bool `json:"isCicdEnforced,omitempty"`
+
+	// IsDagDeployEnabled Whether the Deployment has Dag deploys enabled.
+	IsDagDeployEnabled *bool `json:"isDagDeployEnabled,omitempty"`
+
+	// Name The Deployment's name.
+	Name      string                               `json:"name"`
+	Scheduler *CreateDeploymentInstanceSpecRequest `json:"scheduler,omitempty"`
+
+	// TaskPodNodePoolId The node pool ID for the task pods. For `KUBERNETES` executor only.
+	TaskPodNodePoolId *string `json:"taskPodNodePoolId,omitempty"`
+
+	// Type The type of the Deployment.
+	Type *CreateHybridDeploymentRequestType `json:"type,omitempty"`
+
+	// WorkerQueues The list of worker queues configured for the Deployment. Applies only when `Executor` is `CELERY`. At least 1 worker queue is needed. All Deployments need at least 1 worker queue called `default`.
+	WorkerQueues *[]HybridWorkerQueueRequest `json:"workerQueues,omitempty"`
+
+	// WorkloadIdentity The Deployment's workload identity.
+	WorkloadIdentity *string `json:"workloadIdentity,omitempty"`
+
+	// WorkspaceId The ID of the Workspace to which the Deployment belongs.
+	WorkspaceId string `json:"workspaceId"`
+}
+
+// CreateHybridDeploymentRequestExecutor The Deployment's executor type.
+type CreateHybridDeploymentRequestExecutor string
+
+// CreateHybridDeploymentRequestType The type of the Deployment.
+type CreateHybridDeploymentRequestType string
+
+// CreateStandardDeploymentRequest defines model for CreateStandardDeploymentRequest.
+type CreateStandardDeploymentRequest struct {
+	// AstroRuntimeVersion Deployment's Astro Runtime version.
+	AstroRuntimeVersion *string `json:"astroRuntimeVersion,omitempty"`
+
+	// CloudProvider Cloud provider for STANDARD deployments on Astronomer shared infrastructure. One of AWS, AZURE, GCP. Must be provided together with region. If clusterId is also provided, clusterId takes precedence and this field is ignored.
+	CloudProvider *CreateStandardDeploymentRequestCloudProvider `json:"cloudProvider,omitempty"`
+
+	// ClusterId The target cluster ID. Use for DEDICATED (Astronomer-hosted) or HYBRID (Bring-Your-Own-Cloud) deployments. If provided alongside cloudProvider and region, clusterId takes precedence and the other two are ignored. When all three are omitted, infrastructure is resolved from workspace defaults or auto-selected when the organization has exactly one cluster.
+	ClusterId *string `json:"clusterId,omitempty"`
+
+	// ContactEmails A list of contact emails for the Deployment.
+	ContactEmails *[]string `json:"contactEmails,omitempty"`
+
+	// DefaultTaskPodCpu The default CPU resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in number of CPU cores. Required if Remote Execution is disabled.
+	DefaultTaskPodCpu *string `json:"defaultTaskPodCpu,omitempty"`
+
+	// DefaultTaskPodMemory The default memory resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `DefaultTaskPodCpu`. Required if Remote Execution is disabled.
+	DefaultTaskPodMemory *string `json:"defaultTaskPodMemory,omitempty"`
+
+	// Description The Deployment's description.
+	Description *string `json:"description,omitempty"`
+
+	// DrWorkloadIdentity The Deployment's DR workload identity.
+	DrWorkloadIdentity *string `json:"drWorkloadIdentity,omitempty"`
+
+	// EnvironmentVariables List of environment variables to add to the Deployment.
+	EnvironmentVariables *[]DeploymentEnvironmentVariableRequest `json:"environmentVariables,omitempty"`
+
+	// Executor The Deployment's executor type.
+	Executor *CreateStandardDeploymentRequestExecutor `json:"executor,omitempty"`
+
+	// IsCicdEnforced Whether the Deployment requires that all deploys are made through CI/CD.
+	IsCicdEnforced *bool `json:"isCicdEnforced,omitempty"`
+
+	// IsDagDeployEnabled Whether the Deployment has Dag deploys enabled.
+	IsDagDeployEnabled *bool `json:"isDagDeployEnabled,omitempty"`
+
+	// IsDevelopmentMode If true, deployment will be able to use development-only features, such as hibernation, but will not have guaranteed uptime SLAs
+	IsDevelopmentMode *bool `json:"isDevelopmentMode,omitempty"`
+
+	// IsHighAvailability Whether the Deployment is configured for high availability. If `true`, multiple scheduler pods will be online.
+	IsHighAvailability *bool `json:"isHighAvailability,omitempty"`
+
+	// Name The Deployment's name.
+	Name string `json:"name"`
+
+	// Region Region for STANDARD deployments on Astronomer shared infrastructure. Must be provided together with cloudProvider. If clusterId is also provided, clusterId takes precedence and this field is ignored.
+	Region          *string                           `json:"region,omitempty"`
+	RemoteExecution *DeploymentRemoteExecutionRequest `json:"remoteExecution,omitempty"`
+
+	// ResourceQuotaCpu The CPU quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current CPU usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in number of CPU cores. Required if Remote Execution is disabled.
+	ResourceQuotaCpu *string `json:"resourceQuotaCpu,omitempty"`
+
+	// ResourceQuotaMemory The memory quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current memory usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `ResourceQuotaCpu`. Required if Remote Execution is disabled.
+	ResourceQuotaMemory *string                       `json:"resourceQuotaMemory,omitempty"`
+	ScalingSpec         *DeploymentScalingSpecRequest `json:"scalingSpec,omitempty"`
+
+	// SchedulerSize The size of the scheduler Pod.
+	SchedulerSize *CreateStandardDeploymentRequestSchedulerSize `json:"schedulerSize,omitempty"`
+
+	// Type The type of the Deployment.
+	Type *CreateStandardDeploymentRequestType `json:"type,omitempty"`
+
+	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY` or if Remote Execution is disabled and executor is `ASTRO`. All these Deployments need at least 1 worker queue called `default`.
+	WorkerQueues *[]WorkerQueueRequest `json:"workerQueues,omitempty"`
+
+	// WorkloadIdentity The Deployment's workload identity.
+	WorkloadIdentity *string `json:"workloadIdentity,omitempty"`
+
+	// WorkspaceId The ID of the Workspace to which the Deployment belongs.
+	WorkspaceId string `json:"workspaceId"`
+}
+
+// CreateStandardDeploymentRequestCloudProvider Cloud provider for STANDARD deployments on Astronomer shared infrastructure. One of AWS, AZURE, GCP. Must be provided together with region. If clusterId is also provided, clusterId takes precedence and this field is ignored.
+type CreateStandardDeploymentRequestCloudProvider string
+
+// CreateStandardDeploymentRequestExecutor The Deployment's executor type.
+type CreateStandardDeploymentRequestExecutor string
+
+// CreateStandardDeploymentRequestSchedulerSize The size of the scheduler Pod.
+type CreateStandardDeploymentRequestSchedulerSize string
+
+// CreateStandardDeploymentRequestType The type of the Deployment.
+type CreateStandardDeploymentRequestType string
+
+// Deployment defines model for Deployment.
+type Deployment struct {
+	// AirflowVersion The Deployment's Airflow version.
+	AirflowVersion string `json:"airflowVersion"`
+
+	// ApiUrl The base URL to directly access the Airflow API.
+	ApiUrl string `json:"apiUrl"`
+
+	// AstroRuntimeVersion The Deployment's Astro Runtime version.
+	AstroRuntimeVersion string `json:"astroRuntimeVersion"`
+
+	// CloudProvider The cloud provider of the cluster. Only for Standard Deployment.
+	CloudProvider *DeploymentCloudProvider `json:"cloudProvider,omitempty"`
+
+	// ClusterId The ID of the cluster where the Deployment is hosted.
+	ClusterId *string `json:"clusterId,omitempty"`
+
+	// ClusterName The name of the cluster where the Deployment is hosted. Only for Dedicated and Hybrid Deployments.
+	ClusterName *string `json:"clusterName,omitempty"`
+
+	// ContactEmails The list of contact emails for the Deployment.
+	ContactEmails *[]string `json:"contactEmails,omitempty"`
+
+	// CreatedAt The time when the Deployment was created in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
+	CreatedAt time.Time           `json:"createdAt"`
+	CreatedBy BasicSubjectProfile `json:"createdBy"`
+
+	// DagTarballVersion The Deployment's current Dag tarball version, also known as the Bundle Version in the Astro UI. If no deploys are currently processing, this value should be the same as DesiredDagTarballVersion.
+	DagTarballVersion *string `json:"dagTarballVersion,omitempty"`
+
+	// DefaultTaskPodCpu The default CPU resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in number of CPU cores.
+	DefaultTaskPodCpu *string `json:"defaultTaskPodCpu,omitempty"`
+
+	// DefaultTaskPodMemory The default memory resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in `Gi`. This value must always be twice the value of `DefaultTaskPodCpu`.
+	DefaultTaskPodMemory *string `json:"defaultTaskPodMemory,omitempty"`
+
+	// Description The Deployment's description.
+	Description *string `json:"description,omitempty"`
+
+	// DesiredDagTarballVersion The Deployment's expected Dag tarball version after a currently processing deploy completes. This value is updated when a user triggers a Dag-only deploy to indicate that the Deployment is expecting a new Dag tarball version. If no deploys are currently processing, this value should be the same as DagTarballVersion.
+	DesiredDagTarballVersion *string `json:"desiredDagTarballVersion,omitempty"`
+
+	// DrExternalIPs A list of the Deployment's external IPs in the DR cluster
+	DrExternalIPs *[]string `json:"drExternalIPs,omitempty"`
+
+	// DrOidcIssuerUrl OIDC issuer URL of the deployment's DR cluster
+	DrOidcIssuerUrl *string `json:"drOidcIssuerUrl,omitempty"`
+
+	// EffectiveDRWorkloadIdentity The DR workload identity being used by the deployment. Either user-configured or Astronomer-provided default.
+	EffectiveDRWorkloadIdentity *string `json:"effectiveDRWorkloadIdentity,omitempty"`
+
+	// EffectiveWorkloadIdentity The workload identity being used by the deployment. Either user-configured or Astronomer-provided default.
+	EffectiveWorkloadIdentity *string `json:"effectiveWorkloadIdentity,omitempty"`
+
+	// EnvironmentVariables The Deployment's environment variables. Secret values will be omitted from response.
+	EnvironmentVariables *[]DeploymentEnvironmentVariable `json:"environmentVariables,omitempty"`
+
+	// Executor The Deployment's executor type.
+	Executor *DeploymentExecutor `json:"executor,omitempty"`
+
+	// ExternalIPs A list of the Deployment's external IPs.
+	ExternalIPs *[]string `json:"externalIPs,omitempty"`
+
+	// Id The Deployment's ID.
+	Id string `json:"id"`
+
+	// ImageRepository The URL of the Deployment's image repository.
+	ImageRepository string `json:"imageRepository"`
+
+	// ImageTag The Deployment's custom image tag. Appears only if specified in the most recent deploy.
+	ImageTag string `json:"imageTag"`
+
+	// ImageVersion A tag that Astronomer applies to the Deployment's Astro Runtime image during a deploy. It includes the date and time of the deploy.
+	ImageVersion *string `json:"imageVersion,omitempty"`
+
+	// IsCicdEnforced Whether the Deployment requires that all deploys are made through CI/CD.
+	IsCicdEnforced bool `json:"isCicdEnforced"`
+
+	// IsDagDeployEnabled Whether the Deployment has Dag deploys enabled.
+	IsDagDeployEnabled bool `json:"isDagDeployEnabled"`
+
+	// IsDevelopmentMode If true, deployment will be able to use development-only features, such as hibernation, but will not have guaranteed uptime SLAs
+	IsDevelopmentMode *bool `json:"isDevelopmentMode,omitempty"`
+
+	// IsHighAvailability Whether the Deployment has high availability (HA) enabled. If `true`, multiple scheduler Pods will run at once.
+	IsHighAvailability *bool `json:"isHighAvailability,omitempty"`
+
+	// Name The Deployment's name.
+	Name string `json:"name"`
+
+	// Namespace The Deployment's namespace name in the Kubernetes cluster.
+	Namespace string `json:"namespace"`
+
+	// OidcIssuerUrl OIDC issuer URL of the deployment's cluster
+	OidcIssuerUrl *string `json:"oidcIssuerUrl,omitempty"`
+
+	// OrganizationId The ID of the Organization to which the Deployment belongs.
+	OrganizationId string `json:"organizationId"`
+
+	// Region The region of the cluster. Only for Dedicated and Hybrid Deployments.
+	Region          *string                    `json:"region,omitempty"`
+	RemoteExecution *DeploymentRemoteExecution `json:"remoteExecution,omitempty"`
+
+	// ResourceQuotaCpu The CPU quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current CPU usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in number of CPU cores.
+	ResourceQuotaCpu *string `json:"resourceQuotaCpu,omitempty"`
+
+	// ResourceQuotaMemory The memory quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current memory usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in `Gi`. This value must always be twice the value of `ResourceQuotaCpu`.
+	ResourceQuotaMemory *string `json:"resourceQuotaMemory,omitempty"`
+
+	// RuntimeVersion Deprecated: runtimeVersion has been replaced with astroRuntimeVersion
+	RuntimeVersion string                   `json:"runtimeVersion"`
+	ScalingSpec    *DeploymentScalingSpec   `json:"scalingSpec,omitempty"`
+	ScalingStatus  *DeploymentScalingStatus `json:"scalingStatus,omitempty"`
+
+	// SchedulerAu The number of Astronomer units (AU) for the Deployment's scheduler. Applies only to Deployments hosted on Hybrid clusters.
+	SchedulerAu *int `json:"schedulerAu,omitempty"`
+
+	// SchedulerCpu The CPU limit for the Deployment's scheduler. Specified in number of CPU cores.
+	SchedulerCpu string `json:"schedulerCpu"`
+
+	// SchedulerMemory The memory limit for the Deployment's scheduler. Units in Gibibytes or `Gi`.
+	SchedulerMemory string `json:"schedulerMemory"`
+
+	// SchedulerReplicas The number of schedulers to use in the Deployment.
+	SchedulerReplicas int `json:"schedulerReplicas"`
+
+	// SchedulerSize The Deployment's scheduler size.
+	SchedulerSize *DeploymentSchedulerSize `json:"schedulerSize,omitempty"`
+
+	// Status The status of the Deployment.
+	Status DeploymentStatus `json:"status"`
+
+	// StatusReason A message that provides context for the Deployment's status.
+	StatusReason *string `json:"statusReason,omitempty"`
+
+	// TaskPodNodePoolId The node pool ID for the task pod.
+	TaskPodNodePoolId *string `json:"taskPodNodePoolId,omitempty"`
+
+	// Type The type of cluster that the Deployment runs on.
+	Type *DeploymentType `json:"type,omitempty"`
+
+	// UiUrl The URL to access the Airflow UI.
+	UiUrl string `json:"uiUrl"`
+
+	// UpdatedAt The time when the Deployment was last updated in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
+	UpdatedAt time.Time           `json:"updatedAt"`
+	UpdatedBy BasicSubjectProfile `json:"updatedBy"`
+
+	// WebServerAirflowApiUrl The Deployment's webserver's base url to directly access the Airflow api.
+	WebServerAirflowApiUrl string `json:"webServerAirflowApiUrl"`
+
+	// WebServerCpu The CPU limit for the Deployment's webserver. Units are in number of CPU cores.
+	WebServerCpu string `json:"webServerCpu"`
+
+	// WebServerIngressHostname The Deployment's webserver's ingress hostname.
+	WebServerIngressHostname string `json:"webServerIngressHostname"`
+
+	// WebServerMemory The memory limit for the Deployment's webserver. Units in Gibibytes or `Gi`.
+	WebServerMemory string `json:"webServerMemory"`
+
+	// WebServerReplicas The number of webserver replicas.
+	WebServerReplicas *int `json:"webServerReplicas,omitempty"`
+
+	// WebServerUrl The Deployment's webserver's url.
+	WebServerUrl string `json:"webServerUrl"`
+
+	// WorkerQueues A list of the Deployment's worker queues.
+	WorkerQueues *[]WorkerQueue `json:"workerQueues,omitempty"`
+
+	// WorkspaceId The ID of the Workspace to which the Deployment belongs.
+	WorkspaceId string `json:"workspaceId"`
+
+	// WorkspaceName The name of the Workspace to which the Deployment belongs.
+	WorkspaceName *string `json:"workspaceName,omitempty"`
+}
+
+// DeploymentCloudProvider The cloud provider of the cluster. Only for Standard Deployment.
+type DeploymentCloudProvider string
+
+// DeploymentExecutor The Deployment's executor type.
+type DeploymentExecutor string
+
+// DeploymentSchedulerSize The Deployment's scheduler size.
+type DeploymentSchedulerSize string
+
+// DeploymentStatus The status of the Deployment.
+type DeploymentStatus string
+
+// DeploymentType The type of cluster that the Deployment runs on.
+type DeploymentType string
+
+// DeploymentEnvironmentVariable defines model for DeploymentEnvironmentVariable.
+type DeploymentEnvironmentVariable struct {
+	// IsSecret Whether the environment variable is a secret.
+	IsSecret bool `json:"isSecret"`
+
+	// Key The environment variable key, used to call the value in code.
+	Key string `json:"key"`
+
+	// UpdatedAt The time when the environment variable was last updated in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
+	UpdatedAt time.Time `json:"updatedAt"`
+
+	// Value The environment variable value.
+	Value *string `json:"value,omitempty"`
+}
+
+// DeploymentEnvironmentVariableRequest defines model for DeploymentEnvironmentVariableRequest.
+type DeploymentEnvironmentVariableRequest struct {
+	// IsSecret Whether the environment variable is a secret.
+	IsSecret bool `json:"isSecret"`
+
+	// Key The environment variable key, used to call the value in code.
+	Key string `json:"key"`
+
+	// Value The environment variable value.
+	Value *string `json:"value,omitempty"`
+}
+
+// DeploymentHibernationOverride defines model for DeploymentHibernationOverride.
+type DeploymentHibernationOverride struct {
+	// IsActive Whether the override is currently active or not
+	IsActive *bool `json:"isActive,omitempty"`
+
+	// IsHibernating Whether to go into hibernation or not via the override rule
+	IsHibernating *bool `json:"isHibernating,omitempty"`
+
+	// OverrideUntil Timestamp till the override on the hibernation schedule is in effect
+	OverrideUntil *time.Time `json:"overrideUntil,omitempty"`
+}
+
+// DeploymentHibernationOverrideRequest defines model for DeploymentHibernationOverrideRequest.
+type DeploymentHibernationOverrideRequest struct {
+	// IsHibernating Whether to go into hibernation or not via the override rule
+	IsHibernating *bool `json:"isHibernating,omitempty"`
+
+	// OverrideUntil Timestamp till the override on the hibernation schedule is in effect
+	OverrideUntil *string `json:"overrideUntil,omitempty"`
+}
+
+// DeploymentHibernationSchedule defines model for DeploymentHibernationSchedule.
+type DeploymentHibernationSchedule struct {
+	// Description A brief description of the schedule
+	Description *string `json:"description,omitempty"`
+
+	// HibernateAtCron A 5-part cron expression defining the times at which the deployment should hibernate
+	HibernateAtCron string `json:"hibernateAtCron"`
+
+	// IsEnabled Toggle this schedule on or off. If set to false, this schedule will have no effect on hibernation.
+	IsEnabled bool `json:"isEnabled"`
+
+	// WakeAtCron A 5-part cron expression definingh the times at which the deployment should wake from hibernation
+	WakeAtCron string `json:"wakeAtCron"`
+}
+
+// DeploymentHibernationSpec defines model for DeploymentHibernationSpec.
+type DeploymentHibernationSpec struct {
+	Override *DeploymentHibernationOverride `json:"override,omitempty"`
+
+	// Schedules The list of schedules for deployment hibernation
+	Schedules *[]DeploymentHibernationSchedule `json:"schedules,omitempty"`
+}
+
+// DeploymentHibernationSpecRequest defines model for DeploymentHibernationSpecRequest.
+type DeploymentHibernationSpecRequest struct {
+	Override *DeploymentHibernationOverrideRequest `json:"override,omitempty"`
+
+	// Schedules The list of schedules for deployment hibernation
+	Schedules *[]DeploymentHibernationSchedule `json:"schedules,omitempty"`
+}
+
+// DeploymentHibernationStatus defines model for DeploymentHibernationStatus.
+type DeploymentHibernationStatus struct {
+	// IsHibernating If the deployment is currently in hibernating state or not
+	IsHibernating bool `json:"isHibernating"`
+
+	// NextEventAt Timestamp of the next scheduled hibernation event for the deployment
+	NextEventAt *string `json:"nextEventAt,omitempty"`
+
+	// NextEventType The type of the next scheduled event for the deployment. Either HIBERNATE or WAKE
+	NextEventType *DeploymentHibernationStatusNextEventType `json:"nextEventType,omitempty"`
+
+	// Reason Reason for the current hibernation state of the deployment
+	Reason *string `json:"reason,omitempty"`
+}
+
+// DeploymentHibernationStatusNextEventType The type of the next scheduled event for the deployment. Either HIBERNATE or WAKE
+type DeploymentHibernationStatusNextEventType string
+
+// DeploymentLog defines model for DeploymentLog.
+type DeploymentLog struct {
+	// Limit The requested log entry limit.
+	Limit int `json:"limit"`
+
+	// MaxNumResults The maximum number of results.
+	MaxNumResults int `json:"maxNumResults"`
+
+	// Offset The offset of the current results page.
+	Offset int `json:"offset"`
+
+	// ResultCount The number of results returned.
+	ResultCount int `json:"resultCount"`
+
+	// Results The log entries.
+	Results []DeploymentLogEntry `json:"results"`
+
+	// SearchId The search ID for pagination.
+	SearchId string `json:"searchId"`
+}
+
+// DeploymentLogEntry defines model for DeploymentLogEntry.
+type DeploymentLogEntry struct {
+	// Raw The raw log entry content.
+	Raw string `json:"raw"`
+
+	// Source The log entry source.
+	Source DeploymentLogEntrySource `json:"source"`
+
+	// Timestamp The log entry's timestamp.
+	Timestamp float32 `json:"timestamp"`
+}
+
+// DeploymentLogEntrySource The log entry source.
+type DeploymentLogEntrySource string
+
+// DeploymentRemoteExecution defines model for DeploymentRemoteExecution.
+type DeploymentRemoteExecution struct {
+	AllowedIpAddressRanges []string `json:"allowedIpAddressRanges"`
+	Enabled                bool     `json:"enabled"`
+	RemoteApiUrl           string   `json:"remoteApiUrl"`
+	TaskLogBucket          *string  `json:"taskLogBucket,omitempty"`
+	TaskLogUrlPattern      *string  `json:"taskLogUrlPattern,omitempty"`
+}
+
+// DeploymentRemoteExecutionRequest defines model for DeploymentRemoteExecutionRequest.
+type DeploymentRemoteExecutionRequest struct {
+	AllowedIpAddressRanges *[]string `json:"allowedIpAddressRanges,omitempty"`
+	Enabled                bool      `json:"enabled"`
+	TaskLogBucket          *string   `json:"taskLogBucket,omitempty"`
+	TaskLogUrlPattern      *string   `json:"taskLogUrlPattern,omitempty"`
+}
+
+// DeploymentScalingSpec defines model for DeploymentScalingSpec.
+type DeploymentScalingSpec struct {
+	HibernationSpec *DeploymentHibernationSpec `json:"hibernationSpec,omitempty"`
+}
+
+// DeploymentScalingSpecRequest defines model for DeploymentScalingSpecRequest.
+type DeploymentScalingSpecRequest struct {
+	HibernationSpec *DeploymentHibernationSpecRequest `json:"hibernationSpec,omitempty"`
+}
+
+// DeploymentScalingStatus defines model for DeploymentScalingStatus.
+type DeploymentScalingStatus struct {
+	HibernationStatus *DeploymentHibernationStatus `json:"hibernationStatus,omitempty"`
+}
+
+// DeploymentsPaginated defines model for DeploymentsPaginated.
+type DeploymentsPaginated struct {
+	// Deployments A list of Deployments in the current page.
+	Deployments []Deployment `json:"deployments"`
+
+	// Limit The maximum number of Deployments in one page.
+	Limit int `json:"limit"`
+
+	// Offset The offset of the current page of Deployments.
+	Offset int `json:"offset"`
+
+	// TotalCount The total number of Deployments.
+	TotalCount int `json:"totalCount"`
+}
 
 // EnvironmentObject defines model for EnvironmentObject.
 type EnvironmentObject struct {
@@ -667,6 +1648,12 @@ type EnvironmentObjectMetricsExport struct {
 	// BasicToken The bearer token to connect to the remote endpoint
 	BasicToken *string `json:"basicToken,omitempty"`
 
+	// DataDogApiKey Always empty; the Datadog API key is masked before serialization
+	DataDogApiKey *string `json:"dataDogApiKey,omitempty"`
+
+	// DataDogSite The Datadog site metrics are sent to. Datadog exports carry infrastructure metrics only; Airflow metrics continue to be sent by the in-Deployment Datadog sidecar.
+	DataDogSite *EnvironmentObjectMetricsExportDataDogSite `json:"dataDogSite,omitempty"`
+
 	// Endpoint The Prometheus endpoint where the metrics are exported
 	Endpoint string `json:"endpoint"`
 
@@ -695,6 +1682,9 @@ type EnvironmentObjectMetricsExport struct {
 // EnvironmentObjectMetricsExportAuthType The type of authentication to use when connecting to the remote endpoint
 type EnvironmentObjectMetricsExportAuthType string
 
+// EnvironmentObjectMetricsExportDataDogSite The Datadog site metrics are sent to. Datadog exports carry infrastructure metrics only; Airflow metrics continue to be sent by the in-Deployment Datadog sidecar.
+type EnvironmentObjectMetricsExportDataDogSite string
+
 // EnvironmentObjectMetricsExportExporterType The type of exporter
 type EnvironmentObjectMetricsExportExporterType string
 
@@ -705,6 +1695,12 @@ type EnvironmentObjectMetricsExportOverrides struct {
 
 	// BasicToken The bearer token to connect to the remote endpoint
 	BasicToken *string `json:"basicToken,omitempty"`
+
+	// DataDogApiKey The Datadog API key used to authenticate the export. Never returned in responses.
+	DataDogApiKey *string `json:"dataDogApiKey,omitempty"`
+
+	// DataDogSite The Datadog site to send metrics to, e.g. datadoghq.com or datadoghq.eu. Datadog exports carry infrastructure metrics only; Airflow metrics continue to be sent by the in-Deployment Datadog sidecar.
+	DataDogSite *EnvironmentObjectMetricsExportOverridesDataDogSite `json:"dataDogSite,omitempty"`
 
 	// Endpoint The Prometheus endpoint where the metrics are exported
 	Endpoint *string `json:"endpoint,omitempty"`
@@ -734,6 +1730,9 @@ type EnvironmentObjectMetricsExportOverrides struct {
 // EnvironmentObjectMetricsExportOverridesAuthType The type of authentication to use when connecting to the remote endpoint
 type EnvironmentObjectMetricsExportOverridesAuthType string
 
+// EnvironmentObjectMetricsExportOverridesDataDogSite The Datadog site to send metrics to, e.g. datadoghq.com or datadoghq.eu. Datadog exports carry infrastructure metrics only; Airflow metrics continue to be sent by the in-Deployment Datadog sidecar.
+type EnvironmentObjectMetricsExportOverridesDataDogSite string
+
 // EnvironmentObjectMetricsExportOverridesExporterType The type of exporter
 type EnvironmentObjectMetricsExportOverridesExporterType string
 
@@ -754,8 +1753,7 @@ type EnvironmentObjectsPaginated struct {
 
 // Error defines model for Error.
 type Error struct {
-	// FieldErrors FieldErrors carries one entry per failed request-validation constraint.
-	// Only present on 400 responses caused by request binding/validation.
+	// FieldErrors FieldErrors carries one entry per failed request-validation constraint. Only present on 400 responses caused by request binding/validation.
 	FieldErrors *[]FieldValidationError `json:"fieldErrors,omitempty"`
 	Message     string                  `json:"message"`
 	RequestId   string                  `json:"requestId"`
@@ -779,6 +1777,124 @@ type FieldValidationError struct {
 	Code    string `json:"code"`
 	Field   string `json:"field"`
 	Message string `json:"message"`
+}
+
+// HybridWorkerQueueRequest defines model for HybridWorkerQueueRequest.
+type HybridWorkerQueueRequest struct {
+	// Id The worker queue's ID. If not provided, a new worker queue will be created.
+	Id *string `json:"id,omitempty"`
+
+	// IsDefault Whether the worker queue is the default worker queue on the Deployment.
+	IsDefault bool `json:"isDefault"`
+
+	// MaxWorkerCount The maximum number of workers that can run at once.
+	MaxWorkerCount int `json:"maxWorkerCount"`
+
+	// MinWorkerCount The minimum number of workers running at once.
+	MinWorkerCount int `json:"minWorkerCount"`
+
+	// Name The worker queue's name.
+	Name string `json:"name"`
+
+	// NodePoolId The node pool ID associated with the worker queue.
+	NodePoolId string `json:"nodePoolId"`
+
+	// WorkerConcurrency The maximum number of concurrent tasks that a worker Pod can run at a time.
+	WorkerConcurrency int `json:"workerConcurrency"`
+}
+
+// OverrideDeploymentHibernationBody defines model for OverrideDeploymentHibernationBody.
+type OverrideDeploymentHibernationBody struct {
+	// IsHibernating The type of override to perform. Set this value to 'true' to have the Deployment hibernate regardless of its hibernation schedule. Set the value to 'false' to have the Deployment wake up regardless of its hibernation schedule. Use 'OverrideUntil' to define the length of the override.
+	IsHibernating *bool `json:"isHibernating"`
+
+	// OverrideUntil The end of the override time in UTC, formatted as 'YYYY-MM-DDTHH:MM:SSZ'. If this value isn't specified, the override persists until you end it through the Astro UI or another API call.
+	OverrideUntil *time.Time `json:"overrideUntil"`
+}
+
+// UpdateDedicatedDeploymentRequest defines model for UpdateDedicatedDeploymentRequest.
+type UpdateDedicatedDeploymentRequest struct {
+	// ContactEmails A list of contact emails for the Deployment.
+	ContactEmails *[]string `json:"contactEmails,omitempty"`
+
+	// DefaultTaskPodCpu The default CPU resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in number of CPU cores. Required if Remote Execution is disabled.
+	DefaultTaskPodCpu *string `json:"defaultTaskPodCpu,omitempty"`
+
+	// DefaultTaskPodMemory The default memory resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `DefaultTaskPodCpu`. Required if Remote Execution is disabled.
+	DefaultTaskPodMemory *string `json:"defaultTaskPodMemory,omitempty"`
+
+	// Description The Deployment's description.
+	Description *string `json:"description,omitempty"`
+
+	// DrWorkloadIdentity The Deployment's DR workload identity.
+	DrWorkloadIdentity *string `json:"drWorkloadIdentity,omitempty"`
+
+	// EnvironmentVariables List of environment variables to add to the Deployment.
+	EnvironmentVariables []DeploymentEnvironmentVariableRequest `json:"environmentVariables"`
+
+	// Executor The Deployment's executor type.
+	Executor UpdateDedicatedDeploymentRequestExecutor `json:"executor"`
+
+	// IsCicdEnforced Whether the Deployment requires that all deploys are made through CI/CD.
+	IsCicdEnforced bool `json:"isCicdEnforced"`
+
+	// IsDagDeployEnabled Whether the Deployment has Dag deploys enabled.
+	IsDagDeployEnabled bool `json:"isDagDeployEnabled"`
+
+	// IsDevelopmentMode Whether the Deployment is for development only. If `false`, the Deployment can be considered production for the purposes of support case priority, but development-only features such as hibernation will not be available. You can't update this value to `true` for existing non-development Deployments.
+	IsDevelopmentMode *bool `json:"isDevelopmentMode,omitempty"`
+
+	// IsHighAvailability Whether the Deployment is configured for high availability. If `true`, multiple scheduler pods will be online.
+	IsHighAvailability bool `json:"isHighAvailability"`
+
+	// Name The Deployment's name.
+	Name            string                            `json:"name"`
+	RemoteExecution *DeploymentRemoteExecutionRequest `json:"remoteExecution,omitempty"`
+
+	// ResourceQuotaCpu The CPU quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current CPU usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in number of CPU cores. Required if Remote Execution is disabled.
+	ResourceQuotaCpu *string `json:"resourceQuotaCpu,omitempty"`
+
+	// ResourceQuotaMemory The memory quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current memory usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `ResourceQuotaCpu`. Required if Remote Execution is disabled.
+	ResourceQuotaMemory *string                       `json:"resourceQuotaMemory,omitempty"`
+	ScalingSpec         *DeploymentScalingSpecRequest `json:"scalingSpec,omitempty"`
+
+	// SchedulerSize The size of the scheduler Pod.
+	SchedulerSize UpdateDedicatedDeploymentRequestSchedulerSize `json:"schedulerSize"`
+
+	// Type The type of the Deployment.
+	Type UpdateDedicatedDeploymentRequestType `json:"type"`
+
+	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY` or if Remote Execution is disabled and executor is `ASTRO`. All these Deployments need at least 1 worker queue called `default`.
+	WorkerQueues *[]UpdateWorkerQueueRequest `json:"workerQueues,omitempty"`
+
+	// WorkloadIdentity The Deployment's workload identity.
+	WorkloadIdentity *string `json:"workloadIdentity,omitempty"`
+
+	// WorkspaceId The ID of the Workspace to which the Deployment belongs.
+	WorkspaceId string `json:"workspaceId"`
+}
+
+// UpdateDedicatedDeploymentRequestExecutor The Deployment's executor type.
+type UpdateDedicatedDeploymentRequestExecutor string
+
+// UpdateDedicatedDeploymentRequestSchedulerSize The size of the scheduler Pod.
+type UpdateDedicatedDeploymentRequestSchedulerSize string
+
+// UpdateDedicatedDeploymentRequestType The type of the Deployment.
+type UpdateDedicatedDeploymentRequestType string
+
+// UpdateDeploymentInstanceSpecRequest defines model for UpdateDeploymentInstanceSpecRequest.
+type UpdateDeploymentInstanceSpecRequest struct {
+	// Au The number of Astro unit allocated to the Deployment pod. Minimum `5`, Maximum `24`.
+	Au int `json:"au"`
+
+	// Replicas The number of replicas the pod should have. Minimum `1`, Maximum `4`.
+	Replicas int `json:"replicas"`
+}
+
+// UpdateDeploymentRequest defines model for UpdateDeploymentRequest.
+type UpdateDeploymentRequest struct {
+	union json.RawMessage
 }
 
 // UpdateEnvironmentObjectAirflowVariableOverridesRequest defines model for UpdateEnvironmentObjectAirflowVariableOverridesRequest.
@@ -878,6 +1994,12 @@ type UpdateEnvironmentObjectMetricsExportOverridesRequest struct {
 	// BasicToken The bearer token to connect to the remote endpoint
 	BasicToken *string `json:"basicToken,omitempty"`
 
+	// DataDogApiKey The Datadog API key used to authenticate the export. Never returned in responses.
+	DataDogApiKey *string `json:"dataDogApiKey,omitempty"`
+
+	// DataDogSite The Datadog site to send metrics to, e.g. datadoghq.com or datadoghq.eu. Datadog exports carry infrastructure metrics only; Airflow metrics continue to be sent by the in-Deployment Datadog sidecar.
+	DataDogSite *UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSite `json:"dataDogSite,omitempty"`
+
 	// Endpoint The Prometheus endpoint where the metrics are exported
 	Endpoint *string `json:"endpoint,omitempty"`
 
@@ -906,6 +2028,9 @@ type UpdateEnvironmentObjectMetricsExportOverridesRequest struct {
 // UpdateEnvironmentObjectMetricsExportOverridesRequestAuthType The type of authentication to use when connecting to the remote endpoint
 type UpdateEnvironmentObjectMetricsExportOverridesRequestAuthType string
 
+// UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSite The Datadog site to send metrics to, e.g. datadoghq.com or datadoghq.eu. Datadog exports carry infrastructure metrics only; Airflow metrics continue to be sent by the in-Deployment Datadog sidecar.
+type UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSite string
+
 // UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType The type of exporter
 type UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType string
 
@@ -916,6 +2041,12 @@ type UpdateEnvironmentObjectMetricsExportRequest struct {
 
 	// BasicToken The bearer token to connect to the remote endpoint
 	BasicToken *string `json:"basicToken,omitempty"`
+
+	// DataDogApiKey The Datadog API key used to authenticate the export. Omit to keep the existing key. Never returned in responses.
+	DataDogApiKey *string `json:"dataDogApiKey,omitempty"`
+
+	// DataDogSite DataDogSite is not marked required here even for DATADOG exports, because an update replaces the whole value: it is enforced by validation the same way endpoint is for PROMETHEUS. ApiKey is a secret, so omitting it keeps the stored key rather than clearing it.
+	DataDogSite *UpdateEnvironmentObjectMetricsExportRequestDataDogSite `json:"dataDogSite,omitempty"`
 
 	// Endpoint The Prometheus endpoint where the metrics are exported
 	Endpoint *string `json:"endpoint,omitempty"`
@@ -944,6 +2075,9 @@ type UpdateEnvironmentObjectMetricsExportRequest struct {
 
 // UpdateEnvironmentObjectMetricsExportRequestAuthType The type of authentication to use when connecting to the remote endpoint
 type UpdateEnvironmentObjectMetricsExportRequestAuthType string
+
+// UpdateEnvironmentObjectMetricsExportRequestDataDogSite DataDogSite is not marked required here even for DATADOG exports, because an update replaces the whole value: it is enforced by validation the same way endpoint is for PROMETHEUS. ApiKey is a secret, so omitting it keeps the stored key rather than clearing it.
+type UpdateEnvironmentObjectMetricsExportRequestDataDogSite string
 
 // UpdateEnvironmentObjectMetricsExportRequestExporterType The type of exporter
 type UpdateEnvironmentObjectMetricsExportRequestExporterType string
@@ -978,6 +2112,291 @@ type UpdateEnvironmentObjectRequest struct {
 	Links         *[]UpdateEnvironmentObjectLinkRequest        `json:"links,omitempty"`
 	MetricsExport *UpdateEnvironmentObjectMetricsExportRequest `json:"metricsExport,omitempty"`
 }
+
+// UpdateHybridDeploymentRequest defines model for UpdateHybridDeploymentRequest.
+type UpdateHybridDeploymentRequest struct {
+	// ContactEmails A list of contact emails for the Deployment.
+	ContactEmails *[]string `json:"contactEmails,omitempty"`
+
+	// Description The Deployment's description.
+	Description *string `json:"description,omitempty"`
+
+	// DrWorkloadIdentity The Deployment's DR workload identity.
+	DrWorkloadIdentity *string `json:"drWorkloadIdentity,omitempty"`
+
+	// EnvironmentVariables List of environment variables to add to the Deployment.
+	EnvironmentVariables []DeploymentEnvironmentVariableRequest `json:"environmentVariables"`
+
+	// Executor The Deployment's executor type.
+	Executor UpdateHybridDeploymentRequestExecutor `json:"executor"`
+
+	// IsCicdEnforced Whether the Deployment requires that all deploys are made through CI/CD.
+	IsCicdEnforced bool `json:"isCicdEnforced"`
+
+	// IsDagDeployEnabled Whether the Deployment has Dag deploys enabled.
+	IsDagDeployEnabled bool `json:"isDagDeployEnabled"`
+
+	// Name The Deployment's name.
+	Name      string                              `json:"name"`
+	Scheduler UpdateDeploymentInstanceSpecRequest `json:"scheduler"`
+
+	// TaskPodNodePoolId The node pool ID for worker Pods. Applies only when `Executor` is `KUBERNETES`.
+	TaskPodNodePoolId *string `json:"taskPodNodePoolId,omitempty"`
+
+	// Type The type of the Deployment.
+	Type UpdateHybridDeploymentRequestType `json:"type"`
+
+	// WorkerQueues The list of worker queues configured for the Deployment. Applies only when `Executor` is `CELERY`. All Deployments need at least 1 worker queue called `default`.
+	WorkerQueues *[]UpdateWorkerQueueRequest `json:"workerQueues,omitempty"`
+
+	// WorkloadIdentity The Deployment's workload identity.
+	WorkloadIdentity *string `json:"workloadIdentity,omitempty"`
+
+	// WorkspaceId The ID of the Workspace to which the Deployment belongs.
+	WorkspaceId string `json:"workspaceId"`
+}
+
+// UpdateHybridDeploymentRequestExecutor The Deployment's executor type.
+type UpdateHybridDeploymentRequestExecutor string
+
+// UpdateHybridDeploymentRequestType The type of the Deployment.
+type UpdateHybridDeploymentRequestType string
+
+// UpdateStandardDeploymentRequest defines model for UpdateStandardDeploymentRequest.
+type UpdateStandardDeploymentRequest struct {
+	// ContactEmails A list of contact emails for the Deployment.
+	ContactEmails *[]string `json:"contactEmails,omitempty"`
+
+	// DefaultTaskPodCpu The default CPU resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in number of CPU cores. Required if Remote Execution is disabled.
+	DefaultTaskPodCpu *string `json:"defaultTaskPodCpu,omitempty"`
+
+	// DefaultTaskPodMemory The default memory resource usage for a worker Pod when running the Kubernetes executor or KubernetesPodOperator. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `DefaultTaskPodCpu`. Required if Remote Execution is disabled.
+	DefaultTaskPodMemory *string `json:"defaultTaskPodMemory,omitempty"`
+
+	// Description The Deployment's description.
+	Description *string `json:"description,omitempty"`
+
+	// DrWorkloadIdentity The Deployment's DR workload identity.
+	DrWorkloadIdentity *string `json:"drWorkloadIdentity,omitempty"`
+
+	// EnvironmentVariables List of environment variables to add to the Deployment.
+	EnvironmentVariables []DeploymentEnvironmentVariableRequest `json:"environmentVariables"`
+
+	// Executor The Deployment's executor type.
+	Executor UpdateStandardDeploymentRequestExecutor `json:"executor"`
+
+	// IsCicdEnforced Whether the Deployment requires that all deploys are made through CI/CD.
+	IsCicdEnforced bool `json:"isCicdEnforced"`
+
+	// IsDagDeployEnabled Whether the Deployment has Dag deploys enabled.
+	IsDagDeployEnabled bool `json:"isDagDeployEnabled"`
+
+	// IsDevelopmentMode Whether the Deployment is for development only. If `false`, the Deployment can be considered production for the purposes of support case priority, but development-only features such as hibernation will not be available. You can't update this value to `true` for existing non-development Deployments.
+	IsDevelopmentMode *bool `json:"isDevelopmentMode,omitempty"`
+
+	// IsHighAvailability Whether the Deployment is configured for high availability. If `true`, multiple scheduler pods will be online.
+	IsHighAvailability bool `json:"isHighAvailability"`
+
+	// Name The Deployment's name.
+	Name            string                            `json:"name"`
+	RemoteExecution *DeploymentRemoteExecutionRequest `json:"remoteExecution,omitempty"`
+
+	// ResourceQuotaCpu The CPU quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current CPU usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in number of CPU cores. Required if Remote Execution is disabled.
+	ResourceQuotaCpu *string `json:"resourceQuotaCpu,omitempty"`
+
+	// ResourceQuotaMemory The memory quota for worker Pods when running the Kubernetes executor or KubernetesPodOperator. If current memory usage across all workers exceeds the quota, no new worker Pods can be scheduled. Units are in `Gi` and must be explicitly included. This value must always be twice the value of `ResourceQuotaCpu`. Required if Remote Execution is disabled.
+	ResourceQuotaMemory *string                       `json:"resourceQuotaMemory,omitempty"`
+	ScalingSpec         *DeploymentScalingSpecRequest `json:"scalingSpec,omitempty"`
+
+	// SchedulerSize The size of the scheduler Pod.
+	SchedulerSize UpdateStandardDeploymentRequestSchedulerSize `json:"schedulerSize"`
+
+	// Type The type of the Deployment.
+	Type UpdateStandardDeploymentRequestType `json:"type"`
+
+	// WorkerQueues A list of the Deployment's worker queues. Applies only when `Executor` is `CELERY` or if Remote Execution is disabled and executor is `ASTRO`. All these Deployments need at least 1 worker queue called `default`.
+	WorkerQueues *[]UpdateWorkerQueueRequest `json:"workerQueues,omitempty"`
+
+	// WorkloadIdentity The Deployment's workload identity.
+	WorkloadIdentity *string `json:"workloadIdentity,omitempty"`
+
+	// WorkspaceId The ID of the Workspace to which the Deployment belongs.
+	WorkspaceId string `json:"workspaceId"`
+}
+
+// UpdateStandardDeploymentRequestExecutor The Deployment's executor type.
+type UpdateStandardDeploymentRequestExecutor string
+
+// UpdateStandardDeploymentRequestSchedulerSize The size of the scheduler Pod.
+type UpdateStandardDeploymentRequestSchedulerSize string
+
+// UpdateStandardDeploymentRequestType The type of the Deployment.
+type UpdateStandardDeploymentRequestType string
+
+// UpdateWorkerQueueRequest defines model for UpdateWorkerQueueRequest.
+type UpdateWorkerQueueRequest struct {
+	// AstroMachine The Astro machine for each worker in the queue. Required for Astro Hosted deployments.
+	AstroMachine *UpdateWorkerQueueRequestAstroMachine `json:"astroMachine,omitempty"`
+
+	// Id The worker queue's ID. If not provided, a new worker queue will be created.
+	Id *string `json:"id,omitempty"`
+
+	// IsDefault Whether the worker queue is the default worker queue on the Deployment.
+	IsDefault bool `json:"isDefault"`
+
+	// MaxWorkerCount The maximum number of workers that can run at once.
+	MaxWorkerCount int `json:"maxWorkerCount"`
+
+	// MinWorkerCount The minimum number of workers running at once.
+	MinWorkerCount int `json:"minWorkerCount"`
+
+	// Name The worker queue's name.
+	Name string `json:"name"`
+
+	// NodePoolId The node pool ID associated with the worker queue. Required for Hybrid deployments.
+	NodePoolId *string `json:"nodePoolId,omitempty"`
+
+	// PodEphemeralStorage The ephemeral storage limit for each worker Pod. Must be a valid Kubernetes resource string, e.g. `10Gi`.
+	PodEphemeralStorage *string `json:"podEphemeralStorage,omitempty"`
+
+	// WorkerConcurrency The maximum number of concurrent tasks that a worker Pod can run at a time.
+	WorkerConcurrency int `json:"workerConcurrency"`
+}
+
+// UpdateWorkerQueueRequestAstroMachine The Astro machine for each worker in the queue. Required for Astro Hosted deployments.
+type UpdateWorkerQueueRequestAstroMachine string
+
+// WorkerQueue defines model for WorkerQueue.
+type WorkerQueue struct {
+	// AstroMachine The Astro machine size for each worker node in the queue. For Astro Hosted only.
+	AstroMachine *string `json:"astroMachine,omitempty"`
+
+	// Id The worker queue's ID.
+	Id string `json:"id"`
+
+	// IsDefault Whether the worker queue is the default worker queue in the Deployment.
+	IsDefault bool `json:"isDefault"`
+
+	// MaxWorkerCount The maximum number of workers that can run at once.
+	MaxWorkerCount int `json:"maxWorkerCount"`
+
+	// MinWorkerCount The minimum number of workers running at once.
+	MinWorkerCount int `json:"minWorkerCount"`
+
+	// Name The worker queue's name.
+	Name string `json:"name"`
+
+	// NodePoolId The node pool ID associated with the worker queue.
+	NodePoolId *string `json:"nodePoolId,omitempty"`
+
+	// PodCpu The maximum number of CPU units available for a worker node. Units are in number of CPU cores.
+	PodCpu string `json:"podCpu"`
+
+	// PodEphemeralStorage The ephemeral storage limit for each worker Pod. Units are in Gibibytes or `Gi`.
+	PodEphemeralStorage *string `json:"podEphemeralStorage,omitempty"`
+
+	// PodMemory The maximum amount of memory available for a worker node. Units are in Gibibytes or `Gi`.
+	PodMemory string `json:"podMemory"`
+
+	// WorkerConcurrency The maximum number of concurrent tasks that a worker Pod can run at a time.
+	WorkerConcurrency int `json:"workerConcurrency"`
+}
+
+// WorkerQueueRequest defines model for WorkerQueueRequest.
+type WorkerQueueRequest struct {
+	// AstroMachine The Astro machine for each worker in the queue. For Astro Hosted only.
+	AstroMachine WorkerQueueRequestAstroMachine `json:"astroMachine"`
+
+	// Id The worker queue's ID. If not provided, a new worker queue will be created.
+	Id *string `json:"id,omitempty"`
+
+	// IsDefault Whether the worker queue is the default worker queue on the Deployment.
+	IsDefault bool `json:"isDefault"`
+
+	// MaxWorkerCount The maximum number of workers that can run at once.
+	MaxWorkerCount int `json:"maxWorkerCount"`
+
+	// MinWorkerCount The minimum number of workers running at once.
+	MinWorkerCount int `json:"minWorkerCount"`
+
+	// Name The worker queue's name.
+	Name string `json:"name"`
+
+	// PodEphemeralStorage The ephemeral storage limit for each worker Pod. Must be a valid Kubernetes resource string, e.g. `10Gi`.
+	PodEphemeralStorage *string `json:"podEphemeralStorage,omitempty"`
+
+	// WorkerConcurrency The maximum number of concurrent tasks that a worker Pod can run at a time.
+	WorkerConcurrency int `json:"workerConcurrency"`
+}
+
+// WorkerQueueRequestAstroMachine The Astro machine for each worker in the queue. For Astro Hosted only.
+type WorkerQueueRequestAstroMachine string
+
+// AgentActionBody defines model for agentActionBody.
+type AgentActionBody struct {
+	// Action The action to perform on the agent. CORDON stops the agent from accepting new work; UNCORDON resumes it.
+	Action AgentActionBodyAction `json:"action"`
+}
+
+// AgentActionBodyAction The action to perform on the agent. CORDON stops the agent from accepting new work; UNCORDON resumes it.
+type AgentActionBodyAction string
+
+// ListDeploymentsParams defines parameters for ListDeployments.
+type ListDeploymentsParams struct {
+	// DeploymentIds A list of IDs for Deployments to show. The API returns details only for the specified Deployments.
+	DeploymentIds *[]string `form:"deploymentIds,omitempty" json:"deploymentIds,omitempty"`
+
+	// Names A list of names for Deployments to filter by. The API returns details only for the specified Deployments.
+	Names *[]string `form:"names,omitempty" json:"names,omitempty"`
+
+	// WorkspaceIds A list of IDs for Workspaces to filter on. The API returns details for all Deployments belonging only to the specified Workspaces.
+	WorkspaceIds *[]string `form:"workspaceIds,omitempty" json:"workspaceIds,omitempty"`
+
+	// Offset The number of results to skip before returning values.
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Limit The maximum number of results to return.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Sorts A list of field names to sort by, and whether to show results as ascending or descending. Formatted as `<fieldName>:asc` or `<fieldName>:desc`.
+	Sorts *[]ListDeploymentsParamsSorts `form:"sorts,omitempty" json:"sorts,omitempty"`
+}
+
+// ListDeploymentsParamsSorts defines parameters for ListDeployments.
+type ListDeploymentsParamsSorts string
+
+// GetDeploymentLogsParams defines parameters for GetDeploymentLogs.
+type GetDeploymentLogsParams struct {
+	// Sources Log sources to retrieve.
+	Sources []GetDeploymentLogsParamsSources `form:"sources" json:"sources"`
+
+	// Limit Maximum number of log entries per page.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Offset for pagination.
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Range Range of the log search in seconds.
+	Range *int `form:"range,omitempty" json:"range,omitempty"`
+
+	// MaxNumResults Maximum total number of results across all pages.
+	MaxNumResults *int `form:"maxNumResults,omitempty" json:"maxNumResults,omitempty"`
+
+	// SearchId Search ID for paginated results.
+	SearchId *string `form:"searchId,omitempty" json:"searchId,omitempty"`
+
+	// SearchText Text to filter logs by.
+	SearchText *string `form:"searchText,omitempty" json:"searchText,omitempty"`
+
+	// StartDate Start of time range (RFC3339).  Must  be  used  with  endDate.
+	StartDate *time.Time `form:"startDate,omitempty" json:"startDate,omitempty"`
+
+	// EndDate End of time range (RFC3339).    Must  be  used  with  startDate.
+	EndDate *time.Time `form:"endDate,omitempty" json:"endDate,omitempty"`
+}
+
+// GetDeploymentLogsParamsSources defines parameters for GetDeploymentLogs.
+type GetDeploymentLogsParamsSources string
 
 // ListEnvironmentObjectsParams defines parameters for ListEnvironmentObjects.
 type ListEnvironmentObjectsParams struct {
@@ -1015,6 +2434,18 @@ type ListEnvironmentObjectsParamsSorts string
 // ListEnvironmentObjectsParamsObjectType defines parameters for ListEnvironmentObjects.
 type ListEnvironmentObjectsParamsObjectType string
 
+// CreateDeploymentJSONRequestBody defines body for CreateDeployment for application/json ContentType.
+type CreateDeploymentJSONRequestBody = CreateDeploymentRequest
+
+// UpdateDeploymentJSONRequestBody defines body for UpdateDeployment for application/json ContentType.
+type UpdateDeploymentJSONRequestBody = UpdateDeploymentRequest
+
+// AgentActionJSONRequestBody defines body for AgentAction for application/json ContentType.
+type AgentActionJSONRequestBody = AgentActionBody
+
+// UpdateDeploymentHibernationOverrideJSONRequestBody defines body for UpdateDeploymentHibernationOverride for application/json ContentType.
+type UpdateDeploymentHibernationOverrideJSONRequestBody = OverrideDeploymentHibernationBody
+
 // CreateEnvironmentObjectJSONRequestBody defines body for CreateEnvironmentObject for application/json ContentType.
 type CreateEnvironmentObjectJSONRequestBody = CreateEnvironmentObjectRequest
 
@@ -1023,6 +2454,376 @@ type UpdateEnvironmentObjectJSONRequestBody = UpdateEnvironmentObjectRequest
 
 // ExcludeLinkingEnvironmentObjectJSONRequestBody defines body for ExcludeLinkingEnvironmentObject for application/json ContentType.
 type ExcludeLinkingEnvironmentObjectJSONRequestBody = ExcludeLinkEnvironmentObjectRequest
+
+// AsCreateDedicatedDeploymentRequest returns the union data inside the CreateDeploymentRequest as a CreateDedicatedDeploymentRequest
+func (t CreateDeploymentRequest) AsCreateDedicatedDeploymentRequest() (CreateDedicatedDeploymentRequest, error) {
+	var body CreateDedicatedDeploymentRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateDedicatedDeploymentRequest overwrites any union data inside the CreateDeploymentRequest as the provided CreateDedicatedDeploymentRequest
+func (t *CreateDeploymentRequest) FromCreateDedicatedDeploymentRequest(v CreateDedicatedDeploymentRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DEDICATED"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	t.union = b
+	return err
+}
+
+// MergeCreateDedicatedDeploymentRequest performs a merge with any union data inside the CreateDeploymentRequest, using the provided CreateDedicatedDeploymentRequest
+func (t *CreateDeploymentRequest) MergeCreateDedicatedDeploymentRequest(v CreateDedicatedDeploymentRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DEDICATED"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreateHybridDeploymentRequest returns the union data inside the CreateDeploymentRequest as a CreateHybridDeploymentRequest
+func (t CreateDeploymentRequest) AsCreateHybridDeploymentRequest() (CreateHybridDeploymentRequest, error) {
+	var body CreateHybridDeploymentRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateHybridDeploymentRequest overwrites any union data inside the CreateDeploymentRequest as the provided CreateHybridDeploymentRequest
+func (t *CreateDeploymentRequest) FromCreateHybridDeploymentRequest(v CreateHybridDeploymentRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"HYBRID"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	t.union = b
+	return err
+}
+
+// MergeCreateHybridDeploymentRequest performs a merge with any union data inside the CreateDeploymentRequest, using the provided CreateHybridDeploymentRequest
+func (t *CreateDeploymentRequest) MergeCreateHybridDeploymentRequest(v CreateHybridDeploymentRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"HYBRID"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreateStandardDeploymentRequest returns the union data inside the CreateDeploymentRequest as a CreateStandardDeploymentRequest
+func (t CreateDeploymentRequest) AsCreateStandardDeploymentRequest() (CreateStandardDeploymentRequest, error) {
+	var body CreateStandardDeploymentRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateStandardDeploymentRequest overwrites any union data inside the CreateDeploymentRequest as the provided CreateStandardDeploymentRequest
+func (t *CreateDeploymentRequest) FromCreateStandardDeploymentRequest(v CreateStandardDeploymentRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"STANDARD"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	t.union = b
+	return err
+}
+
+// MergeCreateStandardDeploymentRequest performs a merge with any union data inside the CreateDeploymentRequest, using the provided CreateStandardDeploymentRequest
+func (t *CreateDeploymentRequest) MergeCreateStandardDeploymentRequest(v CreateStandardDeploymentRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"STANDARD"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t CreateDeploymentRequest) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t CreateDeploymentRequest) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "DEDICATED":
+		return t.AsCreateDedicatedDeploymentRequest()
+	case "HYBRID":
+		return t.AsCreateHybridDeploymentRequest()
+	case "STANDARD":
+		return t.AsCreateStandardDeploymentRequest()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t CreateDeploymentRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *CreateDeploymentRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateDedicatedDeploymentRequest returns the union data inside the UpdateDeploymentRequest as a UpdateDedicatedDeploymentRequest
+func (t UpdateDeploymentRequest) AsUpdateDedicatedDeploymentRequest() (UpdateDedicatedDeploymentRequest, error) {
+	var body UpdateDedicatedDeploymentRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateDedicatedDeploymentRequest overwrites any union data inside the UpdateDeploymentRequest as the provided UpdateDedicatedDeploymentRequest
+func (t *UpdateDeploymentRequest) FromUpdateDedicatedDeploymentRequest(v UpdateDedicatedDeploymentRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DEDICATED"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	t.union = b
+	return err
+}
+
+// MergeUpdateDedicatedDeploymentRequest performs a merge with any union data inside the UpdateDeploymentRequest, using the provided UpdateDedicatedDeploymentRequest
+func (t *UpdateDeploymentRequest) MergeUpdateDedicatedDeploymentRequest(v UpdateDedicatedDeploymentRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"DEDICATED"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateHybridDeploymentRequest returns the union data inside the UpdateDeploymentRequest as a UpdateHybridDeploymentRequest
+func (t UpdateDeploymentRequest) AsUpdateHybridDeploymentRequest() (UpdateHybridDeploymentRequest, error) {
+	var body UpdateHybridDeploymentRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateHybridDeploymentRequest overwrites any union data inside the UpdateDeploymentRequest as the provided UpdateHybridDeploymentRequest
+func (t *UpdateDeploymentRequest) FromUpdateHybridDeploymentRequest(v UpdateHybridDeploymentRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"HYBRID"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	t.union = b
+	return err
+}
+
+// MergeUpdateHybridDeploymentRequest performs a merge with any union data inside the UpdateDeploymentRequest, using the provided UpdateHybridDeploymentRequest
+func (t *UpdateDeploymentRequest) MergeUpdateHybridDeploymentRequest(v UpdateHybridDeploymentRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"HYBRID"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateStandardDeploymentRequest returns the union data inside the UpdateDeploymentRequest as a UpdateStandardDeploymentRequest
+func (t UpdateDeploymentRequest) AsUpdateStandardDeploymentRequest() (UpdateStandardDeploymentRequest, error) {
+	var body UpdateStandardDeploymentRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateStandardDeploymentRequest overwrites any union data inside the UpdateDeploymentRequest as the provided UpdateStandardDeploymentRequest
+func (t *UpdateDeploymentRequest) FromUpdateStandardDeploymentRequest(v UpdateStandardDeploymentRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"STANDARD"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	t.union = b
+	return err
+}
+
+// MergeUpdateStandardDeploymentRequest performs a merge with any union data inside the UpdateDeploymentRequest, using the provided UpdateStandardDeploymentRequest
+func (t *UpdateDeploymentRequest) MergeUpdateStandardDeploymentRequest(v UpdateStandardDeploymentRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["type"] = json.RawMessage(`"STANDARD"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateDeploymentRequest) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t UpdateDeploymentRequest) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "DEDICATED":
+		return t.AsUpdateDedicatedDeploymentRequest()
+	case "HYBRID":
+		return t.AsUpdateHybridDeploymentRequest()
+	case "STANDARD":
+		return t.AsUpdateStandardDeploymentRequest()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t UpdateDeploymentRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateDeploymentRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -1097,6 +2898,41 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// ListDeployments request
+	ListDeployments(ctx context.Context, organizationId string, params *ListDeploymentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateDeploymentWithBody request with any body
+	CreateDeploymentWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateDeployment(ctx context.Context, organizationId string, body CreateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteDeployment request
+	DeleteDeployment(ctx context.Context, organizationId string, deploymentId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetDeployment request
+	GetDeployment(ctx context.Context, organizationId string, deploymentId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateDeploymentWithBody request with any body
+	UpdateDeploymentWithBody(ctx context.Context, organizationId string, deploymentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateDeployment(ctx context.Context, organizationId string, deploymentId string, body UpdateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AgentActionWithBody request with any body
+	AgentActionWithBody(ctx context.Context, organizationId string, deploymentId string, agentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AgentAction(ctx context.Context, organizationId string, deploymentId string, agentId string, body AgentActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteDeploymentHibernationOverride request
+	DeleteDeploymentHibernationOverride(ctx context.Context, organizationId string, deploymentId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateDeploymentHibernationOverrideWithBody request with any body
+	UpdateDeploymentHibernationOverrideWithBody(ctx context.Context, organizationId string, deploymentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateDeploymentHibernationOverride(ctx context.Context, organizationId string, deploymentId string, body UpdateDeploymentHibernationOverrideJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetDeploymentLogs request
+	GetDeploymentLogs(ctx context.Context, organizationId string, deploymentId string, params *GetDeploymentLogsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListEnvironmentObjects request
 	ListEnvironmentObjects(ctx context.Context, organizationId string, params *ListEnvironmentObjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1120,6 +2956,162 @@ type ClientInterface interface {
 	ExcludeLinkingEnvironmentObjectWithBody(ctx context.Context, organizationId string, environmentObjectId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	ExcludeLinkingEnvironmentObject(ctx context.Context, organizationId string, environmentObjectId string, body ExcludeLinkingEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) ListDeployments(ctx context.Context, organizationId string, params *ListDeploymentsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListDeploymentsRequest(c.Server, organizationId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDeploymentWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDeploymentRequestWithBody(c.Server, organizationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDeployment(ctx context.Context, organizationId string, body CreateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDeploymentRequest(c.Server, organizationId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteDeployment(ctx context.Context, organizationId string, deploymentId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteDeploymentRequest(c.Server, organizationId, deploymentId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetDeployment(ctx context.Context, organizationId string, deploymentId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDeploymentRequest(c.Server, organizationId, deploymentId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateDeploymentWithBody(ctx context.Context, organizationId string, deploymentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateDeploymentRequestWithBody(c.Server, organizationId, deploymentId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateDeployment(ctx context.Context, organizationId string, deploymentId string, body UpdateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateDeploymentRequest(c.Server, organizationId, deploymentId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AgentActionWithBody(ctx context.Context, organizationId string, deploymentId string, agentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAgentActionRequestWithBody(c.Server, organizationId, deploymentId, agentId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AgentAction(ctx context.Context, organizationId string, deploymentId string, agentId string, body AgentActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAgentActionRequest(c.Server, organizationId, deploymentId, agentId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteDeploymentHibernationOverride(ctx context.Context, organizationId string, deploymentId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteDeploymentHibernationOverrideRequest(c.Server, organizationId, deploymentId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateDeploymentHibernationOverrideWithBody(ctx context.Context, organizationId string, deploymentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateDeploymentHibernationOverrideRequestWithBody(c.Server, organizationId, deploymentId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateDeploymentHibernationOverride(ctx context.Context, organizationId string, deploymentId string, body UpdateDeploymentHibernationOverrideJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateDeploymentHibernationOverrideRequest(c.Server, organizationId, deploymentId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetDeploymentLogs(ctx context.Context, organizationId string, deploymentId string, params *GetDeploymentLogsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDeploymentLogsRequest(c.Server, organizationId, deploymentId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) ListEnvironmentObjects(ctx context.Context, organizationId string, params *ListEnvironmentObjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1228,6 +3220,668 @@ func (c *Client) ExcludeLinkingEnvironmentObject(ctx context.Context, organizati
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// NewListDeploymentsRequest generates requests for ListDeployments
+func NewListDeploymentsRequest(server string, organizationId string, params *ListDeploymentsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/deployments", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.DeploymentIds != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "deploymentIds", runtime.ParamLocationQuery, *params.DeploymentIds); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Names != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "names", runtime.ParamLocationQuery, *params.Names); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.WorkspaceIds != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "workspaceIds", runtime.ParamLocationQuery, *params.WorkspaceIds); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Sorts != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sorts", runtime.ParamLocationQuery, *params.Sorts); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateDeploymentRequest calls the generic CreateDeployment builder with application/json body
+func NewCreateDeploymentRequest(server string, organizationId string, body CreateDeploymentJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateDeploymentRequestWithBody(server, organizationId, "application/json", bodyReader)
+}
+
+// NewCreateDeploymentRequestWithBody generates requests for CreateDeployment with any type of body
+func NewCreateDeploymentRequestWithBody(server string, organizationId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/deployments", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteDeploymentRequest generates requests for DeleteDeployment
+func NewDeleteDeploymentRequest(server string, organizationId string, deploymentId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "deploymentId", runtime.ParamLocationPath, deploymentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/deployments/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetDeploymentRequest generates requests for GetDeployment
+func NewGetDeploymentRequest(server string, organizationId string, deploymentId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "deploymentId", runtime.ParamLocationPath, deploymentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/deployments/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateDeploymentRequest calls the generic UpdateDeployment builder with application/json body
+func NewUpdateDeploymentRequest(server string, organizationId string, deploymentId string, body UpdateDeploymentJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateDeploymentRequestWithBody(server, organizationId, deploymentId, "application/json", bodyReader)
+}
+
+// NewUpdateDeploymentRequestWithBody generates requests for UpdateDeployment with any type of body
+func NewUpdateDeploymentRequestWithBody(server string, organizationId string, deploymentId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "deploymentId", runtime.ParamLocationPath, deploymentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/deployments/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAgentActionRequest calls the generic AgentAction builder with application/json body
+func NewAgentActionRequest(server string, organizationId string, deploymentId string, agentId string, body AgentActionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAgentActionRequestWithBody(server, organizationId, deploymentId, agentId, "application/json", bodyReader)
+}
+
+// NewAgentActionRequestWithBody generates requests for AgentAction with any type of body
+func NewAgentActionRequestWithBody(server string, organizationId string, deploymentId string, agentId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "deploymentId", runtime.ParamLocationPath, deploymentId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "agentId", runtime.ParamLocationPath, agentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/deployments/%s/agents/%s/action", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteDeploymentHibernationOverrideRequest generates requests for DeleteDeploymentHibernationOverride
+func NewDeleteDeploymentHibernationOverrideRequest(server string, organizationId string, deploymentId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "deploymentId", runtime.ParamLocationPath, deploymentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/deployments/%s/hibernation-override", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateDeploymentHibernationOverrideRequest calls the generic UpdateDeploymentHibernationOverride builder with application/json body
+func NewUpdateDeploymentHibernationOverrideRequest(server string, organizationId string, deploymentId string, body UpdateDeploymentHibernationOverrideJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateDeploymentHibernationOverrideRequestWithBody(server, organizationId, deploymentId, "application/json", bodyReader)
+}
+
+// NewUpdateDeploymentHibernationOverrideRequestWithBody generates requests for UpdateDeploymentHibernationOverride with any type of body
+func NewUpdateDeploymentHibernationOverrideRequestWithBody(server string, organizationId string, deploymentId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "deploymentId", runtime.ParamLocationPath, deploymentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/deployments/%s/hibernation-override", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetDeploymentLogsRequest generates requests for GetDeploymentLogs
+func NewGetDeploymentLogsRequest(server string, organizationId string, deploymentId string, params *GetDeploymentLogsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "deploymentId", runtime.ParamLocationPath, deploymentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/deployments/%s/logs", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sources", runtime.ParamLocationQuery, params.Sources); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Range != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "range", runtime.ParamLocationQuery, *params.Range); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.MaxNumResults != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "maxNumResults", runtime.ParamLocationQuery, *params.MaxNumResults); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.SearchId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "searchId", runtime.ParamLocationQuery, *params.SearchId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.SearchText != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "searchText", runtime.ParamLocationQuery, *params.SearchText); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.StartDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "startDate", runtime.ParamLocationQuery, *params.StartDate); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.EndDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "endDate", runtime.ParamLocationQuery, *params.EndDate); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 // NewListEnvironmentObjectsRequest generates requests for ListEnvironmentObjects
@@ -1694,6 +4348,41 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// ListDeploymentsWithResponse request
+	ListDeploymentsWithResponse(ctx context.Context, organizationId string, params *ListDeploymentsParams, reqEditors ...RequestEditorFn) (*ListDeploymentsResponse, error)
+
+	// CreateDeploymentWithBodyWithResponse request with any body
+	CreateDeploymentWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDeploymentResponse, error)
+
+	CreateDeploymentWithResponse(ctx context.Context, organizationId string, body CreateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDeploymentResponse, error)
+
+	// DeleteDeploymentWithResponse request
+	DeleteDeploymentWithResponse(ctx context.Context, organizationId string, deploymentId string, reqEditors ...RequestEditorFn) (*DeleteDeploymentResponse, error)
+
+	// GetDeploymentWithResponse request
+	GetDeploymentWithResponse(ctx context.Context, organizationId string, deploymentId string, reqEditors ...RequestEditorFn) (*GetDeploymentResponse, error)
+
+	// UpdateDeploymentWithBodyWithResponse request with any body
+	UpdateDeploymentWithBodyWithResponse(ctx context.Context, organizationId string, deploymentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDeploymentResponse, error)
+
+	UpdateDeploymentWithResponse(ctx context.Context, organizationId string, deploymentId string, body UpdateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDeploymentResponse, error)
+
+	// AgentActionWithBodyWithResponse request with any body
+	AgentActionWithBodyWithResponse(ctx context.Context, organizationId string, deploymentId string, agentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AgentActionResponse, error)
+
+	AgentActionWithResponse(ctx context.Context, organizationId string, deploymentId string, agentId string, body AgentActionJSONRequestBody, reqEditors ...RequestEditorFn) (*AgentActionResponse, error)
+
+	// DeleteDeploymentHibernationOverrideWithResponse request
+	DeleteDeploymentHibernationOverrideWithResponse(ctx context.Context, organizationId string, deploymentId string, reqEditors ...RequestEditorFn) (*DeleteDeploymentHibernationOverrideResponse, error)
+
+	// UpdateDeploymentHibernationOverrideWithBodyWithResponse request with any body
+	UpdateDeploymentHibernationOverrideWithBodyWithResponse(ctx context.Context, organizationId string, deploymentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDeploymentHibernationOverrideResponse, error)
+
+	UpdateDeploymentHibernationOverrideWithResponse(ctx context.Context, organizationId string, deploymentId string, body UpdateDeploymentHibernationOverrideJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDeploymentHibernationOverrideResponse, error)
+
+	// GetDeploymentLogsWithResponse request
+	GetDeploymentLogsWithResponse(ctx context.Context, organizationId string, deploymentId string, params *GetDeploymentLogsParams, reqEditors ...RequestEditorFn) (*GetDeploymentLogsResponse, error)
+
 	// ListEnvironmentObjectsWithResponse request
 	ListEnvironmentObjectsWithResponse(ctx context.Context, organizationId string, params *ListEnvironmentObjectsParams, reqEditors ...RequestEditorFn) (*ListEnvironmentObjectsResponse, error)
 
@@ -1717,6 +4406,235 @@ type ClientWithResponsesInterface interface {
 	ExcludeLinkingEnvironmentObjectWithBodyWithResponse(ctx context.Context, organizationId string, environmentObjectId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ExcludeLinkingEnvironmentObjectResponse, error)
 
 	ExcludeLinkingEnvironmentObjectWithResponse(ctx context.Context, organizationId string, environmentObjectId string, body ExcludeLinkingEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*ExcludeLinkingEnvironmentObjectResponse, error)
+}
+
+type ListDeploymentsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DeploymentsPaginated
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ListDeploymentsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListDeploymentsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateDeploymentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Deployment
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateDeploymentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateDeploymentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteDeploymentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteDeploymentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteDeploymentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetDeploymentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Deployment
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetDeploymentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetDeploymentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateDeploymentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Deployment
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateDeploymentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateDeploymentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AgentActionResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Agent
+	JSON4XX      *Error
+	JSON5XX      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r AgentActionResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AgentActionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteDeploymentHibernationOverrideResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON4XX      *Error
+	JSON5XX      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteDeploymentHibernationOverrideResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteDeploymentHibernationOverrideResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateDeploymentHibernationOverrideResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DeploymentHibernationOverride
+	JSON4XX      *Error
+	JSON5XX      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateDeploymentHibernationOverrideResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateDeploymentHibernationOverrideResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetDeploymentLogsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DeploymentLog
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetDeploymentLogsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetDeploymentLogsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type ListEnvironmentObjectsResponse struct {
@@ -1883,6 +4801,119 @@ func (r ExcludeLinkingEnvironmentObjectResponse) StatusCode() int {
 	return 0
 }
 
+// ListDeploymentsWithResponse request returning *ListDeploymentsResponse
+func (c *ClientWithResponses) ListDeploymentsWithResponse(ctx context.Context, organizationId string, params *ListDeploymentsParams, reqEditors ...RequestEditorFn) (*ListDeploymentsResponse, error) {
+	rsp, err := c.ListDeployments(ctx, organizationId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListDeploymentsResponse(rsp)
+}
+
+// CreateDeploymentWithBodyWithResponse request with arbitrary body returning *CreateDeploymentResponse
+func (c *ClientWithResponses) CreateDeploymentWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDeploymentResponse, error) {
+	rsp, err := c.CreateDeploymentWithBody(ctx, organizationId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDeploymentResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateDeploymentWithResponse(ctx context.Context, organizationId string, body CreateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDeploymentResponse, error) {
+	rsp, err := c.CreateDeployment(ctx, organizationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDeploymentResponse(rsp)
+}
+
+// DeleteDeploymentWithResponse request returning *DeleteDeploymentResponse
+func (c *ClientWithResponses) DeleteDeploymentWithResponse(ctx context.Context, organizationId string, deploymentId string, reqEditors ...RequestEditorFn) (*DeleteDeploymentResponse, error) {
+	rsp, err := c.DeleteDeployment(ctx, organizationId, deploymentId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteDeploymentResponse(rsp)
+}
+
+// GetDeploymentWithResponse request returning *GetDeploymentResponse
+func (c *ClientWithResponses) GetDeploymentWithResponse(ctx context.Context, organizationId string, deploymentId string, reqEditors ...RequestEditorFn) (*GetDeploymentResponse, error) {
+	rsp, err := c.GetDeployment(ctx, organizationId, deploymentId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetDeploymentResponse(rsp)
+}
+
+// UpdateDeploymentWithBodyWithResponse request with arbitrary body returning *UpdateDeploymentResponse
+func (c *ClientWithResponses) UpdateDeploymentWithBodyWithResponse(ctx context.Context, organizationId string, deploymentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDeploymentResponse, error) {
+	rsp, err := c.UpdateDeploymentWithBody(ctx, organizationId, deploymentId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateDeploymentResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateDeploymentWithResponse(ctx context.Context, organizationId string, deploymentId string, body UpdateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDeploymentResponse, error) {
+	rsp, err := c.UpdateDeployment(ctx, organizationId, deploymentId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateDeploymentResponse(rsp)
+}
+
+// AgentActionWithBodyWithResponse request with arbitrary body returning *AgentActionResponse
+func (c *ClientWithResponses) AgentActionWithBodyWithResponse(ctx context.Context, organizationId string, deploymentId string, agentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AgentActionResponse, error) {
+	rsp, err := c.AgentActionWithBody(ctx, organizationId, deploymentId, agentId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAgentActionResponse(rsp)
+}
+
+func (c *ClientWithResponses) AgentActionWithResponse(ctx context.Context, organizationId string, deploymentId string, agentId string, body AgentActionJSONRequestBody, reqEditors ...RequestEditorFn) (*AgentActionResponse, error) {
+	rsp, err := c.AgentAction(ctx, organizationId, deploymentId, agentId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAgentActionResponse(rsp)
+}
+
+// DeleteDeploymentHibernationOverrideWithResponse request returning *DeleteDeploymentHibernationOverrideResponse
+func (c *ClientWithResponses) DeleteDeploymentHibernationOverrideWithResponse(ctx context.Context, organizationId string, deploymentId string, reqEditors ...RequestEditorFn) (*DeleteDeploymentHibernationOverrideResponse, error) {
+	rsp, err := c.DeleteDeploymentHibernationOverride(ctx, organizationId, deploymentId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteDeploymentHibernationOverrideResponse(rsp)
+}
+
+// UpdateDeploymentHibernationOverrideWithBodyWithResponse request with arbitrary body returning *UpdateDeploymentHibernationOverrideResponse
+func (c *ClientWithResponses) UpdateDeploymentHibernationOverrideWithBodyWithResponse(ctx context.Context, organizationId string, deploymentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDeploymentHibernationOverrideResponse, error) {
+	rsp, err := c.UpdateDeploymentHibernationOverrideWithBody(ctx, organizationId, deploymentId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateDeploymentHibernationOverrideResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateDeploymentHibernationOverrideWithResponse(ctx context.Context, organizationId string, deploymentId string, body UpdateDeploymentHibernationOverrideJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDeploymentHibernationOverrideResponse, error) {
+	rsp, err := c.UpdateDeploymentHibernationOverride(ctx, organizationId, deploymentId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateDeploymentHibernationOverrideResponse(rsp)
+}
+
+// GetDeploymentLogsWithResponse request returning *GetDeploymentLogsResponse
+func (c *ClientWithResponses) GetDeploymentLogsWithResponse(ctx context.Context, organizationId string, deploymentId string, params *GetDeploymentLogsParams, reqEditors ...RequestEditorFn) (*GetDeploymentLogsResponse, error) {
+	rsp, err := c.GetDeploymentLogs(ctx, organizationId, deploymentId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetDeploymentLogsResponse(rsp)
+}
+
 // ListEnvironmentObjectsWithResponse request returning *ListEnvironmentObjectsResponse
 func (c *ClientWithResponses) ListEnvironmentObjectsWithResponse(ctx context.Context, organizationId string, params *ListEnvironmentObjectsParams, reqEditors ...RequestEditorFn) (*ListEnvironmentObjectsResponse, error) {
 	rsp, err := c.ListEnvironmentObjects(ctx, organizationId, params, reqEditors...)
@@ -1959,6 +4990,457 @@ func (c *ClientWithResponses) ExcludeLinkingEnvironmentObjectWithResponse(ctx co
 		return nil, err
 	}
 	return ParseExcludeLinkingEnvironmentObjectResponse(rsp)
+}
+
+// ParseListDeploymentsResponse parses an HTTP response from a ListDeploymentsWithResponse call
+func ParseListDeploymentsResponse(rsp *http.Response) (*ListDeploymentsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListDeploymentsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DeploymentsPaginated
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateDeploymentResponse parses an HTTP response from a CreateDeploymentWithResponse call
+func ParseCreateDeploymentResponse(rsp *http.Response) (*CreateDeploymentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateDeploymentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Deployment
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteDeploymentResponse parses an HTTP response from a DeleteDeploymentWithResponse call
+func ParseDeleteDeploymentResponse(rsp *http.Response) (*DeleteDeploymentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteDeploymentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetDeploymentResponse parses an HTTP response from a GetDeploymentWithResponse call
+func ParseGetDeploymentResponse(rsp *http.Response) (*GetDeploymentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetDeploymentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Deployment
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateDeploymentResponse parses an HTTP response from a UpdateDeploymentWithResponse call
+func ParseUpdateDeploymentResponse(rsp *http.Response) (*UpdateDeploymentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateDeploymentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Deployment
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAgentActionResponse parses an HTTP response from a AgentActionWithResponse call
+func ParseAgentActionResponse(rsp *http.Response) (*AgentActionResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AgentActionResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Agent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteDeploymentHibernationOverrideResponse parses an HTTP response from a DeleteDeploymentHibernationOverrideWithResponse call
+func ParseDeleteDeploymentHibernationOverrideResponse(rsp *http.Response) (*DeleteDeploymentHibernationOverrideResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteDeploymentHibernationOverrideResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateDeploymentHibernationOverrideResponse parses an HTTP response from a UpdateDeploymentHibernationOverrideWithResponse call
+func ParseUpdateDeploymentHibernationOverrideResponse(rsp *http.Response) (*UpdateDeploymentHibernationOverrideResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateDeploymentHibernationOverrideResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DeploymentHibernationOverride
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetDeploymentLogsResponse parses an HTTP response from a GetDeploymentLogsWithResponse call
+func ParseGetDeploymentLogsResponse(rsp *http.Response) (*GetDeploymentLogsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetDeploymentLogsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DeploymentLog
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseListEnvironmentObjectsResponse parses an HTTP response from a ListEnvironmentObjectsWithResponse call

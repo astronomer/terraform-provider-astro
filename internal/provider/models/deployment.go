@@ -6,7 +6,7 @@ import (
 
 	"github.com/samber/lo"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -136,9 +136,9 @@ type DeploymentDataSource struct {
 
 func (data *DeploymentResource) ReadFromResponse(
 	ctx context.Context,
-	deployment *platform.Deployment,
+	deployment *platform_v1.Deployment,
 	originalAstroRuntimeVersion *string,
-	requestEnvVars *[]platform.DeploymentEnvironmentVariableRequest,
+	requestEnvVars *[]platform_v1.DeploymentEnvironmentVariableRequest,
 ) diag.Diagnostics {
 	// Read common fields
 	data.Id = types.StringValue(deployment.Id)
@@ -202,12 +202,12 @@ func (data *DeploymentResource) ReadFromResponse(
 	// Since terraform wants to know the values of the secret values in the request at all times, and our API does not send back the secret values in the response
 	// We must use the request value and set it in the Terraform response to keep Terraform from emitting errors
 	// Since the value is marked as sensitive, Terraform will not output the actual value in the plan/apply output
-	var envVarsPtr *[]platform.DeploymentEnvironmentVariable
+	var envVarsPtr *[]platform_v1.DeploymentEnvironmentVariable
 	if deployment.EnvironmentVariables != nil {
 		envVars := *deployment.EnvironmentVariables
 		if requestEnvVars != nil {
-			requestEnvVarsMap := lo.SliceToMap(*requestEnvVars, func(envVar platform.DeploymentEnvironmentVariableRequest) (string, platform.DeploymentEnvironmentVariable) {
-				return envVar.Key, platform.DeploymentEnvironmentVariable{
+			requestEnvVarsMap := lo.SliceToMap(*requestEnvVars, func(envVar platform_v1.DeploymentEnvironmentVariableRequest) (string, platform_v1.DeploymentEnvironmentVariable) {
+				return envVar.Key, platform_v1.DeploymentEnvironmentVariable{
 					Key:      envVar.Key,
 					Value:    envVar.Value,
 					IsSecret: envVar.IsSecret,
@@ -237,7 +237,7 @@ func (data *DeploymentResource) ReadFromResponse(
 	data.DesiredDagTarballVersion = types.StringPointerValue(deployment.DesiredDagTarballVersion)
 	data.IsCicdEnforced = types.BoolValue(deployment.IsCicdEnforced)
 	data.IsDagDeployEnabled = types.BoolValue(deployment.IsDagDeployEnabled)
-	data.WorkloadIdentity = types.StringPointerValue(deployment.WorkloadIdentity)
+	data.WorkloadIdentity = types.StringPointerValue(deployment.EffectiveWorkloadIdentity)
 	data.ExternalIps, diags = utils.StringSet(deployment.ExternalIPs)
 	if diags.HasError() {
 		return diags
@@ -281,7 +281,7 @@ func (data *DeploymentResource) ReadFromResponse(
 
 func (data *DeploymentDataSource) ReadFromResponse(
 	ctx context.Context,
-	deployment *platform.Deployment,
+	deployment *platform_v1.Deployment,
 ) diag.Diagnostics {
 	// Read common fields
 	data.Id = types.StringValue(deployment.Id)
@@ -341,7 +341,7 @@ func (data *DeploymentDataSource) ReadFromResponse(
 	data.DesiredDagTarballVersion = types.StringPointerValue(deployment.DesiredDagTarballVersion)
 	data.IsCicdEnforced = types.BoolValue(deployment.IsCicdEnforced)
 	data.IsDagDeployEnabled = types.BoolValue(deployment.IsDagDeployEnabled)
-	data.WorkloadIdentity = types.StringPointerValue(deployment.WorkloadIdentity)
+	data.WorkloadIdentity = types.StringPointerValue(deployment.EffectiveWorkloadIdentity)
 	data.ExternalIps, diags = utils.StringSet(deployment.ExternalIPs)
 	if diags.HasError() {
 		return diags
@@ -416,7 +416,7 @@ type WorkerQueueResource struct {
 
 func DeploymentEnvironmentVariableTypesObject(
 	ctx context.Context,
-	envVar platform.DeploymentEnvironmentVariable,
+	envVar platform_v1.DeploymentEnvironmentVariable,
 ) (types.Object, diag.Diagnostics) {
 	obj := DeploymentEnvironmentVariable{
 		Key:       types.StringValue(envVar.Key),
@@ -430,7 +430,7 @@ func DeploymentEnvironmentVariableTypesObject(
 
 func WorkerQueueResourceTypesObject(
 	ctx context.Context,
-	workerQueue platform.WorkerQueue,
+	workerQueue platform_v1.WorkerQueue,
 ) (types.Object, diag.Diagnostics) {
 	obj := WorkerQueueResource{
 		Name:              types.StringValue(workerQueue.Name),
@@ -449,7 +449,7 @@ func WorkerQueueResourceTypesObject(
 
 func WorkerQueueDataSourceTypesObject(
 	ctx context.Context,
-	workerQueue platform.WorkerQueue,
+	workerQueue platform_v1.WorkerQueue,
 ) (types.Object, diag.Diagnostics) {
 	obj := WorkerQueueDataSource{
 		Id:                types.StringValue(workerQueue.Id),
@@ -502,7 +502,7 @@ type HibernationSchedule struct {
 
 func HibernationStatusTypesObject(
 	ctx context.Context,
-	hibernationStatus *platform.DeploymentHibernationStatus,
+	hibernationStatus *platform_v1.DeploymentHibernationStatus,
 ) (types.Object, diag.Diagnostics) {
 	if hibernationStatus == nil {
 		return types.ObjectNull(schemas.HibernationStatusAttributeTypes()), nil
@@ -519,7 +519,7 @@ func HibernationStatusTypesObject(
 
 func HibernationOverrideTypesObject(
 	ctx context.Context,
-	hibernationOverride *platform.DeploymentHibernationOverride,
+	hibernationOverride *platform_v1.DeploymentHibernationOverride,
 	configuredOverrideUntil types.String,
 ) (types.Object, diag.Diagnostics) {
 	if hibernationOverride == nil {
@@ -585,7 +585,7 @@ func ConfiguredOverrideUntil(ctx context.Context, scalingSpecObj types.Object) t
 
 func HibernationScheduleTypesObject(
 	ctx context.Context,
-	schedule platform.DeploymentHibernationSchedule,
+	schedule platform_v1.DeploymentHibernationSchedule,
 ) (types.Object, diag.Diagnostics) {
 	obj := HibernationSchedule{
 		Description:     types.StringPointerValue(schedule.Description),
@@ -598,7 +598,7 @@ func HibernationScheduleTypesObject(
 
 func HibernationSpecTypesObject(
 	ctx context.Context,
-	hibernationSpec *platform.DeploymentHibernationSpec,
+	hibernationSpec *platform_v1.DeploymentHibernationSpec,
 	configuredOverrideUntil types.String,
 ) (types.Object, diag.Diagnostics) {
 	if hibernationSpec == nil || (hibernationSpec.Override == nil && hibernationSpec.Schedules == nil) {
@@ -622,7 +622,7 @@ func HibernationSpecTypesObject(
 
 func ScalingStatusTypesObject(
 	ctx context.Context,
-	scalingStatus *platform.DeploymentScalingStatus,
+	scalingStatus *platform_v1.DeploymentScalingStatus,
 ) (types.Object, diag.Diagnostics) {
 	if scalingStatus == nil {
 		return types.ObjectNull(schemas.ScalingStatusAttributeTypes()), nil
@@ -640,7 +640,7 @@ func ScalingStatusTypesObject(
 
 func ScalingSpecTypesObject(
 	ctx context.Context,
-	scalingSpec *platform.DeploymentScalingSpec,
+	scalingSpec *platform_v1.DeploymentScalingSpec,
 	configuredOverrideUntil types.String,
 ) (types.Object, diag.Diagnostics) {
 	if scalingSpec == nil {
@@ -667,7 +667,7 @@ type RemoteExecution struct {
 
 func RemoteExecutionTypesObject(
 	ctx context.Context,
-	remoteExecution *platform.DeploymentRemoteExecution,
+	remoteExecution *platform_v1.DeploymentRemoteExecution,
 ) (types.Object, diag.Diagnostics) {
 	if remoteExecution == nil {
 		return types.ObjectNull(schemas.RemoteExecutionAttributeTypes()), nil
