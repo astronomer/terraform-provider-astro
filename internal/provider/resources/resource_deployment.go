@@ -1162,12 +1162,13 @@ func RequestHostedWorkerQueues(ctx context.Context, workerQueuesObjSet types.Set
 	}
 	platformWorkerQueues := lo.Map(workerQueues, func(workerQueue models.WorkerQueueResource, _ int) platform.WorkerQueueRequest {
 		return platform.WorkerQueueRequest{
-			AstroMachine:      platform.WorkerQueueRequestAstroMachine(workerQueue.AstroMachine.ValueString()),
-			IsDefault:         workerQueue.IsDefault.ValueBool(),
-			MaxWorkerCount:    int(workerQueue.MaxWorkerCount.ValueInt64()),
-			MinWorkerCount:    int(workerQueue.MinWorkerCount.ValueInt64()),
-			Name:              workerQueue.Name.ValueString(),
-			WorkerConcurrency: int(workerQueue.WorkerConcurrency.ValueInt64()),
+			AstroMachine:        platform.WorkerQueueRequestAstroMachine(workerQueue.AstroMachine.ValueString()),
+			IsDefault:           workerQueue.IsDefault.ValueBool(),
+			MaxWorkerCount:      int(workerQueue.MaxWorkerCount.ValueInt64()),
+			MinWorkerCount:      int(workerQueue.MinWorkerCount.ValueInt64()),
+			Name:                workerQueue.Name.ValueString(),
+			PodEphemeralStorage: workerQueue.PodEphemeralStorage.ValueStringPointer(),
+			WorkerConcurrency:   int(workerQueue.WorkerConcurrency.ValueInt64()),
 		}
 	})
 	return &platformWorkerQueues, nil

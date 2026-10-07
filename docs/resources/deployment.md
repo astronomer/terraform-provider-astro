@@ -366,6 +366,7 @@ Optional:
 
 - `astro_machine` (String) Worker queue Astro machine value - required for 'STANDARD' and 'DEDICATED' deployments. Allowed values: `A5`, `A10`, `A20`, `A40`, `A60`, `A120`, `A160`.
 - `node_pool_id` (String) Worker queue Node pool identifier - required for 'HYBRID' deployments
+- `pod_ephemeral_storage` (String) Worker queue pod ephemeral storage - must be a valid kubernetes resource string, e.g. `10Gi`
 
 Read-Only:
 

@@ -622,30 +622,32 @@ func DeploymentEnvironmentVariableResourceAttributes() map[string]resourceSchema
 
 func WorkerQueueResourceAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"name":               types.StringType,
-		"is_default":         types.BoolType,
-		"max_worker_count":   types.Int64Type,
-		"min_worker_count":   types.Int64Type,
-		"pod_cpu":            types.StringType,
-		"pod_memory":         types.StringType,
-		"worker_concurrency": types.Int64Type,
-		"node_pool_id":       types.StringType,
-		"astro_machine":      types.StringType,
+		"name":                  types.StringType,
+		"is_default":            types.BoolType,
+		"max_worker_count":      types.Int64Type,
+		"min_worker_count":      types.Int64Type,
+		"pod_cpu":               types.StringType,
+		"pod_memory":            types.StringType,
+		"pod_ephemeral_storage": types.StringType,
+		"worker_concurrency":    types.Int64Type,
+		"node_pool_id":          types.StringType,
+		"astro_machine":         types.StringType,
 	}
 }
 
 func WorkerQueueDataSourceAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"id":                 types.StringType,
-		"name":               types.StringType,
-		"is_default":         types.BoolType,
-		"max_worker_count":   types.Int64Type,
-		"min_worker_count":   types.Int64Type,
-		"pod_cpu":            types.StringType,
-		"pod_memory":         types.StringType,
-		"worker_concurrency": types.Int64Type,
-		"node_pool_id":       types.StringType,
-		"astro_machine":      types.StringType,
+		"id":                    types.StringType,
+		"name":                  types.StringType,
+		"is_default":            types.BoolType,
+		"max_worker_count":      types.Int64Type,
+		"min_worker_count":      types.Int64Type,
+		"pod_cpu":               types.StringType,
+		"pod_memory":            types.StringType,
+		"pod_ephemeral_storage": types.StringType,
+		"worker_concurrency":    types.Int64Type,
+		"node_pool_id":          types.StringType,
+		"astro_machine":         types.StringType,
 	}
 }
 
@@ -685,6 +687,10 @@ func WorkerQueueDataSourceSchemaAttributes() map[string]datasourceSchema.Attribu
 		},
 		"pod_memory": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Worker queue pod memory",
+			Computed:            true,
+		},
+		"pod_ephemeral_storage": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Worker queue pod ephemeral storage",
 			Computed:            true,
 		},
 		"worker_concurrency": datasourceSchema.Int64Attribute{
@@ -728,6 +734,14 @@ func WorkerQueueResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 		"pod_memory": resourceSchema.StringAttribute{
 			MarkdownDescription: "Worker queue pod memory",
 			Computed:            true,
+		},
+		"pod_ephemeral_storage": resourceSchema.StringAttribute{
+			MarkdownDescription: "Worker queue pod ephemeral storage - must be a valid kubernetes resource string, e.g. `10Gi`",
+			Optional:            true,
+			Computed:            true,
+			Validators: []validator.String{
+				stringvalidator.RegexMatches(regexp.MustCompile(validators.KubernetesResourceString), "must be a valid kubernetes resource string"),
+			},
 		},
 		"worker_concurrency": resourceSchema.Int64Attribute{
 			MarkdownDescription: "Worker queue worker concurrency",

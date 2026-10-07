@@ -4409,6 +4409,9 @@ type WorkerQueue struct {
 	// PodCpu The maximum number of CPU units available for a worker node. Units are in number of CPU cores.
 	PodCpu string `json:"podCpu"`
 
+	// PodEphemeralStorage The ephemeral storage limit for each worker Pod. Units are in Gibibytes or `Gi`.
+	PodEphemeralStorage *string `json:"podEphemeralStorage,omitempty"`
+
 	// PodMemory The maximum amount of memory available for a worker node. Units are in Gibibytes or `Gi`.
 	PodMemory string `json:"podMemory"`
 
@@ -4442,6 +4445,9 @@ type WorkerQueueRequest struct {
 
 	// Name The worker queue's name.
 	Name string `json:"name"`
+
+	// PodEphemeralStorage The ephemeral storage limit for each worker Pod. Must be a valid Kubernetes resource string, e.g. `10Gi`.
+	PodEphemeralStorage *string `json:"podEphemeralStorage,omitempty"`
 
 	// WorkerConcurrency The maximum number of concurrent tasks that a worker Pod can run at a time.
 	WorkerConcurrency int `json:"workerConcurrency"`
