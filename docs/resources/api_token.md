@@ -170,6 +170,7 @@ resource "astro_api_token" "imported_api_token" {
 - `created_by` (Attributes) API Token creator (see [below for nested schema](#nestedatt--created_by))
 - `end_at` (String) time when the API token will expire in UTC
 - `id` (String) API Token identifier
+- `kind` (String) API Token kind (STANDARD or DIRECT_ACCESS). This resource always creates STANDARD tokens.
 - `last_used_at` (String) API Token last used timestamp
 - `short_token` (String) API Token short token
 - `start_at` (String) time when the API token will become valid in UTC

@@ -17,6 +17,7 @@ type ApiTokenDataSource struct {
 	Description        types.String `tfsdk:"description"`
 	ShortToken         types.String `tfsdk:"short_token"`
 	Type               types.String `tfsdk:"type"`
+	Kind               types.String `tfsdk:"kind"`
 	StartAt            types.String `tfsdk:"start_at"`
 	EndAt              types.String `tfsdk:"end_at"`
 	CreatedAt          types.String `tfsdk:"created_at"`
@@ -35,6 +36,7 @@ type ApiTokenResource struct {
 	Description        types.String `tfsdk:"description"`
 	ShortToken         types.String `tfsdk:"short_token"`
 	Type               types.String `tfsdk:"type"`
+	Kind               types.String `tfsdk:"kind"`
 	StartAt            types.String `tfsdk:"start_at"`
 	EndAt              types.String `tfsdk:"end_at"`
 	CreatedAt          types.String `tfsdk:"created_at"`
@@ -54,6 +56,7 @@ func (data *ApiTokenDataSource) ReadFromResponse(ctx context.Context, apiToken *
 	data.Description = types.StringValue(apiToken.Description)
 	data.ShortToken = types.StringValue(apiToken.ShortToken)
 	data.Type = types.StringValue(string(apiToken.Type))
+	data.Kind = types.StringValue(string(apiToken.Kind))
 	data.StartAt = types.StringValue(apiToken.StartAt.String())
 	if apiToken.EndAt != nil {
 		data.EndAt = types.StringValue(apiToken.EndAt.String())
@@ -98,6 +101,7 @@ func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *ia
 	}
 	data.ShortToken = types.StringValue(apiToken.ShortToken)
 	data.Type = types.StringValue(string(apiToken.Type))
+	data.Kind = types.StringValue(string(apiToken.Kind))
 	data.StartAt = types.StringValue(apiToken.StartAt.String())
 	if apiToken.EndAt == nil {
 		data.EndAt = types.StringNull()

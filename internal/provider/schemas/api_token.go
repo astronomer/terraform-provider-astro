@@ -35,6 +35,10 @@ func ApiTokenDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute 
 			MarkdownDescription: "API Token type",
 			Computed:            true,
 		},
+		"kind": datasourceSchema.StringAttribute{
+			MarkdownDescription: "API Token kind (STANDARD or DIRECT_ACCESS)",
+			Computed:            true,
+		},
 		"start_at": datasourceSchema.StringAttribute{
 			MarkdownDescription: "time when the API token will become valid in UTC",
 			Computed:            true,
@@ -111,6 +115,13 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			},
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplaceIfConfigured(),
+			},
+		},
+		"kind": resourceSchema.StringAttribute{
+			MarkdownDescription: "API Token kind (STANDARD or DIRECT_ACCESS). This resource always creates STANDARD tokens.",
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"start_at": resourceSchema.StringAttribute{

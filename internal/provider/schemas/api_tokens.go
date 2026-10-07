@@ -15,6 +15,7 @@ func ApiTokensElementAttributeTypes() map[string]attr.Type {
 		"description": types.StringType,
 		"short_token": types.StringType,
 		"type":        types.StringType,
+		"kind":        types.StringType,
 		"start_at":    types.StringType,
 		"end_at":      types.StringType,
 		"created_at":  types.StringType,

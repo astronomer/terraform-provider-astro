@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -181,6 +182,113 @@ func TestAcc_CustomRoleRemovedOutsideOfTerraform(t *testing.T) {
 			},
 		},
 	})
+}
+
+// TestAcc_ResourceCustomRoleDirectAccessTokenConflict verifies that changing a custom role's
+// permissions while a Direct Access Token references it fails at plan time, not apply time.
+func TestAcc_ResourceCustomRoleDirectAccessTokenConflict(t *testing.T) {
+	customRoleName := utils.GenerateTestResourceName(10)
+	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
+	organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
+
+	var directAccessTokenId string
+	// Safety net in case the guard regresses and skips the normal cleanup step below.
+	t.Cleanup(func() {
+		testAccForceCleanupDirectAccessTokenAndRole(t, organizationId, &directAccessTokenId, customRoleName)
+	})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckCustomRoleExistence(t, customRoleName, false),
+		Steps: []resource.TestStep{
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + customRole("test", customRoleName, utils.TestResourceDescription, "DEPLOYMENT", []string{"deployment.get"}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckCustomRoleExistence(t, customRoleName, true),
+					testAccCreateDirectAccessTokenForRole(t, organizationId, deploymentId, customRoleName, &directAccessTokenId),
+				),
+			},
+			{
+				Config:      astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + customRole("test", customRoleName, utils.TestResourceDescription, "DEPLOYMENT", []string{"deployment.get", "deployment.update"}),
+				ExpectError: regexp.MustCompile("Custom role has Direct Access Tokens attached"),
+			},
+			// No-op step: deletes the out-of-band token so the role can be destroyed cleanly.
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + customRole("test", customRoleName, utils.TestResourceDescription, "DEPLOYMENT", []string{"deployment.get"}),
+				Check:  testAccDeleteDirectAccessTokenIfExists(t, &directAccessTokenId),
+			},
+		},
+	})
+}
+
+// testAccCreateDirectAccessTokenForRole creates a Direct Access Token outside of Terraform,
+// scoped to deploymentId and assigned to customRoleName.
+func testAccCreateDirectAccessTokenForRole(t *testing.T, organizationId, deploymentId, customRoleName string, tokenId *string) func(state *terraform.State) error {
+	t.Helper()
+	return func(state *terraform.State) error {
+		client, err := utils.GetTestHostedIamClient()
+		assert.NoError(t, err)
+
+		ctx := context.Background()
+		// Role takes the role's name, not its ID.
+		createResp, err := client.CreateApiTokenWithResponse(ctx, organizationId, iam.CreateApiTokenRequest{
+			Name:     fmt.Sprintf("%s-dat", customRoleName),
+			Type:     iam.CreateApiTokenRequestTypeDEPLOYMENT,
+			EntityId: &deploymentId,
+			Role:     customRoleName,
+			Kind:     lo.ToPtr(iam.CreateApiTokenRequestKind(iam.ApiTokenKindDIRECTACCESS)),
+		})
+		if err != nil {
+			return fmt.Errorf("failed to create Direct Access Token: %w", err)
+		}
+		if createResp.JSON200 == nil {
+			status, diagnostic := clients.NormalizeAPIError(ctx, createResp.HTTPResponse, createResp.Body)
+			return fmt.Errorf("failed to create Direct Access Token, status: %v, err: %v", status, diagnostic.Detail())
+		}
+		*tokenId = createResp.JSON200.Id
+		return nil
+	}
+}
+
+// testAccForceCleanupDirectAccessTokenAndRole best-effort deletes the token and role directly.
+func testAccForceCleanupDirectAccessTokenAndRole(t *testing.T, organizationId string, tokenId *string, roleName string) {
+	t.Helper()
+	client, err := utils.GetTestHostedIamClient()
+	if err != nil {
+		return
+	}
+
+	ctx := context.Background()
+	if tokenId != nil && *tokenId != "" {
+		_, _ = client.DeleteApiTokenWithResponse(ctx, organizationId, *tokenId)
+	}
+
+	rolesResp, err := client.ListRolesWithResponse(ctx, organizationId, &iam.ListRolesParams{})
+	if err != nil || rolesResp.JSON200 == nil {
+		return
+	}
+	for _, role := range rolesResp.JSON200.Roles {
+		if role.Name == roleName {
+			_, _ = client.DeleteCustomRoleWithResponse(ctx, organizationId, role.Id)
+			return
+		}
+	}
+}
+
+func testAccDeleteDirectAccessTokenIfExists(t *testing.T, tokenId *string) func(state *terraform.State) error {
+	t.Helper()
+	return func(state *terraform.State) error {
+		if tokenId == nil || *tokenId == "" {
+			return nil
+		}
+		client, err := utils.GetTestHostedIamClient()
+		assert.NoError(t, err)
+
+		ctx := context.Background()
+		_, err = client.DeleteApiTokenWithResponse(ctx, os.Getenv("HOSTED_ORGANIZATION_ID"), *tokenId)
+		return err
+	}
 }
 
 func customRoleWithVariableName() string {
