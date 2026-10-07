@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -32,8 +32,8 @@ func NewClusterResource() resource.Resource {
 
 // ClusterResource defines the resource implementation.
 type ClusterResource struct {
-	platformClient *platform.ClientWithResponses
-	organizationId string
+	platformV1Client *platform_v1.ClientWithResponses
+	organizationId   string
 }
 
 func (r *ClusterResource) Metadata(
@@ -72,7 +72,7 @@ func (r *ClusterResource) Configure(
 		return
 	}
 
-	r.platformClient = apiClients.PlatformClient
+	r.platformV1Client = apiClients.PlatformV1Client
 	r.organizationId = apiClients.OrganizationId
 }
 
@@ -89,17 +89,17 @@ func (r *ClusterResource) Create(
 		return
 	}
 
-	var createClusterRequest platform.CreateClusterRequest
+	var createClusterRequest platform_v1.CreateClusterRequest
 
-	switch platform.ClusterCloudProvider(data.CloudProvider.ValueString()) {
-	case platform.ClusterCloudProviderAWS:
-		createAwsDedicatedClusterRequest := platform.CreateAwsClusterRequest{
-			CloudProvider:                platform.CreateAwsClusterRequestCloudProvider(data.CloudProvider.ValueString()),
+	switch platform_v1.ClusterCloudProvider(data.CloudProvider.ValueString()) {
+	case platform_v1.ClusterCloudProviderAWS:
+		createAwsDedicatedClusterRequest := platform_v1.CreateAwsClusterRequest{
+			CloudProvider:                platform_v1.CreateAwsClusterRequestCloudProvider(data.CloudProvider.ValueString()),
 			Name:                         data.Name.ValueString(),
 			NodePools:                    nil,
 			ProviderAccount:              data.ProviderAccount.ValueStringPointer(),
 			Region:                       data.Region.ValueString(),
-			Type:                         platform.CreateAwsClusterRequestType(data.Type.ValueString()),
+			Type:                         platform_v1.CreateAwsClusterRequestType(data.Type.ValueString()),
 			VpcSubnetRange:               data.VpcSubnetRange.ValueString(),
 			SecondaryVpcCidr:             data.SecondaryVpcCidr.ValueStringPointer(),
 			DrRegion:                     data.DrRegion.ValueStringPointer(),
@@ -125,15 +125,15 @@ func (r *ClusterResource) Create(
 			)
 			return
 		}
-	case platform.ClusterCloudProviderAZURE:
-		createAzureDedicatedClusterRequest := platform.CreateAzureClusterRequest{
-			CloudProvider:                platform.CreateAzureClusterRequestCloudProvider(data.CloudProvider.ValueString()),
+	case platform_v1.ClusterCloudProviderAZURE:
+		createAzureDedicatedClusterRequest := platform_v1.CreateAzureClusterRequest{
+			CloudProvider:                platform_v1.CreateAzureClusterRequestCloudProvider(data.CloudProvider.ValueString()),
 			Name:                         data.Name.ValueString(),
 			NodePools:                    nil,
 			ProviderAccount:              data.ProviderAccount.ValueStringPointer(),
 			Region:                       data.Region.ValueString(),
 			TenantId:                     data.TenantId.ValueStringPointer(),
-			Type:                         platform.CreateAzureClusterRequestType(data.Type.ValueString()),
+			Type:                         platform_v1.CreateAzureClusterRequestType(data.Type.ValueString()),
 			VpcSubnetRange:               data.VpcSubnetRange.ValueString(),
 			DrRegion:                     data.DrRegion.ValueStringPointer(),
 			DrVpcSubnetRange:             data.DrVpcSubnetRange.ValueStringPointer(),
@@ -157,9 +157,9 @@ func (r *ClusterResource) Create(
 			)
 			return
 		}
-	case platform.ClusterCloudProviderGCP:
-		createGcpDedicatedClusterRequest := platform.CreateGcpClusterRequest{
-			CloudProvider:         platform.CreateGcpClusterRequestCloudProvider(data.CloudProvider.ValueString()),
+	case platform_v1.ClusterCloudProviderGCP:
+		createGcpDedicatedClusterRequest := platform_v1.CreateGcpClusterRequest{
+			CloudProvider:         platform_v1.CreateGcpClusterRequestCloudProvider(data.CloudProvider.ValueString()),
 			Name:                  data.Name.ValueString(),
 			NodePools:             nil,
 			PodSubnetRange:        data.PodSubnetRange.ValueString(),
@@ -167,7 +167,7 @@ func (r *ClusterResource) Create(
 			Region:                data.Region.ValueString(),
 			ServicePeeringRange:   data.ServicePeeringRange.ValueString(),
 			ServiceSubnetRange:    data.ServiceSubnetRange.ValueString(),
-			Type:                  platform.CreateGcpClusterRequestType(data.Type.ValueString()),
+			Type:                  platform_v1.CreateGcpClusterRequestType(data.Type.ValueString()),
 			VpcSubnetRange:        data.VpcSubnetRange.ValueString(),
 			DrRegion:              data.DrRegion.ValueStringPointer(),
 			DrVpcSubnetRange:      data.DrVpcSubnetRange.ValueStringPointer(),
@@ -204,7 +204,7 @@ func (r *ClusterResource) Create(
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
-	cluster, err := r.platformClient.CreateClusterWithResponse(
+	cluster, err := r.platformV1Client.CreateClusterWithResponse(
 		ctx,
 		r.organizationId,
 		createClusterRequest,
@@ -225,9 +225,9 @@ func (r *ClusterResource) Create(
 
 	// Wait for the cluster to be created (or fail)
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING), string(platform.ClusterStatusUPGRADEPENDING), string(platform.ClusterStatusFAILINGOVER)},
-		Target:     []string{string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED), string(platform.ClusterStatusACCESSDENIED), string(platform.ClusterStatusFAILOVERFAILED)},
-		Refresh:    ClusterResourceRefreshFunc(ctx, r.platformClient, r.organizationId, cluster.JSON200.Id),
+		Pending:    []string{string(platform_v1.ClusterStatusCREATING), string(platform_v1.ClusterStatusUPDATING), string(platform_v1.ClusterStatusUPGRADEPENDING), string(platform_v1.ClusterStatusFAILINGOVER)},
+		Target:     []string{string(platform_v1.ClusterStatusCREATED), string(platform_v1.ClusterStatusUPDATEFAILED), string(platform_v1.ClusterStatusCREATEFAILED), string(platform_v1.ClusterStatusACCESSDENIED), string(platform_v1.ClusterStatusFAILOVERFAILED)},
+		Refresh:    ClusterResourceRefreshFunc(ctx, r.platformV1Client, r.organizationId, cluster.JSON200.Id),
 		Timeout:    3 * time.Hour,
 		MinTimeout: 1 * time.Minute,
 	}
@@ -239,7 +239,7 @@ func (r *ClusterResource) Create(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, readyCluster.(*platform.Cluster))
+	diags = data.ReadFromResponse(ctx, readyCluster.(*platform_v1.Cluster))
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -266,7 +266,7 @@ func (r *ClusterResource) Read(
 	}
 
 	// get request
-	cluster, err := r.platformClient.GetClusterWithResponse(
+	cluster, err := r.platformV1Client.GetClusterWithResponse(
 		ctx,
 		r.organizationId,
 		data.Id.ValueString(),
@@ -318,11 +318,11 @@ func (r *ClusterResource) Update(
 
 	// update request
 	var diags diag.Diagnostics
-	var updateClusterRequest platform.UpdateClusterRequest
+	var updateClusterRequest platform_v1.UpdateClusterRequest
 
-	updateDedicatedClusterRequest := platform.UpdateDedicatedClusterRequest{
-		ClusterType:  (*platform.UpdateDedicatedClusterRequestClusterType)(data.Type.ValueStringPointer()),
-		K8sTags:      []platform.ClusterK8sTag{},
+	updateDedicatedClusterRequest := platform_v1.UpdateDedicatedClusterRequest{
+		ClusterType:  (*platform_v1.UpdateDedicatedClusterRequestClusterType)(data.Type.ValueStringPointer()),
+		K8sTags:      []platform_v1.ClusterK8sTag{},
 		Name:         data.Name.ValueString(),
 		NodePools:    nil,
 		WorkspaceIds: nil,
@@ -334,7 +334,7 @@ func (r *ClusterResource) Update(
 	}
 	// Unlike AWS and GCP, Azure has no replication-lag phase, so DR can be enabled
 	// on an existing cluster in a single update request.
-	if platform.ClusterCloudProvider(data.CloudProvider.ValueString()) == platform.ClusterCloudProviderAZURE &&
+	if platform_v1.ClusterCloudProvider(data.CloudProvider.ValueString()) == platform_v1.ClusterCloudProviderAZURE &&
 		!data.IsDrEnabled.IsNull() && !data.IsDrEnabled.IsUnknown() && data.IsDrEnabled.ValueBool() {
 		enableDr := true
 		updateDedicatedClusterRequest.EnableDr = &enableDr
@@ -375,10 +375,10 @@ func (r *ClusterResource) Update(
 	defer cancel()
 
 	// Retry update cluster request if there is a 409 conflict (workflow already running)
-	var cluster *platform.UpdateClusterResponse
+	var cluster *platform_v1.UpdateClusterResponse
 	err = retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
 		var apiErr error
-		cluster, apiErr = r.platformClient.UpdateClusterWithResponse(
+		cluster, apiErr = r.platformV1Client.UpdateClusterWithResponse(
 			ctx,
 			r.organizationId,
 			data.Id.ValueString(),
@@ -409,9 +409,9 @@ func (r *ClusterResource) Update(
 
 	// Wait for the cluster to be updated (or fail)
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING), string(platform.ClusterStatusUPGRADEPENDING), string(platform.ClusterStatusFAILINGOVER)},
-		Target:     []string{string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED), string(platform.ClusterStatusACCESSDENIED), string(platform.ClusterStatusFAILOVERFAILED)},
-		Refresh:    ClusterResourceRefreshFunc(ctx, r.platformClient, r.organizationId, cluster.JSON200.Id),
+		Pending:    []string{string(platform_v1.ClusterStatusCREATING), string(platform_v1.ClusterStatusUPDATING), string(platform_v1.ClusterStatusUPGRADEPENDING), string(platform_v1.ClusterStatusFAILINGOVER)},
+		Target:     []string{string(platform_v1.ClusterStatusCREATED), string(platform_v1.ClusterStatusUPDATEFAILED), string(platform_v1.ClusterStatusCREATEFAILED), string(platform_v1.ClusterStatusACCESSDENIED), string(platform_v1.ClusterStatusFAILOVERFAILED)},
+		Refresh:    ClusterResourceRefreshFunc(ctx, r.platformV1Client, r.organizationId, cluster.JSON200.Id),
 		Timeout:    3 * time.Hour,
 		MinTimeout: 1 * time.Minute,
 	}
@@ -423,7 +423,7 @@ func (r *ClusterResource) Update(
 		return
 	}
 
-	diags = data.ReadFromResponse(ctx, readyCluster.(*platform.Cluster))
+	diags = data.ReadFromResponse(ctx, readyCluster.(*platform_v1.Cluster))
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -458,10 +458,10 @@ func (r *ClusterResource) Delete(
 	defer cancel()
 
 	// Retry delete cluster request if there is a 409 conflict (workflow already running)
-	var cluster *platform.DeleteClusterResponse
+	var cluster *platform_v1.DeleteClusterResponse
 	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
 		var apiErr error
-		cluster, apiErr = r.platformClient.DeleteClusterWithResponse(
+		cluster, apiErr = r.platformV1Client.DeleteClusterWithResponse(
 			ctx,
 			r.organizationId,
 			data.Id.ValueString(),
@@ -495,9 +495,9 @@ func (r *ClusterResource) Delete(
 
 	// Wait for the cluster to be deleted
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING), string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED), string(platform.ClusterStatusUPGRADEPENDING), string(platform.ClusterStatusFAILINGOVER), string(platform.ClusterStatusFAILOVERFAILED)},
+		Pending:    []string{string(platform_v1.ClusterStatusCREATING), string(platform_v1.ClusterStatusUPDATING), string(platform_v1.ClusterStatusCREATED), string(platform_v1.ClusterStatusUPDATEFAILED), string(platform_v1.ClusterStatusCREATEFAILED), string(platform_v1.ClusterStatusUPGRADEPENDING), string(platform_v1.ClusterStatusFAILINGOVER), string(platform_v1.ClusterStatusFAILOVERFAILED)},
 		Target:     []string{"DELETED"},
-		Refresh:    ClusterResourceRefreshFunc(ctx, r.platformClient, r.organizationId, data.Id.ValueString()),
+		Refresh:    ClusterResourceRefreshFunc(ctx, r.platformV1Client, r.organizationId, data.Id.ValueString()),
 		Timeout:    1 * time.Hour,
 		MinTimeout: 30 * time.Second,
 	}
@@ -534,12 +534,12 @@ func (r *ClusterResource) ValidateConfig(
 	}
 
 	// Cloud provider specific validation
-	switch platform.ClusterCloudProvider(data.CloudProvider.ValueString()) {
-	case platform.ClusterCloudProviderAWS:
+	switch platform_v1.ClusterCloudProvider(data.CloudProvider.ValueString()) {
+	case platform_v1.ClusterCloudProviderAWS:
 		resp.Diagnostics.Append(validateAwsConfig(ctx, &data)...)
-	case platform.ClusterCloudProviderAZURE:
+	case platform_v1.ClusterCloudProviderAZURE:
 		resp.Diagnostics.Append(validateAzureConfig(ctx, &data)...)
-	case platform.ClusterCloudProviderGCP:
+	case platform_v1.ClusterCloudProviderGCP:
 		resp.Diagnostics.Append(validateGcpConfig(ctx, &data)...)
 	}
 }

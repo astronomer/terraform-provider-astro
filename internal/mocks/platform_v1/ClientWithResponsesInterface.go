@@ -90,6 +90,80 @@ func (_m *ClientWithResponsesInterface) AgentActionWithResponse(ctx context.Cont
 	return r0, r1
 }
 
+// CreateClusterWithBodyWithResponse provides a mock function with given fields: ctx, organizationId, contentType, body, reqEditors
+func (_m *ClientWithResponsesInterface) CreateClusterWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.CreateClusterResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, contentType, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateClusterWithBodyWithResponse")
+	}
+
+	var r0 *platform_v1.CreateClusterResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, io.Reader, ...platform_v1.RequestEditorFn) (*platform_v1.CreateClusterResponse, error)); ok {
+		return rf(ctx, organizationId, contentType, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, io.Reader, ...platform_v1.RequestEditorFn) *platform_v1.CreateClusterResponse); ok {
+		r0 = rf(ctx, organizationId, contentType, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.CreateClusterResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, io.Reader, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, contentType, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CreateClusterWithResponse provides a mock function with given fields: ctx, organizationId, body, reqEditors
+func (_m *ClientWithResponsesInterface) CreateClusterWithResponse(ctx context.Context, organizationId string, body platform_v1.CreateClusterRequest, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.CreateClusterResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateClusterWithResponse")
+	}
+
+	var r0 *platform_v1.CreateClusterResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, platform_v1.CreateClusterRequest, ...platform_v1.RequestEditorFn) (*platform_v1.CreateClusterResponse, error)); ok {
+		return rf(ctx, organizationId, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, platform_v1.CreateClusterRequest, ...platform_v1.RequestEditorFn) *platform_v1.CreateClusterResponse); ok {
+		r0 = rf(ctx, organizationId, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.CreateClusterResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, platform_v1.CreateClusterRequest, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateDeploymentWithBodyWithResponse provides a mock function with given fields: ctx, organizationId, contentType, body, reqEditors
 func (_m *ClientWithResponsesInterface) CreateDeploymentWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.CreateDeploymentResponse, error) {
 	_va := make([]interface{}, len(reqEditors))
@@ -231,6 +305,43 @@ func (_m *ClientWithResponsesInterface) CreateEnvironmentObjectWithResponse(ctx 
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, platform_v1.CreateEnvironmentObjectRequest, ...platform_v1.RequestEditorFn) error); ok {
 		r1 = rf(ctx, organizationId, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DeleteClusterWithResponse provides a mock function with given fields: ctx, organizationId, clusterId, reqEditors
+func (_m *ClientWithResponsesInterface) DeleteClusterWithResponse(ctx context.Context, organizationId string, clusterId string, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.DeleteClusterResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, clusterId)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteClusterWithResponse")
+	}
+
+	var r0 *platform_v1.DeleteClusterResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) (*platform_v1.DeleteClusterResponse, error)); ok {
+		return rf(ctx, organizationId, clusterId, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) *platform_v1.DeleteClusterResponse); ok {
+		r0 = rf(ctx, organizationId, clusterId, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.DeleteClusterResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, clusterId, reqEditors...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -423,6 +534,43 @@ func (_m *ClientWithResponsesInterface) ExcludeLinkingEnvironmentObjectWithRespo
 	return r0, r1
 }
 
+// GetClusterWithResponse provides a mock function with given fields: ctx, organizationId, clusterId, reqEditors
+func (_m *ClientWithResponsesInterface) GetClusterWithResponse(ctx context.Context, organizationId string, clusterId string, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.GetClusterResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, clusterId)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetClusterWithResponse")
+	}
+
+	var r0 *platform_v1.GetClusterResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) (*platform_v1.GetClusterResponse, error)); ok {
+		return rf(ctx, organizationId, clusterId, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) *platform_v1.GetClusterResponse); ok {
+		r0 = rf(ctx, organizationId, clusterId, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.GetClusterResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, clusterId, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetDeploymentLogsWithResponse provides a mock function with given fields: ctx, organizationId, deploymentId, params, reqEditors
 func (_m *ClientWithResponsesInterface) GetDeploymentLogsWithResponse(ctx context.Context, organizationId string, deploymentId string, params *platform_v1.GetDeploymentLogsParams, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.GetDeploymentLogsResponse, error) {
 	_va := make([]interface{}, len(reqEditors))
@@ -534,6 +682,43 @@ func (_m *ClientWithResponsesInterface) GetEnvironmentObjectWithResponse(ctx con
 	return r0, r1
 }
 
+// ListClustersWithResponse provides a mock function with given fields: ctx, organizationId, params, reqEditors
+func (_m *ClientWithResponsesInterface) ListClustersWithResponse(ctx context.Context, organizationId string, params *platform_v1.ListClustersParams, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.ListClustersResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, params)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListClustersWithResponse")
+	}
+
+	var r0 *platform_v1.ListClustersResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, *platform_v1.ListClustersParams, ...platform_v1.RequestEditorFn) (*platform_v1.ListClustersResponse, error)); ok {
+		return rf(ctx, organizationId, params, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, *platform_v1.ListClustersParams, ...platform_v1.RequestEditorFn) *platform_v1.ListClustersResponse); ok {
+		r0 = rf(ctx, organizationId, params, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.ListClustersResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, *platform_v1.ListClustersParams, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, params, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ListDeploymentsWithResponse provides a mock function with given fields: ctx, organizationId, params, reqEditors
 func (_m *ClientWithResponsesInterface) ListDeploymentsWithResponse(ctx context.Context, organizationId string, params *platform_v1.ListDeploymentsParams, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.ListDeploymentsResponse, error) {
 	_va := make([]interface{}, len(reqEditors))
@@ -601,6 +786,80 @@ func (_m *ClientWithResponsesInterface) ListEnvironmentObjectsWithResponse(ctx c
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, *platform_v1.ListEnvironmentObjectsParams, ...platform_v1.RequestEditorFn) error); ok {
 		r1 = rf(ctx, organizationId, params, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateClusterWithBodyWithResponse provides a mock function with given fields: ctx, organizationId, clusterId, contentType, body, reqEditors
+func (_m *ClientWithResponsesInterface) UpdateClusterWithBodyWithResponse(ctx context.Context, organizationId string, clusterId string, contentType string, body io.Reader, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.UpdateClusterResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, clusterId, contentType, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateClusterWithBodyWithResponse")
+	}
+
+	var r0 *platform_v1.UpdateClusterResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, io.Reader, ...platform_v1.RequestEditorFn) (*platform_v1.UpdateClusterResponse, error)); ok {
+		return rf(ctx, organizationId, clusterId, contentType, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, io.Reader, ...platform_v1.RequestEditorFn) *platform_v1.UpdateClusterResponse); ok {
+		r0 = rf(ctx, organizationId, clusterId, contentType, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.UpdateClusterResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, io.Reader, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, clusterId, contentType, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateClusterWithResponse provides a mock function with given fields: ctx, organizationId, clusterId, body, reqEditors
+func (_m *ClientWithResponsesInterface) UpdateClusterWithResponse(ctx context.Context, organizationId string, clusterId string, body platform_v1.UpdateClusterRequest, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.UpdateClusterResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, clusterId, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateClusterWithResponse")
+	}
+
+	var r0 *platform_v1.UpdateClusterResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, platform_v1.UpdateClusterRequest, ...platform_v1.RequestEditorFn) (*platform_v1.UpdateClusterResponse, error)); ok {
+		return rf(ctx, organizationId, clusterId, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, platform_v1.UpdateClusterRequest, ...platform_v1.RequestEditorFn) *platform_v1.UpdateClusterResponse); ok {
+		r0 = rf(ctx, organizationId, clusterId, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.UpdateClusterResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, platform_v1.UpdateClusterRequest, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, clusterId, body, reqEditors...)
 	} else {
 		r1 = ret.Error(1)
 	}

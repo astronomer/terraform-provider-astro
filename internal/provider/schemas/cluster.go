@@ -3,7 +3,7 @@ package schemas
 import (
 	"context"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
@@ -38,9 +38,9 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 			Required:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(platform.ClusterCloudProviderAWS),
-					string(platform.ClusterCloudProviderGCP),
-					string(platform.ClusterCloudProviderAZURE),
+					string(platform_v1.ClusterCloudProviderAWS),
+					string(platform_v1.ClusterCloudProviderGCP),
+					string(platform_v1.ClusterCloudProviderAZURE),
 				),
 			},
 			PlanModifiers: []planmodifier.String{
@@ -124,7 +124,7 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 			Required:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(platform.ClusterTypeDEDICATED),
+					string(platform_v1.ClusterTypeDEDICATED),
 				),
 			},
 			PlanModifiers: []planmodifier.String{

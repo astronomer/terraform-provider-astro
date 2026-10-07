@@ -36,6 +36,65 @@ const (
 	USER       BasicSubjectProfileSubjectType = "USER"
 )
 
+// Defines values for ClusterCloudProvider.
+const (
+	ClusterCloudProviderAWS   ClusterCloudProvider = "AWS"
+	ClusterCloudProviderAZURE ClusterCloudProvider = "AZURE"
+	ClusterCloudProviderGCP   ClusterCloudProvider = "GCP"
+)
+
+// Defines values for ClusterStatus.
+const (
+	ClusterStatusACCESSDENIED   ClusterStatus = "ACCESS_DENIED"
+	ClusterStatusCREATED        ClusterStatus = "CREATED"
+	ClusterStatusCREATEFAILED   ClusterStatus = "CREATE_FAILED"
+	ClusterStatusCREATING       ClusterStatus = "CREATING"
+	ClusterStatusFAILINGOVER    ClusterStatus = "FAILING_OVER"
+	ClusterStatusFAILOVERFAILED ClusterStatus = "FAILOVER_FAILED"
+	ClusterStatusUPDATEFAILED   ClusterStatus = "UPDATE_FAILED"
+	ClusterStatusUPDATING       ClusterStatus = "UPDATING"
+	ClusterStatusUPGRADEPENDING ClusterStatus = "UPGRADE_PENDING"
+)
+
+// Defines values for ClusterType.
+const (
+	ClusterTypeDEDICATED ClusterType = "DEDICATED"
+	ClusterTypeHYBRID    ClusterType = "HYBRID"
+)
+
+// Defines values for ClusterHealthStatusValue.
+const (
+	ClusterHealthStatusValueHEALTHY   ClusterHealthStatusValue = "HEALTHY"
+	ClusterHealthStatusValueUNHEALTHY ClusterHealthStatusValue = "UNHEALTHY"
+	ClusterHealthStatusValueUNKNOWN   ClusterHealthStatusValue = "UNKNOWN"
+)
+
+// Defines values for CreateAwsClusterRequestCloudProvider.
+const (
+	CreateAwsClusterRequestCloudProviderAWS   CreateAwsClusterRequestCloudProvider = "AWS"
+	CreateAwsClusterRequestCloudProviderAZURE CreateAwsClusterRequestCloudProvider = "AZURE"
+	CreateAwsClusterRequestCloudProviderGCP   CreateAwsClusterRequestCloudProvider = "GCP"
+)
+
+// Defines values for CreateAwsClusterRequestType.
+const (
+	CreateAwsClusterRequestTypeDEDICATED CreateAwsClusterRequestType = "DEDICATED"
+	CreateAwsClusterRequestTypeHYBRID    CreateAwsClusterRequestType = "HYBRID"
+)
+
+// Defines values for CreateAzureClusterRequestCloudProvider.
+const (
+	CreateAzureClusterRequestCloudProviderAWS   CreateAzureClusterRequestCloudProvider = "AWS"
+	CreateAzureClusterRequestCloudProviderAZURE CreateAzureClusterRequestCloudProvider = "AZURE"
+	CreateAzureClusterRequestCloudProviderGCP   CreateAzureClusterRequestCloudProvider = "GCP"
+)
+
+// Defines values for CreateAzureClusterRequestType.
+const (
+	CreateAzureClusterRequestTypeDEDICATED CreateAzureClusterRequestType = "DEDICATED"
+	CreateAzureClusterRequestTypeHYBRID    CreateAzureClusterRequestType = "HYBRID"
+)
+
 // Defines values for CreateDedicatedDeploymentRequestExecutor.
 const (
 	CreateDedicatedDeploymentRequestExecutorASTRO      CreateDedicatedDeploymentRequestExecutor = "ASTRO"
@@ -123,6 +182,19 @@ const (
 const (
 	CreateEnvironmentObjectRequestScopeDEPLOYMENT CreateEnvironmentObjectRequestScope = "DEPLOYMENT"
 	CreateEnvironmentObjectRequestScopeWORKSPACE  CreateEnvironmentObjectRequestScope = "WORKSPACE"
+)
+
+// Defines values for CreateGcpClusterRequestCloudProvider.
+const (
+	CreateGcpClusterRequestCloudProviderAWS   CreateGcpClusterRequestCloudProvider = "AWS"
+	CreateGcpClusterRequestCloudProviderAZURE CreateGcpClusterRequestCloudProvider = "AZURE"
+	CreateGcpClusterRequestCloudProviderGCP   CreateGcpClusterRequestCloudProvider = "GCP"
+)
+
+// Defines values for CreateGcpClusterRequestType.
+const (
+	CreateGcpClusterRequestTypeDEDICATED CreateGcpClusterRequestType = "DEDICATED"
+	CreateGcpClusterRequestTypeHYBRID    CreateGcpClusterRequestType = "HYBRID"
 )
 
 // Defines values for CreateHybridDeploymentRequestExecutor.
@@ -305,6 +377,18 @@ const (
 	ExcludeLinkEnvironmentObjectRequestScopeDEPLOYMENT ExcludeLinkEnvironmentObjectRequestScope = "DEPLOYMENT"
 )
 
+// Defines values for NodePoolCloudProvider.
+const (
+	NodePoolCloudProviderAWS   NodePoolCloudProvider = "AWS"
+	NodePoolCloudProviderAZURE NodePoolCloudProvider = "AZURE"
+	NodePoolCloudProviderGCP   NodePoolCloudProvider = "GCP"
+)
+
+// Defines values for UpdateDedicatedClusterRequestClusterType.
+const (
+	UpdateDedicatedClusterRequestClusterTypeDEDICATED UpdateDedicatedClusterRequestClusterType = "DEDICATED"
+)
+
 // Defines values for UpdateDedicatedDeploymentRequestExecutor.
 const (
 	UpdateDedicatedDeploymentRequestExecutorASTRO      UpdateDedicatedDeploymentRequestExecutor = "ASTRO"
@@ -380,6 +464,11 @@ const (
 	UpdateEnvironmentObjectMetricsExportRequestExporterTypePROMETHEUS UpdateEnvironmentObjectMetricsExportRequestExporterType = "PROMETHEUS"
 )
 
+// Defines values for UpdateHybridClusterRequestClusterType.
+const (
+	UpdateHybridClusterRequestClusterTypeHYBRID UpdateHybridClusterRequestClusterType = "HYBRID"
+)
+
 // Defines values for UpdateHybridDeploymentRequestExecutor.
 const (
 	UpdateHybridDeploymentRequestExecutorCELERY     UpdateHybridDeploymentRequestExecutor = "CELERY"
@@ -443,6 +532,23 @@ const (
 	UNCORDON AgentActionBodyAction = "UNCORDON"
 )
 
+// Defines values for ListClustersParamsProvider.
+const (
+	ListClustersParamsProviderAWS   ListClustersParamsProvider = "AWS"
+	ListClustersParamsProviderAZURE ListClustersParamsProvider = "AZURE"
+	ListClustersParamsProviderGCP   ListClustersParamsProvider = "GCP"
+)
+
+// Defines values for ListClustersParamsSorts.
+const (
+	ListClustersParamsSortsCreatedAtAsc  ListClustersParamsSorts = "createdAt:asc"
+	ListClustersParamsSortsCreatedAtDesc ListClustersParamsSorts = "createdAt:desc"
+	ListClustersParamsSortsNameAsc       ListClustersParamsSorts = "name:asc"
+	ListClustersParamsSortsNameDesc      ListClustersParamsSorts = "name:desc"
+	ListClustersParamsSortsUpdatedAtAsc  ListClustersParamsSorts = "updatedAt:asc"
+	ListClustersParamsSortsUpdatedAtDesc ListClustersParamsSorts = "updatedAt:desc"
+)
+
 // Defines values for ListDeploymentsParamsSorts.
 const (
 	ListDeploymentsParamsSortsCreatedAtAsc  ListDeploymentsParamsSorts = "createdAt:asc"
@@ -465,14 +571,14 @@ const (
 
 // Defines values for ListEnvironmentObjectsParamsSorts.
 const (
-	ListEnvironmentObjectsParamsSortsCreatedAtAsc   ListEnvironmentObjectsParamsSorts = "createdAt:asc"
-	ListEnvironmentObjectsParamsSortsCreatedAtDesc  ListEnvironmentObjectsParamsSorts = "createdAt:desc"
-	ListEnvironmentObjectsParamsSortsObjectKeyAsc   ListEnvironmentObjectsParamsSorts = "objectKey:asc"
-	ListEnvironmentObjectsParamsSortsObjectKeyDesc  ListEnvironmentObjectsParamsSorts = "objectKey:desc"
-	ListEnvironmentObjectsParamsSortsObjectTypeAsc  ListEnvironmentObjectsParamsSorts = "objectType:asc"
-	ListEnvironmentObjectsParamsSortsObjectTypeDesc ListEnvironmentObjectsParamsSorts = "objectType:desc"
-	ListEnvironmentObjectsParamsSortsUpdatedAtAsc   ListEnvironmentObjectsParamsSorts = "updatedAt:asc"
-	ListEnvironmentObjectsParamsSortsUpdatedAtDesc  ListEnvironmentObjectsParamsSorts = "updatedAt:desc"
+	CreatedAtAsc   ListEnvironmentObjectsParamsSorts = "createdAt:asc"
+	CreatedAtDesc  ListEnvironmentObjectsParamsSorts = "createdAt:desc"
+	ObjectKeyAsc   ListEnvironmentObjectsParamsSorts = "objectKey:asc"
+	ObjectKeyDesc  ListEnvironmentObjectsParamsSorts = "objectKey:desc"
+	ObjectTypeAsc  ListEnvironmentObjectsParamsSorts = "objectType:asc"
+	ObjectTypeDesc ListEnvironmentObjectsParamsSorts = "objectType:desc"
+	UpdatedAtAsc   ListEnvironmentObjectsParamsSorts = "updatedAt:asc"
+	UpdatedAtDesc  ListEnvironmentObjectsParamsSorts = "updatedAt:desc"
 )
 
 // Defines values for ListEnvironmentObjectsParamsObjectType.
@@ -561,6 +667,177 @@ type BasicSubjectProfile struct {
 // BasicSubjectProfileSubjectType The subject type.
 type BasicSubjectProfileSubjectType string
 
+// Cluster defines model for Cluster.
+type Cluster struct {
+	// CloudProvider The name of the cluster's cloud provider.
+	CloudProvider ClusterCloudProvider `json:"cloudProvider"`
+
+	// CreatedAt The time when the cluster was created in UTC. formatted as `YYYY-MM-DDTHH:MM:SSZ`.
+	CreatedAt time.Time `json:"createdAt"`
+
+	// DbInstanceType The type of database instance that is used for the cluster.
+	DbInstanceType string `json:"dbInstanceType"`
+
+	// DrPodSubnetRange The disaster recovery subnet range for Pods. For GCP clusters only.
+	DrPodSubnetRange *string `json:"drPodSubnetRange,omitempty"`
+
+	// DrRegion The secondary region for Disaster Recovery for the cluster.
+	DrRegion string `json:"drRegion"`
+
+	// DrSecondaryVpcCidr The secondary CIDR for the DR region. For AWS clusters only.
+	DrSecondaryVpcCidr *string `json:"drSecondaryVpcCidr,omitempty"`
+
+	// DrServicePeeringRange The disaster recovery service peering range. For GCP clusters only.
+	DrServicePeeringRange *string `json:"drServicePeeringRange,omitempty"`
+
+	// DrServiceSubnetRange The disaster recovery service subnet range. For GCP clusters only.
+	DrServiceSubnetRange *string `json:"drServiceSubnetRange,omitempty"`
+
+	// DrVpcSubnetRange The VPC subnet range for the DR region.
+	DrVpcSubnetRange *string `json:"drVpcSubnetRange,omitempty"`
+
+	// EnableReplicationTimeControl Whether Bucket Storage Replication Time Control is enabled for DR.
+	EnableReplicationTimeControl *bool `json:"enableReplicationTimeControl,omitempty"`
+
+	// FailoverInProgress Whether a failover is currently in progress.
+	FailoverInProgress *bool                `json:"failoverInProgress,omitempty"`
+	HealthStatus       *ClusterHealthStatus `json:"healthStatus,omitempty"`
+
+	// Id The cluster's ID.
+	Id string `json:"id"`
+
+	// IsDrEnabled Whether Disaster Recovery is enabled on the cluster
+	IsDrEnabled bool `json:"isDrEnabled"`
+
+	// IsFailedOver Whether the cluster is currently failed over to the DR region.
+	IsFailedOver *bool `json:"isFailedOver,omitempty"`
+
+	// IsLimited Whether the cluster is limited.
+	IsLimited *bool `json:"isLimited,omitempty"`
+
+	// IsPrivateNetworkEgressEnabled Whether Private Network Egress mode is enabled, which disables public Internet connectivity from the cluster's Deployments and metrics exports. For AWS clusters only.
+	IsPrivateNetworkEgressEnabled *bool            `json:"isPrivateNetworkEgressEnabled,omitempty"`
+	Metadata                      *ClusterMetadata `json:"metadata,omitempty"`
+
+	// Name The cluster's name.
+	Name string `json:"name"`
+
+	// NodePools The list of node pools that are created in the cluster.
+	NodePools *[]NodePool `json:"nodePools,omitempty"`
+
+	// OrganizationId The ID of the Organization that the cluster belongs to.
+	OrganizationId string `json:"organizationId"`
+
+	// PodSubnetRange The subnet range for Pods. For GCP clusters only.
+	PodSubnetRange *string `json:"podSubnetRange,omitempty"`
+
+	// ProviderAccount The provider account ID. For GCP clusters only.
+	ProviderAccount *string `json:"providerAccount,omitempty"`
+
+	// Region The region in which the cluster is created.
+	Region string `json:"region"`
+
+	// SecondaryVpcCidr The secondary VPC CIDR. For AWS clusters only.
+	SecondaryVpcCidr *string `json:"secondaryVpcCidr,omitempty"`
+
+	// ServicePeeringRange The service peering range. For GCP clusters only.
+	ServicePeeringRange *string `json:"servicePeeringRange,omitempty"`
+
+	// ServiceSubnetRange The service subnet range. For GCP clusters only.
+	ServiceSubnetRange *string `json:"serviceSubnetRange,omitempty"`
+
+	// Status The status of the cluster.
+	Status ClusterStatus `json:"status"`
+
+	// Tags The Kubernetes tags in the cluster. For AWS Hybrid clusters only.
+	Tags *[]ClusterK8sTag `json:"tags,omitempty"`
+
+	// TenantId The tenant ID. For Azure clusters only.
+	TenantId *string `json:"tenantId,omitempty"`
+
+	// Type The type of the cluster.
+	Type ClusterType `json:"type"`
+
+	// UpdatedAt The time when the cluster was last updated in UTC. formatted as `YYYY-MM-DDTHH:MM:SSZ`.
+	UpdatedAt time.Time `json:"updatedAt"`
+
+	// VpcSubnetRange The VPC subnet range.
+	VpcSubnetRange string `json:"vpcSubnetRange"`
+
+	// WorkspaceIds The list of Workspaces that are authorized to the cluster.
+	WorkspaceIds *[]string `json:"workspaceIds,omitempty"`
+}
+
+// ClusterCloudProvider The name of the cluster's cloud provider.
+type ClusterCloudProvider string
+
+// ClusterStatus The status of the cluster.
+type ClusterStatus string
+
+// ClusterType The type of the cluster.
+type ClusterType string
+
+// ClusterHealthStatus defines model for ClusterHealthStatus.
+type ClusterHealthStatus struct {
+	// Details List of details supporting health assessment.
+	Details *[]ClusterHealthStatusDetail `json:"details,omitempty"`
+
+	// Value Overall health state (HEALTHY or UNHEALTHY).
+	Value ClusterHealthStatusValue `json:"value"`
+}
+
+// ClusterHealthStatusValue Overall health state (HEALTHY or UNHEALTHY).
+type ClusterHealthStatusValue string
+
+// ClusterHealthStatusDetail defines model for ClusterHealthStatusDetail.
+type ClusterHealthStatusDetail struct {
+	// Code The health status for a specific component.
+	Code      string  `json:"code"`
+	Component *string `json:"component,omitempty"`
+
+	// Description A description of the component that was assessed.
+	Description string `json:"description"`
+
+	// Severity The weight this component is given in overall cluster health assessment.
+	Severity string `json:"severity"`
+}
+
+// ClusterK8sTag defines model for ClusterK8sTag.
+type ClusterK8sTag struct {
+	// Key The tag's key.
+	Key *string `json:"key,omitempty"`
+
+	// Value The tag's value.
+	Value *string `json:"value,omitempty"`
+}
+
+// ClusterMetadata defines model for ClusterMetadata.
+type ClusterMetadata struct {
+	// ExternalIPs External IPs of the cluster.
+	ExternalIPs *[]string `json:"externalIPs,omitempty"`
+
+	// KubeDnsIp The IP address of the kube-dns service.
+	KubeDnsIp *string `json:"kubeDnsIp,omitempty"`
+
+	// OidcIssuerUrl OIDC issuer URL for the cluster
+	OidcIssuerUrl *string `json:"oidcIssuerUrl,omitempty"`
+}
+
+// ClustersPaginated defines model for ClustersPaginated.
+type ClustersPaginated struct {
+	// Clusters The list of clusters in the current page.
+	Clusters []Cluster `json:"clusters"`
+
+	// Limit The maximum number of clusters in one page.
+	Limit int `json:"limit"`
+
+	// Offset The offset of the current page of clusters.
+	Offset int `json:"offset"`
+
+	// TotalCount The total number of clusters.
+	TotalCount int `json:"totalCount"`
+}
+
 // ConnectionAuthType defines model for ConnectionAuthType.
 type ConnectionAuthType struct {
 	// AirflowType The type of connection in Airflow
@@ -619,6 +896,119 @@ type ConnectionAuthTypeParameter struct {
 
 	// Pattern A regex pattern for the parameter
 	Pattern *string `json:"pattern,omitempty"`
+}
+
+// CreateAwsClusterRequest defines model for CreateAwsClusterRequest.
+type CreateAwsClusterRequest struct {
+	// CloudProvider The cluster's cloud provider.
+	CloudProvider CreateAwsClusterRequestCloudProvider `json:"cloudProvider"`
+
+	// DbInstanceType The type of database instance that is used for the cluster. Required for Hybrid clusters.
+	DbInstanceType *string `json:"dbInstanceType,omitempty"`
+
+	// DrRegion The secondary region for Disaster Recovery.
+	DrRegion *string `json:"drRegion,omitempty"`
+
+	// DrSecondaryVpcCidr The secondary CIDR for the DR region. Defaults to the primary secondary CIDR if not specified. For AWS clusters only.
+	DrSecondaryVpcCidr *string `json:"drSecondaryVpcCidr,omitempty"`
+
+	// DrVpcSubnetRange The VPC subnet range for the DR region. Defaults to the primary VPC subnet range if not specified.
+	DrVpcSubnetRange *string `json:"drVpcSubnetRange,omitempty"`
+
+	// EnableReplicationTimeControl Whether Bucket Storage Replication Time Control should be enabled for DR on task logs.
+	EnableReplicationTimeControl *bool `json:"enableReplicationTimeControl,omitempty"`
+
+	// IsPrivateNetworkEgressEnabled When true, enables Private Network Egress mode, which disables public Internet connectivity from the cluster's Deployments and metrics exports. For AWS clusters only.
+	IsPrivateNetworkEgressEnabled *bool `json:"isPrivateNetworkEgressEnabled,omitempty"`
+
+	// K8sTags The Kubernetes tags in the cluster.
+	K8sTags *[]ClusterK8sTag `json:"k8sTags,omitempty"`
+
+	// Name The cluster's name.
+	Name string `json:"name"`
+
+	// NodePools The list of node pools to create in the cluster.
+	NodePools *[]CreateNodePoolRequest `json:"nodePools,omitempty"`
+
+	// ProviderAccount The provider account ID. Required for Hybrid clusters.
+	ProviderAccount *string `json:"providerAccount,omitempty"`
+
+	// Region The cluster's region.
+	Region string `json:"region"`
+
+	// SecondaryVpcCidr The secondary VPC CIDR for pods. For AWS clusters only.
+	SecondaryVpcCidr *string `json:"secondaryVpcCidr,omitempty"`
+
+	// Type The cluster's type.
+	Type CreateAwsClusterRequestType `json:"type"`
+
+	// VpcSubnetRange The VPC subnet range.
+	VpcSubnetRange string `json:"vpcSubnetRange"`
+
+	// WorkspaceIds The list of Workspaces that are authorized to the cluster.
+	WorkspaceIds *[]string `json:"workspaceIds,omitempty"`
+}
+
+// CreateAwsClusterRequestCloudProvider The cluster's cloud provider.
+type CreateAwsClusterRequestCloudProvider string
+
+// CreateAwsClusterRequestType The cluster's type.
+type CreateAwsClusterRequestType string
+
+// CreateAzureClusterRequest defines model for CreateAzureClusterRequest.
+type CreateAzureClusterRequest struct {
+	// CloudProvider The cluster's cloud provider.
+	CloudProvider CreateAzureClusterRequestCloudProvider `json:"cloudProvider"`
+
+	// DbInstanceType The type of database instance that is used for the cluster. Required for Hybrid clusters.
+	DbInstanceType *string `json:"dbInstanceType,omitempty"`
+
+	// DrRegion The secondary region for Disaster Recovery.
+	DrRegion *string `json:"drRegion,omitempty"`
+
+	// DrVpcSubnetRange The VPC subnet range for the DR region. Defaults to the primary VPC subnet range if not specified.
+	DrVpcSubnetRange *string `json:"drVpcSubnetRange,omitempty"`
+
+	// EnableReplicationTimeControl Whether Bucket Storage Replication Time Control should be enabled for DR on task logs.
+	EnableReplicationTimeControl *bool `json:"enableReplicationTimeControl,omitempty"`
+
+	// K8sTags The Kubernetes tags in the cluster.
+	K8sTags *[]ClusterK8sTag `json:"k8sTags,omitempty"`
+
+	// Name The cluster's name.
+	Name string `json:"name"`
+
+	// NodePools The list of node pools to create in the cluster.
+	NodePools *[]CreateNodePoolRequest `json:"nodePools,omitempty"`
+
+	// ProviderAccount The provider account ID. Required for Hybrid clusters.
+	ProviderAccount *string `json:"providerAccount,omitempty"`
+
+	// Region The cluster's region.
+	Region string `json:"region"`
+
+	// TenantId The tenant ID. For Azure clusters only.
+	TenantId *string `json:"tenantId,omitempty"`
+
+	// Type The cluster's type.
+	Type CreateAzureClusterRequestType `json:"type"`
+
+	// VpcSubnetRange The VPC subnet range.
+	VpcSubnetRange string `json:"vpcSubnetRange"`
+
+	// WorkspaceIds The list of Workspaces that are authorized to the cluster.
+	WorkspaceIds *[]string `json:"workspaceIds,omitempty"`
+}
+
+// CreateAzureClusterRequestCloudProvider The cluster's cloud provider.
+type CreateAzureClusterRequestCloudProvider string
+
+// CreateAzureClusterRequestType The cluster's type.
+type CreateAzureClusterRequestType string
+
+// CreateClusterRequest defines model for CreateClusterRequest.
+type CreateClusterRequest struct {
+	union json.RawMessage
 }
 
 // CreateDedicatedDeploymentRequest defines model for CreateDedicatedDeploymentRequest.
@@ -955,6 +1345,72 @@ type CreateEnvironmentObjectRequestObjectType string
 // CreateEnvironmentObjectRequestScope The scope of the environment object
 type CreateEnvironmentObjectRequestScope string
 
+// CreateGcpClusterRequest defines model for CreateGcpClusterRequest.
+type CreateGcpClusterRequest struct {
+	// CloudProvider The cluster's cloud provider.
+	CloudProvider CreateGcpClusterRequestCloudProvider `json:"cloudProvider"`
+
+	// DbInstanceType The type of database instance that is used for the cluster. Required for Hybrid clusters.
+	DbInstanceType *string `json:"dbInstanceType,omitempty"`
+
+	// DrPodSubnetRange The disaster recovery subnet range for Pods. For GCP clusters only.
+	DrPodSubnetRange *string `json:"drPodSubnetRange,omitempty"`
+
+	// DrRegion The secondary region for Disaster Recovery.
+	DrRegion *string `json:"drRegion,omitempty"`
+
+	// DrServicePeeringRange The disaster recovery service peering range. For GCP clusters only.
+	DrServicePeeringRange *string `json:"drServicePeeringRange,omitempty"`
+
+	// DrServiceSubnetRange The disaster recovery service subnet range. For GCP clusters only.
+	DrServiceSubnetRange *string `json:"drServiceSubnetRange,omitempty"`
+
+	// DrVpcSubnetRange The VPC subnet range for the DR region. Defaults to the primary VPC subnet range if not specified.
+	DrVpcSubnetRange *string `json:"drVpcSubnetRange,omitempty"`
+
+	// EnableReplicationTimeControl Whether Bucket Storage Replication Time Control should be enabled for DR on task logs.
+	EnableReplicationTimeControl *bool `json:"enableReplicationTimeControl,omitempty"`
+
+	// K8sTags The Kubernetes tags in the cluster.
+	K8sTags *[]ClusterK8sTag `json:"k8sTags,omitempty"`
+
+	// Name The cluster's name.
+	Name string `json:"name"`
+
+	// NodePools The list of node pools to create in the cluster.
+	NodePools *[]CreateNodePoolRequest `json:"nodePools,omitempty"`
+
+	// PodSubnetRange The subnet range for Pods. For GCP clusters only.
+	PodSubnetRange string `json:"podSubnetRange"`
+
+	// ProviderAccount The provider account ID. Required for Hybrid clusters.
+	ProviderAccount *string `json:"providerAccount,omitempty"`
+
+	// Region The cluster's region.
+	Region string `json:"region"`
+
+	// ServicePeeringRange The service subnet range. For GCP clusters only.
+	ServicePeeringRange string `json:"servicePeeringRange"`
+
+	// ServiceSubnetRange The service peering range. For GCP clusters only.
+	ServiceSubnetRange string `json:"serviceSubnetRange"`
+
+	// Type The cluster's type.
+	Type CreateGcpClusterRequestType `json:"type"`
+
+	// VpcSubnetRange The VPC subnet range.
+	VpcSubnetRange string `json:"vpcSubnetRange"`
+
+	// WorkspaceIds The list of Workspaces that are authorized to the cluster.
+	WorkspaceIds *[]string `json:"workspaceIds,omitempty"`
+}
+
+// CreateGcpClusterRequestCloudProvider The cluster's cloud provider.
+type CreateGcpClusterRequestCloudProvider string
+
+// CreateGcpClusterRequestType The cluster's type.
+type CreateGcpClusterRequestType string
+
 // CreateHybridDeploymentRequest defines model for CreateHybridDeploymentRequest.
 type CreateHybridDeploymentRequest struct {
 	// AstroRuntimeVersion Deployment's Astro Runtime version.
@@ -1009,6 +1465,21 @@ type CreateHybridDeploymentRequestExecutor string
 
 // CreateHybridDeploymentRequestType The type of the Deployment.
 type CreateHybridDeploymentRequestType string
+
+// CreateNodePoolRequest defines model for CreateNodePoolRequest.
+type CreateNodePoolRequest struct {
+	// IsDefault Whether the node pool is the default node pool of the cluster.
+	IsDefault *bool `json:"isDefault,omitempty"`
+
+	// MaxNodeCount The maximum number of nodes that can be created in the node pool.
+	MaxNodeCount int `json:"maxNodeCount"`
+
+	// Name The name of the node pool.
+	Name string `json:"name"`
+
+	// NodeInstanceType The type of node instance that is used for the node pool.
+	NodeInstanceType string `json:"nodeInstanceType"`
+}
 
 // CreateStandardDeploymentRequest defines model for CreateStandardDeploymentRequest.
 type CreateStandardDeploymentRequest struct {
@@ -1803,6 +2274,42 @@ type HybridWorkerQueueRequest struct {
 	WorkerConcurrency int `json:"workerConcurrency"`
 }
 
+// NodePool defines model for NodePool.
+type NodePool struct {
+	// CloudProvider The name of the cloud provider.
+	CloudProvider NodePoolCloudProvider `json:"cloudProvider"`
+
+	// ClusterId The ID of the cluster that the node pool belongs to.
+	ClusterId string `json:"clusterId"`
+
+	// CreatedAt The time when the node pool was created in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
+	CreatedAt time.Time `json:"createdAt"`
+
+	// Id The node pool's ID.
+	Id string `json:"id"`
+
+	// IsDefault Whether the node pool is the default node pool of the cluster.
+	IsDefault bool `json:"isDefault"`
+
+	// MaxNodeCount The maximum number of nodes that can be created in the node pool.
+	MaxNodeCount int `json:"maxNodeCount"`
+
+	// Name The name of the node pool.
+	Name string `json:"name"`
+
+	// NodeInstanceType The type of node instance that is used for the node pool.
+	NodeInstanceType string `json:"nodeInstanceType"`
+
+	// SupportedAstroMachines The list of supported Astro machines for the node pool. Returned only for Hosted dedicated clusters.
+	SupportedAstroMachines *[]string `json:"supportedAstroMachines,omitempty"`
+
+	// UpdatedAt The time when the node pool was last updated in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+// NodePoolCloudProvider The name of the cloud provider.
+type NodePoolCloudProvider string
+
 // OverrideDeploymentHibernationBody defines model for OverrideDeploymentHibernationBody.
 type OverrideDeploymentHibernationBody struct {
 	// IsHibernating The type of override to perform. Set this value to 'true' to have the Deployment hibernate regardless of its hibernation schedule. Set the value to 'false' to have the Deployment wake up regardless of its hibernation schedule. Use 'OverrideUntil' to define the length of the override.
@@ -1811,6 +2318,62 @@ type OverrideDeploymentHibernationBody struct {
 	// OverrideUntil The end of the override time in UTC, formatted as 'YYYY-MM-DDTHH:MM:SSZ'. If this value isn't specified, the override persists until you end it through the Astro UI or another API call.
 	OverrideUntil *time.Time `json:"overrideUntil"`
 }
+
+// UpdateClusterRequest defines model for UpdateClusterRequest.
+type UpdateClusterRequest struct {
+	union json.RawMessage
+}
+
+// UpdateDedicatedClusterRequest defines model for UpdateDedicatedClusterRequest.
+type UpdateDedicatedClusterRequest struct {
+	// ClusterType The cluster's type.
+	ClusterType *UpdateDedicatedClusterRequestClusterType `json:"clusterType,omitempty"`
+
+	// DbInstanceType The cluster's database instance type. Required for Hybrid clusters.
+	DbInstanceType *string `json:"dbInstanceType,omitempty"`
+
+	// DrPodSubnetRange The disaster recovery subnet range for Pods. For GCP clusters only.
+	DrPodSubnetRange *string `json:"drPodSubnetRange,omitempty"`
+
+	// DrRegion The secondary region for Disaster Recovery.
+	DrRegion *string `json:"drRegion,omitempty"`
+
+	// DrServicePeeringRange The disaster recovery service peering range. For GCP clusters only.
+	DrServicePeeringRange *string `json:"drServicePeeringRange,omitempty"`
+
+	// DrServiceSubnetRange The disaster recovery service subnet range. For GCP clusters only.
+	DrServiceSubnetRange *string `json:"drServiceSubnetRange,omitempty"`
+
+	// DrVpcSubnetRange The VPC subnet range for the DR region. Defaults to the primary VPC subnet range if not specified.
+	DrVpcSubnetRange *string `json:"drVpcSubnetRange,omitempty"`
+
+	// EnableDr Set to false to disable Disaster Recovery. Enabling DR on existing clusters is only supported via the admin API.
+	EnableDr *bool `json:"enableDr,omitempty"`
+
+	// EnableReplicationTimeControl Whether Bucket Storage Replication Time Control should be enabled for DR on task logs.
+	EnableReplicationTimeControl *bool `json:"enableReplicationTimeControl,omitempty"`
+
+	// IsFailedOver Whether to trigger a DR failover for the cluster.
+	IsFailedOver *bool `json:"isFailedOver,omitempty"`
+
+	// IsPrivateNetworkEgressEnabled When true, enables Private Network Egress mode, which disables public Internet connectivity from the cluster's Deployments and metrics exports. For AWS clusters only.
+	IsPrivateNetworkEgressEnabled *bool `json:"isPrivateNetworkEgressEnabled,omitempty"`
+
+	// K8sTags A list of Kubernetes tags to add to the cluster.
+	K8sTags []ClusterK8sTag `json:"k8sTags"`
+
+	// Name The cluster's name.
+	Name string `json:"name"`
+
+	// NodePools A list of node pools to add to the cluster. For Hybrid clusters only.
+	NodePools *[]UpdateNodePoolRequest `json:"nodePools,omitempty"`
+
+	// WorkspaceIds The list of Workspaces that are authorized to the cluster. If this value is not provided, the existing list of Workspaces remains. If this value is '[]' then all workspace cluster mappings are removed.
+	WorkspaceIds *[]string `json:"workspaceIds,omitempty"`
+}
+
+// UpdateDedicatedClusterRequestClusterType The cluster's type.
+type UpdateDedicatedClusterRequestClusterType string
 
 // UpdateDedicatedDeploymentRequest defines model for UpdateDedicatedDeploymentRequest.
 type UpdateDedicatedDeploymentRequest struct {
@@ -2113,6 +2676,18 @@ type UpdateEnvironmentObjectRequest struct {
 	MetricsExport *UpdateEnvironmentObjectMetricsExportRequest `json:"metricsExport,omitempty"`
 }
 
+// UpdateHybridClusterRequest defines model for UpdateHybridClusterRequest.
+type UpdateHybridClusterRequest struct {
+	// ClusterType The cluster's type.
+	ClusterType UpdateHybridClusterRequestClusterType `json:"clusterType"`
+
+	// WorkspaceIds The list of Workspaces that are authorized to the cluster. If this value is not provided, the existing list of Workspaces remains. If this value is '[]' then all workspace cluster mappings are removed.
+	WorkspaceIds *[]string `json:"workspaceIds,omitempty"`
+}
+
+// UpdateHybridClusterRequestClusterType The cluster's type.
+type UpdateHybridClusterRequestClusterType string
+
 // UpdateHybridDeploymentRequest defines model for UpdateHybridDeploymentRequest.
 type UpdateHybridDeploymentRequest struct {
 	// ContactEmails A list of contact emails for the Deployment.
@@ -2161,6 +2736,24 @@ type UpdateHybridDeploymentRequestExecutor string
 
 // UpdateHybridDeploymentRequestType The type of the Deployment.
 type UpdateHybridDeploymentRequestType string
+
+// UpdateNodePoolRequest defines model for UpdateNodePoolRequest.
+type UpdateNodePoolRequest struct {
+	// Id The node pool's ID.
+	Id *string `json:"id,omitempty"`
+
+	// IsDefault Whether the node pool is the default node pool of the cluster.
+	IsDefault *bool `json:"isDefault,omitempty"`
+
+	// MaxNodeCount The maximum number of nodes that can be created in the node pool.
+	MaxNodeCount int `json:"maxNodeCount"`
+
+	// Name The name of the node pool.
+	Name string `json:"name"`
+
+	// NodeInstanceType The type of node instance that is used for the node pool.
+	NodeInstanceType string `json:"nodeInstanceType"`
+}
 
 // UpdateStandardDeploymentRequest defines model for UpdateStandardDeploymentRequest.
 type UpdateStandardDeploymentRequest struct {
@@ -2341,6 +2934,30 @@ type AgentActionBody struct {
 // AgentActionBodyAction The action to perform on the agent. CORDON stops the agent from accepting new work; UNCORDON resumes it.
 type AgentActionBodyAction string
 
+// ListClustersParams defines parameters for ListClusters.
+type ListClustersParams struct {
+	// Names A list of names for Clusters to filter by. The API returns details only for the specified Clusters.
+	Names *[]string `form:"names,omitempty" json:"names,omitempty"`
+
+	// Provider The cloud provider to list clusters for. Clusters from other providers will be filtered out of the results.
+	Provider *ListClustersParamsProvider `form:"provider,omitempty" json:"provider,omitempty"`
+
+	// Offset The number of results to skip before returning values.
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Limit The maximum number of results to return.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Sorts A list of field names to sort by, and whether to show results as ascending or descending. Formatted as `<fieldName>:asc` or `<fieldName>:desc`.
+	Sorts *[]ListClustersParamsSorts `form:"sorts,omitempty" json:"sorts,omitempty"`
+}
+
+// ListClustersParamsProvider defines parameters for ListClusters.
+type ListClustersParamsProvider string
+
+// ListClustersParamsSorts defines parameters for ListClusters.
+type ListClustersParamsSorts string
+
 // ListDeploymentsParams defines parameters for ListDeployments.
 type ListDeploymentsParams struct {
 	// DeploymentIds A list of IDs for Deployments to show. The API returns details only for the specified Deployments.
@@ -2434,6 +3051,12 @@ type ListEnvironmentObjectsParamsSorts string
 // ListEnvironmentObjectsParamsObjectType defines parameters for ListEnvironmentObjects.
 type ListEnvironmentObjectsParamsObjectType string
 
+// CreateClusterJSONRequestBody defines body for CreateCluster for application/json ContentType.
+type CreateClusterJSONRequestBody = CreateClusterRequest
+
+// UpdateClusterJSONRequestBody defines body for UpdateCluster for application/json ContentType.
+type UpdateClusterJSONRequestBody = UpdateClusterRequest
+
 // CreateDeploymentJSONRequestBody defines body for CreateDeployment for application/json ContentType.
 type CreateDeploymentJSONRequestBody = CreateDeploymentRequest
 
@@ -2454,6 +3077,191 @@ type UpdateEnvironmentObjectJSONRequestBody = UpdateEnvironmentObjectRequest
 
 // ExcludeLinkingEnvironmentObjectJSONRequestBody defines body for ExcludeLinkingEnvironmentObject for application/json ContentType.
 type ExcludeLinkingEnvironmentObjectJSONRequestBody = ExcludeLinkEnvironmentObjectRequest
+
+// AsCreateAwsClusterRequest returns the union data inside the CreateClusterRequest as a CreateAwsClusterRequest
+func (t CreateClusterRequest) AsCreateAwsClusterRequest() (CreateAwsClusterRequest, error) {
+	var body CreateAwsClusterRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateAwsClusterRequest overwrites any union data inside the CreateClusterRequest as the provided CreateAwsClusterRequest
+func (t *CreateClusterRequest) FromCreateAwsClusterRequest(v CreateAwsClusterRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["cloudProvider"] = json.RawMessage(`"AWS"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	t.union = b
+	return err
+}
+
+// MergeCreateAwsClusterRequest performs a merge with any union data inside the CreateClusterRequest, using the provided CreateAwsClusterRequest
+func (t *CreateClusterRequest) MergeCreateAwsClusterRequest(v CreateAwsClusterRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["cloudProvider"] = json.RawMessage(`"AWS"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreateAzureClusterRequest returns the union data inside the CreateClusterRequest as a CreateAzureClusterRequest
+func (t CreateClusterRequest) AsCreateAzureClusterRequest() (CreateAzureClusterRequest, error) {
+	var body CreateAzureClusterRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateAzureClusterRequest overwrites any union data inside the CreateClusterRequest as the provided CreateAzureClusterRequest
+func (t *CreateClusterRequest) FromCreateAzureClusterRequest(v CreateAzureClusterRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["cloudProvider"] = json.RawMessage(`"AZURE"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	t.union = b
+	return err
+}
+
+// MergeCreateAzureClusterRequest performs a merge with any union data inside the CreateClusterRequest, using the provided CreateAzureClusterRequest
+func (t *CreateClusterRequest) MergeCreateAzureClusterRequest(v CreateAzureClusterRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["cloudProvider"] = json.RawMessage(`"AZURE"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreateGcpClusterRequest returns the union data inside the CreateClusterRequest as a CreateGcpClusterRequest
+func (t CreateClusterRequest) AsCreateGcpClusterRequest() (CreateGcpClusterRequest, error) {
+	var body CreateGcpClusterRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateGcpClusterRequest overwrites any union data inside the CreateClusterRequest as the provided CreateGcpClusterRequest
+func (t *CreateClusterRequest) FromCreateGcpClusterRequest(v CreateGcpClusterRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["cloudProvider"] = json.RawMessage(`"GCP"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	t.union = b
+	return err
+}
+
+// MergeCreateGcpClusterRequest performs a merge with any union data inside the CreateClusterRequest, using the provided CreateGcpClusterRequest
+func (t *CreateClusterRequest) MergeCreateGcpClusterRequest(v CreateGcpClusterRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["cloudProvider"] = json.RawMessage(`"GCP"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t CreateClusterRequest) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"cloudProvider"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t CreateClusterRequest) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "AWS":
+		return t.AsCreateAwsClusterRequest()
+	case "AZURE":
+		return t.AsCreateAzureClusterRequest()
+	case "GCP":
+		return t.AsCreateGcpClusterRequest()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t CreateClusterRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *CreateClusterRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
 
 // AsCreateDedicatedDeploymentRequest returns the union data inside the CreateDeploymentRequest as a CreateDedicatedDeploymentRequest
 func (t CreateDeploymentRequest) AsCreateDedicatedDeploymentRequest() (CreateDedicatedDeploymentRequest, error) {
@@ -2636,6 +3444,139 @@ func (t CreateDeploymentRequest) MarshalJSON() ([]byte, error) {
 }
 
 func (t *CreateDeploymentRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateDedicatedClusterRequest returns the union data inside the UpdateClusterRequest as a UpdateDedicatedClusterRequest
+func (t UpdateClusterRequest) AsUpdateDedicatedClusterRequest() (UpdateDedicatedClusterRequest, error) {
+	var body UpdateDedicatedClusterRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateDedicatedClusterRequest overwrites any union data inside the UpdateClusterRequest as the provided UpdateDedicatedClusterRequest
+func (t *UpdateClusterRequest) FromUpdateDedicatedClusterRequest(v UpdateDedicatedClusterRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["clusterType"] = json.RawMessage(`"DEDICATED"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	t.union = b
+	return err
+}
+
+// MergeUpdateDedicatedClusterRequest performs a merge with any union data inside the UpdateClusterRequest, using the provided UpdateDedicatedClusterRequest
+func (t *UpdateClusterRequest) MergeUpdateDedicatedClusterRequest(v UpdateDedicatedClusterRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["clusterType"] = json.RawMessage(`"DEDICATED"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateHybridClusterRequest returns the union data inside the UpdateClusterRequest as a UpdateHybridClusterRequest
+func (t UpdateClusterRequest) AsUpdateHybridClusterRequest() (UpdateHybridClusterRequest, error) {
+	var body UpdateHybridClusterRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateHybridClusterRequest overwrites any union data inside the UpdateClusterRequest as the provided UpdateHybridClusterRequest
+func (t *UpdateClusterRequest) FromUpdateHybridClusterRequest(v UpdateHybridClusterRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["clusterType"] = json.RawMessage(`"HYBRID"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	t.union = b
+	return err
+}
+
+// MergeUpdateHybridClusterRequest performs a merge with any union data inside the UpdateClusterRequest, using the provided UpdateHybridClusterRequest
+func (t *UpdateClusterRequest) MergeUpdateHybridClusterRequest(v UpdateHybridClusterRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	// Inject discriminator into the marshaled JSON so this works whether
+	// the variant's discriminator field is required (value) or optional (pointer).
+	obj := make(map[string]json.RawMessage)
+	if err = json.Unmarshal(b, &obj); err != nil {
+		return err
+	}
+	obj["clusterType"] = json.RawMessage(`"HYBRID"`)
+	b, err = json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateClusterRequest) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"clusterType"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t UpdateClusterRequest) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "DEDICATED":
+		return t.AsUpdateDedicatedClusterRequest()
+	case "HYBRID":
+		return t.AsUpdateHybridClusterRequest()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t UpdateClusterRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateClusterRequest) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -2898,6 +3839,25 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// ListClusters request
+	ListClusters(ctx context.Context, organizationId string, params *ListClustersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateClusterWithBody request with any body
+	CreateClusterWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateCluster(ctx context.Context, organizationId string, body CreateClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteCluster request
+	DeleteCluster(ctx context.Context, organizationId string, clusterId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCluster request
+	GetCluster(ctx context.Context, organizationId string, clusterId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateClusterWithBody request with any body
+	UpdateClusterWithBody(ctx context.Context, organizationId string, clusterId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateCluster(ctx context.Context, organizationId string, clusterId string, body UpdateClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListDeployments request
 	ListDeployments(ctx context.Context, organizationId string, params *ListDeploymentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -2956,6 +3916,90 @@ type ClientInterface interface {
 	ExcludeLinkingEnvironmentObjectWithBody(ctx context.Context, organizationId string, environmentObjectId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	ExcludeLinkingEnvironmentObject(ctx context.Context, organizationId string, environmentObjectId string, body ExcludeLinkingEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) ListClusters(ctx context.Context, organizationId string, params *ListClustersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListClustersRequest(c.Server, organizationId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateClusterWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateClusterRequestWithBody(c.Server, organizationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateCluster(ctx context.Context, organizationId string, body CreateClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateClusterRequest(c.Server, organizationId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteCluster(ctx context.Context, organizationId string, clusterId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteClusterRequest(c.Server, organizationId, clusterId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCluster(ctx context.Context, organizationId string, clusterId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetClusterRequest(c.Server, organizationId, clusterId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateClusterWithBody(ctx context.Context, organizationId string, clusterId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateClusterRequestWithBody(c.Server, organizationId, clusterId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateCluster(ctx context.Context, organizationId string, clusterId string, body UpdateClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateClusterRequest(c.Server, organizationId, clusterId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) ListDeployments(ctx context.Context, organizationId string, params *ListDeploymentsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -3220,6 +4264,309 @@ func (c *Client) ExcludeLinkingEnvironmentObject(ctx context.Context, organizati
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// NewListClustersRequest generates requests for ListClusters
+func NewListClustersRequest(server string, organizationId string, params *ListClustersParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/clusters", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Names != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "names", runtime.ParamLocationQuery, *params.Names); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Provider != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "provider", runtime.ParamLocationQuery, *params.Provider); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Sorts != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sorts", runtime.ParamLocationQuery, *params.Sorts); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateClusterRequest calls the generic CreateCluster builder with application/json body
+func NewCreateClusterRequest(server string, organizationId string, body CreateClusterJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateClusterRequestWithBody(server, organizationId, "application/json", bodyReader)
+}
+
+// NewCreateClusterRequestWithBody generates requests for CreateCluster with any type of body
+func NewCreateClusterRequestWithBody(server string, organizationId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/clusters", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteClusterRequest generates requests for DeleteCluster
+func NewDeleteClusterRequest(server string, organizationId string, clusterId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "clusterId", runtime.ParamLocationPath, clusterId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/clusters/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetClusterRequest generates requests for GetCluster
+func NewGetClusterRequest(server string, organizationId string, clusterId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "clusterId", runtime.ParamLocationPath, clusterId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/clusters/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateClusterRequest calls the generic UpdateCluster builder with application/json body
+func NewUpdateClusterRequest(server string, organizationId string, clusterId string, body UpdateClusterJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateClusterRequestWithBody(server, organizationId, clusterId, "application/json", bodyReader)
+}
+
+// NewUpdateClusterRequestWithBody generates requests for UpdateCluster with any type of body
+func NewUpdateClusterRequestWithBody(server string, organizationId string, clusterId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "clusterId", runtime.ParamLocationPath, clusterId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/clusters/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
 }
 
 // NewListDeploymentsRequest generates requests for ListDeployments
@@ -4348,6 +5695,25 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// ListClustersWithResponse request
+	ListClustersWithResponse(ctx context.Context, organizationId string, params *ListClustersParams, reqEditors ...RequestEditorFn) (*ListClustersResponse, error)
+
+	// CreateClusterWithBodyWithResponse request with any body
+	CreateClusterWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateClusterResponse, error)
+
+	CreateClusterWithResponse(ctx context.Context, organizationId string, body CreateClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateClusterResponse, error)
+
+	// DeleteClusterWithResponse request
+	DeleteClusterWithResponse(ctx context.Context, organizationId string, clusterId string, reqEditors ...RequestEditorFn) (*DeleteClusterResponse, error)
+
+	// GetClusterWithResponse request
+	GetClusterWithResponse(ctx context.Context, organizationId string, clusterId string, reqEditors ...RequestEditorFn) (*GetClusterResponse, error)
+
+	// UpdateClusterWithBodyWithResponse request with any body
+	UpdateClusterWithBodyWithResponse(ctx context.Context, organizationId string, clusterId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateClusterResponse, error)
+
+	UpdateClusterWithResponse(ctx context.Context, organizationId string, clusterId string, body UpdateClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateClusterResponse, error)
+
 	// ListDeploymentsWithResponse request
 	ListDeploymentsWithResponse(ctx context.Context, organizationId string, params *ListDeploymentsParams, reqEditors ...RequestEditorFn) (*ListDeploymentsResponse, error)
 
@@ -4406,6 +5772,141 @@ type ClientWithResponsesInterface interface {
 	ExcludeLinkingEnvironmentObjectWithBodyWithResponse(ctx context.Context, organizationId string, environmentObjectId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ExcludeLinkingEnvironmentObjectResponse, error)
 
 	ExcludeLinkingEnvironmentObjectWithResponse(ctx context.Context, organizationId string, environmentObjectId string, body ExcludeLinkingEnvironmentObjectJSONRequestBody, reqEditors ...RequestEditorFn) (*ExcludeLinkingEnvironmentObjectResponse, error)
+}
+
+type ListClustersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ClustersPaginated
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ListClustersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListClustersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateClusterResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Cluster
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON412      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateClusterResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateClusterResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteClusterResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteClusterResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteClusterResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetClusterResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Cluster
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetClusterResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetClusterResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateClusterResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Cluster
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON412      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateClusterResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateClusterResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type ListDeploymentsResponse struct {
@@ -4801,6 +6302,67 @@ func (r ExcludeLinkingEnvironmentObjectResponse) StatusCode() int {
 	return 0
 }
 
+// ListClustersWithResponse request returning *ListClustersResponse
+func (c *ClientWithResponses) ListClustersWithResponse(ctx context.Context, organizationId string, params *ListClustersParams, reqEditors ...RequestEditorFn) (*ListClustersResponse, error) {
+	rsp, err := c.ListClusters(ctx, organizationId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListClustersResponse(rsp)
+}
+
+// CreateClusterWithBodyWithResponse request with arbitrary body returning *CreateClusterResponse
+func (c *ClientWithResponses) CreateClusterWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateClusterResponse, error) {
+	rsp, err := c.CreateClusterWithBody(ctx, organizationId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateClusterResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateClusterWithResponse(ctx context.Context, organizationId string, body CreateClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateClusterResponse, error) {
+	rsp, err := c.CreateCluster(ctx, organizationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateClusterResponse(rsp)
+}
+
+// DeleteClusterWithResponse request returning *DeleteClusterResponse
+func (c *ClientWithResponses) DeleteClusterWithResponse(ctx context.Context, organizationId string, clusterId string, reqEditors ...RequestEditorFn) (*DeleteClusterResponse, error) {
+	rsp, err := c.DeleteCluster(ctx, organizationId, clusterId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteClusterResponse(rsp)
+}
+
+// GetClusterWithResponse request returning *GetClusterResponse
+func (c *ClientWithResponses) GetClusterWithResponse(ctx context.Context, organizationId string, clusterId string, reqEditors ...RequestEditorFn) (*GetClusterResponse, error) {
+	rsp, err := c.GetCluster(ctx, organizationId, clusterId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetClusterResponse(rsp)
+}
+
+// UpdateClusterWithBodyWithResponse request with arbitrary body returning *UpdateClusterResponse
+func (c *ClientWithResponses) UpdateClusterWithBodyWithResponse(ctx context.Context, organizationId string, clusterId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateClusterResponse, error) {
+	rsp, err := c.UpdateClusterWithBody(ctx, organizationId, clusterId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateClusterResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateClusterWithResponse(ctx context.Context, organizationId string, clusterId string, body UpdateClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateClusterResponse, error) {
+	rsp, err := c.UpdateCluster(ctx, organizationId, clusterId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateClusterResponse(rsp)
+}
+
 // ListDeploymentsWithResponse request returning *ListDeploymentsResponse
 func (c *ClientWithResponses) ListDeploymentsWithResponse(ctx context.Context, organizationId string, params *ListDeploymentsParams, reqEditors ...RequestEditorFn) (*ListDeploymentsResponse, error) {
 	rsp, err := c.ListDeployments(ctx, organizationId, params, reqEditors...)
@@ -4990,6 +6552,311 @@ func (c *ClientWithResponses) ExcludeLinkingEnvironmentObjectWithResponse(ctx co
 		return nil, err
 	}
 	return ParseExcludeLinkingEnvironmentObjectResponse(rsp)
+}
+
+// ParseListClustersResponse parses an HTTP response from a ListClustersWithResponse call
+func ParseListClustersResponse(rsp *http.Response) (*ListClustersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListClustersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ClustersPaginated
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateClusterResponse parses an HTTP response from a CreateClusterWithResponse call
+func ParseCreateClusterResponse(rsp *http.Response) (*CreateClusterResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateClusterResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Cluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 412:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON412 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteClusterResponse parses an HTTP response from a DeleteClusterWithResponse call
+func ParseDeleteClusterResponse(rsp *http.Response) (*DeleteClusterResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteClusterResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetClusterResponse parses an HTTP response from a GetClusterWithResponse call
+func ParseGetClusterResponse(rsp *http.Response) (*GetClusterResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetClusterResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Cluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateClusterResponse parses an HTTP response from a UpdateClusterWithResponse call
+func ParseUpdateClusterResponse(rsp *http.Response) (*UpdateClusterResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateClusterResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Cluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 412:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON412 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseListDeploymentsResponse parses an HTTP response from a ListDeploymentsWithResponse call

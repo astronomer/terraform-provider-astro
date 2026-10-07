@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -119,7 +119,7 @@ type ClusterHealthStatusDetail struct {
 
 func (data *ClusterResource) ReadFromResponse(
 	ctx context.Context,
-	cluster *platform.Cluster,
+	cluster *platform_v1.Cluster,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(cluster.Id)
@@ -187,7 +187,7 @@ func (data *ClusterResource) ReadFromResponse(
 
 func (data *ClusterDataSource) ReadFromResponse(
 	ctx context.Context,
-	cluster *platform.Cluster,
+	cluster *platform_v1.Cluster,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(cluster.Id)
@@ -259,7 +259,7 @@ func (data *ClusterDataSource) ReadFromResponse(
 
 func ClusterTagTypesObject(
 	ctx context.Context,
-	tag platform.ClusterK8sTag,
+	tag platform_v1.ClusterK8sTag,
 ) (types.Object, diag.Diagnostics) {
 	obj := ClusterTag{
 		Key:   types.StringPointerValue(tag.Key),
@@ -271,7 +271,7 @@ func ClusterTagTypesObject(
 
 func NodePoolTypesObject(
 	ctx context.Context,
-	nodePool platform.NodePool,
+	nodePool platform_v1.NodePool,
 ) (types.Object, diag.Diagnostics) {
 	supportedAstroMachines, diags := utils.StringSet(nodePool.SupportedAstroMachines)
 	if diags.HasError() {
@@ -295,7 +295,7 @@ func NodePoolTypesObject(
 
 func ClusterHealthStatusDetailTypesObject(
 	ctx context.Context,
-	healthStatusDetail platform.ClusterHealthStatusDetail,
+	healthStatusDetail platform_v1.ClusterHealthStatusDetail,
 ) (types.Object, diag.Diagnostics) {
 	obj := ClusterHealthStatusDetail{
 		Code:        types.StringValue(healthStatusDetail.Code),
@@ -307,7 +307,7 @@ func ClusterHealthStatusDetailTypesObject(
 
 func ClusterMetadataTypesObject(
 	ctx context.Context,
-	metadata *platform.ClusterMetadata,
+	metadata *platform_v1.ClusterMetadata,
 ) (types.Object, diag.Diagnostics) {
 	if metadata != nil {
 		externalIps, diags := utils.StringSet(metadata.ExternalIPs)
@@ -326,7 +326,7 @@ func ClusterMetadataTypesObject(
 
 func ClusterHealthStatusTypesObject(
 	ctx context.Context,
-	healthStatus *platform.ClusterHealthStatus,
+	healthStatus *platform_v1.ClusterHealthStatus,
 ) (types.Object, diag.Diagnostics) {
 	if healthStatus != nil {
 		details, diags := utils.ObjectSet(ctx, healthStatus.Details, schemas.ClusterHealthStatusDetailAttributeTypes(), ClusterHealthStatusDetailTypesObject)

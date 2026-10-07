@@ -9,7 +9,7 @@ import (
 	"github.com/samber/lo"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -28,8 +28,8 @@ func NewClustersDataSource() datasource.DataSource {
 
 // clustersDataSource defines the data source implementation.
 type clustersDataSource struct {
-	PlatformClient platform.ClientWithResponsesInterface
-	OrganizationId string
+	PlatformV1Client platform_v1.ClientWithResponsesInterface
+	OrganizationId   string
 }
 
 func (d *clustersDataSource) Metadata(
@@ -68,7 +68,7 @@ func (d *clustersDataSource) Configure(
 		return
 	}
 
-	d.PlatformClient = apiClients.PlatformClient
+	d.PlatformV1Client = apiClients.PlatformV1Client
 	d.OrganizationId = apiClients.OrganizationId
 }
 
@@ -85,12 +85,12 @@ func (d *clustersDataSource) Read(
 		return
 	}
 
-	params := &platform.ListClustersParams{
+	params := &platform_v1.ListClustersParams{
 		Limit: lo.ToPtr(1000),
 	}
 	var diags diag.Diagnostics
 	if len(data.CloudProvider.ValueString()) > 0 {
-		params.Provider = (*platform.ListClustersParamsProvider)(data.CloudProvider.ValueStringPointer())
+		params.Provider = (*platform_v1.ListClustersParamsProvider)(data.CloudProvider.ValueStringPointer())
 	}
 	names, diags := utils.TypesSetToStringSlice(ctx, data.Names)
 	if len(names) > 0 {
@@ -101,11 +101,11 @@ func (d *clustersDataSource) Read(
 		return
 	}
 
-	var clusters []platform.Cluster
+	var clusters []platform_v1.Cluster
 	offset := 0
 	for {
 		params.Offset = &offset
-		clustersResp, err := d.PlatformClient.ListClustersWithResponse(
+		clustersResp, err := d.PlatformV1Client.ListClustersWithResponse(
 			ctx,
 			d.OrganizationId,
 			params,

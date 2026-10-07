@@ -51,7 +51,7 @@ func TestDeploymentRequestDiscriminatorSerialization(t *testing.T) {
 			if err != nil {
 				t.Fatalf("FromCreate%sDeploymentRequest returned error: %v", tt.name, err)
 			}
-			assertDiscriminator(t, u, u.Discriminator, u.ValueByDiscriminator, tt.wantType, tt.wantGoType)
+			assertDiscriminator(t, u, u.Discriminator, u.ValueByDiscriminator, "type", tt.wantType, tt.wantGoType)
 		})
 	}
 
@@ -99,7 +99,95 @@ func TestDeploymentRequestDiscriminatorSerialization(t *testing.T) {
 			if err != nil {
 				t.Fatalf("FromUpdate%sDeploymentRequest returned error: %v", tt.name, err)
 			}
-			assertDiscriminator(t, u, u.Discriminator, u.ValueByDiscriminator, tt.wantType, tt.wantGoType)
+			assertDiscriminator(t, u, u.Discriminator, u.ValueByDiscriminator, "type", tt.wantType, tt.wantGoType)
+		})
+	}
+}
+
+func TestClusterRequestDiscriminatorSerialization(t *testing.T) {
+	createTests := []struct {
+		name       string
+		build      func() (CreateClusterRequest, error)
+		wantType   string
+		wantGoType reflect.Type
+	}{
+		{
+			name: "Aws",
+			build: func() (CreateClusterRequest, error) {
+				var u CreateClusterRequest
+				err := u.FromCreateAwsClusterRequest(CreateAwsClusterRequest{})
+				return u, err
+			},
+			wantType:   "AWS",
+			wantGoType: reflect.TypeOf(CreateAwsClusterRequest{}),
+		},
+		{
+			name: "Azure",
+			build: func() (CreateClusterRequest, error) {
+				var u CreateClusterRequest
+				err := u.FromCreateAzureClusterRequest(CreateAzureClusterRequest{})
+				return u, err
+			},
+			wantType:   "AZURE",
+			wantGoType: reflect.TypeOf(CreateAzureClusterRequest{}),
+		},
+		{
+			name: "Gcp",
+			build: func() (CreateClusterRequest, error) {
+				var u CreateClusterRequest
+				err := u.FromCreateGcpClusterRequest(CreateGcpClusterRequest{})
+				return u, err
+			},
+			wantType:   "GCP",
+			wantGoType: reflect.TypeOf(CreateGcpClusterRequest{}),
+		},
+	}
+
+	for _, tt := range createTests {
+		t.Run("Create"+tt.name, func(t *testing.T) {
+			u, err := tt.build()
+			if err != nil {
+				t.Fatalf("FromCreate%sClusterRequest returned error: %v", tt.name, err)
+			}
+			assertDiscriminator(t, u, u.Discriminator, u.ValueByDiscriminator, "cloudProvider", tt.wantType, tt.wantGoType)
+		})
+	}
+
+	updateTests := []struct {
+		name       string
+		build      func() (UpdateClusterRequest, error)
+		wantType   string
+		wantGoType reflect.Type
+	}{
+		{
+			name: "Dedicated",
+			build: func() (UpdateClusterRequest, error) {
+				var u UpdateClusterRequest
+				err := u.FromUpdateDedicatedClusterRequest(UpdateDedicatedClusterRequest{})
+				return u, err
+			},
+			wantType:   "DEDICATED",
+			wantGoType: reflect.TypeOf(UpdateDedicatedClusterRequest{}),
+		},
+		{
+			name: "Hybrid",
+			build: func() (UpdateClusterRequest, error) {
+				var u UpdateClusterRequest
+				err := u.FromUpdateHybridClusterRequest(UpdateHybridClusterRequest{})
+				return u, err
+			},
+			wantType:   "HYBRID",
+			wantGoType: reflect.TypeOf(UpdateHybridClusterRequest{}),
+		},
+	}
+
+	for _, tt := range updateTests {
+		t.Run("Update"+tt.name, func(t *testing.T) {
+			u, err := tt.build()
+			if err != nil {
+				t.Fatalf("FromUpdate%sClusterRequest returned error: %v", tt.name, err)
+			}
+			assertDiscriminator(t, u, u.Discriminator, u.ValueByDiscriminator, "clusterType", tt.wantType, tt.wantGoType)
 		})
 	}
 }
@@ -109,6 +197,7 @@ func assertDiscriminator(
 	union any,
 	discriminator func() (string, error),
 	valueByDiscriminator func() (interface{}, error),
+	jsonProperty string,
 	wantType string,
 	wantGoType reflect.Type,
 ) {
@@ -118,14 +207,18 @@ func assertDiscriminator(
 	if err != nil {
 		t.Fatalf("json.Marshal(union): %v", err)
 	}
-	var got struct {
-		Type string `json:"type"`
-	}
+	var got map[string]json.RawMessage
 	if err := json.Unmarshal(b, &got); err != nil {
 		t.Fatalf("json.Unmarshal: %v", err)
 	}
-	if got.Type != wantType {
-		t.Errorf("marshaled type = %q, want %q (json: %s)", got.Type, wantType, b)
+	var gotType string
+	if raw, ok := got[jsonProperty]; ok {
+		if err := json.Unmarshal(raw, &gotType); err != nil {
+			t.Fatalf("json.Unmarshal(%s): %v", jsonProperty, err)
+		}
+	}
+	if gotType != wantType {
+		t.Errorf("marshaled %s = %q, want %q (json: %s)", jsonProperty, gotType, wantType, b)
 	}
 
 	disc, err := discriminator()
