@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/labs"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -45,9 +45,9 @@ func NewAllowedIpAddressRangesResource() resource.Resource {
 // Writes go through the labs bulk create/delete endpoints, while reads list through the iam
 // v1beta1 endpoint (labs has no list endpoint for this resource).
 type allowedIpAddressRangesResource struct {
-	iamClient      *iam.ClientWithResponses
-	labsClient     *labs.ClientWithResponses
-	organizationId string
+	platformV1Client *platform_v1.ClientWithResponses
+	labsClient       *labs.ClientWithResponses
+	organizationId   string
 }
 
 func (r *allowedIpAddressRangesResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -81,7 +81,7 @@ func (r *allowedIpAddressRangesResource) Configure(ctx context.Context, req reso
 		utils.ResourceApiClientConfigureError(ctx, req, resp)
 		return
 	}
-	r.iamClient = apiClients.IamClient
+	r.platformV1Client = apiClients.PlatformV1Client
 	r.labsClient = apiClients.LabsClient
 	r.organizationId = apiClients.OrganizationId
 }
@@ -326,14 +326,14 @@ func (r *allowedIpAddressRangesResource) idsForCidrs(ctx context.Context, cidrs 
 	return ids, diags
 }
 
-func (r *allowedIpAddressRangesResource) listAllRanges(ctx context.Context) ([]iam.AllowedIpAddressRange, diag.Diagnostics) {
+func (r *allowedIpAddressRangesResource) listAllRanges(ctx context.Context) ([]platform_v1.AllowedIpAddressRange, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	var all []iam.AllowedIpAddressRange
+	var all []platform_v1.AllowedIpAddressRange
 	limit := allowedIpAddressRangesListPageLimit
 	offset := 0
 	for {
-		params := &iam.ListAllowedIpAddressRangesParams{Limit: &limit, Offset: &offset}
-		listResp, err := r.iamClient.ListAllowedIpAddressRangesWithResponse(ctx, r.organizationId, params)
+		params := &platform_v1.ListAllowedIpAddressRangesParams{Limit: &limit, Offset: &offset}
+		listResp, err := r.platformV1Client.ListAllowedIpAddressRangesWithResponse(ctx, r.organizationId, params)
 		if err != nil {
 			tflog.Error(ctx, "failed to list allowed IP address ranges", map[string]interface{}{"error": err})
 			diags.AddError("Client Error", fmt.Sprintf("Unable to list allowed IP address ranges: %s", err))

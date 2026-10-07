@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -177,14 +176,4 @@ func ContainsDeploymentRoles(userRoles []platform_v1.DeploymentRole, roles []Rol
 		}
 	}
 	return missingRoles
-}
-
-// GetTestIamV1Beta1Client serves the allowed IP address range tests. That binding is
-// hand-authored in internal/clients/iam and has no generated v1 equivalent yet.
-func GetTestIamV1Beta1Client(isHosted bool) (*iam.ClientWithResponses, error) {
-	token := os.Getenv("HYBRID_ORGANIZATION_API_TOKEN")
-	if isHosted {
-		token = os.Getenv("HOSTED_ORGANIZATION_API_TOKEN")
-	}
-	return iam.NewIamClient(os.Getenv("ASTRO_API_HOST"), token, "acceptancetests")
 }

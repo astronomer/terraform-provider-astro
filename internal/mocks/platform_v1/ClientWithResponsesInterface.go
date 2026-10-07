@@ -164,6 +164,154 @@ func (_m *ClientWithResponsesInterface) AgentActionWithResponse(ctx context.Cont
 	return r0, r1
 }
 
+// BulkCreateAllowedIpAddressRangesWithBodyWithResponse provides a mock function with given fields: ctx, organizationId, contentType, body, reqEditors
+func (_m *ClientWithResponsesInterface) BulkCreateAllowedIpAddressRangesWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.BulkCreateAllowedIpAddressRangesResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, contentType, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for BulkCreateAllowedIpAddressRangesWithBodyWithResponse")
+	}
+
+	var r0 *platform_v1.BulkCreateAllowedIpAddressRangesResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, io.Reader, ...platform_v1.RequestEditorFn) (*platform_v1.BulkCreateAllowedIpAddressRangesResponse, error)); ok {
+		return rf(ctx, organizationId, contentType, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, io.Reader, ...platform_v1.RequestEditorFn) *platform_v1.BulkCreateAllowedIpAddressRangesResponse); ok {
+		r0 = rf(ctx, organizationId, contentType, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.BulkCreateAllowedIpAddressRangesResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, io.Reader, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, contentType, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// BulkCreateAllowedIpAddressRangesWithResponse provides a mock function with given fields: ctx, organizationId, body, reqEditors
+func (_m *ClientWithResponsesInterface) BulkCreateAllowedIpAddressRangesWithResponse(ctx context.Context, organizationId string, body platform_v1.BulkCreateAllowedIpAddressRangesRequest, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.BulkCreateAllowedIpAddressRangesResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for BulkCreateAllowedIpAddressRangesWithResponse")
+	}
+
+	var r0 *platform_v1.BulkCreateAllowedIpAddressRangesResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, platform_v1.BulkCreateAllowedIpAddressRangesRequest, ...platform_v1.RequestEditorFn) (*platform_v1.BulkCreateAllowedIpAddressRangesResponse, error)); ok {
+		return rf(ctx, organizationId, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, platform_v1.BulkCreateAllowedIpAddressRangesRequest, ...platform_v1.RequestEditorFn) *platform_v1.BulkCreateAllowedIpAddressRangesResponse); ok {
+		r0 = rf(ctx, organizationId, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.BulkCreateAllowedIpAddressRangesResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, platform_v1.BulkCreateAllowedIpAddressRangesRequest, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// BulkDeleteAllowedIpAddressRangesWithBodyWithResponse provides a mock function with given fields: ctx, organizationId, contentType, body, reqEditors
+func (_m *ClientWithResponsesInterface) BulkDeleteAllowedIpAddressRangesWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.BulkDeleteAllowedIpAddressRangesResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, contentType, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for BulkDeleteAllowedIpAddressRangesWithBodyWithResponse")
+	}
+
+	var r0 *platform_v1.BulkDeleteAllowedIpAddressRangesResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, io.Reader, ...platform_v1.RequestEditorFn) (*platform_v1.BulkDeleteAllowedIpAddressRangesResponse, error)); ok {
+		return rf(ctx, organizationId, contentType, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, io.Reader, ...platform_v1.RequestEditorFn) *platform_v1.BulkDeleteAllowedIpAddressRangesResponse); ok {
+		r0 = rf(ctx, organizationId, contentType, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.BulkDeleteAllowedIpAddressRangesResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, io.Reader, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, contentType, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// BulkDeleteAllowedIpAddressRangesWithResponse provides a mock function with given fields: ctx, organizationId, body, reqEditors
+func (_m *ClientWithResponsesInterface) BulkDeleteAllowedIpAddressRangesWithResponse(ctx context.Context, organizationId string, body platform_v1.BulkDeleteAllowedIpAddressRangesRequest, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.BulkDeleteAllowedIpAddressRangesResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for BulkDeleteAllowedIpAddressRangesWithResponse")
+	}
+
+	var r0 *platform_v1.BulkDeleteAllowedIpAddressRangesResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, platform_v1.BulkDeleteAllowedIpAddressRangesRequest, ...platform_v1.RequestEditorFn) (*platform_v1.BulkDeleteAllowedIpAddressRangesResponse, error)); ok {
+		return rf(ctx, organizationId, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, platform_v1.BulkDeleteAllowedIpAddressRangesRequest, ...platform_v1.RequestEditorFn) *platform_v1.BulkDeleteAllowedIpAddressRangesResponse); ok {
+		r0 = rf(ctx, organizationId, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.BulkDeleteAllowedIpAddressRangesResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, platform_v1.BulkDeleteAllowedIpAddressRangesRequest, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateAgentTokenWithBodyWithResponse provides a mock function with given fields: ctx, organizationId, deploymentId, contentType, body, reqEditors
 func (_m *ClientWithResponsesInterface) CreateAgentTokenWithBodyWithResponse(ctx context.Context, organizationId string, deploymentId string, contentType string, body io.Reader, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.CreateAgentTokenResponse, error) {
 	_va := make([]interface{}, len(reqEditors))
@@ -231,6 +379,80 @@ func (_m *ClientWithResponsesInterface) CreateAgentTokenWithResponse(ctx context
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, string, platform_v1.CreateAgentTokenRequest, ...platform_v1.RequestEditorFn) error); ok {
 		r1 = rf(ctx, organizationId, deploymentId, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CreateAllowedIpAddressRangeWithBodyWithResponse provides a mock function with given fields: ctx, organizationId, contentType, body, reqEditors
+func (_m *ClientWithResponsesInterface) CreateAllowedIpAddressRangeWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.CreateAllowedIpAddressRangeResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, contentType, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateAllowedIpAddressRangeWithBodyWithResponse")
+	}
+
+	var r0 *platform_v1.CreateAllowedIpAddressRangeResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, io.Reader, ...platform_v1.RequestEditorFn) (*platform_v1.CreateAllowedIpAddressRangeResponse, error)); ok {
+		return rf(ctx, organizationId, contentType, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, io.Reader, ...platform_v1.RequestEditorFn) *platform_v1.CreateAllowedIpAddressRangeResponse); ok {
+		r0 = rf(ctx, organizationId, contentType, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.CreateAllowedIpAddressRangeResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, io.Reader, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, contentType, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CreateAllowedIpAddressRangeWithResponse provides a mock function with given fields: ctx, organizationId, body, reqEditors
+func (_m *ClientWithResponsesInterface) CreateAllowedIpAddressRangeWithResponse(ctx context.Context, organizationId string, body platform_v1.CreateAllowedIpAddressRangeRequest, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.CreateAllowedIpAddressRangeResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateAllowedIpAddressRangeWithResponse")
+	}
+
+	var r0 *platform_v1.CreateAllowedIpAddressRangeResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, platform_v1.CreateAllowedIpAddressRangeRequest, ...platform_v1.RequestEditorFn) (*platform_v1.CreateAllowedIpAddressRangeResponse, error)); ok {
+		return rf(ctx, organizationId, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, platform_v1.CreateAllowedIpAddressRangeRequest, ...platform_v1.RequestEditorFn) *platform_v1.CreateAllowedIpAddressRangeResponse); ok {
+		r0 = rf(ctx, organizationId, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.CreateAllowedIpAddressRangeResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, platform_v1.CreateAllowedIpAddressRangeRequest, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, body, reqEditors...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -860,6 +1082,43 @@ func (_m *ClientWithResponsesInterface) DeleteAgentTokenWithResponse(ctx context
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, ...platform_v1.RequestEditorFn) error); ok {
 		r1 = rf(ctx, organizationId, deploymentId, agentTokenId, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DeleteAllowedIpAddressRangeWithResponse provides a mock function with given fields: ctx, organizationId, allowedIpAddressRangeId, reqEditors
+func (_m *ClientWithResponsesInterface) DeleteAllowedIpAddressRangeWithResponse(ctx context.Context, organizationId string, allowedIpAddressRangeId string, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.DeleteAllowedIpAddressRangeResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, allowedIpAddressRangeId)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteAllowedIpAddressRangeWithResponse")
+	}
+
+	var r0 *platform_v1.DeleteAllowedIpAddressRangeResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) (*platform_v1.DeleteAllowedIpAddressRangeResponse, error)); ok {
+		return rf(ctx, organizationId, allowedIpAddressRangeId, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) *platform_v1.DeleteAllowedIpAddressRangeResponse); ok {
+		r0 = rf(ctx, organizationId, allowedIpAddressRangeId, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.DeleteAllowedIpAddressRangeResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, allowedIpAddressRangeId, reqEditors...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1785,6 +2044,43 @@ func (_m *ClientWithResponsesInterface) ListAgentTokensWithResponse(ctx context.
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, string, *platform_v1.ListAgentTokensParams, ...platform_v1.RequestEditorFn) error); ok {
 		r1 = rf(ctx, organizationId, deploymentId, params, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ListAllowedIpAddressRangesWithResponse provides a mock function with given fields: ctx, organizationId, params, reqEditors
+func (_m *ClientWithResponsesInterface) ListAllowedIpAddressRangesWithResponse(ctx context.Context, organizationId string, params *platform_v1.ListAllowedIpAddressRangesParams, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.ListAllowedIpAddressRangesResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, params)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListAllowedIpAddressRangesWithResponse")
+	}
+
+	var r0 *platform_v1.ListAllowedIpAddressRangesResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, *platform_v1.ListAllowedIpAddressRangesParams, ...platform_v1.RequestEditorFn) (*platform_v1.ListAllowedIpAddressRangesResponse, error)); ok {
+		return rf(ctx, organizationId, params, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, *platform_v1.ListAllowedIpAddressRangesParams, ...platform_v1.RequestEditorFn) *platform_v1.ListAllowedIpAddressRangesResponse); ok {
+		r0 = rf(ctx, organizationId, params, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.ListAllowedIpAddressRangesResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, *platform_v1.ListAllowedIpAddressRangesParams, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, params, reqEditors...)
 	} else {
 		r1 = ret.Error(1)
 	}

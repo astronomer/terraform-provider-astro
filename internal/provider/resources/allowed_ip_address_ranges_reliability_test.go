@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/labs"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -21,7 +21,7 @@ type rangesHandler struct {
 	postStatus int
 }
 
-func (h rangesHandler) server(t *testing.T) (*iam.ClientWithResponses, *labs.ClientWithResponses) {
+func (h rangesHandler) server(t *testing.T) (*platform_v1.ClientWithResponses, *labs.ClientWithResponses) {
 	t.Helper()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -46,11 +46,11 @@ func (h rangesHandler) server(t *testing.T) (*iam.ClientWithResponses, *labs.Cli
 		}
 	}))
 	t.Cleanup(srv.Close)
-	iamClient, err := iam.NewIamClient(srv.URL, "token", "test")
+	platformV1Client, err := platform_v1.NewPlatformV1Client(srv.URL, "token", "test")
 	require.NoError(t, err)
 	labsClient, err := labs.NewLabsClient(srv.URL, "token", "test")
 	require.NoError(t, err)
-	return iamClient, labsClient
+	return platformV1Client, labsClient
 }
 
 // #5: a 409 on bulk create is idempotent-success only when the ranges are already present.
@@ -58,21 +58,21 @@ func TestUnit_bulkCreate_409IsIdempotentWhenPresent(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("409 + range already present -> success", func(t *testing.T) {
-		iamClient, labsClient := rangesHandler{
+		platformV1Client, labsClient := rangesHandler{
 			list:       []map[string]any{{"id": "id-1", "ipAddressRange": "10.0.0.0/8"}},
 			postStatus: http.StatusConflict,
 		}.server(t)
-		r := &allowedIpAddressRangesResource{iamClient: iamClient, labsClient: labsClient, organizationId: "org"}
+		r := &allowedIpAddressRangesResource{platformV1Client: platformV1Client, labsClient: labsClient, organizationId: "org"}
 		diags := r.bulkCreate(ctx, []string{"10.0.0.0/8"})
 		assert.False(t, diags.HasError(), "409 with the range already present should be treated as success: %v", diags)
 	})
 
 	t.Run("409 + range NOT present -> surfaces the conflict", func(t *testing.T) {
-		iamClient, labsClient := rangesHandler{
+		platformV1Client, labsClient := rangesHandler{
 			list:       []map[string]any{}, // empty: the requested CIDR is not present
 			postStatus: http.StatusConflict,
 		}.server(t)
-		r := &allowedIpAddressRangesResource{iamClient: iamClient, labsClient: labsClient, organizationId: "org"}
+		r := &allowedIpAddressRangesResource{platformV1Client: platformV1Client, labsClient: labsClient, organizationId: "org"}
 		diags := r.bulkCreate(ctx, []string{"10.0.0.0/8"})
 		assert.True(t, diags.HasError(), "409 with the range absent must not be swallowed")
 	})
@@ -81,8 +81,8 @@ func TestUnit_bulkCreate_409IsIdempotentWhenPresent(t *testing.T) {
 // #6: a success status with no parseable body must error, not read as an empty list.
 func TestUnit_listAll_nonJSONSuccessErrorsNotEmpty(t *testing.T) {
 	ctx := context.Background()
-	iamClient, labsClient := rangesHandler{list: nil}.server(t) // nil -> non-JSON 200
-	r := &allowedIpAddressRangesResource{iamClient: iamClient, labsClient: labsClient, organizationId: "org"}
+	platformV1Client, labsClient := rangesHandler{list: nil}.server(t) // nil -> non-JSON 200
+	r := &allowedIpAddressRangesResource{platformV1Client: platformV1Client, labsClient: labsClient, organizationId: "org"}
 	_, diags := r.listAll(ctx)
 	assert.True(t, diags.HasError(), "a 200 with a non-JSON body must error rather than return an empty (state-wiping) list")
 }
@@ -90,10 +90,10 @@ func TestUnit_listAll_nonJSONSuccessErrorsNotEmpty(t *testing.T) {
 // #7: idsForCidrs warns about ranges it cannot resolve rather than silently under-deleting.
 func TestUnit_idsForCidrs_warnsOnMissing(t *testing.T) {
 	ctx := context.Background()
-	iamClient, labsClient := rangesHandler{
+	platformV1Client, labsClient := rangesHandler{
 		list: []map[string]any{{"id": "id-1", "ipAddressRange": "10.0.0.0/8"}},
 	}.server(t)
-	r := &allowedIpAddressRangesResource{iamClient: iamClient, labsClient: labsClient, organizationId: "org"}
+	r := &allowedIpAddressRangesResource{platformV1Client: platformV1Client, labsClient: labsClient, organizationId: "org"}
 
 	ids, diags := r.idsForCidrs(ctx, []string{"10.0.0.0/8", "192.168.0.0/16"})
 	assert.Equal(t, []string{"id-1"}, ids)
