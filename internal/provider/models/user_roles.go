@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -22,7 +22,7 @@ type UserRoles struct {
 func (data *UserRoles) ReadFromResponse(
 	ctx context.Context,
 	userId string,
-	userRoles *iam.SubjectRoles,
+	userRoles *platform_v1.SubjectRoles,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.UserId = types.StringValue(userId)

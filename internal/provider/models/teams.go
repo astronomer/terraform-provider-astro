@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -16,11 +16,11 @@ type Teams struct {
 	Names types.Set `tfsdk:"names"` // query parameter
 }
 
-func (data *Teams) ReadFromResponse(ctx context.Context, teams []iam.Team, teamsWithMembers map[string][]iam.TeamMember) diag.Diagnostics {
+func (data *Teams) ReadFromResponse(ctx context.Context, teams []platform_v1.Team, teamsWithMembers map[string][]platform_v1.TeamMember) diag.Diagnostics {
 	values := make([]attr.Value, len(teams))
 	for i, team := range teams {
 		var singleTeamData TeamDataSource
-		var teamMembersPtr *[]iam.TeamMember
+		var teamMembersPtr *[]platform_v1.TeamMember
 		if members, exists := teamsWithMembers[team.Id]; exists {
 			teamMembersPtr = &members
 		}

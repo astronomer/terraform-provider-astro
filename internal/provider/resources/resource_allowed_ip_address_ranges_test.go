@@ -88,7 +88,7 @@ resource "astro_allowed_ip_address_ranges" "test" {
 func testAccCheckAllowedIpAddressRangesDestroyed(t *testing.T, testCidrs ...string) func(s *terraform.State) error {
 	t.Helper()
 	return func(state *terraform.State) error {
-		client, err := utils.GetTestIamClient(true)
+		client, err := utils.GetTestIamV1Beta1Client(true)
 		assert.NoError(t, err)
 
 		organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")

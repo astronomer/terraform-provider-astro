@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -26,8 +26,8 @@ func NewUsersDataSource() datasource.DataSource {
 
 // usersDataSource defines the data source implementation.
 type usersDataSource struct {
-	IamClient      iam.ClientWithResponsesInterface
-	OrganizationId string
+	PlatformV1Client platform_v1.ClientWithResponsesInterface
+	OrganizationId   string
 }
 
 func (d *usersDataSource) Metadata(
@@ -67,7 +67,7 @@ func (d *usersDataSource) Configure(
 		return
 	}
 
-	d.IamClient = apiClients.IamClient
+	d.PlatformV1Client = apiClients.PlatformV1Client
 	d.OrganizationId = apiClients.OrganizationId
 }
 
@@ -84,7 +84,7 @@ func (d *usersDataSource) Read(
 		return
 	}
 
-	params := &iam.ListUsersParams{
+	params := &platform_v1.ListUsersParams{
 		Limit: lo.ToPtr(1000),
 	}
 	var diags diag.Diagnostics
@@ -97,11 +97,11 @@ func (d *usersDataSource) Read(
 		params.DeploymentId = &deploymentId
 	}
 
-	var users []iam.User
+	var users []platform_v1.User
 	offset := 0
 	for {
 		params.Offset = &offset
-		usersResp, err := d.IamClient.ListUsersWithResponse(
+		usersResp, err := d.PlatformV1Client.ListUsersWithResponse(
 			ctx,
 			d.OrganizationId,
 			params,

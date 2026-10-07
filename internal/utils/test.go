@@ -6,10 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
-
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
+	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -17,7 +16,7 @@ import (
 
 var hostedPlatformClient, hybridPlatformClient *platform.ClientWithResponses
 var hostedPlatformV1Client, hybridPlatformV1Client *platform_v1.ClientWithResponses
-var hostedIamClient, hybridIamClient *iam.ClientWithResponses
+var hostedIamClient, hybridIamClient *platform_v1.ClientWithResponses
 
 const TestResourceDescription = "Created by Terraform Acceptance Test - should self-cleanup but can delete manually if needed after 2 hours."
 
@@ -25,7 +24,7 @@ func GenerateTestResourceName(numRandomChars int) string {
 	return fmt.Sprintf("TFAcceptanceTest_%v", strings.ToUpper(acctest.RandStringFromCharSet(numRandomChars, acctest.CharSetAlpha)))
 }
 
-func GetTestIamClient(isHosted bool) (*iam.ClientWithResponses, error) {
+func GetTestIamClient(isHosted bool) (*platform_v1.ClientWithResponses, error) {
 	if isHosted {
 		return GetTestHostedIamClient()
 	} else {
@@ -33,21 +32,21 @@ func GetTestIamClient(isHosted bool) (*iam.ClientWithResponses, error) {
 	}
 }
 
-func GetTestHybridIamClient() (*iam.ClientWithResponses, error) {
+func GetTestHybridIamClient() (*platform_v1.ClientWithResponses, error) {
 	if hybridIamClient != nil {
 		return hybridIamClient, nil
 	}
 	var err error
-	hybridIamClient, err = iam.NewIamClient(os.Getenv("ASTRO_API_HOST"), os.Getenv("HYBRID_ORGANIZATION_API_TOKEN"), "acceptancetests")
+	hybridIamClient, err = platform_v1.NewPlatformV1Client(os.Getenv("ASTRO_API_HOST"), os.Getenv("HYBRID_ORGANIZATION_API_TOKEN"), "acceptancetests")
 	return hybridIamClient, err
 }
 
-func GetTestHostedIamClient() (*iam.ClientWithResponses, error) {
+func GetTestHostedIamClient() (*platform_v1.ClientWithResponses, error) {
 	if hostedIamClient != nil {
 		return hostedIamClient, nil
 	}
 	var err error
-	hostedIamClient, err = iam.NewIamClient(os.Getenv("ASTRO_API_HOST"), os.Getenv("HOSTED_ORGANIZATION_API_TOKEN"), "acceptancetests")
+	hostedIamClient, err = platform_v1.NewPlatformV1Client(os.Getenv("ASTRO_API_HOST"), os.Getenv("HOSTED_ORGANIZATION_API_TOKEN"), "acceptancetests")
 	return hostedIamClient, err
 }
 
@@ -139,7 +138,7 @@ type Role struct {
 }
 
 // ContainsWorkspaceRole checks if a workspace role is in the list of workspace roles
-func ContainsWorkspaceRole(workspaceRoles []iam.WorkspaceRole, role Role) bool {
+func ContainsWorkspaceRole(workspaceRoles []platform_v1.WorkspaceRole, role Role) bool {
 	for _, r := range workspaceRoles {
 		if r.WorkspaceId == role.EntityId && string(r.Role) == role.Role {
 			return true
@@ -149,7 +148,7 @@ func ContainsWorkspaceRole(workspaceRoles []iam.WorkspaceRole, role Role) bool {
 }
 
 // ContainsWorkspaceRoles checks if a list of workspace roles contains a list of roles
-func ContainsWorkspaceRoles(userRoles []iam.WorkspaceRole, roles []Role) []Role {
+func ContainsWorkspaceRoles(userRoles []platform_v1.WorkspaceRole, roles []Role) []Role {
 	var missingRoles []Role
 	for _, role := range roles {
 		if !ContainsWorkspaceRole(userRoles, role) {
@@ -160,7 +159,7 @@ func ContainsWorkspaceRoles(userRoles []iam.WorkspaceRole, roles []Role) []Role 
 }
 
 // ContainsDeploymentRole checks if a deployment role is in the list of deployment roles
-func ContainsDeploymentRole(roles []iam.DeploymentRole, role Role) bool {
+func ContainsDeploymentRole(roles []platform_v1.DeploymentRole, role Role) bool {
 	for _, r := range roles {
 		if r.DeploymentId == role.EntityId && r.Role == role.Role {
 			return true
@@ -170,7 +169,7 @@ func ContainsDeploymentRole(roles []iam.DeploymentRole, role Role) bool {
 }
 
 // ContainsDeploymentRoles checks if a list of deployment roles contains a list of roles
-func ContainsDeploymentRoles(userRoles []iam.DeploymentRole, roles []Role) []Role {
+func ContainsDeploymentRoles(userRoles []platform_v1.DeploymentRole, roles []Role) []Role {
 	var missingRoles []Role
 	for _, role := range roles {
 		if !ContainsDeploymentRole(userRoles, role) {
@@ -178,4 +177,14 @@ func ContainsDeploymentRoles(userRoles []iam.DeploymentRole, roles []Role) []Rol
 		}
 	}
 	return missingRoles
+}
+
+// GetTestIamV1Beta1Client serves the allowed IP address range tests. That binding is
+// hand-authored in internal/clients/iam and has no generated v1 equivalent yet.
+func GetTestIamV1Beta1Client(isHosted bool) (*iam.ClientWithResponses, error) {
+	token := os.Getenv("HYBRID_ORGANIZATION_API_TOKEN")
+	if isHosted {
+		token = os.Getenv("HOSTED_ORGANIZATION_API_TOKEN")
+	}
+	return iam.NewIamClient(os.Getenv("ASTRO_API_HOST"), token, "acceptancetests")
 }

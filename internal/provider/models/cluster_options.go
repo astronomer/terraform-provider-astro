@@ -5,7 +5,7 @@ import (
 
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -21,7 +21,7 @@ type ClusterOptionsDataSource struct {
 
 func (data *ClusterOptionsDataSource) ReadFromResponse(
 	ctx context.Context,
-	clusterOptions []platform.ClusterOptions,
+	clusterOptions []platform_v1.ClusterOptions,
 ) diag.Diagnostics {
 	if len(clusterOptions) == 0 {
 		types.SetNull(types.ObjectType{AttrTypes: schemas.ClusterOptionsElementAttributeTypes()})
@@ -69,7 +69,7 @@ type ClusterOptionDataSource struct {
 
 func (data *ClusterOptionDataSource) ReadFromResponse(
 	ctx context.Context,
-	clusterOption *platform.ClusterOptions,
+	clusterOption *platform_v1.ClusterOptions,
 ) diag.Diagnostics {
 	data.Provider = types.StringValue(string(clusterOption.Provider))
 	data.DefaultVpcSubnetRange = types.StringValue(clusterOption.DefaultVpcSubnetRange)
@@ -120,7 +120,7 @@ type Region struct {
 
 func RegionTypesObject(
 	ctx context.Context,
-	regionInput platform.ProviderRegion,
+	regionInput platform_v1.ProviderRegion,
 ) (regionOutput types.Object, diags diag.Diagnostics) {
 	region := Region{
 		Name: types.StringValue(regionInput.Name),
@@ -145,7 +145,7 @@ type ProviderInstance struct {
 
 func ProviderInstanceObject(
 	ctx context.Context,
-	providerInstanceInput platform.ProviderInstanceType,
+	providerInstanceInput platform_v1.ProviderInstanceType,
 ) (types.Object, diag.Diagnostics) {
 	providerInstance := ProviderInstance{
 		Name:   types.StringValue(providerInstanceInput.Name),

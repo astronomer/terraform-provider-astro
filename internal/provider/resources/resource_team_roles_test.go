@@ -8,8 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 
@@ -34,40 +33,40 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 			// Test that empty workspace_roles = [] is accepted and stored as an empty set in state
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "[]", "", ""),
+					teamRoles(string(platform_v1.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "[]", "", ""),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
-					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN)),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(platform_v1.TeamOrganizationRoleORGANIZATIONBILLINGADMIN)),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "0"),
 					resource.TestCheckNoResourceAttr(tfVarName, "deployment_roles"),
 					resource.TestCheckNoResourceAttr(tfVarName, "dag_roles"),
-					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), 0, 0, 0),
+					testAccCheckTeamRolesCorrect(t, string(platform_v1.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), 0, 0, 0),
 				),
 			},
 			// Test that empty deployment_roles = [] is accepted and stored as an empty set in state
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "", "[]", ""),
+					teamRoles(string(platform_v1.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "", "[]", ""),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
-					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN)),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(platform_v1.TeamOrganizationRoleORGANIZATIONBILLINGADMIN)),
 					resource.TestCheckNoResourceAttr(tfVarName, "workspace_roles"),
 					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "0"),
 					resource.TestCheckNoResourceAttr(tfVarName, "dag_roles"),
-					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), 0, 0, 0),
+					testAccCheckTeamRolesCorrect(t, string(platform_v1.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), 0, 0, 0),
 				),
 			},
 			// Test that empty dag_roles = [] is accepted and stored as an empty set in state
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "", "", "[]"),
+					teamRoles(string(platform_v1.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "", "", "[]"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
-					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN)),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(platform_v1.TeamOrganizationRoleORGANIZATIONBILLINGADMIN)),
 					resource.TestCheckNoResourceAttr(tfVarName, "workspace_roles"),
 					resource.TestCheckNoResourceAttr(tfVarName, "deployment_roles"),
 					resource.TestCheckResourceAttr(tfVarName, "dag_roles.#", "0"),
-					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), 0, 0, 0),
+					testAccCheckTeamRolesCorrect(t, string(platform_v1.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), 0, 0, 0),
 				),
 			},
 			{
@@ -78,7 +77,7 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 			// Test failure: dag_roles with neither dag_id nor tag specified
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "", "",
+					teamRoles(string(platform_v1.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "", "",
 						teamDagRoles([]dagRoleInput{
 							{
 								DeploymentId: os.Getenv("HOSTED_DEPLOYMENT_ID"),
@@ -91,7 +90,7 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 			// Test failure: duplicate dag_role keys (same dag_id+deployment_id)
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "", "",
+					teamRoles(string(platform_v1.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "", "",
 						teamDagRoles([]dagRoleInput{
 							{
 								DeploymentId: os.Getenv("HOSTED_DEPLOYMENT_ID"),
@@ -108,14 +107,14 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "", "", ""),
+					teamRoles(string(platform_v1.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), "", "", ""),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
-					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN)),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(platform_v1.TeamOrganizationRoleORGANIZATIONBILLINGADMIN)),
 					resource.TestCheckNoResourceAttr(tfVarName, "workspace_roles"),
 					resource.TestCheckNoResourceAttr(tfVarName, "deployment_roles"),
 					// Check via API that team has correct roles
-					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), 0, 0, 0),
+					testAccCheckTeamRolesCorrect(t, string(platform_v1.TeamOrganizationRoleORGANIZATIONBILLINGADMIN), 0, 0, 0),
 				),
 			},
 			{
@@ -124,14 +123,14 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 						Name:                        deploymentName,
 						Description:                 utils.TestResourceDescription,
 						Region:                      "us-east4",
-						CloudProvider:               string(platform.DeploymentCloudProviderGCP),
-						Executor:                    string(platform.DeploymentExecutorCELERY),
+						CloudProvider:               string(platform_v1.DeploymentCloudProviderGCP),
+						Executor:                    string(platform_v1.DeploymentExecutorCELERY),
 						IncludeEnvironmentVariables: false,
-						SchedulerSize:               string(platform.DeploymentSchedulerSizeSMALL),
+						SchedulerSize:               string(platform_v1.DeploymentSchedulerSizeSMALL),
 						IsDevelopmentMode:           false,
 						WorkerQueuesStr:             workerQueuesStr(""),
 					}) +
-					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),
+					teamRoles(string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER),
 						fmt.Sprintf(`[{workspace_id = %s
 									   role = "WORKSPACE_OWNER"}]`, "astro_workspace."+deploymentName+"_workspace.id"),
 						fmt.Sprintf(`[{deployment_id = %s
@@ -139,20 +138,20 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 						""),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
-					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.TeamOrganizationRoleORGANIZATIONMEMBER)),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER)),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.0.role", "WORKSPACE_OWNER"),
 					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.0.role", "DEPLOYMENT_ADMIN"),
 
 					// Check via API that team has correct roles
-					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 1, 0),
+					testAccCheckTeamRolesCorrect(t, string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 1, 0),
 				),
 			},
 			// Test failure: dag_roles without deployment_roles for the same deployment
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),
+					teamRoles(string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER),
 						fmt.Sprintf(`[{workspace_id = "%s"
 									   role = "WORKSPACE_OWNER"}]`, os.Getenv("HOSTED_WORKSPACE_ID")),
 						"",
@@ -168,7 +167,7 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 			// Create team with dag_roles using dag_id
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),
+					teamRoles(string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER),
 						fmt.Sprintf(`[{workspace_id = "%s"
 									   role = "WORKSPACE_OWNER"}]`, os.Getenv("HOSTED_WORKSPACE_ID")),
 						fmt.Sprintf(`[{deployment_id = "%s"
@@ -182,18 +181,18 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 						})),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
-					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.TeamOrganizationRoleORGANIZATIONMEMBER)),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER)),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "dag_roles.#", "1"),
 					// Check via API that team has correct roles
-					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 1, 1),
+					testAccCheckTeamRolesCorrect(t, string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 1, 1),
 				),
 			},
 			// Create team with dag_roles using tag
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),
+					teamRoles(string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER),
 						fmt.Sprintf(`[{workspace_id = "%s"
 									   role = "WORKSPACE_OWNER"}]`, os.Getenv("HOSTED_WORKSPACE_ID")),
 						fmt.Sprintf(`[{deployment_id = "%s"
@@ -207,18 +206,18 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 						})),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
-					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.TeamOrganizationRoleORGANIZATIONMEMBER)),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER)),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "dag_roles.#", "1"),
 					// Check via API that team has correct roles
-					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 1, 1),
+					testAccCheckTeamRolesCorrect(t, string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 1, 1),
 				),
 			},
 			// Create team with multiple dag_roles (mixed dag_id and tag)
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),
+					teamRoles(string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER),
 						fmt.Sprintf(`[{workspace_id = "%s"
 									   role = "WORKSPACE_OWNER"}]`, os.Getenv("HOSTED_WORKSPACE_ID")),
 						fmt.Sprintf(`[{deployment_id = "%s"
@@ -237,28 +236,28 @@ func TestAcc_ResourceTeamRoles(t *testing.T) {
 						})),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
-					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.TeamOrganizationRoleORGANIZATIONMEMBER)),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER)),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "deployment_roles.#", "1"),
 					resource.TestCheckResourceAttr(tfVarName, "dag_roles.#", "2"),
 					// Check via API that team has correct roles
-					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 1, 2),
+					testAccCheckTeamRolesCorrect(t, string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 1, 2),
 				),
 			},
 			// Remove dag_roles and deployment_roles and verify they are removed
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
-					teamRoles(string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),
+					teamRoles(string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER),
 						fmt.Sprintf(`[{workspace_id = "%s"
 									   role = "WORKSPACE_OWNER"}]`, os.Getenv("HOSTED_WORKSPACE_ID")),
 						"", ""),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "team_id", teamId),
-					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(iam.TeamOrganizationRoleORGANIZATIONMEMBER)),
+					resource.TestCheckResourceAttr(tfVarName, "organization_role", string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER)),
 					resource.TestCheckResourceAttr(tfVarName, "workspace_roles.#", "1"),
 					resource.TestCheckNoResourceAttr(tfVarName, "dag_roles"),
 					// Check via API that team has correct roles
-					testAccCheckTeamRolesCorrect(t, string(iam.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 0, 0),
+					testAccCheckTeamRolesCorrect(t, string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER), 1, 0, 0),
 				),
 			},
 			// Import existing team_roles and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests

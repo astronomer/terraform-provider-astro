@@ -120,8 +120,12 @@ api_client_gen:
 	# so the rename is safe; the bulk NC resource uses the NotificationChannelType enum.
 	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Alerts,AllowedIpAddressRange,NotificationChannels -generate=types,client -package=labs "$(CORE_LABS_OPENAPI_SPEC)" > ./internal/clients/labs/api.gen.go
 	@echo "Generating Platform v1 (unified public API) client..."
-	# Do NOT add "Options" here: it renames the WorkerQueueRequestAstroMachine constants that
-	# schemas/deployment.go depends on, so GetDeploymentOptions and GetClusterOptions stay on
-	# the v1beta1 platform client for now. Adding tags here reshuffles the unprefixed
-	# ListEnvironmentObjectsParamsSorts constants, which no provider code references.
-	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Environment,Deployment,Cluster -generate=types,client -package=platform_v1 "$(CORE_PLATFORM_V1_OPENAPI_SPEC)" > ./internal/clients/platform_v1/api.gen.go
+	# Alerts and NotificationChannels are deliberately absent: those resources do not exist in
+	# the v1 spec at all and stay on platform/v1beta1 and labs. Organization is absent because
+	# v1 drops supportPlan, which the astro_organization data source exposes as support_plan.
+	# Adding tags here reshuffles oapi-codegen's unprefixed enum constants: with Options
+	# included, WorkerQueueRequestAstroMachine* lose their prefix and become bare A5/A10/...,
+	# so schemas/deployment.go references the stable UpdateWorkerQueueRequestAstroMachine*
+	# spellings instead. Prefer prefixed constants here; a future tag addition renames the
+	# unprefixed ones and you want a compile error, not a silent change.
+	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Environment,Deployment,Cluster,Workspace,Options,User,Invite,Team,ApiToken,AgentToken,Role -generate=types,client -package=platform_v1 "$(CORE_PLATFORM_V1_OPENAPI_SPEC)" > ./internal/clients/platform_v1/api.gen.go

@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -16,7 +16,7 @@ type WorkspaceRole struct {
 
 func WorkspaceRoleTypesObject(
 	ctx context.Context,
-	role iam.WorkspaceRole,
+	role platform_v1.WorkspaceRole,
 ) (types.Object, diag.Diagnostics) {
 	obj := WorkspaceRole{
 		WorkspaceId: types.StringValue(role.WorkspaceId),
@@ -32,7 +32,7 @@ type DeploymentRole struct {
 
 func DeploymentRoleTypesObject(
 	ctx context.Context,
-	role iam.DeploymentRole,
+	role platform_v1.DeploymentRole,
 ) (types.Object, diag.Diagnostics) {
 	obj := DeploymentRole{
 		DeploymentId: types.StringValue(role.DeploymentId),
@@ -50,7 +50,7 @@ type DagRole struct {
 
 func DagRoleTypesObject(
 	ctx context.Context,
-	role iam.DagRole,
+	role platform_v1.DagRole,
 ) (types.Object, diag.Diagnostics) {
 	obj := DagRole{
 		DeploymentId: types.StringValue(role.DeploymentId),
@@ -78,7 +78,7 @@ type ApiTokenRole struct {
 
 func ApiTokenRoleTypesObject(
 	ctx context.Context,
-	role iam.ApiTokenRole,
+	role platform_v1.ApiTokenRole,
 ) (types.Object, diag.Diagnostics) {
 	obj := ApiTokenRole{
 		EntityId:   types.StringValue(role.EntityId),

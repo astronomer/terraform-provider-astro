@@ -9,7 +9,7 @@ import (
 	"github.com/samber/lo"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -28,8 +28,8 @@ func NewWorkspacesDataSource() datasource.DataSource {
 
 // workspacesDataSource defines the data source implementation.
 type workspacesDataSource struct {
-	PlatformClient platform.ClientWithResponsesInterface
-	OrganizationId string
+	PlatformV1Client platform_v1.ClientWithResponsesInterface
+	OrganizationId   string
 }
 
 func (d *workspacesDataSource) Metadata(
@@ -68,7 +68,7 @@ func (d *workspacesDataSource) Configure(
 		return
 	}
 
-	d.PlatformClient = apiClients.PlatformClient
+	d.PlatformV1Client = apiClients.PlatformV1Client
 	d.OrganizationId = apiClients.OrganizationId
 }
 
@@ -85,7 +85,7 @@ func (d *workspacesDataSource) Read(
 		return
 	}
 
-	params := &platform.ListWorkspacesParams{
+	params := &platform_v1.ListWorkspacesParams{
 		Limit: lo.ToPtr(1000),
 	}
 	var diags diag.Diagnostics
@@ -107,11 +107,11 @@ func (d *workspacesDataSource) Read(
 		return
 	}
 
-	var workspaces []platform.Workspace
+	var workspaces []platform_v1.Workspace
 	offset := 0
 	for {
 		params.Offset = &offset
-		workspacesResp, err := d.PlatformClient.ListWorkspacesWithResponse(
+		workspacesResp, err := d.PlatformV1Client.ListWorkspacesWithResponse(
 			ctx,
 			d.OrganizationId,
 			params,

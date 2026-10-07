@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
-
 	"github.com/astronomer/terraform-provider-astro/internal/provider/common"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -33,9 +31,8 @@ func NewUserRolesResource() resource.Resource {
 
 // UserRolesResource defines the resource implementation.
 type UserRolesResource struct {
-	iamClient      *iam.ClientWithResponses
-	platformClient *platform.ClientWithResponses
-	organizationId string
+	platformV1Client *platform_v1.ClientWithResponses
+	organizationId   string
 }
 
 func (r *UserRolesResource) Metadata(
@@ -74,8 +71,7 @@ func (r *UserRolesResource) Configure(
 		return
 	}
 
-	r.iamClient = apiClients.IamClient
-	r.platformClient = apiClients.PlatformClient
+	r.platformV1Client = apiClients.PlatformV1Client
 	r.organizationId = apiClients.OrganizationId
 }
 
@@ -106,7 +102,7 @@ func (r *UserRolesResource) MutateRoles(
 	}
 
 	diags = common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
-		PlatformClient:  r.platformClient,
+		PlatformClient:  r.platformV1Client,
 		OrganizationId:  r.organizationId,
 		WorkspaceRoles:  workspaceRoles,
 		DeploymentRoles: deploymentRoles,
@@ -116,13 +112,13 @@ func (r *UserRolesResource) MutateRoles(
 	}
 
 	// create request
-	updateUserRolesRequest := iam.UpdateUserRolesJSONRequestBody{
+	updateUserRolesRequest := platform_v1.UpdateUserRolesJSONRequestBody{
 		DeploymentRoles:  &deploymentRoles,
 		OrganizationRole: lo.ToPtr(data.OrganizationRole.ValueString()),
 		WorkspaceRoles:   &workspaceRoles,
 		DagRoles:         &dagRoles,
 	}
-	userRoles, err := r.iamClient.UpdateUserRolesWithResponse(
+	userRoles, err := r.platformV1Client.UpdateUserRolesWithResponse(
 		ctx,
 		r.organizationId,
 		userId,
@@ -189,7 +185,7 @@ func (r *UserRolesResource) Read(
 	userId := data.UserId.ValueString()
 
 	// get request
-	userRoles, err := r.iamClient.GetUserWithResponse(
+	userRoles, err := r.platformV1Client.GetUserWithResponse(
 		ctx,
 		r.organizationId,
 		userId,
@@ -215,7 +211,7 @@ func (r *UserRolesResource) Read(
 	}
 
 	// Check if user is active
-	if userRoles.JSON200.Status != iam.ACTIVE {
+	if userRoles.JSON200.Status != platform_v1.UserStatusACTIVE {
 		tflog.Error(ctx, "user is not active", map[string]interface{}{"user_id": userId, "status": userRoles.JSON200.Status})
 		resp.Diagnostics.AddError(
 			"Client Error",
@@ -225,7 +221,7 @@ func (r *UserRolesResource) Read(
 	}
 
 	// Generate subjectRoles from the get user API response
-	subjectRoles := iam.SubjectRoles{
+	subjectRoles := platform_v1.SubjectRoles{
 		OrganizationRole: (*string)(userRoles.JSON200.OrganizationRole),
 		WorkspaceRoles:   userRoles.JSON200.WorkspaceRoles,
 		DeploymentRoles:  userRoles.JSON200.DeploymentRoles,
@@ -283,13 +279,13 @@ func (r *UserRolesResource) Delete(
 	userId := data.UserId.ValueString()
 
 	// update request with no workspace roles, no deployment roles, no dag roles and lowest organization role
-	updateUserRolesRequest := iam.UpdateUserRolesJSONRequestBody{
+	updateUserRolesRequest := platform_v1.UpdateUserRolesJSONRequestBody{
 		DeploymentRoles:  nil,
-		OrganizationRole: lo.ToPtr(string(iam.UserOrganizationRoleORGANIZATIONMEMBER)),
+		OrganizationRole: lo.ToPtr(string(platform_v1.UserOrganizationRoleORGANIZATIONMEMBER)),
 		WorkspaceRoles:   nil,
 		DagRoles:         nil,
 	}
-	userRoles, err := r.iamClient.UpdateUserRolesWithResponse(
+	userRoles, err := r.platformV1Client.UpdateUserRolesWithResponse(
 		ctx,
 		r.organizationId,
 		userId,

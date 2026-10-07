@@ -11,7 +11,7 @@ import (
 	"github.com/lucsky/cuid"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -47,7 +47,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					IncludeMemberIds: true,
-					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
+					OrganizationRole: string(platform_v1.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 					DeploymentRoles: []utils.Role{
 						{
 							Role:     "DEPLOYMENT_ADMIN",
@@ -56,7 +56,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					},
 					WorkspaceRoles: []utils.Role{
 						{
-							Role:     string(iam.WORKSPACEOWNER),
+							Role:     string(platform_v1.WORKSPACEOWNER),
 							EntityId: workspaceId,
 						},
 					},
@@ -70,10 +70,10 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					IncludeMemberIds: true,
-					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
+					OrganizationRole: string(platform_v1.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 					WorkspaceRoles: []utils.Role{
 						{
-							Role:     string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
+							Role:     string(platform_v1.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 							EntityId: workspaceId,
 						},
 					},
@@ -87,7 +87,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					IncludeMemberIds: true,
-					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
+					OrganizationRole: string(platform_v1.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 					DeploymentRoles: []utils.Role{
 						{
 							Role:     "DEPLOYMENT_ADMIN",
@@ -104,14 +104,14 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					IncludeMemberIds: true,
-					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
+					OrganizationRole: string(platform_v1.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 					WorkspaceRoles: []utils.Role{
 						{
-							Role:     string(iam.WORKSPACEOWNER),
+							Role:     string(platform_v1.WORKSPACEOWNER),
 							EntityId: workspaceId,
 						},
 						{
-							Role:     string(iam.WORKSPACEACCESSOR),
+							Role:     string(platform_v1.WORKSPACEACCESSOR),
 							EntityId: workspaceId,
 						},
 					},
@@ -125,10 +125,10 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					IncludeMemberIds: true,
-					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
+					OrganizationRole: string(platform_v1.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 					WorkspaceRoles: []utils.Role{
 						{
-							Role:     string(iam.WORKSPACEOWNER),
+							Role:     string(platform_v1.WORKSPACEOWNER),
 							EntityId: workspaceId,
 						},
 					},
@@ -148,13 +148,13 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{},
 					IncludeMemberIds: false, // Don't include member_ids in config
-					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
+					OrganizationRole: string(platform_v1.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(fmt.Sprintf("astro_team.%v_null", teamName), "id"),
 					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_null", teamName), "name", teamName+"_null"),
 					resource.TestCheckNoResourceAttr(fmt.Sprintf("astro_team.%v_null", teamName), "member_ids"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_null", teamName), "organization_role", string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_null", teamName), "organization_role", string(platform_v1.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER)),
 				),
 			},
 			// Create team with empty member_ids array
@@ -164,13 +164,13 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{},
 					IncludeMemberIds: true,
-					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
+					OrganizationRole: string(platform_v1.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(fmt.Sprintf("astro_team.%v_empty", teamName), "id"),
 					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_empty", teamName), "name", teamName+"_empty"),
 					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_empty", teamName), "member_ids.#", "0"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_empty", teamName), "organization_role", string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("astro_team.%v_empty", teamName), "organization_role", string(platform_v1.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER)),
 				),
 			},
 			// Create team with all fields
@@ -180,7 +180,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      utils.TestResourceDescription,
 					MemberIds:        []string{userId},
 					IncludeMemberIds: true,
-					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
+					OrganizationRole: string(platform_v1.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 					DeploymentRoles: []utils.Role{
 						{
 							Role:     "DEPLOYMENT_ADMIN",
@@ -189,7 +189,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					},
 					WorkspaceRoles: []utils.Role{
 						{
-							Role:     string(iam.WORKSPACEOWNER),
+							Role:     string(platform_v1.WORKSPACEOWNER),
 							EntityId: workspaceId,
 						},
 					},
@@ -198,14 +198,14 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttr(resourceVar, "name", teamName),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
-					resource.TestCheckResourceAttr(resourceVar, "organization_role", string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(resourceVar, "organization_role", string(platform_v1.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER)),
 					resource.TestCheckResourceAttr(resourceVar, "member_ids.#", "1"),
 					resource.TestCheckResourceAttr(resourceVar, "member_ids.0", userId),
 					resource.TestCheckResourceAttr(resourceVar, "deployment_roles.#", "1"),
 					resource.TestCheckResourceAttr(resourceVar, "deployment_roles.0.role", "DEPLOYMENT_ADMIN"),
 					resource.TestCheckResourceAttr(resourceVar, "deployment_roles.0.deployment_id", deploymentId),
 					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.#", "1"),
-					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.0.role", string(iam.WORKSPACEOWNER)),
+					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.0.role", string(platform_v1.WORKSPACEOWNER)),
 					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.0.workspace_id", workspaceId),
 					resource.TestCheckResourceAttrSet(resourceVar, "is_idp_managed"),
 					resource.TestCheckResourceAttrSet(resourceVar, "roles_count"),
@@ -224,10 +224,10 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      "new description",
 					MemberIds:        []string{},
 					IncludeMemberIds: true,
-					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
+					OrganizationRole: string(platform_v1.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 					WorkspaceRoles: []utils.Role{
 						{
-							Role:     string(iam.WORKSPACEACCESSOR),
+							Role:     string(platform_v1.WORKSPACEACCESSOR),
 							EntityId: workspaceId,
 						},
 					},
@@ -236,7 +236,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "description", "new description"),
 					resource.TestCheckResourceAttr(resourceVar, "member_ids.#", "0"),
 					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.#", "1"),
-					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.0.role", string(iam.WORKSPACEACCESSOR)),
+					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.0.role", string(platform_v1.WORKSPACEACCESSOR)),
 					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.0.workspace_id", workspaceId),
 					// Check via API that team exists
 					testAccCheckTeamExistence(t, teamName, true),
@@ -249,10 +249,10 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      "updated to null members",
 					MemberIds:        []string{},
 					IncludeMemberIds: false, // Don't include member_ids in config (null)
-					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
+					OrganizationRole: string(platform_v1.CreateTeamRequestOrganizationRoleORGANIZATIONOWNER),
 					WorkspaceRoles: []utils.Role{
 						{
-							Role:     string(iam.WORKSPACEACCESSOR),
+							Role:     string(platform_v1.WORKSPACEACCESSOR),
 							EntityId: workspaceId,
 						},
 					},
@@ -261,7 +261,7 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "description", "updated to null members"),
 					resource.TestCheckNoResourceAttr(resourceVar, "member_ids"), // Should be null
 					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.#", "1"),
-					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.0.role", string(iam.WORKSPACEACCESSOR)),
+					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.0.role", string(platform_v1.WORKSPACEACCESSOR)),
 					resource.TestCheckResourceAttr(resourceVar, "workspace_roles.0.workspace_id", workspaceId),
 					// Check via API that team exists
 					testAccCheckTeamExistence(t, teamName, true),
@@ -274,10 +274,10 @@ func TestAcc_ResourceTeam(t *testing.T) {
 					Description:      "updated to null members",
 					MemberIds:        []string{},
 					IncludeMemberIds: false,
-					OrganizationRole: string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONMEMBER),
+					OrganizationRole: string(platform_v1.CreateTeamRequestOrganizationRoleORGANIZATIONMEMBER),
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceVar, "organization_role", string(iam.CreateTeamRequestOrganizationRoleORGANIZATIONMEMBER)),
+					resource.TestCheckResourceAttr(resourceVar, "organization_role", string(platform_v1.CreateTeamRequestOrganizationRoleORGANIZATIONMEMBER)),
 					resource.TestCheckNoResourceAttr(resourceVar, "workspace_roles"),
 					resource.TestCheckNoResourceAttr(resourceVar, "deployment_roles"),
 					testAccCheckTeamExistence(t, teamName, true),
@@ -364,7 +364,7 @@ func testAccCheckTeamExistence(t *testing.T, name string, shouldExist bool) func
 
 		ctx := context.Background()
 
-		resp, err := client.ListTeamsWithResponse(ctx, organizationId, &iam.ListTeamsParams{
+		resp, err := client.ListTeamsWithResponse(ctx, organizationId, &platform_v1.ListTeamsParams{
 			Names: &[]string{name},
 		})
 		if err != nil {

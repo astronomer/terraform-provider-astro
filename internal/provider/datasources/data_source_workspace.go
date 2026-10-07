@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -24,8 +24,8 @@ func NewWorkspaceDataSource() datasource.DataSource {
 
 // workspaceDataSource defines the data source implementation.
 type workspaceDataSource struct {
-	PlatformClient platform.ClientWithResponsesInterface
-	OrganizationId string
+	PlatformV1Client platform_v1.ClientWithResponsesInterface
+	OrganizationId   string
 }
 
 func (d *workspaceDataSource) Metadata(
@@ -64,7 +64,7 @@ func (d *workspaceDataSource) Configure(
 		return
 	}
 
-	d.PlatformClient = apiClients.PlatformClient
+	d.PlatformV1Client = apiClients.PlatformV1Client
 	d.OrganizationId = apiClients.OrganizationId
 }
 
@@ -81,7 +81,7 @@ func (d *workspaceDataSource) Read(
 		return
 	}
 
-	workspace, err := d.PlatformClient.GetWorkspaceWithResponse(
+	workspace, err := d.PlatformV1Client.GetWorkspaceWithResponse(
 		ctx,
 		d.OrganizationId,
 		data.Id.ValueString(),

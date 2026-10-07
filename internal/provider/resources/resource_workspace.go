@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -27,8 +27,8 @@ func NewWorkspaceResource() resource.Resource {
 
 // workspaceResource defines the resource implementation.
 type workspaceResource struct {
-	platformClient *platform.ClientWithResponses
-	organizationId string
+	platformV1Client *platform_v1.ClientWithResponses
+	organizationId   string
 }
 
 func (r *workspaceResource) Metadata(
@@ -67,7 +67,7 @@ func (r *workspaceResource) Configure(
 		return
 	}
 
-	r.platformClient = apiClients.PlatformClient
+	r.platformV1Client = apiClients.PlatformV1Client
 	r.organizationId = apiClients.OrganizationId
 }
 
@@ -86,12 +86,12 @@ func (r *workspaceResource) Create(
 	}
 
 	// create request
-	createWorkspaceRequest := platform.CreateWorkspaceJSONRequestBody{
+	createWorkspaceRequest := platform_v1.CreateWorkspaceJSONRequestBody{
 		CicdEnforcedDefault: data.CicdEnforcedDefault.ValueBoolPointer(),
 		Description:         data.Description.ValueStringPointer(),
 		Name:                data.Name.ValueString(),
 	}
-	workspace, err := r.platformClient.CreateWorkspaceWithResponse(
+	workspace, err := r.platformV1Client.CreateWorkspaceWithResponse(
 		ctx,
 		r.organizationId,
 		createWorkspaceRequest,
@@ -137,7 +137,7 @@ func (r *workspaceResource) Read(
 	}
 
 	// get request
-	workspace, err := r.platformClient.GetWorkspaceWithResponse(
+	workspace, err := r.platformV1Client.GetWorkspaceWithResponse(
 		ctx,
 		r.organizationId,
 		data.Id.ValueString(),
@@ -189,12 +189,12 @@ func (r *workspaceResource) Update(
 	}
 
 	// update request
-	updateWorkspaceRequest := platform.UpdateWorkspaceJSONRequestBody{
+	updateWorkspaceRequest := platform_v1.UpdateWorkspaceJSONRequestBody{
 		CicdEnforcedDefault: data.CicdEnforcedDefault.ValueBool(),
 		Description:         data.Description.ValueString(),
 		Name:                data.Name.ValueString(),
 	}
-	workspace, err := r.platformClient.UpdateWorkspaceWithResponse(
+	workspace, err := r.platformV1Client.UpdateWorkspaceWithResponse(
 		ctx,
 		r.organizationId,
 		data.Id.ValueString(),
@@ -241,7 +241,7 @@ func (r *workspaceResource) Delete(
 	}
 
 	// delete request
-	workspace, err := r.platformClient.DeleteWorkspaceWithResponse(
+	workspace, err := r.platformV1Client.DeleteWorkspaceWithResponse(
 		ctx,
 		r.organizationId,
 		data.Id.ValueString(),

@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -45,7 +45,7 @@ type TeamResource struct {
 	UpdatedBy        types.Object `tfsdk:"updated_by"`
 }
 
-func (data *TeamDataSource) ReadFromResponse(ctx context.Context, team *iam.Team, teamMembers *[]iam.TeamMember) diag.Diagnostics {
+func (data *TeamDataSource) ReadFromResponse(ctx context.Context, team *platform_v1.Team, teamMembers *[]platform_v1.TeamMember) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(team.Id)
 	data.Name = types.StringValue(team.Name)
@@ -92,7 +92,7 @@ func (data *TeamDataSource) ReadFromResponse(ctx context.Context, team *iam.Team
 	return nil
 }
 
-func (data *TeamResource) ReadFromResponse(ctx context.Context, team *iam.Team, memberIds *[]string) diag.Diagnostics {
+func (data *TeamResource) ReadFromResponse(ctx context.Context, team *platform_v1.Team, memberIds *[]string) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(team.Id)
 	data.Name = types.StringValue(team.Name)
@@ -151,7 +151,7 @@ type TeamMember struct {
 	CreatedAt types.String `tfsdk:"created_at"`
 }
 
-func TeamMemberTypesObject(ctx context.Context, member iam.TeamMember) (types.Object, diag.Diagnostics) {
+func TeamMemberTypesObject(ctx context.Context, member platform_v1.TeamMember) (types.Object, diag.Diagnostics) {
 	obj := TeamMember{
 		UserId:   types.StringValue(member.UserId),
 		Username: types.StringValue(member.Username),

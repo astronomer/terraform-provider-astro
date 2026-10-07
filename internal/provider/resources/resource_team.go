@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
-
 	"github.com/astronomer/terraform-provider-astro/internal/provider/common"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -34,7 +33,8 @@ func NewTeamResource() resource.Resource {
 
 // TeamResource defines the resource implementation.
 type TeamResource struct {
-	IamClient      *iam.ClientWithResponses
+	PlatformV1Client *platform_v1.ClientWithResponses
+	// PlatformClient stays on v1beta1 for GetOrganization, which v1 does not provide
 	PlatformClient *platform.ClientWithResponses
 	OrganizationId string
 }
@@ -75,7 +75,7 @@ func (r *TeamResource) Configure(
 		return
 	}
 
-	r.IamClient = apiClients.IamClient
+	r.PlatformV1Client = apiClients.PlatformV1Client
 	r.PlatformClient = apiClients.PlatformClient
 	r.OrganizationId = apiClients.OrganizationId
 }
@@ -106,7 +106,7 @@ func (r *TeamResource) MutateRoles(
 	}
 
 	diags = common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
-		PlatformClient:  r.PlatformClient,
+		PlatformClient:  r.PlatformV1Client,
 		OrganizationId:  r.OrganizationId,
 		WorkspaceRoles:  workspaceRoles,
 		DeploymentRoles: deploymentRoles,
@@ -116,13 +116,13 @@ func (r *TeamResource) MutateRoles(
 	}
 
 	// Update team roles
-	updateTeamRolesRequest := iam.UpdateTeamRolesJSONRequestBody{
+	updateTeamRolesRequest := platform_v1.UpdateTeamRolesJSONRequestBody{
 		DeploymentRoles:  &deploymentRoles,
 		OrganizationRole: data.OrganizationRole.ValueString(),
 		WorkspaceRoles:   &workspaceRoles,
 		DagRoles:         &dagRoles,
 	}
-	teamRoles, err := r.IamClient.UpdateTeamRolesWithResponse(
+	teamRoles, err := r.PlatformV1Client.UpdateTeamRolesWithResponse(
 		ctx,
 		r.OrganizationId,
 		teamId,
@@ -178,15 +178,15 @@ func (r *TeamResource) Create(
 	}
 
 	// Create the team request
-	createTeamRequest := iam.CreateTeamRequest{
+	createTeamRequest := platform_v1.CreateTeamRequest{
 		Name:             data.Name.ValueString(),
 		Description:      data.Description.ValueStringPointer(),
 		MemberIds:        memberIdsPtr,
-		OrganizationRole: lo.ToPtr(iam.CreateTeamRequestOrganizationRole(data.OrganizationRole.ValueString())),
+		OrganizationRole: lo.ToPtr(platform_v1.CreateTeamRequestOrganizationRole(data.OrganizationRole.ValueString())),
 	}
 
 	// Create the team
-	team, err := r.IamClient.CreateTeamWithResponse(
+	team, err := r.PlatformV1Client.CreateTeamWithResponse(
 		ctx,
 		r.OrganizationId,
 		createTeamRequest,
@@ -214,7 +214,7 @@ func (r *TeamResource) Create(
 			resp.Diagnostics.Append(diags...)
 
 			// if there is an error in creating team with workspace or deployment roles, delete the team
-			team, err := r.IamClient.DeleteTeamWithResponse(
+			team, err := r.PlatformV1Client.DeleteTeamWithResponse(
 				ctx,
 				r.OrganizationId,
 				teamId,
@@ -239,7 +239,7 @@ func (r *TeamResource) Create(
 	}
 
 	// Get Team and use this as data since it will have the correct roles
-	teamResp, err := r.IamClient.GetTeamWithResponse(
+	teamResp, err := r.PlatformV1Client.GetTeamWithResponse(
 		ctx,
 		r.OrganizationId,
 		teamId,
@@ -285,7 +285,7 @@ func (r *TeamResource) Read(
 	}
 
 	// get request
-	team, err := r.IamClient.GetTeamWithResponse(
+	team, err := r.PlatformV1Client.GetTeamWithResponse(
 		ctx,
 		r.OrganizationId,
 		data.Id.ValueString(),
@@ -377,7 +377,7 @@ func (r *TeamResource) Update(
 	}
 
 	// Update team
-	updateTeamRequest := iam.UpdateTeamRequest{
+	updateTeamRequest := platform_v1.UpdateTeamRequest{
 		Name: data.Name.ValueString(),
 	}
 
@@ -387,7 +387,7 @@ func (r *TeamResource) Update(
 		updateTeamRequest.Description = lo.ToPtr("")
 	}
 
-	team, err := r.IamClient.UpdateTeamWithResponse(
+	team, err := r.PlatformV1Client.UpdateTeamWithResponse(
 		ctx,
 		r.OrganizationId,
 		data.Id.ValueString(),
@@ -417,7 +417,7 @@ func (r *TeamResource) Update(
 	}
 
 	// Get Team and use this as data since it will have the correct roles
-	teamResp, err := r.IamClient.GetTeamWithResponse(
+	teamResp, err := r.PlatformV1Client.GetTeamWithResponse(
 		ctx,
 		r.OrganizationId,
 		data.Id.ValueString(),
@@ -463,7 +463,7 @@ func (r *TeamResource) Delete(
 	}
 
 	// delete request
-	team, err := r.IamClient.DeleteTeamWithResponse(
+	team, err := r.PlatformV1Client.DeleteTeamWithResponse(
 		ctx,
 		r.OrganizationId,
 		data.Id.ValueString(),
@@ -523,7 +523,7 @@ func (r *TeamResource) CheckOrganizationIsScim(ctx context.Context) diag.Diagnos
 
 func (r *TeamResource) UpdateTeamMembers(ctx context.Context, data models.TeamResource) ([]string, diag.Diagnostics) {
 	// get existing team members
-	teamMembersResp, err := r.IamClient.ListTeamMembersWithResponse(
+	teamMembersResp, err := r.PlatformV1Client.ListTeamMembersWithResponse(
 		ctx,
 		r.OrganizationId,
 		data.Id.ValueString(),
@@ -544,7 +544,7 @@ func (r *TeamResource) UpdateTeamMembers(ctx context.Context, data models.TeamRe
 	}
 
 	teamMembers := teamMembersResp.JSON200.TeamMembers
-	memberIds := lo.Map(teamMembers, func(tm iam.TeamMember, _ int) string {
+	memberIds := lo.Map(teamMembers, func(tm platform_v1.TeamMember, _ int) string {
 		return tm.UserId
 	})
 
@@ -560,7 +560,7 @@ func (r *TeamResource) UpdateTeamMembers(ctx context.Context, data models.TeamRe
 	// delete the members that are not in the new list
 	if len(deleteIds) > 0 {
 		for _, id := range deleteIds {
-			removeTeamMemberResp, err := r.IamClient.RemoveTeamMemberWithResponse(
+			removeTeamMemberResp, err := r.PlatformV1Client.RemoveTeamMemberWithResponse(
 				ctx,
 				r.OrganizationId,
 				data.Id.ValueString(),
@@ -584,10 +584,10 @@ func (r *TeamResource) UpdateTeamMembers(ctx context.Context, data models.TeamRe
 
 	// add the members that are in the new list
 	if len(addIds) > 0 {
-		addTeamMembersRequest := iam.AddTeamMembersRequest{
+		addTeamMembersRequest := platform_v1.AddTeamMembersRequest{
 			MemberIds: addIds,
 		}
-		addTeamMembersResp, err := r.IamClient.AddTeamMembersWithResponse(
+		addTeamMembersResp, err := r.PlatformV1Client.AddTeamMembersWithResponse(
 			ctx,
 			r.OrganizationId,
 			data.Id.ValueString(),

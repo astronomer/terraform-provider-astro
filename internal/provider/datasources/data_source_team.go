@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -24,8 +24,8 @@ func NewTeamDataSource() datasource.DataSource {
 
 // teamDataSource defines the data source implementation.
 type teamDataSource struct {
-	IamClient      iam.ClientWithResponsesInterface
-	OrganizationId string
+	PlatformV1Client platform_v1.ClientWithResponsesInterface
+	OrganizationId   string
 }
 
 func (d *teamDataSource) Metadata(
@@ -64,7 +64,7 @@ func (d *teamDataSource) Configure(
 		return
 	}
 
-	d.IamClient = apiClients.IamClient
+	d.PlatformV1Client = apiClients.PlatformV1Client
 	d.OrganizationId = apiClients.OrganizationId
 }
 
@@ -77,7 +77,7 @@ func (d *teamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	team, err := d.IamClient.GetTeamWithResponse(ctx, d.OrganizationId, data.Id.ValueString())
+	team, err := d.PlatformV1Client.GetTeamWithResponse(ctx, d.OrganizationId, data.Id.ValueString())
 	if err != nil {
 		tflog.Error(ctx, "Failed to get team", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
@@ -92,7 +92,7 @@ func (d *teamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	teamMembers, err := d.IamClient.ListTeamMembersWithResponse(ctx, d.OrganizationId, data.Id.ValueString(), nil)
+	teamMembers, err := d.PlatformV1Client.ListTeamMembersWithResponse(ctx, d.OrganizationId, data.Id.ValueString(), nil)
 	if err != nil {
 		tflog.Error(ctx, "Failed to get team members", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(

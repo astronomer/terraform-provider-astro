@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -26,8 +26,8 @@ func NewTeamsDataSource() datasource.DataSource {
 
 // teamsDataSource defines the data source implementation.
 type teamsDataSource struct {
-	IamClient      iam.ClientWithResponsesInterface
-	OrganizationId string
+	PlatformV1Client platform_v1.ClientWithResponsesInterface
+	OrganizationId   string
 }
 
 func (d *teamsDataSource) Metadata(
@@ -66,7 +66,7 @@ func (d *teamsDataSource) Configure(
 		return
 	}
 
-	d.IamClient = apiClients.IamClient
+	d.PlatformV1Client = apiClients.PlatformV1Client
 	d.OrganizationId = apiClients.OrganizationId
 }
 
@@ -83,7 +83,7 @@ func (d *teamsDataSource) Read(
 		return
 	}
 
-	params := &iam.ListTeamsParams{
+	params := &platform_v1.ListTeamsParams{
 		Limit: lo.ToPtr(1000),
 	}
 	var diags diag.Diagnostics
@@ -96,11 +96,11 @@ func (d *teamsDataSource) Read(
 		return
 	}
 
-	var teams []iam.Team
+	var teams []platform_v1.Team
 	offset := 0
 	for {
 		params.Offset = &offset
-		teamsResp, err := d.IamClient.ListTeamsWithResponse(
+		teamsResp, err := d.PlatformV1Client.ListTeamsWithResponse(
 			ctx,
 			d.OrganizationId,
 			params,
@@ -129,9 +129,9 @@ func (d *teamsDataSource) Read(
 	}
 
 	// Fetch team members for each team
-	teamsWithMembers := make(map[string][]iam.TeamMember)
+	teamsWithMembers := make(map[string][]platform_v1.TeamMember)
 	for _, team := range teams {
-		teamMembers, err := d.IamClient.ListTeamMembersWithResponse(ctx, d.OrganizationId, team.Id, nil)
+		teamMembers, err := d.PlatformV1Client.ListTeamMembersWithResponse(ctx, d.OrganizationId, team.Id, nil)
 		if err != nil {
 			tflog.Error(ctx, "Failed to get team members", map[string]interface{}{"error": err, "team_id": team.Id})
 			resp.Diagnostics.AddError(

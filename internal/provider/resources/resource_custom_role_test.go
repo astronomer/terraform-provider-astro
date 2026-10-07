@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -253,7 +253,7 @@ func deleteCustomRoleOutsideOfTerraform(t *testing.T, name string) {
 
 	ctx := context.Background()
 	// List roles to find the custom role by name
-	resp, err := client.ListRolesWithResponse(ctx, os.Getenv("HOSTED_ORGANIZATION_ID"), &iam.ListRolesParams{})
+	resp, err := client.ListRolesWithResponse(ctx, os.Getenv("HOSTED_ORGANIZATION_ID"), &platform_v1.ListRolesParams{})
 	if err != nil {
 		assert.NoError(t, err)
 	}
@@ -281,7 +281,7 @@ func testAccCheckCustomRoleExistence(t *testing.T, name string, shouldExist bool
 		assert.NoError(t, err)
 
 		ctx := context.Background()
-		resp, err := client.ListRolesWithResponse(ctx, os.Getenv("HOSTED_ORGANIZATION_ID"), &iam.ListRolesParams{})
+		resp, err := client.ListRolesWithResponse(ctx, os.Getenv("HOSTED_ORGANIZATION_ID"), &platform_v1.ListRolesParams{})
 		if err != nil {
 			return fmt.Errorf("failed to list roles: %w", err)
 		}

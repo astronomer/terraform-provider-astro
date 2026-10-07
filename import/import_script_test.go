@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 
 	import_script "github.com/astronomer/terraform-provider-astro/import"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
-	mocks_iam "github.com/astronomer/terraform-provider-astro/internal/mocks/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	mocks_platform "github.com/astronomer/terraform-provider-astro/internal/mocks/platform"
+	mocks_platform_v1 "github.com/astronomer/terraform-provider-astro/internal/mocks/platform_v1"
 	"github.com/lucsky/cuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -21,34 +21,34 @@ import (
 var _ = Describe("Import Script", func() {
 	var ctx context.Context
 	var mockPlatformClient *mocks_platform.ClientWithResponsesInterface
-	var mockIAMClient *mocks_iam.ClientWithResponsesInterface
+	var mockPlatformV1Client *mocks_platform_v1.ClientWithResponsesInterface
 	var organizationId string
 
 	BeforeEach(func() {
 		ctx = context.Background()
 		mockPlatformClient = new(mocks_platform.ClientWithResponsesInterface)
-		mockIAMClient = new(mocks_iam.ClientWithResponsesInterface)
+		mockPlatformV1Client = new(mocks_platform_v1.ClientWithResponsesInterface)
 		organizationId = cuid.New()
 	})
 
 	Describe("HandleWorkspaces", func() {
 		It("should return an error if the platform client returns an error", func() {
-			mockPlatformClient.On("ListWorkspacesWithResponse", ctx, organizationId, (*platform.ListWorkspacesParams)(nil)).Return(nil, fmt.Errorf("error"))
+			mockPlatformV1Client.On("ListWorkspacesWithResponse", ctx, organizationId, (*platform_v1.ListWorkspacesParams)(nil)).Return(nil, fmt.Errorf("error"))
 
-			result, err := import_script.HandleWorkspaces(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleWorkspaces(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
 		})
 
 		It("should return an error if the platform client returns a non-200 status code", func() {
-			mockResponse := &platform.ListWorkspacesResponse{
+			mockResponse := &platform_v1.ListWorkspacesResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
 			}
 
-			mockPlatformClient.On("ListWorkspacesWithResponse", ctx, organizationId, (*platform.ListWorkspacesParams)(nil)).Return(mockResponse, nil)
+			mockPlatformV1Client.On("ListWorkspacesWithResponse", ctx, organizationId, (*platform_v1.ListWorkspacesParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleWorkspaces(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleWorkspaces(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
@@ -58,21 +58,21 @@ var _ = Describe("Import Script", func() {
 			workspaceId1 := cuid.New()
 			workspaceId2 := cuid.New()
 
-			workspaces := []platform.Workspace{
+			workspaces := []platform_v1.Workspace{
 				{Id: workspaceId1},
 				{Id: workspaceId2},
 			}
 
-			mockResponse := &platform.ListWorkspacesResponse{
+			mockResponse := &platform_v1.ListWorkspacesResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &platform.WorkspacesPaginated{
+				JSON200: &platform_v1.WorkspacesPaginated{
 					Workspaces: workspaces,
 				},
 			}
 
-			mockPlatformClient.On("ListWorkspacesWithResponse", ctx, organizationId, (*platform.ListWorkspacesParams)(nil)).Return(mockResponse, nil)
+			mockPlatformV1Client.On("ListWorkspacesWithResponse", ctx, organizationId, (*platform_v1.ListWorkspacesParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleWorkspaces(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleWorkspaces(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).To(BeNil())
 			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_workspace.workspace_%s", workspaceId1)))
@@ -82,22 +82,22 @@ var _ = Describe("Import Script", func() {
 
 	Describe("HandleDeployments", func() {
 		It("should return an error if the platform client returns an error", func() {
-			mockPlatformClient.On("ListDeploymentsWithResponse", ctx, organizationId, (*platform.ListDeploymentsParams)(nil)).Return(nil, fmt.Errorf("error"))
+			mockPlatformV1Client.On("ListDeploymentsWithResponse", ctx, organizationId, (*platform_v1.ListDeploymentsParams)(nil)).Return(nil, fmt.Errorf("error"))
 
-			result, err := import_script.HandleDeployments(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleDeployments(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
 		})
 
 		It("should return an error if the platform client returns a non-200 status code", func() {
-			mockResponse := &platform.ListDeploymentsResponse{
+			mockResponse := &platform_v1.ListDeploymentsResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
 			}
 
-			mockPlatformClient.On("ListDeploymentsWithResponse", ctx, organizationId, (*platform.ListDeploymentsParams)(nil)).Return(mockResponse, nil)
+			mockPlatformV1Client.On("ListDeploymentsWithResponse", ctx, organizationId, (*platform_v1.ListDeploymentsParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleDeployments(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleDeployments(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
@@ -107,21 +107,21 @@ var _ = Describe("Import Script", func() {
 			deploymentId1 := cuid.New()
 			deploymentId2 := cuid.New()
 
-			deployments := []platform.Deployment{
+			deployments := []platform_v1.Deployment{
 				{Id: deploymentId1},
 				{Id: deploymentId2},
 			}
 
-			mockResponse := &platform.ListDeploymentsResponse{
+			mockResponse := &platform_v1.ListDeploymentsResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &platform.DeploymentsPaginated{
+				JSON200: &platform_v1.DeploymentsPaginated{
 					Deployments: deployments,
 				},
 			}
 
-			mockPlatformClient.On("ListDeploymentsWithResponse", ctx, organizationId, (*platform.ListDeploymentsParams)(nil)).Return(mockResponse, nil)
+			mockPlatformV1Client.On("ListDeploymentsWithResponse", ctx, organizationId, (*platform_v1.ListDeploymentsParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleDeployments(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleDeployments(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).To(BeNil())
 			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_deployment.deployment_%s", deploymentId1)))
@@ -133,9 +133,9 @@ var _ = Describe("Import Script", func() {
 			clusterId := cuid.New()
 			workspaceId := cuid.New()
 			taskPodNodePoolId := cuid.New()
-			deploymentType := platform.DeploymentTypeHYBRID
+			deploymentType := platform_v1.DeploymentTypeHYBRID
 
-			deployments := []platform.Deployment{
+			deployments := []platform_v1.Deployment{
 				{
 					Id:                 deploymentId,
 					Name:               "hybrid-deployment",
@@ -143,7 +143,7 @@ var _ = Describe("Import Script", func() {
 					ClusterId:          &clusterId,
 					WorkspaceId:        workspaceId,
 					TaskPodNodePoolId:  &taskPodNodePoolId,
-					Executor:           (*platform.DeploymentExecutor)(&[]string{"KUBERNETES"}[0]),
+					Executor:           (*platform_v1.DeploymentExecutor)(&[]string{"KUBERNETES"}[0]),
 					SchedulerAu:        &[]int{5}[0],
 					SchedulerReplicas:  1,
 					IsCicdEnforced:     false,
@@ -151,16 +151,16 @@ var _ = Describe("Import Script", func() {
 				},
 			}
 
-			mockResponse := &platform.ListDeploymentsResponse{
+			mockResponse := &platform_v1.ListDeploymentsResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &platform.DeploymentsPaginated{
+				JSON200: &platform_v1.DeploymentsPaginated{
 					Deployments: deployments,
 				},
 			}
 
-			mockPlatformClient.On("ListDeploymentsWithResponse", ctx, organizationId, (*platform.ListDeploymentsParams)(nil)).Return(mockResponse, nil)
+			mockPlatformV1Client.On("ListDeploymentsWithResponse", ctx, organizationId, (*platform_v1.ListDeploymentsParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleDeployments(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleDeployments(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).To(BeNil())
 			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_deployment.deployment_%s", deploymentId)))
@@ -171,9 +171,9 @@ var _ = Describe("Import Script", func() {
 			clusterId := cuid.New()
 			workspaceId := cuid.New()
 			nodePoolId := cuid.New()
-			deploymentType := platform.DeploymentTypeHYBRID
+			deploymentType := platform_v1.DeploymentTypeHYBRID
 
-			workerQueues := []platform.WorkerQueue{
+			workerQueues := []platform_v1.WorkerQueue{
 				{
 					Name:              "default",
 					IsDefault:         true,
@@ -184,14 +184,14 @@ var _ = Describe("Import Script", func() {
 				},
 			}
 
-			deployments := []platform.Deployment{
+			deployments := []platform_v1.Deployment{
 				{
 					Id:                 deploymentId,
 					Name:               "hybrid-deployment-with-queues",
 					Type:               &deploymentType,
 					ClusterId:          &clusterId,
 					WorkspaceId:        workspaceId,
-					Executor:           (*platform.DeploymentExecutor)(&[]string{"CELERY"}[0]),
+					Executor:           (*platform_v1.DeploymentExecutor)(&[]string{"CELERY"}[0]),
 					SchedulerAu:        &[]int{5}[0],
 					SchedulerReplicas:  1,
 					IsCicdEnforced:     false,
@@ -200,16 +200,16 @@ var _ = Describe("Import Script", func() {
 				},
 			}
 
-			mockResponse := &platform.ListDeploymentsResponse{
+			mockResponse := &platform_v1.ListDeploymentsResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &platform.DeploymentsPaginated{
+				JSON200: &platform_v1.DeploymentsPaginated{
 					Deployments: deployments,
 				},
 			}
 
-			mockPlatformClient.On("ListDeploymentsWithResponse", ctx, organizationId, (*platform.ListDeploymentsParams)(nil)).Return(mockResponse, nil)
+			mockPlatformV1Client.On("ListDeploymentsWithResponse", ctx, organizationId, (*platform_v1.ListDeploymentsParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleDeployments(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleDeployments(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).To(BeNil())
 			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_deployment.deployment_%s", deploymentId)))
@@ -218,17 +218,17 @@ var _ = Describe("Import Script", func() {
 		It("should generate import statements for mixed deployment types", func() {
 			standardDeploymentId := cuid.New()
 			hybridDeploymentId := cuid.New()
-			standardType := platform.DeploymentTypeSTANDARD
-			hybridType := platform.DeploymentTypeHYBRID
+			standardType := platform_v1.DeploymentTypeSTANDARD
+			hybridType := platform_v1.DeploymentTypeHYBRID
 			taskPodNodePoolId := cuid.New()
 
-			deployments := []platform.Deployment{
+			deployments := []platform_v1.Deployment{
 				{
 					Id:                 standardDeploymentId,
 					Name:               "standard-deployment",
 					Type:               &standardType,
 					WorkspaceId:        cuid.New(),
-					SchedulerSize:      (*platform.DeploymentSchedulerSize)(&[]string{"SMALL"}[0]),
+					SchedulerSize:      (*platform_v1.DeploymentSchedulerSize)(&[]string{"SMALL"}[0]),
 					IsCicdEnforced:     false,
 					IsDagDeployEnabled: true,
 				},
@@ -245,16 +245,16 @@ var _ = Describe("Import Script", func() {
 				},
 			}
 
-			mockResponse := &platform.ListDeploymentsResponse{
+			mockResponse := &platform_v1.ListDeploymentsResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &platform.DeploymentsPaginated{
+				JSON200: &platform_v1.DeploymentsPaginated{
 					Deployments: deployments,
 				},
 			}
 
-			mockPlatformClient.On("ListDeploymentsWithResponse", ctx, organizationId, (*platform.ListDeploymentsParams)(nil)).Return(mockResponse, nil)
+			mockPlatformV1Client.On("ListDeploymentsWithResponse", ctx, organizationId, (*platform_v1.ListDeploymentsParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleDeployments(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleDeployments(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).To(BeNil())
 			// Should include both deployment import statements
@@ -265,22 +265,22 @@ var _ = Describe("Import Script", func() {
 
 	Describe("HandleClusters", func() {
 		It("should return an error if the platform client returns an error", func() {
-			mockPlatformClient.On("ListClustersWithResponse", ctx, organizationId, (*platform.ListClustersParams)(nil)).Return(nil, fmt.Errorf("error"))
+			mockPlatformV1Client.On("ListClustersWithResponse", ctx, organizationId, (*platform_v1.ListClustersParams)(nil)).Return(nil, fmt.Errorf("error"))
 
-			result, err := import_script.HandleClusters(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleClusters(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
 		})
 
 		It("should return an error if the platform client returns a non-200 status code", func() {
-			mockResponse := &platform.ListClustersResponse{
+			mockResponse := &platform_v1.ListClustersResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
 			}
 
-			mockPlatformClient.On("ListClustersWithResponse", ctx, organizationId, (*platform.ListClustersParams)(nil)).Return(mockResponse, nil)
+			mockPlatformV1Client.On("ListClustersWithResponse", ctx, organizationId, (*platform_v1.ListClustersParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleClusters(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleClusters(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
@@ -291,23 +291,23 @@ var _ = Describe("Import Script", func() {
 			clusterId2 := cuid.New()
 			workspaceId := cuid.New()
 
-			clusters := []platform.Cluster{
+			clusters := []platform_v1.Cluster{
 				{Id: clusterId1},
 				{Id: clusterId2,
-					Type:         platform.ClusterTypeHYBRID,
+					Type:         platform_v1.ClusterTypeHYBRID,
 					WorkspaceIds: &[]string{workspaceId}},
 			}
 
-			mockResponse := &platform.ListClustersResponse{
+			mockResponse := &platform_v1.ListClustersResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &platform.ClustersPaginated{
+				JSON200: &platform_v1.ClustersPaginated{
 					Clusters: clusters,
 				},
 			}
 
-			mockPlatformClient.On("ListClustersWithResponse", ctx, organizationId, (*platform.ListClustersParams)(nil)).Return(mockResponse, nil)
+			mockPlatformV1Client.On("ListClustersWithResponse", ctx, organizationId, (*platform_v1.ListClustersParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleClusters(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleClusters(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).To(BeNil())
 			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_cluster.cluster_%s", clusterId1)))
@@ -320,22 +320,22 @@ var _ = Describe("Import Script", func() {
 
 	Describe("HandleApiTokens", func() {
 		It("should return an error if the iam client returns an error", func() {
-			mockIAMClient.On("ListApiTokensWithResponse", ctx, organizationId, (*iam.ListApiTokensParams)(nil)).Return(nil, fmt.Errorf("error"))
+			mockPlatformV1Client.On("ListApiTokensWithResponse", ctx, organizationId, (*platform_v1.ListApiTokensParams)(nil)).Return(nil, fmt.Errorf("error"))
 
-			result, err := import_script.HandleApiTokens(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleApiTokens(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
 		})
 
 		It("should return an error if the iam client returns a non-200 status code", func() {
-			mockResponse := &iam.ListApiTokensResponse{
+			mockResponse := &platform_v1.ListApiTokensResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
 			}
 
-			mockIAMClient.On("ListApiTokensWithResponse", ctx, organizationId, (*iam.ListApiTokensParams)(nil)).Return(mockResponse, nil)
+			mockPlatformV1Client.On("ListApiTokensWithResponse", ctx, organizationId, (*platform_v1.ListApiTokensParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleApiTokens(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleApiTokens(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
@@ -345,21 +345,21 @@ var _ = Describe("Import Script", func() {
 			apiTokenId1 := cuid.New()
 			apiTokenId2 := cuid.New()
 
-			apiTokens := []iam.ApiToken{
+			apiTokens := []platform_v1.ApiToken{
 				{Id: apiTokenId1},
 				{Id: apiTokenId2},
 			}
 
-			mockResponse := &iam.ListApiTokensResponse{
+			mockResponse := &platform_v1.ListApiTokensResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &iam.ApiTokensPaginated{
+				JSON200: &platform_v1.ApiTokensPaginated{
 					Tokens: apiTokens,
 				},
 			}
 
-			mockIAMClient.On("ListApiTokensWithResponse", ctx, organizationId, (*iam.ListApiTokensParams)(nil)).Return(mockResponse, nil)
+			mockPlatformV1Client.On("ListApiTokensWithResponse", ctx, organizationId, (*platform_v1.ListApiTokensParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleApiTokens(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleApiTokens(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).To(BeNil())
 			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_api_token.api_token_%s", apiTokenId1)))
@@ -369,22 +369,22 @@ var _ = Describe("Import Script", func() {
 
 	Describe("HandleTeams", func() {
 		It("should return an error if the iam client returns an error", func() {
-			mockIAMClient.On("ListTeamsWithResponse", ctx, organizationId, (*iam.ListTeamsParams)(nil)).Return(nil, fmt.Errorf("error"))
+			mockPlatformV1Client.On("ListTeamsWithResponse", ctx, organizationId, (*platform_v1.ListTeamsParams)(nil)).Return(nil, fmt.Errorf("error"))
 
-			result, err := import_script.HandleTeams(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleTeams(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
 		})
 
 		It("should return an error if the iam client returns a non-200 status code", func() {
-			mockResponse := &iam.ListTeamsResponse{
+			mockResponse := &platform_v1.ListTeamsResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
 			}
 
-			mockIAMClient.On("ListTeamsWithResponse", ctx, organizationId, (*iam.ListTeamsParams)(nil)).Return(mockResponse, nil)
+			mockPlatformV1Client.On("ListTeamsWithResponse", ctx, organizationId, (*platform_v1.ListTeamsParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleTeams(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleTeams(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
@@ -394,21 +394,21 @@ var _ = Describe("Import Script", func() {
 			teamId1 := cuid.New()
 			teamId2 := cuid.New()
 
-			teams := []iam.Team{
+			teams := []platform_v1.Team{
 				{Id: teamId1},
 				{Id: teamId2},
 			}
 
-			mockResponse := &iam.ListTeamsResponse{
+			mockResponse := &platform_v1.ListTeamsResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &iam.TeamsPaginated{
+				JSON200: &platform_v1.TeamsPaginated{
 					Teams: teams,
 				},
 			}
 
-			mockIAMClient.On("ListTeamsWithResponse", ctx, organizationId, (*iam.ListTeamsParams)(nil)).Return(mockResponse, nil)
+			mockPlatformV1Client.On("ListTeamsWithResponse", ctx, organizationId, (*platform_v1.ListTeamsParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleTeams(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleTeams(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).To(BeNil())
 			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_team.team_%s", teamId1)))
@@ -418,22 +418,22 @@ var _ = Describe("Import Script", func() {
 
 	Describe("HandleTeamRoles", func() {
 		It("should return an error if the iam client returns an error", func() {
-			mockIAMClient.On("ListTeamsWithResponse", ctx, organizationId, (*iam.ListTeamsParams)(nil)).Return(nil, fmt.Errorf("error"))
+			mockPlatformV1Client.On("ListTeamsWithResponse", ctx, organizationId, (*platform_v1.ListTeamsParams)(nil)).Return(nil, fmt.Errorf("error"))
 
-			result, err := import_script.HandleTeamRoles(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleTeamRoles(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
 		})
 
 		It("should return an error if the iam client returns a non-200 status code", func() {
-			mockResponse := &iam.ListTeamsResponse{
+			mockResponse := &platform_v1.ListTeamsResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
 			}
 
-			mockIAMClient.On("ListTeamsWithResponse", ctx, organizationId, (*iam.ListTeamsParams)(nil)).Return(mockResponse, nil)
+			mockPlatformV1Client.On("ListTeamsWithResponse", ctx, organizationId, (*platform_v1.ListTeamsParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleTeamRoles(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleTeamRoles(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
@@ -443,21 +443,21 @@ var _ = Describe("Import Script", func() {
 			teamId1 := cuid.New()
 			teamId2 := cuid.New()
 
-			teams := []iam.Team{
+			teams := []platform_v1.Team{
 				{Id: teamId1},
 				{Id: teamId2},
 			}
 
-			mockResponse := &iam.ListTeamsResponse{
+			mockResponse := &platform_v1.ListTeamsResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &iam.TeamsPaginated{
+				JSON200: &platform_v1.TeamsPaginated{
 					Teams: teams,
 				},
 			}
 
-			mockIAMClient.On("ListTeamsWithResponse", ctx, organizationId, (*iam.ListTeamsParams)(nil)).Return(mockResponse, nil)
+			mockPlatformV1Client.On("ListTeamsWithResponse", ctx, organizationId, (*platform_v1.ListTeamsParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleTeamRoles(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleTeamRoles(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).To(BeNil())
 			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_team_roles.team_%s", teamId1)))
@@ -467,22 +467,22 @@ var _ = Describe("Import Script", func() {
 
 	Describe("HandleUserRoles", func() {
 		It("should return an error if the iam client returns an error", func() {
-			mockIAMClient.On("ListUsersWithResponse", ctx, organizationId, (*iam.ListUsersParams)(nil)).Return(nil, fmt.Errorf("error"))
+			mockPlatformV1Client.On("ListUsersWithResponse", ctx, organizationId, (*platform_v1.ListUsersParams)(nil)).Return(nil, fmt.Errorf("error"))
 
-			result, err := import_script.HandleUserRoles(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleUserRoles(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
 		})
 
 		It("should return an error if the iam client returns a non-200 status code", func() {
-			mockResponse := &iam.ListUsersResponse{
+			mockResponse := &platform_v1.ListUsersResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
 			}
 
-			mockIAMClient.On("ListUsersWithResponse", ctx, organizationId, (*iam.ListUsersParams)(nil)).Return(mockResponse, nil)
+			mockPlatformV1Client.On("ListUsersWithResponse", ctx, organizationId, (*platform_v1.ListUsersParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleUserRoles(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleUserRoles(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
@@ -492,21 +492,21 @@ var _ = Describe("Import Script", func() {
 			userId1 := cuid.New()
 			userId2 := cuid.New()
 
-			users := []iam.User{
+			users := []platform_v1.User{
 				{Id: userId1},
 				{Id: userId2},
 			}
 
-			mockResponse := &iam.ListUsersResponse{
+			mockResponse := &platform_v1.ListUsersResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &iam.UsersPaginated{
+				JSON200: &platform_v1.UsersPaginated{
 					Users: users,
 				},
 			}
 
-			mockIAMClient.On("ListUsersWithResponse", ctx, organizationId, (*iam.ListUsersParams)(nil)).Return(mockResponse, nil)
+			mockPlatformV1Client.On("ListUsersWithResponse", ctx, organizationId, (*platform_v1.ListUsersParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleUserRoles(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleUserRoles(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).To(BeNil())
 			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_user_roles.user_%s", userId1)))
@@ -518,7 +518,7 @@ var _ = Describe("Import Script", func() {
 		It("should return an error if the platform client returns an error", func() {
 			mockPlatformClient.On("ListAlertsWithResponse", ctx, organizationId, (*platform.ListAlertsParams)(nil)).Return(nil, fmt.Errorf("error"))
 
-			result, err := import_script.HandleAlerts(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleAlerts(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
@@ -531,7 +531,7 @@ var _ = Describe("Import Script", func() {
 
 			mockPlatformClient.On("ListAlertsWithResponse", ctx, organizationId, (*platform.ListAlertsParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleAlerts(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleAlerts(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
@@ -559,7 +559,7 @@ var _ = Describe("Import Script", func() {
 
 			mockPlatformClient.On("ListAlertsWithResponse", ctx, organizationId, (*platform.ListAlertsParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleAlerts(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleAlerts(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).To(BeNil())
 			// Should only include supported alert types
@@ -585,7 +585,7 @@ var _ = Describe("Import Script", func() {
 
 			mockPlatformClient.On("ListAlertsWithResponse", ctx, organizationId, (*platform.ListAlertsParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleAlerts(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleAlerts(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).To(BeNil())
 			Expect(result).To(BeEmpty())
@@ -617,7 +617,7 @@ var _ = Describe("Import Script", func() {
 
 			mockPlatformClient.On("ListAlertsWithResponse", ctx, organizationId, (*platform.ListAlertsParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleAlerts(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleAlerts(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).To(BeNil())
 			for _, alertId := range alertIds {
@@ -630,7 +630,7 @@ var _ = Describe("Import Script", func() {
 		It("should return an error if the platform client returns an error", func() {
 			mockPlatformClient.On("ListNotificationChannelsWithResponse", ctx, organizationId, (*platform.ListNotificationChannelsParams)(nil)).Return(nil, fmt.Errorf("error"))
 
-			result, err := import_script.HandleNotificationChannels(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleNotificationChannels(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
@@ -643,7 +643,7 @@ var _ = Describe("Import Script", func() {
 
 			mockPlatformClient.On("ListNotificationChannelsWithResponse", ctx, organizationId, (*platform.ListNotificationChannelsParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleNotificationChannels(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleNotificationChannels(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).ToNot(BeNil())
 			Expect(result).To(BeEmpty())
@@ -667,7 +667,7 @@ var _ = Describe("Import Script", func() {
 
 			mockPlatformClient.On("ListNotificationChannelsWithResponse", ctx, organizationId, (*platform.ListNotificationChannelsParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleNotificationChannels(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleNotificationChannels(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).To(BeNil())
 			Expect(result).To(ContainSubstring(fmt.Sprintf("astro_notification_channel.notification_channel_%s", channelId1)))
@@ -684,7 +684,7 @@ var _ = Describe("Import Script", func() {
 
 			mockPlatformClient.On("ListNotificationChannelsWithResponse", ctx, organizationId, (*platform.ListNotificationChannelsParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleNotificationChannels(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleNotificationChannels(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).To(BeNil())
 			Expect(result).To(BeEmpty())
@@ -715,7 +715,7 @@ var _ = Describe("Import Script", func() {
 
 			mockPlatformClient.On("ListNotificationChannelsWithResponse", ctx, organizationId, (*platform.ListNotificationChannelsParams)(nil)).Return(mockResponse, nil)
 
-			result, err := import_script.HandleNotificationChannels(ctx, mockPlatformClient, mockIAMClient, organizationId)
+			result, err := import_script.HandleNotificationChannels(ctx, mockPlatformClient, mockPlatformV1Client, organizationId)
 
 			Expect(err).To(BeNil())
 			for _, channelId := range channelIds {

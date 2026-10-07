@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -31,8 +31,8 @@ func NewUsersListDataSource() datasource.DataSource {
 // organizations (~30s -> ~1s at ~1000 users). The list is sorted by id so
 // pagination and plan output are deterministic across reads.
 type usersListDataSource struct {
-	IamClient      iam.ClientWithResponsesInterface
-	OrganizationId string
+	PlatformV1Client platform_v1.ClientWithResponsesInterface
+	OrganizationId   string
 }
 
 func (d *usersListDataSource) Metadata(
@@ -71,7 +71,7 @@ func (d *usersListDataSource) Configure(
 		return
 	}
 
-	d.IamClient = apiClients.IamClient
+	d.PlatformV1Client = apiClients.PlatformV1Client
 	d.OrganizationId = apiClients.OrganizationId
 }
 
@@ -88,13 +88,13 @@ func (d *usersListDataSource) Read(
 		return
 	}
 
-	params := &iam.ListUsersParams{
+	params := &platform_v1.ListUsersParams{
 		Limit: lo.ToPtr(1000),
 		// Sort by id (immutable, unique) so pagination is stable across calls and
 		// the resulting list ordering is deterministic between plans. Without this,
 		// the API's default ordering can shift between reads, producing spurious
 		// plan diffs for an ordered List.
-		Sorts: &[]iam.ListUsersParamsSorts{iam.ListUsersParamsSortsIdAsc},
+		Sorts: &[]platform_v1.ListUsersParamsSorts{platform_v1.ListUsersParamsSortsIdAsc},
 	}
 	var diags diag.Diagnostics
 	workspaceId := data.WorkspaceId.ValueString()
@@ -106,11 +106,11 @@ func (d *usersListDataSource) Read(
 		params.DeploymentId = &deploymentId
 	}
 
-	var users []iam.User
+	var users []platform_v1.User
 	offset := 0
 	for {
 		params.Offset = &offset
-		usersResp, err := d.IamClient.ListUsersWithResponse(
+		usersResp, err := d.PlatformV1Client.ListUsersWithResponse(
 			ctx,
 			d.OrganizationId,
 			params,

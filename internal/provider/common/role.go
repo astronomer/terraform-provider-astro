@@ -6,20 +6,19 @@ import (
 	"strings"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/samber/lo"
 )
 
-// RequestWorkspaceRoles converts a Terraform set to a list of iam.WorkspaceRole to be used in create and update requests
-func RequestWorkspaceRoles(ctx context.Context, workspaceRolesObjSet types.Set) ([]iam.WorkspaceRole, diag.Diagnostics) {
+// RequestWorkspaceRoles converts a Terraform set to a list of platform_v1.WorkspaceRole to be used in create and update requests
+func RequestWorkspaceRoles(ctx context.Context, workspaceRolesObjSet types.Set) ([]platform_v1.WorkspaceRole, diag.Diagnostics) {
 	if len(workspaceRolesObjSet.Elements()) == 0 {
-		return []iam.WorkspaceRole{}, nil
+		return []platform_v1.WorkspaceRole{}, nil
 	}
 
 	var roles []models.WorkspaceRole
@@ -27,19 +26,19 @@ func RequestWorkspaceRoles(ctx context.Context, workspaceRolesObjSet types.Set) 
 	if diags.HasError() {
 		return nil, diags
 	}
-	workspaceRoles := lo.Map(roles, func(role models.WorkspaceRole, _ int) iam.WorkspaceRole {
-		return iam.WorkspaceRole{
-			Role:        iam.WorkspaceRoleRole(role.Role.ValueString()),
+	workspaceRoles := lo.Map(roles, func(role models.WorkspaceRole, _ int) platform_v1.WorkspaceRole {
+		return platform_v1.WorkspaceRole{
+			Role:        platform_v1.WorkspaceRoleRole(role.Role.ValueString()),
 			WorkspaceId: role.WorkspaceId.ValueString(),
 		}
 	})
 	return workspaceRoles, nil
 }
 
-// RequestDeploymentRoles converts a Terraform set to a list of iam.DeploymentRole to be used in create and update requests
-func RequestDeploymentRoles(ctx context.Context, deploymentRolesObjSet types.Set) ([]iam.DeploymentRole, diag.Diagnostics) {
+// RequestDeploymentRoles converts a Terraform set to a list of platform_v1.DeploymentRole to be used in create and update requests
+func RequestDeploymentRoles(ctx context.Context, deploymentRolesObjSet types.Set) ([]platform_v1.DeploymentRole, diag.Diagnostics) {
 	if len(deploymentRolesObjSet.Elements()) == 0 {
-		return []iam.DeploymentRole{}, nil
+		return []platform_v1.DeploymentRole{}, nil
 	}
 
 	var roles []models.DeploymentRole
@@ -47,8 +46,8 @@ func RequestDeploymentRoles(ctx context.Context, deploymentRolesObjSet types.Set
 	if diags.HasError() {
 		return nil, diags
 	}
-	deploymentRoles := lo.Map(roles, func(role models.DeploymentRole, _ int) iam.DeploymentRole {
-		return iam.DeploymentRole{
+	deploymentRoles := lo.Map(roles, func(role models.DeploymentRole, _ int) platform_v1.DeploymentRole {
+		return platform_v1.DeploymentRole{
 			Role:         role.Role.ValueString(),
 			DeploymentId: role.DeploymentId.ValueString(),
 		}
@@ -56,10 +55,10 @@ func RequestDeploymentRoles(ctx context.Context, deploymentRolesObjSet types.Set
 	return deploymentRoles, nil
 }
 
-// RequestDagRoles converts a Terraform set to a list of iam.DagRole to be used in create and update requests
-func RequestDagRoles(ctx context.Context, dagRolesObjSet types.Set) ([]iam.DagRole, diag.Diagnostics) {
+// RequestDagRoles converts a Terraform set to a list of platform_v1.DagRole to be used in create and update requests
+func RequestDagRoles(ctx context.Context, dagRolesObjSet types.Set) ([]platform_v1.DagRole, diag.Diagnostics) {
 	if len(dagRolesObjSet.Elements()) == 0 {
-		return []iam.DagRole{}, nil
+		return []platform_v1.DagRole{}, nil
 	}
 
 	var roles []models.DagRole
@@ -67,8 +66,8 @@ func RequestDagRoles(ctx context.Context, dagRolesObjSet types.Set) ([]iam.DagRo
 	if diags.HasError() {
 		return nil, diags
 	}
-	dagRoles := lo.Map(roles, func(role models.DagRole, _ int) iam.DagRole {
-		dagRole := iam.DagRole{
+	dagRoles := lo.Map(roles, func(role models.DagRole, _ int) platform_v1.DagRole {
+		dagRole := platform_v1.DagRole{
 			DeploymentId: role.DeploymentId.ValueString(),
 			Role:         role.Role.ValueString(),
 		}
@@ -90,13 +89,13 @@ func ValidateRoleMatchesEntityType(role string, scopeType string) bool {
 	}
 
 	organizationRoles := []string{
-		string(iam.UserOrganizationRoleORGANIZATIONBILLINGADMIN),
-		string(iam.UserOrganizationRoleORGANIZATIONMEMBER),
-		string(iam.UserOrganizationRoleORGANIZATIONOWNER),
-		string(iam.UserOrganizationRoleORGANIZATIONOBSERVEADMIN),
-		string(iam.UserOrganizationRoleORGANIZATIONOBSERVEMEMBER),
+		string(platform_v1.UserOrganizationRoleORGANIZATIONBILLINGADMIN),
+		string(platform_v1.UserOrganizationRoleORGANIZATIONMEMBER),
+		string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER),
+		string(platform_v1.UserOrganizationRoleORGANIZATIONOBSERVEADMIN),
+		string(platform_v1.UserOrganizationRoleORGANIZATIONOBSERVEMEMBER),
 	}
-	workspaceRoles := []string{string(iam.WORKSPACEACCESSOR), string(iam.WORKSPACEAUTHOR), string(iam.WORKSPACEMEMBER), string(iam.WORKSPACEOWNER), string(iam.WORKSPACEOPERATOR)}
+	workspaceRoles := []string{string(platform_v1.WORKSPACEACCESSOR), string(platform_v1.WORKSPACEAUTHOR), string(platform_v1.WORKSPACEMEMBER), string(platform_v1.WORKSPACEOWNER), string(platform_v1.WORKSPACEOPERATOR)}
 	deploymentRoles := []string{"DEPLOYMENT_ADMIN"}
 	var nonEntityRoles []string
 
@@ -114,10 +113,10 @@ func ValidateRoleMatchesEntityType(role string, scopeType string) bool {
 }
 
 type ValidateWorkspaceDeploymentRolesInput struct {
-	PlatformClient  platform.ClientWithResponsesInterface
+	PlatformClient  platform_v1.ClientWithResponsesInterface
 	OrganizationId  string
-	DeploymentRoles []iam.DeploymentRole
-	WorkspaceRoles  []iam.WorkspaceRole
+	DeploymentRoles []platform_v1.DeploymentRole
+	WorkspaceRoles  []platform_v1.WorkspaceRole
 	Limit           int // page size for ListDeployments; defaults to 1000 if zero
 }
 
@@ -129,7 +128,7 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 	}
 
 	// get list of deploymentRole ids
-	deploymentRoleIds := lo.Map(input.DeploymentRoles, func(role iam.DeploymentRole, _ int) string {
+	deploymentRoleIds := lo.Map(input.DeploymentRoles, func(role platform_v1.DeploymentRole, _ int) string {
 		return role.DeploymentId
 	})
 	deploymentRoleIds = lo.Uniq(deploymentRoleIds)
@@ -140,12 +139,12 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 	}
 
 	// get list of deployments (paginated)
-	params := &platform.ListDeploymentsParams{
+	params := &platform_v1.ListDeploymentsParams{
 		DeploymentIds: &deploymentRoleIds,
 		Limit:         lo.ToPtr(limit),
 	}
 
-	var queriedDeployments []platform.Deployment
+	var queriedDeployments []platform_v1.Deployment
 	offset := 0 // Will be incremented appropriately to ensure all Deployments are returned
 
 	for {
@@ -181,7 +180,7 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 	}
 
 	// get list of deployment ids
-	deploymentIds := lo.Map(queriedDeployments, func(deployment platform.Deployment, _ int) string {
+	deploymentIds := lo.Map(queriedDeployments, func(deployment platform_v1.Deployment, _ int) string {
 		return deployment.Id
 	})
 
@@ -197,13 +196,13 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 	}
 
 	// get list of workspace ids from deployments
-	deploymentWorkspaceIds := lo.Map(queriedDeployments, func(deployment platform.Deployment, _ int) string {
+	deploymentWorkspaceIds := lo.Map(queriedDeployments, func(deployment platform_v1.Deployment, _ int) string {
 		return deployment.WorkspaceId
 	})
 	deploymentWorkspaceIds = lo.Uniq(deploymentWorkspaceIds)
 
 	// get list of workspaceRole ids
-	workspaceRoleIds := lo.Map(input.WorkspaceRoles, func(role iam.WorkspaceRole, _ int) string {
+	workspaceRoleIds := lo.Map(input.WorkspaceRoles, func(role platform_v1.WorkspaceRole, _ int) string {
 		return role.WorkspaceId
 	})
 
@@ -221,7 +220,7 @@ func ValidateWorkspaceDeploymentRoles(ctx context.Context, input ValidateWorkspa
 }
 
 // GetDuplicateWorkspaceIds checks if there are duplicate workspace ids in the workspace roles
-func GetDuplicateWorkspaceIds(workspaceRoles []iam.WorkspaceRole) []string {
+func GetDuplicateWorkspaceIds(workspaceRoles []platform_v1.WorkspaceRole) []string {
 	workspaceIdCount := make(map[string]int)
 	for _, role := range workspaceRoles {
 		workspaceIdCount[role.WorkspaceId]++
@@ -238,7 +237,7 @@ func GetDuplicateWorkspaceIds(workspaceRoles []iam.WorkspaceRole) []string {
 }
 
 // GetDuplicateDeploymentIds checks if there are duplicate deployment ids in the deployment roles
-func GetDuplicateDeploymentIds(deploymentRoles []iam.DeploymentRole) []string {
+func GetDuplicateDeploymentIds(deploymentRoles []platform_v1.DeploymentRole) []string {
 	deploymentIdCount := make(map[string]int)
 	for _, role := range deploymentRoles {
 		deploymentIdCount[role.DeploymentId]++
@@ -255,7 +254,7 @@ func GetDuplicateDeploymentIds(deploymentRoles []iam.DeploymentRole) []string {
 }
 
 // GetDuplicateDagRoleKeys checks if there are duplicate dag_id+deployment_id or tag+deployment_id combinations in the dag roles
-func GetDuplicateDagRoleKeys(dagRoles []iam.DagRole) []string {
+func GetDuplicateDagRoleKeys(dagRoles []platform_v1.DagRole) []string {
 	keyCount := make(map[string]int)
 	for _, role := range dagRoles {
 		var key string
@@ -280,7 +279,7 @@ func GetDuplicateDagRoleKeys(dagRoles []iam.DagRole) []string {
 }
 
 // ValidateDagRoles validates that each dag role has either dag_id or tag (but not both) and a deployment_id
-func ValidateDagRoles(dagRoles []iam.DagRole) diag.Diagnostics {
+func ValidateDagRoles(dagRoles []platform_v1.DagRole) diag.Diagnostics {
 	for _, role := range dagRoles {
 		hasDagId := role.DagId != nil && *role.DagId != ""
 		hasTag := role.DagTag != nil && *role.DagTag != ""
@@ -319,22 +318,22 @@ func ValidateDagRoles(dagRoles []iam.DagRole) diag.Diagnostics {
 }
 
 func ValidateRoles(
-	workspaceRoles []iam.WorkspaceRole,
-	deploymentRoles []iam.DeploymentRole,
+	workspaceRoles []platform_v1.WorkspaceRole,
+	deploymentRoles []platform_v1.DeploymentRole,
 ) diag.Diagnostics {
 	return ValidateRolesWithDagRoles(workspaceRoles, deploymentRoles, nil)
 }
 
 func ValidateRolesWithDagRoles(
-	workspaceRoles []iam.WorkspaceRole,
-	deploymentRoles []iam.DeploymentRole,
-	dagRoles []iam.DagRole,
+	workspaceRoles []platform_v1.WorkspaceRole,
+	deploymentRoles []platform_v1.DeploymentRole,
+	dagRoles []platform_v1.DagRole,
 ) diag.Diagnostics {
 	for _, role := range workspaceRoles {
-		if !ValidateRoleMatchesEntityType(string(role.Role), string(iam.RoleScopeTypeWORKSPACE)) {
+		if !ValidateRoleMatchesEntityType(string(role.Role), string(platform_v1.RoleScopeTypeWORKSPACE)) {
 			return diag.Diagnostics{diag.NewErrorDiagnostic(
-				fmt.Sprintf("Role '%s' is not valid for role type '%s'", string(role.Role), string(iam.RoleScopeTypeWORKSPACE)),
-				fmt.Sprintf("Please provide a valid role for the type '%s'", string(iam.RoleScopeTypeWORKSPACE)),
+				fmt.Sprintf("Role '%s' is not valid for role type '%s'", string(role.Role), string(platform_v1.RoleScopeTypeWORKSPACE)),
+				fmt.Sprintf("Please provide a valid role for the type '%s'", string(platform_v1.RoleScopeTypeWORKSPACE)),
 			)}
 		}
 	}
@@ -348,10 +347,10 @@ func ValidateRolesWithDagRoles(
 	}
 
 	for _, role := range deploymentRoles {
-		if !ValidateRoleMatchesEntityType(role.Role, string(iam.RoleScopeTypeDEPLOYMENT)) {
+		if !ValidateRoleMatchesEntityType(role.Role, string(platform_v1.RoleScopeTypeDEPLOYMENT)) {
 			return diag.Diagnostics{diag.NewErrorDiagnostic(
-				fmt.Sprintf("Role '%s' is not valid for role type '%s'", role.Role, string(iam.RoleScopeTypeDEPLOYMENT)),
-				fmt.Sprintf("Please provide a valid role for the type '%s'", string(iam.RoleScopeTypeDEPLOYMENT)),
+				fmt.Sprintf("Role '%s' is not valid for role type '%s'", role.Role, string(platform_v1.RoleScopeTypeDEPLOYMENT)),
+				fmt.Sprintf("Please provide a valid role for the type '%s'", string(platform_v1.RoleScopeTypeDEPLOYMENT)),
 			)}
 		}
 	}
@@ -370,10 +369,10 @@ func ValidateRolesWithDagRoles(
 			return diags
 		}
 
-		dagDeploymentIds := lo.Uniq(lo.Map(dagRoles, func(r iam.DagRole, _ int) string {
+		dagDeploymentIds := lo.Uniq(lo.Map(dagRoles, func(r platform_v1.DagRole, _ int) string {
 			return r.DeploymentId
 		}))
-		deploymentRoleIds := lo.Map(deploymentRoles, func(r iam.DeploymentRole, _ int) string {
+		deploymentRoleIds := lo.Map(deploymentRoles, func(r platform_v1.DeploymentRole, _ int) string {
 			return r.DeploymentId
 		})
 		missingIds, _ := lo.Difference(dagDeploymentIds, deploymentRoleIds)

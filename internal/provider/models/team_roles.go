@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -22,7 +22,7 @@ type TeamRoles struct {
 func (data *TeamRoles) ReadFromResponse(
 	ctx context.Context,
 	teamId string,
-	teamRoles *iam.SubjectRoles,
+	teamRoles *platform_v1.SubjectRoles,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.TeamId = types.StringValue(teamId)

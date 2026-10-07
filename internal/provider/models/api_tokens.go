@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -18,7 +18,7 @@ type ApiTokens struct {
 	IncludeOnlyOrganizationTokens types.Bool   `tfsdk:"include_only_organization_tokens"` // query parameter
 }
 
-func (data *ApiTokens) ReadFromResponse(ctx context.Context, apiTokens []iam.ApiToken) diag.Diagnostics {
+func (data *ApiTokens) ReadFromResponse(ctx context.Context, apiTokens []platform_v1.ApiToken) diag.Diagnostics {
 	values := make([]attr.Value, len(apiTokens))
 	for i, apiToken := range apiTokens {
 		var singleApiTokenData ApiTokenDataSource

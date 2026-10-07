@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -24,8 +24,8 @@ func NewClusterOptionsDataSource() datasource.DataSource {
 
 // clusterOptionsDataSource defines the data source implementation.
 type clusterOptionsDataSource struct {
-	PlatformClient platform.ClientWithResponsesInterface
-	OrganizationId string
+	PlatformV1Client platform_v1.ClientWithResponsesInterface
+	OrganizationId   string
 }
 
 func (d *clusterOptionsDataSource) Metadata(
@@ -64,7 +64,7 @@ func (d *clusterOptionsDataSource) Configure(
 		return
 	}
 
-	d.PlatformClient = apiClients.PlatformClient
+	d.PlatformV1Client = apiClients.PlatformV1Client
 	d.OrganizationId = apiClients.OrganizationId
 }
 
@@ -80,14 +80,14 @@ func (d *clusterOptionsDataSource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	provider := platform.GetClusterOptionsParamsProvider(data.CloudProvider.ValueString())
-	params := &platform.GetClusterOptionsParams{
-		Type:     platform.GetClusterOptionsParamsType(data.Type.ValueString()),
+	provider := platform_v1.GetClusterOptionsParamsProvider(data.CloudProvider.ValueString())
+	params := &platform_v1.GetClusterOptionsParams{
+		Type:     platform_v1.GetClusterOptionsParamsType(data.Type.ValueString()),
 		Provider: &provider,
 	}
 
-	var clusterOptions []platform.ClusterOptions
-	clusterOptionsResp, err := d.PlatformClient.GetClusterOptionsWithResponse(
+	var clusterOptions []platform_v1.ClusterOptions
+	clusterOptionsResp, err := d.PlatformV1Client.GetClusterOptionsWithResponse(
 		ctx,
 		d.OrganizationId,
 		params,

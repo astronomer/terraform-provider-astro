@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -26,8 +26,8 @@ func NewApiTokensDataSource() datasource.DataSource {
 
 // apiTokensDataSource defines the data source implementation.
 type apiTokensDataSource struct {
-	IamClient      iam.ClientWithResponsesInterface
-	OrganizationId string
+	PlatformV1Client platform_v1.ClientWithResponsesInterface
+	OrganizationId   string
 }
 
 func (d *apiTokensDataSource) Metadata(
@@ -66,7 +66,7 @@ func (d *apiTokensDataSource) Configure(
 		return
 	}
 
-	d.IamClient = apiClients.IamClient
+	d.PlatformV1Client = apiClients.PlatformV1Client
 	d.OrganizationId = apiClients.OrganizationId
 }
 
@@ -83,7 +83,7 @@ func (d *apiTokensDataSource) Read(
 		return
 	}
 
-	params := &iam.ListApiTokensParams{
+	params := &platform_v1.ListApiTokensParams{
 		Limit: lo.ToPtr(1000),
 	}
 	var diags diag.Diagnostics
@@ -100,11 +100,11 @@ func (d *apiTokensDataSource) Read(
 		params.IncludeOnlyOrganizationTokens = &includeOnlyOrganizationTokens
 	}
 
-	var apiTokens []iam.ApiToken
+	var apiTokens []platform_v1.ApiToken
 	offset := 0
 	for {
 		params.Offset = &offset
-		apiTokensResp, err := d.IamClient.ListApiTokensWithResponse(
+		apiTokensResp, err := d.PlatformV1Client.ListApiTokensWithResponse(
 			ctx,
 			d.OrganizationId,
 			params,

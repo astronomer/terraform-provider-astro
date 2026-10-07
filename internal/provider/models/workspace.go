@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -22,7 +22,7 @@ type Workspace struct {
 
 func (data *Workspace) ReadFromResponse(
 	ctx context.Context,
-	workspace *platform.Workspace,
+	workspace *platform_v1.Workspace,
 ) diag.Diagnostics {
 	data.Id = types.StringValue(workspace.Id)
 	data.Name = types.StringValue(workspace.Name)

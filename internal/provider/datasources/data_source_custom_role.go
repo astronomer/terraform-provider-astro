@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -24,8 +24,8 @@ func NewCustomRoleDataSource() datasource.DataSource {
 
 // customRoleDataSource defines the data source implementation.
 type customRoleDataSource struct {
-	IamClient      iam.ClientWithResponsesInterface
-	OrganizationId string
+	PlatformV1Client platform_v1.ClientWithResponsesInterface
+	OrganizationId   string
 }
 
 func (d *customRoleDataSource) Metadata(
@@ -64,7 +64,7 @@ func (d *customRoleDataSource) Configure(
 		return
 	}
 
-	d.IamClient = apiClients.IamClient
+	d.PlatformV1Client = apiClients.PlatformV1Client
 	d.OrganizationId = apiClients.OrganizationId
 }
 
@@ -77,7 +77,7 @@ func (d *customRoleDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		return
 	}
 
-	customRole, err := d.IamClient.GetCustomRoleWithResponse(ctx, d.OrganizationId, data.Id.ValueString())
+	customRole, err := d.PlatformV1Client.GetCustomRoleWithResponse(ctx, d.OrganizationId, data.Id.ValueString())
 	if err != nil {
 		tflog.Error(ctx, "Failed to get custom role", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(

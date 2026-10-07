@@ -3,7 +3,7 @@ package schemas
 import (
 	"regexp"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -23,9 +23,9 @@ func UserInviteResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			MarkdownDescription: "The Organization role to assign to the user",
 			Required:            true,
 			Validators: []validator.String{
-				stringvalidator.OneOf(string(iam.CreateUserInviteRequestRoleORGANIZATIONOWNER),
-					string(iam.CreateUserInviteRequestRoleORGANIZATIONMEMBER),
-					string(iam.CreateUserInviteRequestRoleORGANIZATIONBILLINGADMIN),
+				stringvalidator.OneOf(string(platform_v1.CreateUserInviteRequestRoleORGANIZATIONOWNER),
+					string(platform_v1.CreateUserInviteRequestRoleORGANIZATIONMEMBER),
+					string(platform_v1.CreateUserInviteRequestRoleORGANIZATIONBILLINGADMIN),
 				),
 			},
 		},

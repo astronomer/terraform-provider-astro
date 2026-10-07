@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -127,14 +127,14 @@ func testAccCheckTeamMembershipNotExists(t *testing.T, teamName, userId string) 
 func checkTeamMembership(t *testing.T, teamName, userId string, shouldExist bool) error {
 	t.Helper()
 
-	iamClient, err := utils.GetTestHostedIamClient()
+	platformV1Client, err := utils.GetTestHostedIamClient()
 	assert.NoError(t, err)
 
 	organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
 	ctx := context.Background()
 
 	// Find the team by name
-	teamsResp, err := iamClient.ListTeamsWithResponse(ctx, organizationId, &iam.ListTeamsParams{
+	teamsResp, err := platformV1Client.ListTeamsWithResponse(ctx, organizationId, &platform_v1.ListTeamsParams{
 		Names: &[]string{teamName},
 	})
 	if err != nil {
@@ -154,7 +154,7 @@ func checkTeamMembership(t *testing.T, teamName, userId string, shouldExist bool
 	teamId := teamsResp.JSON200.Teams[0].Id
 
 	// Check membership
-	membersResp, err := iamClient.ListTeamMembersWithResponse(ctx, organizationId, teamId, nil)
+	membersResp, err := platformV1Client.ListTeamMembersWithResponse(ctx, organizationId, teamId, nil)
 	if err != nil {
 		return fmt.Errorf("failed to list team members: %w", err)
 	}
@@ -189,13 +189,13 @@ func checkTeamMembership(t *testing.T, teamName, userId string, shouldExist bool
 func removeMemberOutsideOfTerraform(t *testing.T, teamName, userId string) {
 	t.Helper()
 
-	iamClient, err := utils.GetTestHostedIamClient()
+	platformV1Client, err := utils.GetTestHostedIamClient()
 	assert.NoError(t, err)
 
 	organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
 	ctx := context.Background()
 
-	teamsResp, err := iamClient.ListTeamsWithResponse(ctx, organizationId, &iam.ListTeamsParams{
+	teamsResp, err := platformV1Client.ListTeamsWithResponse(ctx, organizationId, &platform_v1.ListTeamsParams{
 		Names: &[]string{teamName},
 	})
 	assert.NoError(t, err)
@@ -203,7 +203,7 @@ func removeMemberOutsideOfTerraform(t *testing.T, teamName, userId string) {
 	assert.NotEmpty(t, teamsResp.JSON200.Teams, "team %q not found", teamName)
 
 	teamId := teamsResp.JSON200.Teams[0].Id
-	_, err = iamClient.RemoveTeamMemberWithResponse(ctx, organizationId, teamId, userId)
+	_, err = platformV1Client.RemoveTeamMemberWithResponse(ctx, organizationId, teamId, userId)
 	assert.NoError(t, err)
 }
 
