@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -30,8 +30,8 @@ func NewHybridClusterWorkspaceAuthorizationResource() resource.Resource {
 
 // hybridClusterWorkspaceAuthorizationResource represents a hybrid cluster workspace authorization resource.
 type hybridClusterWorkspaceAuthorizationResource struct {
-	platformClient *platform.ClientWithResponses
-	organizationId string
+	platformV1Client *platform_v1.ClientWithResponses
+	organizationId   string
 }
 
 func (r *hybridClusterWorkspaceAuthorizationResource) Metadata(
@@ -70,7 +70,7 @@ func (r *hybridClusterWorkspaceAuthorizationResource) Configure(
 		return
 	}
 
-	r.platformClient = apiClients.PlatformClient
+	r.platformV1Client = apiClients.PlatformV1Client
 	r.organizationId = apiClients.OrganizationId
 }
 
@@ -79,9 +79,9 @@ func (r *hybridClusterWorkspaceAuthorizationResource) MutateRoles(
 	data *models.HybridClusterWorkspaceAuthorizationResource,
 ) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	var updateClusterRequest platform.UpdateClusterRequest
-	updateHybridClusterRequest := platform.UpdateHybridClusterRequest{
-		ClusterType: platform.UpdateHybridClusterRequestClusterTypeHYBRID,
+	var updateClusterRequest platform_v1.UpdateClusterRequest
+	updateHybridClusterRequest := platform_v1.UpdateHybridClusterRequest{
+		ClusterType: platform_v1.UpdateHybridClusterRequestClusterTypeHYBRID,
 	}
 
 	// workspaceIds
@@ -105,7 +105,7 @@ func (r *hybridClusterWorkspaceAuthorizationResource) MutateRoles(
 		return diags
 	}
 
-	cluster, err := r.platformClient.UpdateClusterWithResponse(ctx, r.organizationId, data.ClusterId.ValueString(), updateClusterRequest)
+	cluster, err := r.platformV1Client.UpdateClusterWithResponse(ctx, r.organizationId, data.ClusterId.ValueString(), updateClusterRequest)
 	if err != nil {
 		tflog.Error(ctx, "failed to mutate hybrid cluster workspace authorization", map[string]interface{}{"error": err})
 		diags.AddError(
@@ -122,9 +122,9 @@ func (r *hybridClusterWorkspaceAuthorizationResource) MutateRoles(
 
 	// Wait for the cluster to be updated (or fail)
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING)},
-		Target:     []string{string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED)},
-		Refresh:    ClusterResourceRefreshFunc(ctx, r.platformClient, r.organizationId, cluster.JSON200.Id),
+		Pending:    []string{string(platform_v1.ClusterStatusCREATING), string(platform_v1.ClusterStatusUPDATING)},
+		Target:     []string{string(platform_v1.ClusterStatusCREATED), string(platform_v1.ClusterStatusUPDATEFAILED), string(platform_v1.ClusterStatusCREATEFAILED)},
+		Refresh:    ClusterResourceRefreshFunc(ctx, r.platformV1Client, r.organizationId, cluster.JSON200.Id),
 		Timeout:    1 * time.Hour,
 		MinTimeout: 1 * time.Minute,
 	}
@@ -136,7 +136,7 @@ func (r *hybridClusterWorkspaceAuthorizationResource) MutateRoles(
 		return diags
 	}
 
-	diags = data.ReadFromResponse(readyCluster.(*platform.Cluster))
+	diags = data.ReadFromResponse(readyCluster.(*platform_v1.Cluster))
 	if diags.HasError() {
 		return diags
 	}
@@ -181,7 +181,7 @@ func (r *hybridClusterWorkspaceAuthorizationResource) Read(
 		return
 	}
 
-	cluster, err := r.platformClient.GetClusterWithResponse(ctx, r.organizationId, data.ClusterId.ValueString())
+	cluster, err := r.platformV1Client.GetClusterWithResponse(ctx, r.organizationId, data.ClusterId.ValueString())
 	if err != nil {
 		tflog.Error(ctx, "failed to get cluster", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get cluster, got error: %s", err))
@@ -250,9 +250,9 @@ func (r *hybridClusterWorkspaceAuthorizationResource) Delete(
 	}
 
 	var diags diag.Diagnostics
-	var updateClusterRequest platform.UpdateClusterRequest
-	updateHybridClusterRequest := platform.UpdateHybridClusterRequest{
-		ClusterType:  platform.UpdateHybridClusterRequestClusterTypeHYBRID,
+	var updateClusterRequest platform_v1.UpdateClusterRequest
+	updateHybridClusterRequest := platform_v1.UpdateHybridClusterRequest{
+		ClusterType:  platform_v1.UpdateHybridClusterRequestClusterTypeHYBRID,
 		WorkspaceIds: &[]string{},
 	}
 
@@ -266,7 +266,7 @@ func (r *hybridClusterWorkspaceAuthorizationResource) Delete(
 		return
 	}
 
-	cluster, err := r.platformClient.UpdateClusterWithResponse(ctx, r.organizationId, data.ClusterId.ValueString(), updateClusterRequest)
+	cluster, err := r.platformV1Client.UpdateClusterWithResponse(ctx, r.organizationId, data.ClusterId.ValueString(), updateClusterRequest)
 	if err != nil {
 		tflog.Error(ctx, "failed to delete hybrid cluster workspace authorization", map[string]interface{}{"error": err})
 		resp.Diagnostics.AddError(
@@ -283,9 +283,9 @@ func (r *hybridClusterWorkspaceAuthorizationResource) Delete(
 
 	// Wait for the cluster to be updated (or fail)
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(platform.ClusterStatusCREATING), string(platform.ClusterStatusUPDATING)},
-		Target:     []string{string(platform.ClusterStatusCREATED), string(platform.ClusterStatusUPDATEFAILED), string(platform.ClusterStatusCREATEFAILED)},
-		Refresh:    ClusterResourceRefreshFunc(ctx, r.platformClient, r.organizationId, cluster.JSON200.Id),
+		Pending:    []string{string(platform_v1.ClusterStatusCREATING), string(platform_v1.ClusterStatusUPDATING)},
+		Target:     []string{string(platform_v1.ClusterStatusCREATED), string(platform_v1.ClusterStatusUPDATEFAILED), string(platform_v1.ClusterStatusCREATEFAILED)},
+		Refresh:    ClusterResourceRefreshFunc(ctx, r.platformV1Client, r.organizationId, cluster.JSON200.Id),
 		Timeout:    1 * time.Hour,
 		MinTimeout: 1 * time.Minute,
 	}
@@ -297,7 +297,7 @@ func (r *hybridClusterWorkspaceAuthorizationResource) Delete(
 		return
 	}
 
-	diags = data.ReadFromResponse(readyCluster.(*platform.Cluster))
+	diags = data.ReadFromResponse(readyCluster.(*platform_v1.Cluster))
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

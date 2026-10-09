@@ -1,7 +1,7 @@
 package schemas
 
 import (
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -23,11 +23,11 @@ func ResourceUserRolesSchemaAttributes() map[string]resourceSchema.Attribute {
 			Required:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(iam.UserOrganizationRoleORGANIZATIONOWNER),
-					string(iam.UserOrganizationRoleORGANIZATIONMEMBER),
-					string(iam.UserOrganizationRoleORGANIZATIONBILLINGADMIN),
-					string(iam.UserOrganizationRoleORGANIZATIONOBSERVEADMIN),
-					string(iam.UserOrganizationRoleORGANIZATIONOBSERVEMEMBER),
+					string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER),
+					string(platform_v1.UserOrganizationRoleORGANIZATIONMEMBER),
+					string(platform_v1.UserOrganizationRoleORGANIZATIONBILLINGADMIN),
+					string(platform_v1.UserOrganizationRoleORGANIZATIONOBSERVEADMIN),
+					string(platform_v1.UserOrganizationRoleORGANIZATIONOBSERVEMEMBER),
 				),
 			},
 		},

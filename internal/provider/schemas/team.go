@@ -1,7 +1,7 @@
 package schemas
 
 import (
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -123,11 +123,11 @@ func TeamResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			MarkdownDescription: "The role to assign to the Organization",
 			Required:            true,
 			Validators: []validator.String{
-				stringvalidator.OneOf(string(iam.TeamOrganizationRoleORGANIZATIONOWNER),
-					string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),
-					string(iam.TeamOrganizationRoleORGANIZATIONBILLINGADMIN),
-					string(iam.TeamOrganizationRoleORGANIZATIONOBSERVEADMIN),
-					string(iam.TeamOrganizationRoleORGANIZATIONOBSERVEMEMBER),
+				stringvalidator.OneOf(string(platform_v1.TeamOrganizationRoleORGANIZATIONOWNER),
+					string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER),
+					string(platform_v1.TeamOrganizationRoleORGANIZATIONBILLINGADMIN),
+					string(platform_v1.TeamOrganizationRoleORGANIZATIONOBSERVEADMIN),
+					string(platform_v1.TeamOrganizationRoleORGANIZATIONOBSERVEMEMBER),
 				),
 			},
 		},

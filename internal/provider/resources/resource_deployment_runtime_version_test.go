@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/resources"
 )
 
@@ -14,7 +14,7 @@ import (
 // create deployment endpoint rejects ("3.4-1-nightly20260630 is not a valid astro runtime
 // version"). The newest stable release must be chosen instead of the first entry.
 func TestUnit_LatestStableRuntimeVersion_SkipsLeadingPreReleases(t *testing.T) {
-	version := resources.LatestStableRuntimeVersion(context.Background(), []platform.RuntimeRelease{
+	version := resources.LatestStableRuntimeVersion(context.Background(), []platform_v1.RuntimeRelease{
 		{Version: "3.4-1-nightly20260630", Channel: "nightly"},
 		{Version: "3.4-1-beta1", Channel: "beta"},
 		{Version: "3.3-5", Channel: "stable"},
@@ -25,7 +25,7 @@ func TestUnit_LatestStableRuntimeVersion_SkipsLeadingPreReleases(t *testing.T) {
 
 // The common case: the newest release is already stable.
 func TestUnit_LatestStableRuntimeVersion_TakesNewestStable(t *testing.T) {
-	version := resources.LatestStableRuntimeVersion(context.Background(), []platform.RuntimeRelease{
+	version := resources.LatestStableRuntimeVersion(context.Background(), []platform_v1.RuntimeRelease{
 		{Version: "3.4-2", Channel: "stable"},
 		{Version: "3.4-1", Channel: "stable"},
 	})
@@ -35,7 +35,7 @@ func TestUnit_LatestStableRuntimeVersion_TakesNewestStable(t *testing.T) {
 // With nothing stable on offer, fall back to the newest release rather than failing a create
 // that may still succeed — this is what the provider did before stable filtering existed.
 func TestUnit_LatestStableRuntimeVersion_FallsBackWhenNoStable(t *testing.T) {
-	version := resources.LatestStableRuntimeVersion(context.Background(), []platform.RuntimeRelease{
+	version := resources.LatestStableRuntimeVersion(context.Background(), []platform_v1.RuntimeRelease{
 		{Version: "3.4-1-nightly20260630", Channel: "nightly"},
 		{Version: "3.4-1-beta1", Channel: "beta"},
 	})
@@ -44,7 +44,7 @@ func TestUnit_LatestStableRuntimeVersion_FallsBackWhenNoStable(t *testing.T) {
 
 // An empty channel is not stable and must not be selected over an explicitly stable release.
 func TestUnit_LatestStableRuntimeVersion_EmptyChannelIsNotStable(t *testing.T) {
-	version := resources.LatestStableRuntimeVersion(context.Background(), []platform.RuntimeRelease{
+	version := resources.LatestStableRuntimeVersion(context.Background(), []platform_v1.RuntimeRelease{
 		{Version: "3.4-1-unknown", Channel: ""},
 		{Version: "3.3-5", Channel: "stable"},
 	})

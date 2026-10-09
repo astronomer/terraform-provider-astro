@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -47,13 +47,13 @@ type ApiTokenResource struct {
 	Token              types.String `tfsdk:"token"`
 }
 
-func (data *ApiTokenDataSource) ReadFromResponse(ctx context.Context, apiToken *iam.ApiToken) diag.Diagnostics {
+func (data *ApiTokenDataSource) ReadFromResponse(ctx context.Context, apiToken *platform_v1.ApiToken) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(apiToken.Id)
 	data.Name = types.StringValue(apiToken.Name)
 	data.Description = types.StringValue(apiToken.Description)
 	data.ShortToken = types.StringValue(apiToken.ShortToken)
-	data.Type = types.StringValue(string(apiToken.Type))
+	data.Type = types.StringValue(string(apiToken.Scope))
 	data.StartAt = types.StringValue(apiToken.StartAt.String())
 	if apiToken.EndAt != nil {
 		data.EndAt = types.StringValue(apiToken.EndAt.String())
@@ -87,7 +87,7 @@ func (data *ApiTokenDataSource) ReadFromResponse(ctx context.Context, apiToken *
 	return diags
 }
 
-func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *iam.ApiToken, token string) diag.Diagnostics {
+func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *platform_v1.ApiToken, token string) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(apiToken.Id)
 	data.Name = types.StringValue(apiToken.Name)
@@ -97,7 +97,7 @@ func (data *ApiTokenResource) ReadFromResponse(ctx context.Context, apiToken *ia
 		data.Description = types.StringValue(apiToken.Description)
 	}
 	data.ShortToken = types.StringValue(apiToken.ShortToken)
-	data.Type = types.StringValue(string(apiToken.Type))
+	data.Type = types.StringValue(string(apiToken.Scope))
 	data.StartAt = types.StringValue(apiToken.StartAt.String())
 	if apiToken.EndAt == nil {
 		data.EndAt = types.StringNull()

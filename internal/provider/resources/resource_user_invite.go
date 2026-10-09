@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -28,7 +28,7 @@ func NewUserInviteResource() resource.Resource {
 
 // UserInviteResource defines the resource implementation.
 type UserInviteResource struct {
-	IamClient      *iam.ClientWithResponses
+	IamClient      *platform_v1.ClientWithResponses
 	OrganizationId string
 }
 
@@ -68,7 +68,7 @@ func (r *UserInviteResource) Configure(
 		return
 	}
 
-	r.IamClient = apiClients.IamClient
+	r.IamClient = apiClients.PlatformV1Client
 	r.OrganizationId = apiClients.OrganizationId
 }
 
@@ -88,9 +88,9 @@ func (r *UserInviteResource) Create(
 	var diags diag.Diagnostics
 
 	// Create the user invite request
-	createUserInviteRequest := iam.CreateUserInviteRequest{
+	createUserInviteRequest := platform_v1.CreateUserInviteRequest{
 		InviteeEmail: data.Email.ValueString(),
-		Role:         iam.CreateUserInviteRequestRole(data.Role.ValueString()),
+		Role:         platform_v1.CreateUserInviteRequestRole(data.Role.ValueString()),
 	}
 
 	// Create the user invite
@@ -194,23 +194,23 @@ func (r *UserInviteResource) Read(
 	// Generate userInvite from the get user API response
 	// Parse ExpiresAt string back to time.Time
 	expiresAt, _ := time.Parse(time.RFC3339Nano, data.ExpiresAt.ValueString())
-	userInvite := iam.Invite{
+	userInvite := platform_v1.Invite{
 		ExpiresAt: expiresAt,
 		InviteId:  data.InviteId.ValueString(),
-		Invitee: iam.BasicSubjectProfile{
+		Invitee: platform_v1.BasicSubjectProfile{
 			ApiTokenName: invitee.ApiTokenName.ValueStringPointer(),
 			AvatarUrl:    invitee.AvatarUrl.ValueStringPointer(),
 			FullName:     invitee.FullName.ValueStringPointer(),
 			Id:           invitee.Id.ValueString(),
-			SubjectType:  lo.ToPtr(iam.BasicSubjectProfileSubjectType(invitee.SubjectType.ValueString())),
+			SubjectType:  lo.ToPtr(platform_v1.BasicSubjectProfileSubjectType(invitee.SubjectType.ValueString())),
 			Username:     invitee.Username.ValueStringPointer(),
 		},
-		Inviter: iam.BasicSubjectProfile{
+		Inviter: platform_v1.BasicSubjectProfile{
 			ApiTokenName: inviter.ApiTokenName.ValueStringPointer(),
 			AvatarUrl:    inviter.AvatarUrl.ValueStringPointer(),
 			FullName:     inviter.FullName.ValueStringPointer(),
 			Id:           inviter.Id.ValueString(),
-			SubjectType:  lo.ToPtr(iam.BasicSubjectProfileSubjectType(inviter.SubjectType.ValueString())),
+			SubjectType:  lo.ToPtr(platform_v1.BasicSubjectProfileSubjectType(inviter.SubjectType.ValueString())),
 			Username:     inviter.Username.ValueStringPointer(),
 		},
 		OrganizationId: r.OrganizationId,
@@ -279,9 +279,9 @@ func (r *UserInviteResource) Update(
 	}
 
 	// Create a new user invite request
-	createUserInviteRequest := iam.CreateUserInviteRequest{
+	createUserInviteRequest := platform_v1.CreateUserInviteRequest{
 		InviteeEmail: data.Email.ValueString(),
-		Role:         iam.CreateUserInviteRequestRole(data.Role.ValueString()),
+		Role:         platform_v1.CreateUserInviteRequestRole(data.Role.ValueString()),
 	}
 
 	// Create the new user invite

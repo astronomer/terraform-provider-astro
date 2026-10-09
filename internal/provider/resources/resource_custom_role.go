@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -28,7 +28,7 @@ func NewCustomRoleResource() resource.Resource {
 
 // customRoleResource defines the resource implementation.
 type customRoleResource struct {
-	IamClient      *iam.ClientWithResponses
+	IamClient      *platform_v1.ClientWithResponses
 	OrganizationId string
 }
 
@@ -68,7 +68,7 @@ func (r *customRoleResource) Configure(
 		return
 	}
 
-	r.IamClient = apiClients.IamClient
+	r.IamClient = apiClients.PlatformV1Client
 	r.OrganizationId = apiClients.OrganizationId
 }
 
@@ -103,10 +103,10 @@ func (r *customRoleResource) Create(
 	}
 
 	// Create request
-	createCustomRoleRequest := iam.CreateCustomRoleRequest{
+	createCustomRoleRequest := platform_v1.CreateCustomRoleRequest{
 		Name:        data.Name.ValueString(),
 		Permissions: permissions,
-		ScopeType:   iam.CreateCustomRoleRequestScopeType(data.ScopeType.ValueString()),
+		ScopeType:   platform_v1.CreateCustomRoleRequestScopeType(data.ScopeType.ValueString()),
 	}
 
 	// Set optional fields
@@ -230,7 +230,7 @@ func (r *customRoleResource) Update(
 	}
 
 	// Update request
-	updateCustomRoleRequest := iam.UpdateCustomRoleRequest{
+	updateCustomRoleRequest := platform_v1.UpdateCustomRoleRequest{
 		Name:        data.Name.ValueString(),
 		Permissions: permissions,
 	}

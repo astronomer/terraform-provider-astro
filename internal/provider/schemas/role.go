@@ -1,7 +1,7 @@
 package schemas
 
 import (
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -32,11 +32,11 @@ func ResourceWorkspaceRoleSchemaAttributes() map[string]resourceSchema.Attribute
 			Required:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(iam.WORKSPACEOWNER),
-					string(iam.WORKSPACEMEMBER),
-					string(iam.WORKSPACEACCESSOR),
-					string(iam.WORKSPACEOPERATOR),
-					string(iam.WORKSPACEAUTHOR),
+					string(platform_v1.WORKSPACEOWNER),
+					string(platform_v1.WORKSPACEMEMBER),
+					string(platform_v1.WORKSPACEACCESSOR),
+					string(platform_v1.WORKSPACEOPERATOR),
+					string(platform_v1.WORKSPACEAUTHOR),
 				),
 			},
 		},
@@ -172,11 +172,11 @@ func ResourceApiTokenRoleSchemaAttributes() map[string]resourceSchema.Attribute 
 			Required:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(iam.ApiTokenRoleEntityTypeORGANIZATION),
-					string(iam.ApiTokenRoleEntityTypeWORKSPACE),
-					string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
-					string(iam.ApiTokenRoleEntityTypeDAG),
-					string(iam.ApiTokenRoleEntityTypeDAGTAG),
+					string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
+					string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
+					string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
+					string(platform_v1.ApiTokenRoleEntityTypeDAG),
+					string(platform_v1.ApiTokenRoleEntityTypeDAGTAG),
 				),
 			},
 		},

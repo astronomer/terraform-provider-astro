@@ -8,8 +8,6 @@ import (
 
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -47,8 +45,8 @@ func TestSubjectProfileTypesObject(t *testing.T) {
 			name  string
 			input any
 		}{
-			{"nil *platform.BasicSubjectProfile", (*platform.BasicSubjectProfile)(nil)},
-			{"nil *iam.BasicSubjectProfile", (*iam.BasicSubjectProfile)(nil)},
+			{"nil *platform_v1.BasicSubjectProfile", (*platform_v1.BasicSubjectProfile)(nil)},
+			{"nil *platform_v1.BasicSubjectProfile", (*platform_v1.BasicSubjectProfile)(nil)},
 			{"nil *platform_v1.BasicSubjectProfile", (*platform_v1.BasicSubjectProfile)(nil)},
 		}
 
@@ -68,12 +66,12 @@ func TestSubjectProfileTypesObject(t *testing.T) {
 			expected models.SubjectProfile
 		}{
 			{
-				"user - &platform.BasicSubjectProfile",
-				&platform.BasicSubjectProfile{
+				"user - &platform_v1.BasicSubjectProfile",
+				&platform_v1.BasicSubjectProfile{
 					AvatarUrl:   lo.ToPtr("avatar_url"),
 					FullName:    lo.ToPtr("full_name"),
 					Id:          "id",
-					SubjectType: (*platform.BasicSubjectProfileSubjectType)(lo.ToPtr("USER")),
+					SubjectType: (*platform_v1.BasicSubjectProfileSubjectType)(lo.ToPtr("USER")),
 					Username:    lo.ToPtr("username"),
 				},
 				models.SubjectProfile{
@@ -86,10 +84,10 @@ func TestSubjectProfileTypesObject(t *testing.T) {
 				},
 			},
 			{
-				"token - &iam.BasicSubjectProfile",
-				&iam.BasicSubjectProfile{
+				"token - &platform_v1.BasicSubjectProfile",
+				&platform_v1.BasicSubjectProfile{
 					Id:           "id",
-					SubjectType:  (*iam.BasicSubjectProfileSubjectType)(lo.ToPtr("SERVICEKEY")),
+					SubjectType:  (*platform_v1.BasicSubjectProfileSubjectType)(lo.ToPtr("SERVICEKEY")),
 					ApiTokenName: lo.ToPtr("api_token_name"),
 				},
 				models.SubjectProfile{
@@ -102,8 +100,8 @@ func TestSubjectProfileTypesObject(t *testing.T) {
 				},
 			},
 			{
-				"just id - platform.BasicSubjectProfile",
-				platform.BasicSubjectProfile{
+				"just id - platform_v1.BasicSubjectProfile",
+				platform_v1.BasicSubjectProfile{
 					Id: "id",
 				},
 				models.SubjectProfile{
@@ -116,8 +114,8 @@ func TestSubjectProfileTypesObject(t *testing.T) {
 				},
 			},
 			{
-				"just id - iam.BasicSubjectProfile",
-				iam.BasicSubjectProfile{Id: "id"},
+				"just id - platform_v1.BasicSubjectProfile",
+				platform_v1.BasicSubjectProfile{Id: "id"},
 				models.SubjectProfile{
 					Id:           types.StringValue("id"),
 					SubjectType:  types.StringNull(),

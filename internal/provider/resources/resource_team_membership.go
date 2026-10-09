@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -27,8 +27,8 @@ func NewTeamMembershipResource() resource.Resource {
 }
 
 type teamMembershipResource struct {
-	iamClient      *iam.ClientWithResponses
-	organizationId string
+	platformV1Client *platform_v1.ClientWithResponses
+	organizationId   string
 }
 
 func (r *teamMembershipResource) Metadata(
@@ -67,7 +67,7 @@ func (r *teamMembershipResource) Configure(
 		utils.ResourceApiClientConfigureError(ctx, req, resp)
 		return
 	}
-	r.iamClient = apiClients.IamClient
+	r.platformV1Client = apiClients.PlatformV1Client
 	r.organizationId = apiClients.OrganizationId
 }
 
@@ -86,11 +86,11 @@ func (r *teamMembershipResource) Create(
 	teamId := data.TeamId.ValueString()
 	userId := data.UserId.ValueString()
 
-	addResp, err := r.iamClient.AddTeamMembersWithResponse(
+	addResp, err := r.platformV1Client.AddTeamMembersWithResponse(
 		ctx,
 		r.organizationId,
 		teamId,
-		iam.AddTeamMembersJSONRequestBody{MemberIds: []string{userId}},
+		platform_v1.AddTeamMembersJSONRequestBody{MemberIds: []string{userId}},
 	)
 	if err != nil {
 		tflog.Error(ctx, "failed to add team member", map[string]interface{}{"error": err})
@@ -131,11 +131,11 @@ func (r *teamMembershipResource) Read(
 	pageSize := 1000
 	offset := 0
 	for {
-		params := &iam.ListTeamMembersParams{
+		params := &platform_v1.ListTeamMembersParams{
 			Limit:  &pageSize,
 			Offset: &offset,
 		}
-		membersResp, err := r.iamClient.ListTeamMembersWithResponse(
+		membersResp, err := r.platformV1Client.ListTeamMembersWithResponse(
 			ctx,
 			r.organizationId,
 			teamId,
@@ -201,7 +201,7 @@ func (r *teamMembershipResource) Delete(
 	teamId := data.TeamId.ValueString()
 	userId := data.UserId.ValueString()
 
-	removeResp, err := r.iamClient.RemoveTeamMemberWithResponse(
+	removeResp, err := r.platformV1Client.RemoveTeamMemberWithResponse(
 		ctx,
 		r.organizationId,
 		teamId,

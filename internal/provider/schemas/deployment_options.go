@@ -1,7 +1,7 @@
 package schemas
 
 import (
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -67,9 +67,9 @@ func DeploymentOptionsDataSourceSchemaAttributes() map[string]datasourceSchema.A
 			Optional:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(platform.DeploymentTypeHYBRID),
-					string(platform.DeploymentTypeDEDICATED),
-					string(platform.DeploymentTypeSTANDARD),
+					string(platform_v1.DeploymentTypeHYBRID),
+					string(platform_v1.DeploymentTypeDEDICATED),
+					string(platform_v1.DeploymentTypeSTANDARD),
 				),
 			},
 		},
@@ -78,9 +78,9 @@ func DeploymentOptionsDataSourceSchemaAttributes() map[string]datasourceSchema.A
 			Optional:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(platform.DeploymentExecutorCELERY),
-					string(platform.DeploymentExecutorKUBERNETES),
-					string(platform.DeploymentExecutorASTRO),
+					string(platform_v1.DeploymentExecutorCELERY),
+					string(platform_v1.DeploymentExecutorKUBERNETES),
+					string(platform_v1.DeploymentExecutorASTRO),
 				),
 			},
 		},
@@ -89,9 +89,9 @@ func DeploymentOptionsDataSourceSchemaAttributes() map[string]datasourceSchema.A
 			Optional:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(platform.DeploymentCloudProviderAWS),
-					string(platform.DeploymentCloudProviderAZURE),
-					string(platform.DeploymentCloudProviderGCP),
+					string(platform_v1.DeploymentCloudProviderAWS),
+					string(platform_v1.DeploymentCloudProviderAZURE),
+					string(platform_v1.DeploymentCloudProviderGCP),
 				),
 			},
 		},

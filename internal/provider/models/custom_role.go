@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -39,7 +39,7 @@ type CustomRoleResource struct {
 
 // ReadFromResponse populates the CustomRoleDataSource from an API response.
 // For data sources, empty RestrictedWorkspaceIds array becomes an empty set.
-func (data *CustomRoleDataSource) ReadFromResponse(ctx context.Context, role *iam.RoleWithPermission) diag.Diagnostics {
+func (data *CustomRoleDataSource) ReadFromResponse(ctx context.Context, role *platform_v1.RoleWithPermission) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	data.Id = types.StringValue(role.Id)
@@ -92,7 +92,7 @@ func (data *CustomRoleDataSource) ReadFromResponse(ctx context.Context, role *ia
 }
 
 // ReadFromResponse populates the CustomRoleResource from an API response.
-func (data *CustomRoleResource) ReadFromResponse(ctx context.Context, role *iam.RoleWithPermission) diag.Diagnostics {
+func (data *CustomRoleResource) ReadFromResponse(ctx context.Context, role *platform_v1.RoleWithPermission) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	data.Id = types.StringValue(role.Id)

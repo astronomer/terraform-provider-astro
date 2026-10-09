@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -35,7 +35,7 @@ func TestAcc_ResourceUserInvite(t *testing.T) {
 					userInvite(userInviteInput{
 						Name:  userInviteName,
 						Email: "invalid-email",
-						Role:  string(iam.CreateUserInviteRequestRoleORGANIZATIONOWNER),
+						Role:  string(platform_v1.CreateUserInviteRequestRoleORGANIZATIONOWNER),
 					}),
 				ExpectError: regexp.MustCompile("must be a valid email address"),
 			},
@@ -55,11 +55,11 @@ func TestAcc_ResourceUserInvite(t *testing.T) {
 					userInvite(userInviteInput{
 						Name:  userInviteName,
 						Email: email,
-						Role:  string(iam.CreateUserInviteRequestRoleORGANIZATIONOWNER),
+						Role:  string(platform_v1.CreateUserInviteRequestRoleORGANIZATIONOWNER),
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "email", email),
-					resource.TestCheckResourceAttr(tfVarName, "role", string(iam.CreateUserInviteRequestRoleORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(tfVarName, "role", string(platform_v1.CreateUserInviteRequestRoleORGANIZATIONOWNER)),
 					resource.TestCheckResourceAttrSet(tfVarName, "invite_id"),
 					resource.TestCheckResourceAttrSet(tfVarName, "expires_at"),
 					resource.TestCheckResourceAttrSet(tfVarName, "invitee.id"),
@@ -75,11 +75,11 @@ func TestAcc_ResourceUserInvite(t *testing.T) {
 					userInvite(userInviteInput{
 						Name:  userInviteName,
 						Email: email,
-						Role:  string(iam.CreateUserInviteRequestRoleORGANIZATIONMEMBER),
+						Role:  string(platform_v1.CreateUserInviteRequestRoleORGANIZATIONMEMBER),
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(tfVarName, "email", email),
-					resource.TestCheckResourceAttr(tfVarName, "role", string(iam.CreateUserInviteRequestRoleORGANIZATIONMEMBER)),
+					resource.TestCheckResourceAttr(tfVarName, "role", string(platform_v1.CreateUserInviteRequestRoleORGANIZATIONMEMBER)),
 					resource.TestCheckResourceAttrSet(tfVarName, "invite_id"),
 					// Check via API that user invite exists
 					testAccCheckUserInviteExistence(t, email, true),
@@ -120,7 +120,7 @@ func testAccCheckUserInviteExistence(t *testing.T, email string, shouldExist boo
 			return fmt.Errorf("response JSON200 is nil status: %v, err: %v", status, diag.Detail())
 		}
 
-		var userInvitee *iam.User
+		var userInvitee *platform_v1.User
 		for _, user := range resp.JSON200.Users {
 			if user.Username == email {
 				userInvitee = &user

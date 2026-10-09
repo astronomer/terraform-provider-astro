@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -29,7 +29,7 @@ func NewAgentTokenResource() resource.Resource {
 
 // AgentTokenResource defines the resource implementation.
 type AgentTokenResource struct {
-	IamClient      *iam.ClientWithResponses
+	IamClient      *platform_v1.ClientWithResponses
 	OrganizationId string
 }
 
@@ -67,7 +67,7 @@ func (r *AgentTokenResource) Configure(
 		return
 	}
 
-	r.IamClient = apiClients.IamClient
+	r.IamClient = apiClients.PlatformV1Client
 	r.OrganizationId = apiClients.OrganizationId
 }
 
@@ -83,7 +83,7 @@ func (r *AgentTokenResource) Create(
 		return
 	}
 
-	createRequest := iam.CreateAgentTokenJSONRequestBody{
+	createRequest := platform_v1.CreateAgentTokenJSONRequestBody{
 		Name: data.Name.ValueString(),
 	}
 	if !data.Description.IsNull() {

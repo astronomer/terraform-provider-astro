@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -15,7 +15,7 @@ type AgentTokenResource struct {
 	Token              types.String `tfsdk:"token"`
 }
 
-func (data *AgentTokenResource) ReadFromResponse(apiToken *iam.ApiToken, existingToken string) {
+func (data *AgentTokenResource) ReadFromResponse(apiToken *platform_v1.ApiToken, existingToken string) {
 	data.Id = types.StringValue(apiToken.Id)
 	data.Name = types.StringValue(apiToken.Name)
 	if apiToken.Description == "" {

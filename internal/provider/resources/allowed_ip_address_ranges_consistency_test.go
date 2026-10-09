@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/labs"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -73,12 +73,12 @@ func TestUnit_Create_StoresPlannedRangesNotAPIList(t *testing.T) {
 	srv := fakeAstro(t)
 	defer srv.Close()
 
-	iamClient, err := iam.NewIamClient(srv.URL, "token", "test")
+	platformV1Client, err := platform_v1.NewPlatformV1Client(srv.URL, "token", "test")
 	require.NoError(t, err)
 	labsClient, err := labs.NewLabsClient(srv.URL, "token", "test")
 	require.NoError(t, err)
 
-	r := &allowedIpAddressRangesResource{iamClient: iamClient, labsClient: labsClient, organizationId: "org"}
+	r := &allowedIpAddressRangesResource{platformV1Client: platformV1Client, labsClient: labsClient, organizationId: "org"}
 
 	ctx := context.Background()
 	s := rschema.Schema{Attributes: schemas.AllowedIpAddressRangesResourceSchemaAttributes()}

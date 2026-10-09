@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -20,7 +20,7 @@ type UsersList struct {
 	DeploymentId types.String `tfsdk:"deployment_id"` // query parameter
 }
 
-func (data *UsersList) ReadFromResponse(ctx context.Context, users []iam.User) diag.Diagnostics {
+func (data *UsersList) ReadFromResponse(ctx context.Context, users []platform_v1.User) diag.Diagnostics {
 	values := make([]attr.Value, len(users))
 	for i, user := range users {
 		var singleUserData User

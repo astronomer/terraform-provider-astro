@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
-
 	"github.com/astronomer/terraform-provider-astro/internal/provider/common"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -34,9 +32,8 @@ func NewApiTokenResource() resource.Resource {
 
 // ApiTokenResource defines the resource implementation.
 type ApiTokenResource struct {
-	IamClient      *iam.ClientWithResponses
-	PlatformClient *platform.ClientWithResponses
-	OrganizationId string
+	PlatformV1Client *platform_v1.ClientWithResponses
+	OrganizationId   string
 }
 
 func (r *ApiTokenResource) Metadata(
@@ -74,8 +71,7 @@ func (r *ApiTokenResource) Configure(
 		return
 	}
 
-	r.IamClient = apiClients.IamClient
-	r.PlatformClient = apiClients.PlatformClient
+	r.PlatformV1Client = apiClients.PlatformV1Client
 	r.OrganizationId = apiClients.OrganizationId
 }
 
@@ -109,7 +105,7 @@ func (r *ApiTokenResource) Create(
 	}
 
 	// Validate organization id
-	if string(role.EntityType) == string(iam.ApiTokenRoleEntityTypeORGANIZATION) {
+	if string(role.EntityType) == string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION) {
 		if role.EntityId != r.OrganizationId {
 			resp.Diagnostics.AddError(
 				"API Token of type 'ORGANIZATION' cannot have an 'ORGANIZATION' role with a different organization id",
@@ -120,7 +116,7 @@ func (r *ApiTokenResource) Create(
 	}
 
 	// Validate workspaces
-	workspaceRoles := FilterApiTokenRolesByType(roles, string(iam.ApiTokenRoleEntityTypeWORKSPACE))
+	workspaceRoles := FilterApiTokenRolesByType(roles, string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE))
 	diags = r.HasValidWorkspaces(ctx, workspaceRoles)
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)
@@ -128,7 +124,7 @@ func (r *ApiTokenResource) Create(
 	}
 
 	// Validate deployments
-	deploymentRoles := FilterApiTokenRolesByType(roles, string(iam.ApiTokenRoleEntityTypeDEPLOYMENT))
+	deploymentRoles := FilterApiTokenRolesByType(roles, string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT))
 	diags = r.HasValidDeployments(ctx, deploymentRoles)
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)
@@ -143,14 +139,14 @@ func (r *ApiTokenResource) Create(
 	}
 
 	// Create the API token request
-	createApiTokenRequest := iam.CreateApiTokenRequest{
-		Name: data.Name.ValueString(),
-		Role: role.Role,
-		Type: iam.CreateApiTokenRequestType(data.Type.ValueString()),
+	createApiTokenRequest := platform_v1.CreateApiTokenRequest{
+		Name:  data.Name.ValueString(),
+		Role:  role.Role,
+		Scope: platform_v1.CreateApiTokenRequestScope(data.Type.ValueString()),
 	}
 
 	// If the entity type is WORKSPACE or DEPLOYMENT, set the entity id
-	if createApiTokenRequest.Type == iam.CreateApiTokenRequestTypeWORKSPACE || createApiTokenRequest.Type == iam.CreateApiTokenRequestTypeDEPLOYMENT {
+	if createApiTokenRequest.Scope == platform_v1.CreateApiTokenRequestScopeWORKSPACE || createApiTokenRequest.Scope == platform_v1.CreateApiTokenRequestScopeDEPLOYMENT {
 		createApiTokenRequest.EntityId = lo.ToPtr(role.EntityId)
 	}
 
@@ -164,7 +160,7 @@ func (r *ApiTokenResource) Create(
 		createApiTokenRequest.TokenExpiryPeriodInDays = lo.ToPtr(int(data.ExpiryPeriodInDays.ValueInt64()))
 	}
 
-	apiToken, err := r.IamClient.CreateApiTokenWithResponse(
+	apiToken, err := r.PlatformV1Client.CreateApiTokenWithResponse(
 		ctx,
 		r.OrganizationId,
 		createApiTokenRequest,
@@ -186,10 +182,10 @@ func (r *ApiTokenResource) Create(
 
 	// Update api token with additional roles
 	if len(roles) > 1 {
-		updateApiTokenRolesRequest := iam.UpdateApiTokenRolesRequest{
+		updateApiTokenRolesRequest := platform_v1.UpdateApiTokenRolesRequest{
 			Roles: roles,
 		}
-		updatedApiToken, err := r.IamClient.UpdateApiTokenRolesWithResponse(
+		updatedApiToken, err := r.PlatformV1Client.UpdateApiTokenRolesWithResponse(
 			ctx,
 			r.OrganizationId,
 			tokenId,
@@ -211,7 +207,7 @@ func (r *ApiTokenResource) Create(
 	}
 
 	// Get api token and use this as data since it will have the correct roles
-	apiTokenResp, err := r.IamClient.GetApiTokenWithResponse(
+	apiTokenResp, err := r.PlatformV1Client.GetApiTokenWithResponse(
 		ctx,
 		r.OrganizationId,
 		tokenId,
@@ -265,7 +261,7 @@ func (r *ApiTokenResource) Read(
 	}
 
 	// get request
-	apiToken, err := r.IamClient.GetApiTokenWithResponse(
+	apiToken, err := r.PlatformV1Client.GetApiTokenWithResponse(
 		ctx,
 		r.OrganizationId,
 		data.Id.ValueString(),
@@ -333,7 +329,7 @@ func (r *ApiTokenResource) Update(
 	}
 
 	// Validate organization id
-	if string(role.EntityType) == string(iam.ApiTokenRoleEntityTypeORGANIZATION) {
+	if string(role.EntityType) == string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION) {
 		if role.EntityId != r.OrganizationId {
 			resp.Diagnostics.AddError(
 				"API Token of type 'ORGANIZATION' cannot have an 'ORGANIZATION' role with a different organization id",
@@ -344,7 +340,7 @@ func (r *ApiTokenResource) Update(
 	}
 
 	// Validate workspaces
-	workspaceRoles := FilterApiTokenRolesByType(roles, string(iam.ApiTokenRoleEntityTypeWORKSPACE))
+	workspaceRoles := FilterApiTokenRolesByType(roles, string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE))
 	diags = r.HasValidWorkspaces(ctx, workspaceRoles)
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)
@@ -352,7 +348,7 @@ func (r *ApiTokenResource) Update(
 	}
 
 	// Validate deployments
-	deploymentRoles := FilterApiTokenRolesByType(roles, string(iam.ApiTokenRoleEntityTypeDEPLOYMENT))
+	deploymentRoles := FilterApiTokenRolesByType(roles, string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT))
 	diags = r.HasValidDeployments(ctx, deploymentRoles)
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)
@@ -376,10 +372,10 @@ func (r *ApiTokenResource) Update(
 	}
 
 	// Update API token roles
-	updateApiTokenRolesRequest := iam.UpdateApiTokenRolesRequest{
+	updateApiTokenRolesRequest := platform_v1.UpdateApiTokenRolesRequest{
 		Roles: roles,
 	}
-	updatedApiToken, err := r.IamClient.UpdateApiTokenRolesWithResponse(
+	updatedApiToken, err := r.PlatformV1Client.UpdateApiTokenRolesWithResponse(
 		ctx,
 		r.OrganizationId,
 		data.Id.ValueString(),
@@ -400,7 +396,7 @@ func (r *ApiTokenResource) Update(
 	}
 
 	// update request
-	updateApiTokenRequest := iam.UpdateApiTokenJSONRequestBody{
+	updateApiTokenRequest := platform_v1.UpdateApiTokenJSONRequestBody{
 		Name: data.Name.ValueString(),
 	}
 
@@ -411,7 +407,7 @@ func (r *ApiTokenResource) Update(
 		updateApiTokenRequest.Description = lo.ToPtr("")
 	}
 
-	apiToken, err := r.IamClient.UpdateApiTokenWithResponse(
+	apiToken, err := r.PlatformV1Client.UpdateApiTokenWithResponse(
 		ctx,
 		r.OrganizationId,
 		data.Id.ValueString(),
@@ -432,7 +428,7 @@ func (r *ApiTokenResource) Update(
 	}
 
 	// Get api token and use this as data since it will have the correct roles
-	apiTokenResp, err := r.IamClient.GetApiTokenWithResponse(
+	apiTokenResp, err := r.PlatformV1Client.GetApiTokenWithResponse(
 		ctx,
 		r.OrganizationId,
 		data.Id.ValueString(),
@@ -480,7 +476,7 @@ func (r *ApiTokenResource) Delete(
 	}
 
 	// delete request
-	apiToken, err := r.IamClient.DeleteApiTokenWithResponse(
+	apiToken, err := r.PlatformV1Client.DeleteApiTokenWithResponse(
 		ctx,
 		r.OrganizationId,
 		data.Id.ValueString(),
@@ -511,12 +507,12 @@ func (r *ApiTokenResource) ImportState(
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []iam.ApiTokenRole) diag.Diagnostics {
+func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []platform_v1.ApiTokenRole) diag.Diagnostics {
 	var numRolesMatchingEntityType int
 	var invalidRoleError string
 
 	for _, role := range roles {
-		if entityType == string(iam.ApiTokenRoleEntityTypeWORKSPACE) && role.EntityType == iam.ApiTokenRoleEntityTypeORGANIZATION {
+		if entityType == string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE) && role.EntityType == platform_v1.ApiTokenRoleEntityTypeORGANIZATION {
 			return diag.Diagnostics{
 				diag.NewErrorDiagnostic(
 					"API Token of type 'WORKSPACE' cannot have an 'ORGANIZATION' role",
@@ -525,10 +521,10 @@ func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []iam.
 			}
 		}
 
-		if entityType == string(iam.ApiTokenRoleEntityTypeDEPLOYMENT) &&
-			role.EntityType != iam.ApiTokenRoleEntityTypeDEPLOYMENT &&
-			role.EntityType != iam.ApiTokenRoleEntityTypeDAG &&
-			role.EntityType != iam.ApiTokenRoleEntityTypeDAGTAG {
+		if entityType == string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT) &&
+			role.EntityType != platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT &&
+			role.EntityType != platform_v1.ApiTokenRoleEntityTypeDAG &&
+			role.EntityType != platform_v1.ApiTokenRoleEntityTypeDAGTAG {
 			return diag.Diagnostics{
 				diag.NewErrorDiagnostic(
 					"API Token of type 'DEPLOYMENT' can only have 'DEPLOYMENT', 'DAG', or 'TAG' roles",
@@ -538,7 +534,7 @@ func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []iam.
 		}
 
 		// Validate DAG/TAG roles have deployment_id
-		if role.EntityType == iam.ApiTokenRoleEntityTypeDAG || role.EntityType == iam.ApiTokenRoleEntityTypeDAGTAG {
+		if role.EntityType == platform_v1.ApiTokenRoleEntityTypeDAG || role.EntityType == platform_v1.ApiTokenRoleEntityTypeDAGTAG {
 			if role.DeploymentId == nil || *role.DeploymentId == "" {
 				return diag.Diagnostics{
 					diag.NewErrorDiagnostic(
@@ -550,7 +546,7 @@ func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []iam.
 		}
 
 		// Skip role type validation for DAG/TAG entity types as they use DAG-specific roles
-		if role.EntityType != iam.ApiTokenRoleEntityTypeDAG && role.EntityType != iam.ApiTokenRoleEntityTypeDAGTAG {
+		if role.EntityType != platform_v1.ApiTokenRoleEntityTypeDAG && role.EntityType != platform_v1.ApiTokenRoleEntityTypeDAGTAG {
 			if !common.ValidateRoleMatchesEntityType(role.Role, string(role.EntityType)) {
 				return diag.Diagnostics{
 					diag.NewErrorDiagnostic(
@@ -567,11 +563,11 @@ func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []iam.
 	}
 
 	switch entityType {
-	case string(iam.ApiTokenRoleEntityTypeORGANIZATION):
+	case string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION):
 		invalidRoleError = "There is no 'ORGANIZATION' role in 'roles'"
-	case string(iam.ApiTokenRoleEntityTypeWORKSPACE):
+	case string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE):
 		invalidRoleError = "There is no 'WORKSPACE' role in 'roles'"
-	case string(iam.ApiTokenRoleEntityTypeDEPLOYMENT):
+	case string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT):
 		invalidRoleError = "There is no 'DEPLOYMENT' role in 'roles'"
 	}
 
@@ -594,10 +590,10 @@ func (r *ApiTokenResource) ValidateApiTokenRoles(entityType string, roles []iam.
 	return nil
 }
 
-// RequestApiTokenRoles converts a Terraform set to a list of iam.ApiTokenRole to be used in create and update requests
-func RequestApiTokenRoles(ctx context.Context, apiTokenRolesObjSet types.Set) ([]iam.ApiTokenRole, diag.Diagnostics) {
+// RequestApiTokenRoles converts a Terraform set to a list of platform_v1.ApiTokenRole to be used in create and update requests
+func RequestApiTokenRoles(ctx context.Context, apiTokenRolesObjSet types.Set) ([]platform_v1.ApiTokenRole, diag.Diagnostics) {
 	if len(apiTokenRolesObjSet.Elements()) == 0 {
-		return []iam.ApiTokenRole{}, nil
+		return []platform_v1.ApiTokenRole{}, nil
 	}
 
 	var roles []models.ApiTokenRole
@@ -605,15 +601,15 @@ func RequestApiTokenRoles(ctx context.Context, apiTokenRolesObjSet types.Set) ([
 	if diags.HasError() {
 		return nil, diags
 	}
-	apiTokenRoles := lo.Map(roles, func(v models.ApiTokenRole, _ int) iam.ApiTokenRole {
-		apiTokenRole := iam.ApiTokenRole{
+	apiTokenRoles := lo.Map(roles, func(v models.ApiTokenRole, _ int) platform_v1.ApiTokenRole {
+		apiTokenRole := platform_v1.ApiTokenRole{
 			Role:       v.Role.ValueString(),
 			EntityId:   v.EntityId.ValueString(),
-			EntityType: iam.ApiTokenRoleEntityType(v.EntityType.ValueString()),
+			EntityType: platform_v1.ApiTokenRoleEntityType(v.EntityType.ValueString()),
 		}
 		// Set DeploymentId for DAG and TAG entity types
-		if v.EntityType.ValueString() == string(iam.ApiTokenRoleEntityTypeDAG) ||
-			v.EntityType.ValueString() == string(iam.ApiTokenRoleEntityTypeDAGTAG) {
+		if v.EntityType.ValueString() == string(platform_v1.ApiTokenRoleEntityTypeDAG) ||
+			v.EntityType.ValueString() == string(platform_v1.ApiTokenRoleEntityTypeDAGTAG) {
 			if !v.DeploymentId.IsNull() && v.DeploymentId.ValueString() != "" {
 				apiTokenRole.DeploymentId = lo.ToPtr(v.DeploymentId.ValueString())
 			}
@@ -624,13 +620,13 @@ func RequestApiTokenRoles(ctx context.Context, apiTokenRolesObjSet types.Set) ([
 	return apiTokenRoles, nil
 }
 
-func RequestApiTokenPrimaryRole(roles []iam.ApiTokenRole, entityType string) (iam.ApiTokenRole, diag.Diagnostics) {
+func RequestApiTokenPrimaryRole(roles []platform_v1.ApiTokenRole, entityType string) (platform_v1.ApiTokenRole, diag.Diagnostics) {
 	for _, role := range roles {
-		if role.EntityType == iam.ApiTokenRoleEntityType(entityType) {
+		if role.EntityType == platform_v1.ApiTokenRoleEntityType(entityType) {
 			return role, nil
 		}
 	}
-	return iam.ApiTokenRole{}, diag.Diagnostics{
+	return platform_v1.ApiTokenRole{}, diag.Diagnostics{
 		diag.NewErrorDiagnostic(
 			fmt.Sprintf("No matching role found for the specified entity type '%s'", entityType),
 			fmt.Sprintf("Please provide a valid role for the API token entity type '%s'", entityType),
@@ -638,17 +634,17 @@ func RequestApiTokenPrimaryRole(roles []iam.ApiTokenRole, entityType string) (ia
 	}
 }
 
-func FilterApiTokenRolesByType(roles []iam.ApiTokenRole, entityType string) []iam.ApiTokenRole {
-	var filteredRoles []iam.ApiTokenRole
+func FilterApiTokenRolesByType(roles []platform_v1.ApiTokenRole, entityType string) []platform_v1.ApiTokenRole {
+	var filteredRoles []platform_v1.ApiTokenRole
 	for _, role := range roles {
-		if role.EntityType == iam.ApiTokenRoleEntityType(entityType) {
+		if role.EntityType == platform_v1.ApiTokenRoleEntityType(entityType) {
 			filteredRoles = append(filteredRoles, role)
 		}
 	}
 	return filteredRoles
 }
 
-func (r *ApiTokenResource) HasValidWorkspaces(ctx context.Context, workspaceRoles []iam.ApiTokenRole) diag.Diagnostics {
+func (r *ApiTokenResource) HasValidWorkspaces(ctx context.Context, workspaceRoles []platform_v1.ApiTokenRole) diag.Diagnostics {
 	if len(workspaceRoles) == 0 {
 		return nil
 	}
@@ -659,12 +655,12 @@ func (r *ApiTokenResource) HasValidWorkspaces(ctx context.Context, workspaceRole
 	}
 	workspaceIds = lo.Uniq(workspaceIds)
 
-	listWorkspacesRequest := platform.ListWorkspacesParams{
+	listWorkspacesRequest := platform_v1.ListWorkspacesParams{
 		WorkspaceIds: lo.ToPtr(workspaceIds),
 	}
 
 	// List organization workspaces
-	workspaces, err := r.PlatformClient.ListWorkspacesWithResponse(
+	workspaces, err := r.PlatformV1Client.ListWorkspacesWithResponse(
 		ctx,
 		r.OrganizationId,
 		&listWorkspacesRequest,
@@ -682,7 +678,7 @@ func (r *ApiTokenResource) HasValidWorkspaces(ctx context.Context, workspaceRole
 	if diagnostic != nil {
 		return diag.Diagnostics{diagnostic}
 	}
-	organizationWorkspaceIds := lo.Map(workspaces.JSON200.Workspaces, func(workspace platform.Workspace, _ int) string {
+	organizationWorkspaceIds := lo.Map(workspaces.JSON200.Workspaces, func(workspace platform_v1.Workspace, _ int) string {
 		return workspace.Id
 	})
 
@@ -700,7 +696,7 @@ func (r *ApiTokenResource) HasValidWorkspaces(ctx context.Context, workspaceRole
 	return nil
 }
 
-func (r *ApiTokenResource) HasValidDeployments(ctx context.Context, deploymentRoles []iam.ApiTokenRole) diag.Diagnostics {
+func (r *ApiTokenResource) HasValidDeployments(ctx context.Context, deploymentRoles []platform_v1.ApiTokenRole) diag.Diagnostics {
 	if len(deploymentRoles) == 0 {
 		return nil
 	}
@@ -711,12 +707,12 @@ func (r *ApiTokenResource) HasValidDeployments(ctx context.Context, deploymentRo
 	}
 	deploymentIds = lo.Uniq(deploymentIds)
 
-	listDeploymentsRequest := platform.ListDeploymentsParams{
+	listDeploymentsRequest := platform_v1.ListDeploymentsParams{
 		DeploymentIds: lo.ToPtr(deploymentIds),
 	}
 
 	// List organization deployments
-	deployments, err := r.PlatformClient.ListDeploymentsWithResponse(
+	deployments, err := r.PlatformV1Client.ListDeploymentsWithResponse(
 		ctx,
 		r.OrganizationId,
 		&listDeploymentsRequest,
@@ -734,7 +730,7 @@ func (r *ApiTokenResource) HasValidDeployments(ctx context.Context, deploymentRo
 	if diagnostic != nil {
 		return diag.Diagnostics{diagnostic}
 	}
-	organizationDeploymentIds := lo.Map(deployments.JSON200.Deployments, func(deployment platform.Deployment, _ int) string {
+	organizationDeploymentIds := lo.Map(deployments.JSON200.Deployments, func(deployment platform_v1.Deployment, _ int) string {
 		return deployment.Id
 	})
 

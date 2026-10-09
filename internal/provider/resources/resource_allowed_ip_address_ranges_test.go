@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -88,13 +88,13 @@ resource "astro_allowed_ip_address_ranges" "test" {
 func testAccCheckAllowedIpAddressRangesDestroyed(t *testing.T, testCidrs ...string) func(s *terraform.State) error {
 	t.Helper()
 	return func(state *terraform.State) error {
-		client, err := utils.GetTestIamClient(true)
+		client, err := utils.GetTestPlatformV1Client(true)
 		assert.NoError(t, err)
 
 		organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
 		ctx := context.Background()
 		limit := 1000
-		resp, err := client.ListAllowedIpAddressRangesWithResponse(ctx, organizationId, &iam.ListAllowedIpAddressRangesParams{Limit: &limit})
+		resp, err := client.ListAllowedIpAddressRangesWithResponse(ctx, organizationId, &platform_v1.ListAllowedIpAddressRangesParams{Limit: &limit})
 		if err != nil {
 			return fmt.Errorf("failed to list allowed IP address ranges: %v", err)
 		}

@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -25,7 +25,7 @@ type User struct {
 	UpdatedAt        types.String `tfsdk:"updated_at"`
 }
 
-func (data *User) ReadFromResponse(ctx context.Context, user *iam.User) diag.Diagnostics {
+func (data *User) ReadFromResponse(ctx context.Context, user *platform_v1.User) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(user.Id)
 	data.Username = types.StringValue(user.Username)

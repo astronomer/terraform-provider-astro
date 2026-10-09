@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -24,8 +24,8 @@ func NewDeploymentOptionsDataSource() datasource.DataSource {
 
 // deploymentOptionsDataSource defines the data source implementation.
 type deploymentOptionsDataSource struct {
-	PlatformClient platform.ClientWithResponsesInterface
-	OrganizationId string
+	PlatformV1Client platform_v1.ClientWithResponsesInterface
+	OrganizationId   string
 }
 
 func (d *deploymentOptionsDataSource) Metadata(
@@ -64,7 +64,7 @@ func (d *deploymentOptionsDataSource) Configure(
 		return
 	}
 
-	d.PlatformClient = apiClients.PlatformClient
+	d.PlatformV1Client = apiClients.PlatformV1Client
 	d.OrganizationId = apiClients.OrganizationId
 }
 
@@ -81,7 +81,7 @@ func (d *deploymentOptionsDataSource) Read(
 		return
 	}
 
-	params := platform.GetDeploymentOptionsParams{}
+	params := platform_v1.GetDeploymentOptionsParams{}
 
 	deploymentIdParam := data.DeploymentId.ValueString()
 	if len(deploymentIdParam) > 0 {
@@ -89,18 +89,18 @@ func (d *deploymentOptionsDataSource) Read(
 	}
 	deploymentTypeParam := data.DeploymentType.ValueString()
 	if len(deploymentTypeParam) > 0 {
-		params.DeploymentType = (*platform.GetDeploymentOptionsParamsDeploymentType)(&deploymentTypeParam)
+		params.DeploymentType = (*platform_v1.GetDeploymentOptionsParamsDeploymentType)(&deploymentTypeParam)
 	}
 	executorParam := data.Executor.ValueString()
 	if len(executorParam) > 0 {
-		params.Executor = (*platform.GetDeploymentOptionsParamsExecutor)(&executorParam)
+		params.Executor = (*platform_v1.GetDeploymentOptionsParamsExecutor)(&executorParam)
 	}
 	cloudProviderParam := data.CloudProvider.ValueString()
 	if len(cloudProviderParam) > 0 {
-		params.CloudProvider = (*platform.GetDeploymentOptionsParamsCloudProvider)(&cloudProviderParam)
+		params.CloudProvider = (*platform_v1.GetDeploymentOptionsParamsCloudProvider)(&cloudProviderParam)
 	}
 
-	options, err := d.PlatformClient.GetDeploymentOptionsWithResponse(
+	options, err := d.PlatformV1Client.GetDeploymentOptionsWithResponse(
 		ctx,
 		d.OrganizationId,
 		&params,

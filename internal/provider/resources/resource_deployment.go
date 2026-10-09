@@ -12,7 +12,6 @@ import (
 	"github.com/samber/lo"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
@@ -36,7 +35,6 @@ func NewDeploymentResource() resource.Resource {
 // DeploymentResource defines the resource implementation.
 type DeploymentResource struct {
 	platformV1Client *platform_v1.ClientWithResponses
-	platformClient   *platform.ClientWithResponses
 	organizationId   string
 }
 
@@ -77,7 +75,6 @@ func (r *DeploymentResource) Configure(
 	}
 
 	r.platformV1Client = apiClients.PlatformV1Client
-	r.platformClient = apiClients.PlatformClient
 	r.organizationId = apiClients.OrganizationId
 }
 
@@ -1271,10 +1268,10 @@ func RequestDeploymentEnvironmentVariables(ctx context.Context, environmentVaria
 }
 
 func (r *DeploymentResource) GetLatestAstroRuntimeVersion(ctx context.Context, data *models.DeploymentResource) (string, diag.Diagnostic) {
-	deploymentOptions, err := r.platformClient.GetDeploymentOptionsWithResponse(ctx, r.organizationId, &platform.GetDeploymentOptionsParams{
-		DeploymentType: lo.ToPtr(platform.GetDeploymentOptionsParamsDeploymentType(data.Type.ValueString())),
-		Executor:       lo.ToPtr(platform.GetDeploymentOptionsParamsExecutor(data.Executor.ValueString())),
-		CloudProvider:  lo.ToPtr(platform.GetDeploymentOptionsParamsCloudProvider(data.CloudProvider.ValueString())),
+	deploymentOptions, err := r.platformV1Client.GetDeploymentOptionsWithResponse(ctx, r.organizationId, &platform_v1.GetDeploymentOptionsParams{
+		DeploymentType: lo.ToPtr(platform_v1.GetDeploymentOptionsParamsDeploymentType(data.Type.ValueString())),
+		Executor:       lo.ToPtr(platform_v1.GetDeploymentOptionsParamsExecutor(data.Executor.ValueString())),
+		CloudProvider:  lo.ToPtr(platform_v1.GetDeploymentOptionsParamsCloudProvider(data.CloudProvider.ValueString())),
 	})
 	if err != nil {
 		tflog.Error(ctx, "failed to get deployment options", map[string]interface{}{"error": err})
@@ -1307,7 +1304,7 @@ const stableRuntimeReleaseChannel = "stable"
 // The list arrives sorted newest-first, so the first stable entry is the latest one. If no
 // release is marked stable the newest release is returned regardless, preserving the previous
 // behaviour rather than failing a create that might still have succeeded.
-func LatestStableRuntimeVersion(ctx context.Context, runtimeReleases []platform.RuntimeRelease) string {
+func LatestStableRuntimeVersion(ctx context.Context, runtimeReleases []platform_v1.RuntimeRelease) string {
 	for _, runtimeRelease := range runtimeReleases {
 		if runtimeRelease.Channel == stableRuntimeReleaseChannel {
 			return runtimeRelease.Version

@@ -7,7 +7,7 @@ import (
 
 	"github.com/astronomer/terraform-provider-astro/internal/provider/common"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -158,7 +158,7 @@ func checkApiTokens(tfVarName string, input checkApiTokensInput) resource.TestCh
 		entityType := instanceState.Attributes[entityTypeKey]
 		role := fmt.Sprintf("api_tokens.%d.roles.0.role", apiTokensIdx)
 		if len(input.workspaceId) > 0 {
-			if entityType != string(iam.ApiTokenRoleEntityTypeWORKSPACE) {
+			if entityType != string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE) {
 				return fmt.Errorf("expected 'entity_type' to be set to 'workspace'")
 			}
 			if entityId != input.workspaceId {
@@ -170,7 +170,7 @@ func checkApiTokens(tfVarName string, input checkApiTokensInput) resource.TestCh
 		}
 
 		if len(input.deploymentId) > 0 {
-			if entityType != string(iam.ApiTokenRoleEntityTypeDEPLOYMENT) {
+			if entityType != string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT) {
 				return fmt.Errorf("expected 'entity_type' to be set to 'deployment'")
 			}
 			if entityId != input.deploymentId {
@@ -179,7 +179,7 @@ func checkApiTokens(tfVarName string, input checkApiTokensInput) resource.TestCh
 		}
 
 		if len(input.organizationId) > 0 {
-			if entityType != string(iam.ApiTokenRoleEntityTypeORGANIZATION) {
+			if entityType != string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION) {
 				return fmt.Errorf("expected 'entity_type' to be set to 'organization'")
 			}
 			if entityId != input.organizationId {

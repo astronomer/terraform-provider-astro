@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
-
 	"github.com/astronomer/terraform-provider-astro/internal/provider/common"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -14,7 +12,7 @@ import (
 	"github.com/samber/lo"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
@@ -35,9 +33,8 @@ func NewTeamRolesResource() resource.Resource {
 
 // teamRolesResource defines the resource implementation.
 type teamRolesResource struct {
-	iamClient      *iam.ClientWithResponses
-	platformClient *platform.ClientWithResponses
-	organizationId string
+	platformV1Client *platform_v1.ClientWithResponses
+	organizationId   string
 }
 
 func (r *teamRolesResource) Metadata(
@@ -76,8 +73,7 @@ func (r *teamRolesResource) Configure(
 		return
 	}
 
-	r.iamClient = apiClients.IamClient
-	r.platformClient = apiClients.PlatformClient
+	r.platformV1Client = apiClients.PlatformV1Client
 	r.organizationId = apiClients.OrganizationId
 }
 
@@ -127,7 +123,7 @@ func (r *teamRolesResource) MutateRoles(
 	}
 
 	diags = common.ValidateWorkspaceDeploymentRoles(ctx, common.ValidateWorkspaceDeploymentRolesInput{
-		PlatformClient:  r.platformClient,
+		PlatformClient:  r.platformV1Client,
 		OrganizationId:  r.organizationId,
 		WorkspaceRoles:  workspaceRoles,
 		DeploymentRoles: deploymentRoles,
@@ -137,13 +133,13 @@ func (r *teamRolesResource) MutateRoles(
 	}
 
 	// create request
-	updateTeamRolesRequest := iam.UpdateTeamRolesJSONRequestBody{
+	updateTeamRolesRequest := platform_v1.UpdateTeamRolesJSONRequestBody{
 		DeploymentRoles:  &deploymentRoles,
 		OrganizationRole: data.OrganizationRole.ValueString(),
 		WorkspaceRoles:   &workspaceRoles,
 		DagRoles:         &dagRoles,
 	}
-	teamRoles, err := r.iamClient.UpdateTeamRolesWithResponse(
+	teamRoles, err := r.platformV1Client.UpdateTeamRolesWithResponse(
 		ctx,
 		r.organizationId,
 		teamId,
@@ -220,7 +216,7 @@ func (r *teamRolesResource) Read(
 	teamId := data.TeamId.ValueString()
 
 	// get request
-	teamRoles, err := r.iamClient.GetTeamWithResponse(
+	teamRoles, err := r.platformV1Client.GetTeamWithResponse(
 		ctx,
 		r.organizationId,
 		teamId,
@@ -246,7 +242,7 @@ func (r *teamRolesResource) Read(
 	}
 
 	// Generate subjectRoles from the get team API response
-	subjectRoles := iam.SubjectRoles{
+	subjectRoles := platform_v1.SubjectRoles{
 		OrganizationRole: lo.ToPtr(string(teamRoles.JSON200.OrganizationRole)),
 		WorkspaceRoles:   teamRoles.JSON200.WorkspaceRoles,
 		DeploymentRoles:  teamRoles.JSON200.DeploymentRoles,
@@ -308,13 +304,13 @@ func (r *teamRolesResource) Delete(
 	teamId := data.TeamId.ValueString()
 
 	// update request with no workspace roles, no deployment roles, no dag roles and lowest organization role
-	updateTeamRolesRequest := iam.UpdateTeamRolesJSONRequestBody{
+	updateTeamRolesRequest := platform_v1.UpdateTeamRolesJSONRequestBody{
 		DeploymentRoles:  nil,
-		OrganizationRole: string(iam.TeamOrganizationRoleORGANIZATIONMEMBER),
+		OrganizationRole: string(platform_v1.TeamOrganizationRoleORGANIZATIONMEMBER),
 		WorkspaceRoles:   nil,
 		DagRoles:         nil,
 	}
-	teamRoles, err := r.iamClient.UpdateTeamRolesWithResponse(
+	teamRoles, err := r.platformV1Client.UpdateTeamRolesWithResponse(
 		ctx,
 		r.organizationId,
 		teamId,

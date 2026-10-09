@@ -7,18 +7,18 @@ import (
 	"net/http"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
-	mocksIam "github.com/astronomer/terraform-provider-astro/internal/mocks/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	mocksPlatform "github.com/astronomer/terraform-provider-astro/internal/mocks/platform"
+	mocksPlatformV1 "github.com/astronomer/terraform-provider-astro/internal/mocks/platform_v1"
 	"github.com/samber/lo"
 	"golang.org/x/exp/maps"
 )
 
-func HandleWorkspaces(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, iamClient *mocksIam.ClientWithResponsesInterface, organizationId string) (string, error) {
+func HandleWorkspaces(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, platformV1Client *mocksPlatformV1.ClientWithResponsesInterface, organizationId string) (string, error) {
 	log.Printf("Importing workspaces for organization %s", organizationId)
 
-	workspacesResp, err := platformClient.ListWorkspacesWithResponse(ctx, organizationId, nil)
+	workspacesResp, err := platformV1Client.ListWorkspacesWithResponse(ctx, organizationId, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to list workspaces: %v", err)
 	}
@@ -41,7 +41,7 @@ func HandleWorkspaces(ctx context.Context, platformClient *mocksPlatform.ClientW
 		return "", fmt.Errorf("workspaces list is nil")
 	}
 
-	workspaceIds := lo.Map(workspaces, func(workspace platform.Workspace, _ int) string {
+	workspaceIds := lo.Map(workspaces, func(workspace platform_v1.Workspace, _ int) string {
 		return workspace.Id
 	})
 
@@ -62,10 +62,10 @@ import {
 	return importString, nil
 }
 
-func HandleDeployments(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, iamClient *mocksIam.ClientWithResponsesInterface, organizationId string) (string, error) {
+func HandleDeployments(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, platformV1Client *mocksPlatformV1.ClientWithResponsesInterface, organizationId string) (string, error) {
 	log.Printf("Importing deployments for organization %s", organizationId)
 
-	deploymentsResp, err := platformClient.ListDeploymentsWithResponse(ctx, organizationId, nil)
+	deploymentsResp, err := platformV1Client.ListDeploymentsWithResponse(ctx, organizationId, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to list deployments: %v", err)
 	}
@@ -88,7 +88,7 @@ func HandleDeployments(ctx context.Context, platformClient *mocksPlatform.Client
 		return "", fmt.Errorf("deployments list is nil")
 	}
 
-	deploymentIds := lo.Map(deployments, func(deployment platform.Deployment, _ int) string {
+	deploymentIds := lo.Map(deployments, func(deployment platform_v1.Deployment, _ int) string {
 		return deployment.Id
 	})
 	log.Printf("Importing Deployments: %v", deploymentIds)
@@ -108,10 +108,10 @@ import {
 	return importString, nil
 }
 
-func HandleClusters(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, iamClient *mocksIam.ClientWithResponsesInterface, organizationId string) (string, error) {
+func HandleClusters(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, platformV1Client *mocksPlatformV1.ClientWithResponsesInterface, organizationId string) (string, error) {
 	log.Printf("Importing clusters for organization %s", organizationId)
 
-	clustersResp, err := platformClient.ListClustersWithResponse(ctx, organizationId, nil)
+	clustersResp, err := platformV1Client.ListClustersWithResponse(ctx, organizationId, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to list clusters: %v", err)
 	}
@@ -134,7 +134,7 @@ func HandleClusters(ctx context.Context, platformClient *mocksPlatform.ClientWit
 		return "", fmt.Errorf("clusters list is nil")
 	}
 
-	clusterMap := make(map[string]platform.ClusterType)
+	clusterMap := make(map[string]platform_v1.ClusterType)
 	for _, cluster := range clusters {
 		if cluster.Id != "" {
 			clusterMap[cluster.Id] = cluster.Type
@@ -152,7 +152,7 @@ import {
 	to = astro_cluster.cluster_%v
 }`, clusterId, clusterId)
 
-		if clusterType == platform.ClusterTypeHYBRID {
+		if clusterType == platform_v1.ClusterTypeHYBRID {
 			log.Printf("Importing hybrid cluster workspace authorization for cluster %s", clusterId)
 			clusterImportString += fmt.Sprintf(`
 import {
@@ -168,10 +168,10 @@ import {
 	return importString, nil
 }
 
-func HandleApiTokens(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, iamClient *mocksIam.ClientWithResponsesInterface, organizationId string) (string, error) {
+func HandleApiTokens(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, platformV1Client *mocksPlatformV1.ClientWithResponsesInterface, organizationId string) (string, error) {
 	log.Printf("Importing API tokens for organization %s", organizationId)
 
-	apiTokensResp, err := iamClient.ListApiTokensWithResponse(ctx, organizationId, nil)
+	apiTokensResp, err := platformV1Client.ListApiTokensWithResponse(ctx, organizationId, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to list API tokens: %v", err)
 	}
@@ -194,7 +194,7 @@ func HandleApiTokens(ctx context.Context, platformClient *mocksPlatform.ClientWi
 		return "", fmt.Errorf("API tokens list is nil")
 	}
 
-	apiTokenIds := lo.Map(apiTokens, func(apiToken iam.ApiToken, _ int) string {
+	apiTokenIds := lo.Map(apiTokens, func(apiToken platform_v1.ApiToken, _ int) string {
 		return apiToken.Id
 	})
 
@@ -215,10 +215,10 @@ import {
 	return importString, nil
 }
 
-func HandleTeams(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, iamClient *mocksIam.ClientWithResponsesInterface, organizationId string) (string, error) {
+func HandleTeams(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, platformV1Client *mocksPlatformV1.ClientWithResponsesInterface, organizationId string) (string, error) {
 	log.Printf("Importing teams for organization %s", organizationId)
 
-	teamsResp, err := iamClient.ListTeamsWithResponse(ctx, organizationId, nil)
+	teamsResp, err := platformV1Client.ListTeamsWithResponse(ctx, organizationId, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to list teams: %v", err)
 	}
@@ -241,7 +241,7 @@ func HandleTeams(ctx context.Context, platformClient *mocksPlatform.ClientWithRe
 		return "", fmt.Errorf("teams list is nil")
 	}
 
-	teamIds := lo.Map(teams, func(team iam.Team, _ int) string {
+	teamIds := lo.Map(teams, func(team platform_v1.Team, _ int) string {
 		return team.Id
 	})
 
@@ -262,10 +262,10 @@ import {
 	return importString, nil
 }
 
-func HandleTeamRoles(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, iamClient *mocksIam.ClientWithResponsesInterface, organizationId string) (string, error) {
+func HandleTeamRoles(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, platformV1Client *mocksPlatformV1.ClientWithResponsesInterface, organizationId string) (string, error) {
 	log.Printf("Importing team roles for organization %s", organizationId)
 
-	teamsResp, err := iamClient.ListTeamsWithResponse(ctx, organizationId, nil)
+	teamsResp, err := platformV1Client.ListTeamsWithResponse(ctx, organizationId, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to list teams: %v", err)
 	}
@@ -288,7 +288,7 @@ func HandleTeamRoles(ctx context.Context, platformClient *mocksPlatform.ClientWi
 		return "", fmt.Errorf("teams list is nil")
 	}
 
-	teamIds := lo.Map(teams, func(team iam.Team, _ int) string {
+	teamIds := lo.Map(teams, func(team platform_v1.Team, _ int) string {
 		return team.Id
 	})
 
@@ -309,10 +309,10 @@ import {
 	return importString, nil
 }
 
-func HandleUserRoles(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, iamClient *mocksIam.ClientWithResponsesInterface, organizationId string) (string, error) {
+func HandleUserRoles(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, platformV1Client *mocksPlatformV1.ClientWithResponsesInterface, organizationId string) (string, error) {
 	log.Printf("Importing user roles for organization %s", organizationId)
 
-	usersResp, err := iamClient.ListUsersWithResponse(ctx, organizationId, nil)
+	usersResp, err := platformV1Client.ListUsersWithResponse(ctx, organizationId, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to list users: %v", err)
 	}
@@ -335,7 +335,7 @@ func HandleUserRoles(ctx context.Context, platformClient *mocksPlatform.ClientWi
 		return "", fmt.Errorf("users list is nil")
 	}
 
-	userIds := lo.Map(users, func(user iam.User, _ int) string {
+	userIds := lo.Map(users, func(user platform_v1.User, _ int) string {
 		return user.Id
 	})
 
@@ -356,7 +356,7 @@ import {
 	return importString, nil
 }
 
-func HandleAlerts(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, iamClient *mocksIam.ClientWithResponsesInterface, organizationId string) (string, error) {
+func HandleAlerts(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, platformV1Client *mocksPlatformV1.ClientWithResponsesInterface, organizationId string) (string, error) {
 	log.Printf("Importing alerts for organization %s", organizationId)
 
 	alertsResp, err := platformClient.ListAlertsWithResponse(ctx, organizationId, nil)
@@ -429,7 +429,7 @@ import {
 	return importString, nil
 }
 
-func HandleNotificationChannels(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, iamClient *mocksIam.ClientWithResponsesInterface, organizationId string) (string, error) {
+func HandleNotificationChannels(ctx context.Context, platformClient *mocksPlatform.ClientWithResponsesInterface, platformV1Client *mocksPlatformV1.ClientWithResponsesInterface, organizationId string) (string, error) {
 	log.Printf("Importing notification channels for organization %s", organizationId)
 
 	notificationChannelsResp, err := platformClient.ListNotificationChannelsWithResponse(ctx, organizationId, nil)

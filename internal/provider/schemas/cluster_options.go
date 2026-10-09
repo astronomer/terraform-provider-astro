@@ -1,7 +1,7 @@
 package schemas
 
 import (
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -84,8 +84,8 @@ func ClusterOptionsDataSourceSchemaAttributes() map[string]schema.Attribute {
 			Required: true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(platform.ClusterTypeDEDICATED),
-					string(platform.ClusterTypeHYBRID),
+					string(platform_v1.ClusterTypeDEDICATED),
+					string(platform_v1.ClusterTypeHYBRID),
 				),
 			},
 		},
@@ -94,9 +94,9 @@ func ClusterOptionsDataSourceSchemaAttributes() map[string]schema.Attribute {
 			Optional:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(platform.ClusterCloudProviderAWS),
-					string(platform.ClusterCloudProviderGCP),
-					string(platform.ClusterCloudProviderAZURE),
+					string(platform_v1.ClusterCloudProviderAWS),
+					string(platform_v1.ClusterCloudProviderGCP),
+					string(platform_v1.ClusterCloudProviderAZURE),
 				),
 			},
 		},

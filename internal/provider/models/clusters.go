@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -19,7 +19,7 @@ type ClustersDataSource struct {
 
 func (data *ClustersDataSource) ReadFromResponse(
 	ctx context.Context,
-	clusters []platform.Cluster,
+	clusters []platform_v1.Cluster,
 ) diag.Diagnostics {
 	values := make([]attr.Value, len(clusters))
 	for i, deployment := range clusters {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -14,72 +14,74 @@ import (
 
 // ClusterResource describes the resource data model.
 type ClusterResource struct {
-	Id                           types.String   `tfsdk:"id"`
-	Name                         types.String   `tfsdk:"name"`
-	CloudProvider                types.String   `tfsdk:"cloud_provider"`
-	DbInstanceType               types.String   `tfsdk:"db_instance_type"`
-	HealthStatus                 types.Object   `tfsdk:"health_status"`
-	Region                       types.String   `tfsdk:"region"`
-	PodSubnetRange               types.String   `tfsdk:"pod_subnet_range"`
-	ServicePeeringRange          types.String   `tfsdk:"service_peering_range"`
-	ServiceSubnetRange           types.String   `tfsdk:"service_subnet_range"`
-	VpcSubnetRange               types.String   `tfsdk:"vpc_subnet_range"`
-	SecondaryVpcCidr             types.String   `tfsdk:"secondary_vpc_cidr"`
-	Metadata                     types.Object   `tfsdk:"metadata"`
-	Status                       types.String   `tfsdk:"status"`
-	CreatedAt                    types.String   `tfsdk:"created_at"`
-	UpdatedAt                    types.String   `tfsdk:"updated_at"`
-	Type                         types.String   `tfsdk:"type"`
-	TenantId                     types.String   `tfsdk:"tenant_id"`
-	ProviderAccount              types.String   `tfsdk:"provider_account"`
-	NodePools                    types.Set      `tfsdk:"node_pools"`
-	WorkspaceIds                 types.Set      `tfsdk:"workspace_ids"`
-	IsLimited                    types.Bool     `tfsdk:"is_limited"`
-	IsDrEnabled                  types.Bool     `tfsdk:"is_dr_enabled"`
-	DrRegion                     types.String   `tfsdk:"dr_region"`
-	DrVpcSubnetRange             types.String   `tfsdk:"dr_vpc_subnet_range"`
-	DrSecondaryVpcCidr           types.String   `tfsdk:"dr_secondary_vpc_cidr"`
-	EnableReplicationTimeControl types.Bool     `tfsdk:"enable_replication_time_control"`
-	IsFailedOver                 types.Bool     `tfsdk:"is_failed_over"`
-	Timeouts                     timeouts.Value `tfsdk:"timeouts"` // To allow users to set timeouts for the resource.
-	DrPodSubnetRange             types.String   `tfsdk:"dr_pod_subnet_range"`
-	DrServicePeeringRange        types.String   `tfsdk:"dr_service_peering_range"`
-	DrServiceSubnetRange         types.String   `tfsdk:"dr_service_subnet_range"`
+	Id                            types.String   `tfsdk:"id"`
+	Name                          types.String   `tfsdk:"name"`
+	CloudProvider                 types.String   `tfsdk:"cloud_provider"`
+	DbInstanceType                types.String   `tfsdk:"db_instance_type"`
+	HealthStatus                  types.Object   `tfsdk:"health_status"`
+	Region                        types.String   `tfsdk:"region"`
+	PodSubnetRange                types.String   `tfsdk:"pod_subnet_range"`
+	ServicePeeringRange           types.String   `tfsdk:"service_peering_range"`
+	ServiceSubnetRange            types.String   `tfsdk:"service_subnet_range"`
+	VpcSubnetRange                types.String   `tfsdk:"vpc_subnet_range"`
+	SecondaryVpcCidr              types.String   `tfsdk:"secondary_vpc_cidr"`
+	Metadata                      types.Object   `tfsdk:"metadata"`
+	Status                        types.String   `tfsdk:"status"`
+	CreatedAt                     types.String   `tfsdk:"created_at"`
+	UpdatedAt                     types.String   `tfsdk:"updated_at"`
+	Type                          types.String   `tfsdk:"type"`
+	TenantId                      types.String   `tfsdk:"tenant_id"`
+	ProviderAccount               types.String   `tfsdk:"provider_account"`
+	NodePools                     types.Set      `tfsdk:"node_pools"`
+	WorkspaceIds                  types.Set      `tfsdk:"workspace_ids"`
+	IsLimited                     types.Bool     `tfsdk:"is_limited"`
+	IsDrEnabled                   types.Bool     `tfsdk:"is_dr_enabled"`
+	DrRegion                      types.String   `tfsdk:"dr_region"`
+	DrVpcSubnetRange              types.String   `tfsdk:"dr_vpc_subnet_range"`
+	DrSecondaryVpcCidr            types.String   `tfsdk:"dr_secondary_vpc_cidr"`
+	EnableReplicationTimeControl  types.Bool     `tfsdk:"enable_replication_time_control"`
+	IsFailedOver                  types.Bool     `tfsdk:"is_failed_over"`
+	IsPrivateNetworkEgressEnabled types.Bool     `tfsdk:"is_private_network_egress_enabled"`
+	Timeouts                      timeouts.Value `tfsdk:"timeouts"` // To allow users to set timeouts for the resource.
+	DrPodSubnetRange              types.String   `tfsdk:"dr_pod_subnet_range"`
+	DrServicePeeringRange         types.String   `tfsdk:"dr_service_peering_range"`
+	DrServiceSubnetRange          types.String   `tfsdk:"dr_service_subnet_range"`
 }
 
 // ClusterDataSource describes the data source data model.
 type ClusterDataSource struct {
-	Id                           types.String `tfsdk:"id"`
-	Name                         types.String `tfsdk:"name"`
-	CloudProvider                types.String `tfsdk:"cloud_provider"`
-	DbInstanceType               types.String `tfsdk:"db_instance_type"`
-	HealthStatus                 types.Object `tfsdk:"health_status"`
-	Region                       types.String `tfsdk:"region"`
-	PodSubnetRange               types.String `tfsdk:"pod_subnet_range"`
-	ServicePeeringRange          types.String `tfsdk:"service_peering_range"`
-	ServiceSubnetRange           types.String `tfsdk:"service_subnet_range"`
-	VpcSubnetRange               types.String `tfsdk:"vpc_subnet_range"`
-	SecondaryVpcCidr             types.String `tfsdk:"secondary_vpc_cidr"`
-	Metadata                     types.Object `tfsdk:"metadata"`
-	Status                       types.String `tfsdk:"status"`
-	CreatedAt                    types.String `tfsdk:"created_at"`
-	UpdatedAt                    types.String `tfsdk:"updated_at"`
-	Type                         types.String `tfsdk:"type"`
-	TenantId                     types.String `tfsdk:"tenant_id"`
-	ProviderAccount              types.String `tfsdk:"provider_account"`
-	NodePools                    types.Set    `tfsdk:"node_pools"`
-	WorkspaceIds                 types.Set    `tfsdk:"workspace_ids"`
-	Tags                         types.Set    `tfsdk:"tags"`
-	IsLimited                    types.Bool   `tfsdk:"is_limited"`
-	IsDrEnabled                  types.Bool   `tfsdk:"is_dr_enabled"`
-	DrRegion                     types.String `tfsdk:"dr_region"`
-	DrVpcSubnetRange             types.String `tfsdk:"dr_vpc_subnet_range"`
-	DrSecondaryVpcCidr           types.String `tfsdk:"dr_secondary_vpc_cidr"`
-	EnableReplicationTimeControl types.Bool   `tfsdk:"enable_replication_time_control"`
-	IsFailedOver                 types.Bool   `tfsdk:"is_failed_over"`
-	DrPodSubnetRange             types.String `tfsdk:"dr_pod_subnet_range"`
-	DrServicePeeringRange        types.String `tfsdk:"dr_service_peering_range"`
-	DrServiceSubnetRange         types.String `tfsdk:"dr_service_subnet_range"`
+	Id                            types.String `tfsdk:"id"`
+	Name                          types.String `tfsdk:"name"`
+	CloudProvider                 types.String `tfsdk:"cloud_provider"`
+	DbInstanceType                types.String `tfsdk:"db_instance_type"`
+	HealthStatus                  types.Object `tfsdk:"health_status"`
+	Region                        types.String `tfsdk:"region"`
+	PodSubnetRange                types.String `tfsdk:"pod_subnet_range"`
+	ServicePeeringRange           types.String `tfsdk:"service_peering_range"`
+	ServiceSubnetRange            types.String `tfsdk:"service_subnet_range"`
+	VpcSubnetRange                types.String `tfsdk:"vpc_subnet_range"`
+	SecondaryVpcCidr              types.String `tfsdk:"secondary_vpc_cidr"`
+	Metadata                      types.Object `tfsdk:"metadata"`
+	Status                        types.String `tfsdk:"status"`
+	CreatedAt                     types.String `tfsdk:"created_at"`
+	UpdatedAt                     types.String `tfsdk:"updated_at"`
+	Type                          types.String `tfsdk:"type"`
+	TenantId                      types.String `tfsdk:"tenant_id"`
+	ProviderAccount               types.String `tfsdk:"provider_account"`
+	NodePools                     types.Set    `tfsdk:"node_pools"`
+	WorkspaceIds                  types.Set    `tfsdk:"workspace_ids"`
+	Tags                          types.Set    `tfsdk:"tags"`
+	IsLimited                     types.Bool   `tfsdk:"is_limited"`
+	IsDrEnabled                   types.Bool   `tfsdk:"is_dr_enabled"`
+	DrRegion                      types.String `tfsdk:"dr_region"`
+	DrVpcSubnetRange              types.String `tfsdk:"dr_vpc_subnet_range"`
+	DrSecondaryVpcCidr            types.String `tfsdk:"dr_secondary_vpc_cidr"`
+	EnableReplicationTimeControl  types.Bool   `tfsdk:"enable_replication_time_control"`
+	IsFailedOver                  types.Bool   `tfsdk:"is_failed_over"`
+	IsPrivateNetworkEgressEnabled types.Bool   `tfsdk:"is_private_network_egress_enabled"`
+	DrPodSubnetRange              types.String `tfsdk:"dr_pod_subnet_range"`
+	DrServicePeeringRange         types.String `tfsdk:"dr_service_peering_range"`
+	DrServiceSubnetRange          types.String `tfsdk:"dr_service_subnet_range"`
 }
 
 type ClusterTag struct {
@@ -119,7 +121,7 @@ type ClusterHealthStatusDetail struct {
 
 func (data *ClusterResource) ReadFromResponse(
 	ctx context.Context,
-	cluster *platform.Cluster,
+	cluster *platform_v1.Cluster,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(cluster.Id)
@@ -155,6 +157,7 @@ func (data *ClusterResource) ReadFromResponse(
 		return diags
 	}
 	data.IsLimited = types.BoolPointerValue(cluster.IsLimited)
+	data.IsPrivateNetworkEgressEnabled = privateNetworkEgressValue(cluster)
 	// DR fields - only set when DR is enabled
 	if cluster.IsDrEnabled {
 		data.IsDrEnabled = types.BoolValue(true)
@@ -187,7 +190,7 @@ func (data *ClusterResource) ReadFromResponse(
 
 func (data *ClusterDataSource) ReadFromResponse(
 	ctx context.Context,
-	cluster *platform.Cluster,
+	cluster *platform_v1.Cluster,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Id = types.StringValue(cluster.Id)
@@ -227,6 +230,7 @@ func (data *ClusterDataSource) ReadFromResponse(
 		return diags
 	}
 	data.IsLimited = types.BoolPointerValue(cluster.IsLimited)
+	data.IsPrivateNetworkEgressEnabled = privateNetworkEgressValue(cluster)
 	// DR fields - only set when DR is enabled
 	if cluster.IsDrEnabled {
 		data.IsDrEnabled = types.BoolValue(true)
@@ -257,9 +261,23 @@ func (data *ClusterDataSource) ReadFromResponse(
 	return nil
 }
 
+// privateNetworkEgressValue normalizes the cluster's Private Network Egress flag. The
+// capability exists for AWS clusters only, so a missing value there means "disabled" and is
+// reported as false; on every other cloud provider the attribute is null. Reporting a
+// configured `false` as null would otherwise fail the apply as an inconsistent result.
+func privateNetworkEgressValue(cluster *platform_v1.Cluster) types.Bool {
+	if cluster.IsPrivateNetworkEgressEnabled != nil {
+		return types.BoolValue(*cluster.IsPrivateNetworkEgressEnabled)
+	}
+	if cluster.CloudProvider == platform_v1.ClusterCloudProviderAWS {
+		return types.BoolValue(false)
+	}
+	return types.BoolNull()
+}
+
 func ClusterTagTypesObject(
 	ctx context.Context,
-	tag platform.ClusterK8sTag,
+	tag platform_v1.ClusterK8sTag,
 ) (types.Object, diag.Diagnostics) {
 	obj := ClusterTag{
 		Key:   types.StringPointerValue(tag.Key),
@@ -271,7 +289,7 @@ func ClusterTagTypesObject(
 
 func NodePoolTypesObject(
 	ctx context.Context,
-	nodePool platform.NodePool,
+	nodePool platform_v1.NodePool,
 ) (types.Object, diag.Diagnostics) {
 	supportedAstroMachines, diags := utils.StringSet(nodePool.SupportedAstroMachines)
 	if diags.HasError() {
@@ -295,7 +313,7 @@ func NodePoolTypesObject(
 
 func ClusterHealthStatusDetailTypesObject(
 	ctx context.Context,
-	healthStatusDetail platform.ClusterHealthStatusDetail,
+	healthStatusDetail platform_v1.ClusterHealthStatusDetail,
 ) (types.Object, diag.Diagnostics) {
 	obj := ClusterHealthStatusDetail{
 		Code:        types.StringValue(healthStatusDetail.Code),
@@ -307,7 +325,7 @@ func ClusterHealthStatusDetailTypesObject(
 
 func ClusterMetadataTypesObject(
 	ctx context.Context,
-	metadata *platform.ClusterMetadata,
+	metadata *platform_v1.ClusterMetadata,
 ) (types.Object, diag.Diagnostics) {
 	if metadata != nil {
 		externalIps, diags := utils.StringSet(metadata.ExternalIPs)
@@ -326,7 +344,7 @@ func ClusterMetadataTypesObject(
 
 func ClusterHealthStatusTypesObject(
 	ctx context.Context,
-	healthStatus *platform.ClusterHealthStatus,
+	healthStatus *platform_v1.ClusterHealthStatus,
 ) (types.Object, diag.Diagnostics) {
 	if healthStatus != nil {
 		details, diags := utils.ObjectSet(ctx, healthStatus.Details, schemas.ClusterHealthStatusDetailAttributeTypes(), ClusterHealthStatusDetailTypesObject)

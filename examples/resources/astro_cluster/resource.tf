@@ -13,6 +13,18 @@ resource "astro_cluster" "aws_example" {
   }
 }
 
+# Private Network Egress disables public Internet connectivity from the cluster's
+# Deployments and metrics exports. AWS clusters only.
+resource "astro_cluster" "aws_private_network_egress_example" {
+  type                              = "DEDICATED"
+  name                              = "my private-egress aws cluster"
+  region                            = "us-east-1"
+  cloud_provider                    = "AWS"
+  vpc_subnet_range                  = "172.20.0.0/20"
+  workspace_ids                     = []
+  is_private_network_egress_enabled = true
+}
+
 resource "astro_cluster" "azure_example" {
   type             = "DEDICATED"
   name             = "my first azure cluster"

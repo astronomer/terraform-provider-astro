@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -20,7 +20,7 @@ type UserInvite struct {
 	UserId    types.String `tfsdk:"user_id"`
 }
 
-func (data *UserInvite) ReadFromResponse(ctx context.Context, userInvite *iam.Invite, email string, role string) diag.Diagnostics {
+func (data *UserInvite) ReadFromResponse(ctx context.Context, userInvite *platform_v1.Invite, email string, role string) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Email = types.StringValue(email)
 	data.Role = types.StringValue(role)

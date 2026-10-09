@@ -46,6 +46,7 @@ output "cluster" {
 - `is_dr_enabled` (Boolean) Whether Disaster Recovery is enabled on the cluster
 - `is_failed_over` (Boolean) Whether the cluster is currently failed over to the DR region
 - `is_limited` (Boolean) Whether the cluster is limited
+- `is_private_network_egress_enabled` (Boolean) Whether Private Network Egress mode is enabled, which disables public Internet connectivity from the cluster's Deployments and metrics exports (AWS only)
 - `metadata` (Attributes) Cluster metadata (see [below for nested schema](#nestedatt--metadata))
 - `name` (String) Cluster name
 - `node_pools` (Attributes Set) Cluster node pools (see [below for nested schema](#nestedatt--node_pools))

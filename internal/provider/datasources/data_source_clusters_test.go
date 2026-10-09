@@ -105,6 +105,14 @@ func checkClusters(tfVarName string) resource.TestCheckFunc {
 			return fmt.Errorf("expected 'is_dr_enabled' to be present")
 		}
 
+		// Private Network Egress is reported for AWS clusters and null everywhere else
+		if instanceState.Attributes[cloudProvider] == "AWS" {
+			isPrivateNetworkEgressEnabled := fmt.Sprintf("clusters.%d.is_private_network_egress_enabled", clustersIdx)
+			if _, ok := instanceState.Attributes[isPrivateNetworkEgressEnabled]; !ok {
+				return fmt.Errorf("expected 'is_private_network_egress_enabled' to be present for an AWS cluster")
+			}
+		}
+
 		return nil
 	}
 }

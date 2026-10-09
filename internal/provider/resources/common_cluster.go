@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
@@ -16,31 +16,31 @@ import (
 // If the cluster is found, it returns the cluster status
 // If there is an error, it returns the error
 // WaitForStateContext will keep polling until the target status is reached, the timeout is reached or an err is returned
-func ClusterResourceRefreshFunc(ctx context.Context, platformClient *platform.ClientWithResponses, organizationId string, clusterId string) retry.StateRefreshFunc {
+func ClusterResourceRefreshFunc(ctx context.Context, platformV1Client *platform_v1.ClientWithResponses, organizationId string, clusterId string) retry.StateRefreshFunc {
 	return func() (any, string, error) {
-		cluster, err := platformClient.GetClusterWithResponse(ctx, organizationId, clusterId)
+		cluster, err := platformV1Client.GetClusterWithResponse(ctx, organizationId, clusterId)
 		if err != nil {
 			tflog.Error(ctx, "failed to get cluster while polling for cluster 'CREATED' status", map[string]interface{}{"error": err})
 			return nil, "", err
 		}
 		statusCode, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
 		if statusCode == http.StatusNotFound {
-			return &platform.Cluster{}, "DELETED", nil
+			return &platform_v1.Cluster{}, "DELETED", nil
 		}
 		if diagnostic != nil {
 			return nil, "", fmt.Errorf("error getting cluster %s", diagnostic.Detail())
 		}
 		if cluster != nil && cluster.JSON200 != nil {
 			switch cluster.JSON200.Status {
-			case platform.ClusterStatusCREATED:
+			case platform_v1.ClusterStatusCREATED:
 				return cluster.JSON200, string(cluster.JSON200.Status), nil
-			case platform.ClusterStatusUPDATEFAILED, platform.ClusterStatusCREATEFAILED:
+			case platform_v1.ClusterStatusUPDATEFAILED, platform_v1.ClusterStatusCREATEFAILED:
 				return cluster.JSON200, string(cluster.JSON200.Status), fmt.Errorf("cluster mutation failed for cluster '%v'", cluster.JSON200.Id)
-			case platform.ClusterStatusFAILOVERFAILED:
+			case platform_v1.ClusterStatusFAILOVERFAILED:
 				return cluster.JSON200, string(cluster.JSON200.Status), fmt.Errorf("cluster failover failed for cluster '%v'", cluster.JSON200.Id)
-			case platform.ClusterStatusCREATING, platform.ClusterStatusUPDATING, platform.ClusterStatusUPGRADEPENDING, platform.ClusterStatusFAILINGOVER:
+			case platform_v1.ClusterStatusCREATING, platform_v1.ClusterStatusUPDATING, platform_v1.ClusterStatusUPGRADEPENDING, platform_v1.ClusterStatusFAILINGOVER:
 				return cluster.JSON200, string(cluster.JSON200.Status), nil
-			case platform.ClusterStatusACCESSDENIED:
+			case platform_v1.ClusterStatusACCESSDENIED:
 				return cluster.JSON200, string(cluster.JSON200.Status), fmt.Errorf("access denied for cluster '%v'", cluster.JSON200.Id)
 			default:
 				return cluster.JSON200, string(cluster.JSON200.Status), fmt.Errorf("unexpected cluster status '%v' for cluster '%v'", cluster.JSON200.Status, cluster.JSON200.Id)

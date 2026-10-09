@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	astronomerprovider "github.com/astronomer/terraform-provider-astro/internal/provider"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -43,12 +43,12 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeORGANIZATION),
+					Type: string(platform_v1.ApiTokenScopeORGANIZATION),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.WORKSPACEOWNER),
+							Role:       string(platform_v1.WORKSPACEOWNER),
 							EntityId:   workspaceId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
 						},
 					},
 				}),
@@ -58,12 +58,12 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeORGANIZATION),
+					Type: string(platform_v1.ApiTokenScopeORGANIZATION),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.WORKSPACEOWNER),
+							Role:       string(platform_v1.WORKSPACEOWNER),
 							EntityId:   organizationId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeORGANIZATION),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
 						},
 					},
 				}),
@@ -73,12 +73,12 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeORGANIZATION),
+					Type: string(platform_v1.ApiTokenScopeORGANIZATION),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+							Role:       string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER),
 							EntityId:   "clz3blqb500lh01mtkwu9zk5z",
-							EntityType: string(iam.ApiTokenRoleEntityTypeORGANIZATION),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
 						},
 					},
 				}),
@@ -88,17 +88,17 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeORGANIZATION),
+					Type: string(platform_v1.ApiTokenScopeORGANIZATION),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+							Role:       string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER),
 							EntityId:   organizationId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeORGANIZATION),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
 						},
 						{
-							Role:       string(iam.UserOrganizationRoleORGANIZATIONBILLINGADMIN),
+							Role:       string(platform_v1.UserOrganizationRoleORGANIZATIONBILLINGADMIN),
 							EntityId:   organizationId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeORGANIZATION),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
 						},
 					},
 				}),
@@ -108,17 +108,17 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeORGANIZATION),
+					Type: string(platform_v1.ApiTokenScopeORGANIZATION),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+							Role:       string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER),
 							EntityId:   organizationId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeORGANIZATION),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
 						},
 						{
-							Role:       string(iam.WORKSPACEOWNER),
+							Role:       string(platform_v1.WORKSPACEOWNER),
 							EntityId:   "clzjm8ixj001g01lmumcyo74q",
-							EntityType: string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
 						},
 					},
 				}),
@@ -128,22 +128,22 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeORGANIZATION),
+					Type: string(platform_v1.ApiTokenScopeORGANIZATION),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+							Role:       string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER),
 							EntityId:   organizationId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeORGANIZATION),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
 						},
 						{
-							Role:       string(iam.WORKSPACEOWNER),
+							Role:       string(platform_v1.WORKSPACEOWNER),
 							EntityId:   workspaceId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
 						},
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   "clzk79utk030w01swob4ylsl0",
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 					},
 				}),
@@ -154,22 +154,22 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: utils.TestResourceDescription,
-					Type:        string(iam.ApiTokenTypeORGANIZATION),
+					Type:        string(platform_v1.ApiTokenScopeORGANIZATION),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+							Role:       string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER),
 							EntityId:   organizationId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeORGANIZATION),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
 						},
 						{
-							Role:       string(iam.WORKSPACEOWNER),
+							Role:       string(platform_v1.WORKSPACEOWNER),
 							EntityId:   workspaceId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
 						},
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   deploymentId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 					},
 					ExpiryPeriodInDays: 30,
@@ -178,7 +178,7 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttr(resourceVar, "name", apiTokenName),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
-					resource.TestCheckResourceAttr(resourceVar, "type", string(iam.ApiTokenTypeORGANIZATION)),
+					resource.TestCheckResourceAttr(resourceVar, "type", string(platform_v1.ApiTokenScopeORGANIZATION)),
 					resource.TestCheckResourceAttrSet(resourceVar, "short_token"),
 					resource.TestCheckResourceAttrSet(resourceVar, "start_at"),
 					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
@@ -188,13 +188,13 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "expiry_period_in_days", "30"),
 					resource.TestCheckResourceAttr(resourceVar, "roles.#", "3"),
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_id", organizationId),
-					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", string(iam.ApiTokenRoleEntityTypeORGANIZATION)),
-					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", string(iam.UserOrganizationRoleORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION)),
+					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER)),
 					resource.TestCheckResourceAttr(resourceVar, "roles.1.entity_id", workspaceId),
-					resource.TestCheckResourceAttr(resourceVar, "roles.1.entity_type", string(iam.ApiTokenRoleEntityTypeWORKSPACE)),
-					resource.TestCheckResourceAttr(resourceVar, "roles.1.role", string(iam.WORKSPACEOWNER)),
+					resource.TestCheckResourceAttr(resourceVar, "roles.1.entity_type", string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE)),
+					resource.TestCheckResourceAttr(resourceVar, "roles.1.role", string(platform_v1.WORKSPACEOWNER)),
 					resource.TestCheckResourceAttr(resourceVar, "roles.2.entity_id", deploymentId),
-					resource.TestCheckResourceAttr(resourceVar, "roles.2.entity_type", string(iam.ApiTokenRoleEntityTypeDEPLOYMENT)),
+					resource.TestCheckResourceAttr(resourceVar, "roles.2.entity_type", string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT)),
 					resource.TestCheckResourceAttr(resourceVar, "roles.2.role", "DEPLOYMENT_ADMIN"),
 					resource.TestCheckResourceAttrSet(resourceVar, "token"),
 					// Check via API that api token exists
@@ -206,22 +206,22 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: "new description",
-					Type:        string(iam.ApiTokenTypeORGANIZATION),
+					Type:        string(platform_v1.ApiTokenScopeORGANIZATION),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+							Role:       string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER),
 							EntityId:   organizationId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeORGANIZATION),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
 						},
 						{
-							Role:       string(iam.WORKSPACEOWNER),
+							Role:       string(platform_v1.WORKSPACEOWNER),
 							EntityId:   workspaceId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
 						},
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   deploymentId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 					},
 					ExpiryPeriodInDays: 30,
@@ -238,22 +238,22 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: "new description",
-					Type:        string(iam.ApiTokenTypeORGANIZATION),
+					Type:        string(platform_v1.ApiTokenScopeORGANIZATION),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+							Role:       string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER),
 							EntityId:   organizationId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeORGANIZATION),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
 						},
 						{
-							Role:       string(iam.WORKSPACEOWNER),
+							Role:       string(platform_v1.WORKSPACEOWNER),
 							EntityId:   workspaceId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
 						},
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   deploymentId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 					},
 					ExpiryPeriodInDays: 1,
@@ -264,22 +264,22 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeWORKSPACE),
+					Type: string(platform_v1.ApiTokenScopeWORKSPACE),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.WORKSPACEOWNER),
+							Role:       string(platform_v1.WORKSPACEOWNER),
 							EntityId:   workspaceId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
 						},
 					},
 					ExpiryPeriodInDays: 30,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceVar, "type", string(iam.ApiTokenTypeWORKSPACE)),
+					resource.TestCheckResourceAttr(resourceVar, "type", string(platform_v1.ApiTokenScopeWORKSPACE)),
 					resource.TestCheckResourceAttr(resourceVar, "roles.#", "1"),
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_id", workspaceId),
-					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", string(iam.ApiTokenRoleEntityTypeWORKSPACE)),
-					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", string(iam.WORKSPACEOWNER)),
+					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE)),
+					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", string(platform_v1.WORKSPACEOWNER)),
 					// Check via API that api token was destroyed and recreated
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: true}),
 				),
@@ -289,28 +289,28 @@ func TestAcc_ResourceOrganizationApiToken(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: utils.TestResourceDescription,
-					Type:        string(iam.ApiTokenTypeORGANIZATION),
+					Type:        string(platform_v1.ApiTokenScopeORGANIZATION),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+							Role:       string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER),
 							EntityId:   organizationId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeORGANIZATION),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
 						},
 						{
-							Role:       string(iam.WORKSPACEOWNER),
+							Role:       string(platform_v1.WORKSPACEOWNER),
 							EntityId:   workspaceId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
 						},
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   deploymentId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 					},
 					ExpiryPeriodInDays: 30,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceVar, "type", string(iam.ApiTokenTypeORGANIZATION)),
+					resource.TestCheckResourceAttr(resourceVar, "type", string(platform_v1.ApiTokenScopeORGANIZATION)),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
 					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
@@ -349,12 +349,12 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeWORKSPACE),
+					Type: string(platform_v1.ApiTokenScopeWORKSPACE),
 					Roles: []apiTokenRole{
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   deploymentId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 					},
 				}),
@@ -364,12 +364,12 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeWORKSPACE),
+					Type: string(platform_v1.ApiTokenScopeWORKSPACE),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+							Role:       string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER),
 							EntityId:   workspaceId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
 						},
 					},
 				}),
@@ -379,17 +379,17 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeWORKSPACE),
+					Type: string(platform_v1.ApiTokenScopeWORKSPACE),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.WORKSPACEOWNER),
+							Role:       string(platform_v1.WORKSPACEOWNER),
 							EntityId:   workspaceId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
 						},
 						{
-							Role:       string(iam.WORKSPACEOPERATOR),
+							Role:       string(platform_v1.WORKSPACEOPERATOR),
 							EntityId:   workspaceId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
 						},
 					},
 				}),
@@ -399,12 +399,12 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeWORKSPACE),
+					Type: string(platform_v1.ApiTokenScopeWORKSPACE),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.WORKSPACEOWNER),
+							Role:       string(platform_v1.WORKSPACEOWNER),
 							EntityId:   "clzjm8ixj001g01lmumcyo74q",
-							EntityType: string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
 						},
 					},
 				}),
@@ -414,17 +414,17 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeWORKSPACE),
+					Type: string(platform_v1.ApiTokenScopeWORKSPACE),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.WORKSPACEOWNER),
+							Role:       string(platform_v1.WORKSPACEOWNER),
 							EntityId:   workspaceId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
 						},
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   "clzk79utk030w01swob4ylsl0",
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 					},
 				}),
@@ -435,17 +435,17 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: utils.TestResourceDescription,
-					Type:        string(iam.ApiTokenTypeWORKSPACE),
+					Type:        string(platform_v1.ApiTokenScopeWORKSPACE),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.WORKSPACEOWNER),
+							Role:       string(platform_v1.WORKSPACEOWNER),
 							EntityId:   workspaceId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
 						},
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   deploymentId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 					},
 					ExpiryPeriodInDays: 30,
@@ -454,7 +454,7 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttr(resourceVar, "name", apiTokenName),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
-					resource.TestCheckResourceAttr(resourceVar, "type", string(iam.ApiTokenTypeWORKSPACE)),
+					resource.TestCheckResourceAttr(resourceVar, "type", string(platform_v1.ApiTokenScopeWORKSPACE)),
 					resource.TestCheckResourceAttrSet(resourceVar, "short_token"),
 					resource.TestCheckResourceAttrSet(resourceVar, "start_at"),
 					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
@@ -464,10 +464,10 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "expiry_period_in_days", "30"),
 					resource.TestCheckResourceAttr(resourceVar, "roles.#", "2"),
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_id", workspaceId),
-					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", string(iam.ApiTokenRoleEntityTypeWORKSPACE)),
-					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", string(iam.WORKSPACEOWNER)),
+					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE)),
+					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", string(platform_v1.WORKSPACEOWNER)),
 					resource.TestCheckResourceAttr(resourceVar, "roles.1.entity_id", deploymentId),
-					resource.TestCheckResourceAttr(resourceVar, "roles.1.entity_type", string(iam.ApiTokenRoleEntityTypeDEPLOYMENT)),
+					resource.TestCheckResourceAttr(resourceVar, "roles.1.entity_type", string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT)),
 					resource.TestCheckResourceAttr(resourceVar, "roles.1.role", "DEPLOYMENT_ADMIN"),
 					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: true}),
@@ -478,17 +478,17 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: "new description",
-					Type:        string(iam.ApiTokenTypeWORKSPACE),
+					Type:        string(platform_v1.ApiTokenScopeWORKSPACE),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.WORKSPACEOWNER),
+							Role:       string(platform_v1.WORKSPACEOWNER),
 							EntityId:   workspaceId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
 						},
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   deploymentId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 					},
 					ExpiryPeriodInDays: 30,
@@ -503,22 +503,22 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeORGANIZATION),
+					Type: string(platform_v1.ApiTokenScopeORGANIZATION),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+							Role:       string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER),
 							EntityId:   organizationId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeORGANIZATION),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
 						},
 					},
 					ExpiryPeriodInDays: 30,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceVar, "type", string(iam.ApiTokenTypeORGANIZATION)),
+					resource.TestCheckResourceAttr(resourceVar, "type", string(platform_v1.ApiTokenScopeORGANIZATION)),
 					resource.TestCheckResourceAttr(resourceVar, "roles.#", "1"),
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_id", organizationId),
-					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", string(iam.ApiTokenRoleEntityTypeORGANIZATION)),
-					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", string(iam.UserOrganizationRoleORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION)),
+					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER)),
 					// Check via API that api token was destroyed and recreated
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
@@ -528,23 +528,23 @@ func TestAcc_ResourceWorkspaceApiToken(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: utils.TestResourceDescription,
-					Type:        string(iam.ApiTokenTypeWORKSPACE),
+					Type:        string(platform_v1.ApiTokenScopeWORKSPACE),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.WORKSPACEOWNER),
+							Role:       string(platform_v1.WORKSPACEOWNER),
 							EntityId:   workspaceId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
 						},
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   deploymentId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 					},
 					ExpiryPeriodInDays: 30,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceVar, "type", string(iam.ApiTokenTypeWORKSPACE)),
+					resource.TestCheckResourceAttr(resourceVar, "type", string(platform_v1.ApiTokenScopeWORKSPACE)),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
 					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, workspace: true, shouldExist: true}),
@@ -583,12 +583,12 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeDEPLOYMENT),
+					Type: string(platform_v1.ApiTokenScopeDEPLOYMENT),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.WORKSPACEOWNER),
+							Role:       string(platform_v1.WORKSPACEOWNER),
 							EntityId:   workspaceId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeWORKSPACE),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
 						},
 					},
 				}),
@@ -598,12 +598,12 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeDEPLOYMENT),
+					Type: string(platform_v1.ApiTokenScopeDEPLOYMENT),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+							Role:       string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER),
 							EntityId:   deploymentId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 					},
 				}),
@@ -613,12 +613,12 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeDEPLOYMENT),
+					Type: string(platform_v1.ApiTokenScopeDEPLOYMENT),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+							Role:       string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER),
 							EntityId:   organizationId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeORGANIZATION),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
 						},
 					},
 				}),
@@ -628,12 +628,12 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeDEPLOYMENT),
+					Type: string(platform_v1.ApiTokenScopeDEPLOYMENT),
 					Roles: []apiTokenRole{
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   "clzk79utk030w01swob4ylsl0",
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 					},
 				}),
@@ -643,17 +643,17 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeDEPLOYMENT),
+					Type: string(platform_v1.ApiTokenScopeDEPLOYMENT),
 					Roles: []apiTokenRole{
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   deploymentId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 						{
 							Role:       "DAG_VIEWER",
 							EntityId:   "test_dag_id",
-							EntityType: string(iam.ApiTokenRoleEntityTypeDAG),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDAG),
 							// Missing deployment_id
 						},
 					},
@@ -664,17 +664,17 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name: apiTokenName,
-					Type: string(iam.ApiTokenTypeDEPLOYMENT),
+					Type: string(platform_v1.ApiTokenScopeDEPLOYMENT),
 					Roles: []apiTokenRole{
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   deploymentId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 						{
 							Role:       "DAG_AUTHOR",
 							EntityId:   "production",
-							EntityType: string(iam.ApiTokenRoleEntityTypeDAGTAG),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDAGTAG),
 							// Missing deployment_id
 						},
 					},
@@ -686,12 +686,12 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: utils.TestResourceDescription,
-					Type:        string(iam.ApiTokenTypeDEPLOYMENT),
+					Type:        string(platform_v1.ApiTokenScopeDEPLOYMENT),
 					Roles: []apiTokenRole{
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   deploymentId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 					},
 					ExpiryPeriodInDays: 30,
@@ -700,7 +700,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceVar, "id"),
 					resource.TestCheckResourceAttr(resourceVar, "name", apiTokenName),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
-					resource.TestCheckResourceAttr(resourceVar, "type", string(iam.ApiTokenTypeDEPLOYMENT)),
+					resource.TestCheckResourceAttr(resourceVar, "type", string(platform_v1.ApiTokenScopeDEPLOYMENT)),
 					resource.TestCheckResourceAttrSet(resourceVar, "short_token"),
 					resource.TestCheckResourceAttrSet(resourceVar, "start_at"),
 					resource.TestCheckResourceAttrSet(resourceVar, "created_at"),
@@ -710,7 +710,7 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceVar, "expiry_period_in_days", "30"),
 					resource.TestCheckResourceAttr(resourceVar, "roles.#", "1"),
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_id", deploymentId),
-					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", string(iam.ApiTokenRoleEntityTypeDEPLOYMENT)),
+					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT)),
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", "DEPLOYMENT_ADMIN"),
 					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
@@ -721,12 +721,12 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: "new description",
-					Type:        string(iam.ApiTokenTypeDEPLOYMENT),
+					Type:        string(platform_v1.ApiTokenScopeDEPLOYMENT),
 					Roles: []apiTokenRole{
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   deploymentId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 					},
 					ExpiryPeriodInDays: 30,
@@ -742,17 +742,17 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: utils.TestResourceDescription,
-					Type:        string(iam.ApiTokenTypeDEPLOYMENT),
+					Type:        string(platform_v1.ApiTokenScopeDEPLOYMENT),
 					Roles: []apiTokenRole{
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   deploymentId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 						{
 							Role:         "DAG_VIEWER",
 							EntityId:     "test_dag_id",
-							EntityType:   string(iam.ApiTokenRoleEntityTypeDAG),
+							EntityType:   string(platform_v1.ApiTokenRoleEntityTypeDAG),
 							DeploymentId: deploymentId,
 						},
 					},
@@ -769,17 +769,17 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: utils.TestResourceDescription,
-					Type:        string(iam.ApiTokenTypeDEPLOYMENT),
+					Type:        string(platform_v1.ApiTokenScopeDEPLOYMENT),
 					Roles: []apiTokenRole{
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   deploymentId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 						{
 							Role:         "DAG_AUTHOR",
 							EntityId:     "production",
-							EntityType:   string(iam.ApiTokenRoleEntityTypeDAGTAG),
+							EntityType:   string(platform_v1.ApiTokenRoleEntityTypeDAGTAG),
 							DeploymentId: deploymentId,
 						},
 					},
@@ -796,23 +796,23 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: utils.TestResourceDescription,
-					Type:        string(iam.ApiTokenTypeDEPLOYMENT),
+					Type:        string(platform_v1.ApiTokenScopeDEPLOYMENT),
 					Roles: []apiTokenRole{
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   deploymentId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 						{
 							Role:         "DAG_VIEWER",
 							EntityId:     "test_dag_id",
-							EntityType:   string(iam.ApiTokenRoleEntityTypeDAG),
+							EntityType:   string(platform_v1.ApiTokenRoleEntityTypeDAG),
 							DeploymentId: deploymentId,
 						},
 						{
 							Role:         "DAG_AUTHOR",
 							EntityId:     "production",
-							EntityType:   string(iam.ApiTokenRoleEntityTypeDAGTAG),
+							EntityType:   string(platform_v1.ApiTokenRoleEntityTypeDAGTAG),
 							DeploymentId: deploymentId,
 						},
 					},
@@ -829,22 +829,22 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: utils.TestResourceDescription,
-					Type:        string(iam.ApiTokenTypeORGANIZATION),
+					Type:        string(platform_v1.ApiTokenScopeORGANIZATION),
 					Roles: []apiTokenRole{
 						{
-							Role:       string(iam.UserOrganizationRoleORGANIZATIONOWNER),
+							Role:       string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER),
 							EntityId:   organizationId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeORGANIZATION),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
 						},
 					},
 					ExpiryPeriodInDays: 30,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceVar, "type", string(iam.ApiTokenTypeORGANIZATION)),
+					resource.TestCheckResourceAttr(resourceVar, "type", string(platform_v1.ApiTokenScopeORGANIZATION)),
 					resource.TestCheckResourceAttr(resourceVar, "roles.#", "1"),
 					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_id", organizationId),
-					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", string(iam.ApiTokenRoleEntityTypeORGANIZATION)),
-					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", string(iam.UserOrganizationRoleORGANIZATIONOWNER)),
+					resource.TestCheckResourceAttr(resourceVar, "roles.0.entity_type", string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION)),
+					resource.TestCheckResourceAttr(resourceVar, "roles.0.role", string(platform_v1.UserOrganizationRoleORGANIZATIONOWNER)),
 					// Check via API that api token was destroyed and recreated
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
 				),
@@ -854,18 +854,18 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
 					Name:        apiTokenName,
 					Description: utils.TestResourceDescription,
-					Type:        string(iam.ApiTokenTypeDEPLOYMENT),
+					Type:        string(platform_v1.ApiTokenScopeDEPLOYMENT),
 					Roles: []apiTokenRole{
 						{
 							Role:       "DEPLOYMENT_ADMIN",
 							EntityId:   deploymentId,
-							EntityType: string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 						},
 					},
 					ExpiryPeriodInDays: 30,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceVar, "type", string(iam.ApiTokenTypeDEPLOYMENT)),
+					resource.TestCheckResourceAttr(resourceVar, "type", string(platform_v1.ApiTokenScopeDEPLOYMENT)),
 					resource.TestCheckResourceAttr(resourceVar, "description", utils.TestResourceDescription),
 					// Check via API that api token exists
 					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, deployment: true, shouldExist: true}),
@@ -950,7 +950,7 @@ func testAccCheckApiTokenExistence(t *testing.T, input checkApiTokensExistenceIn
 
 		ctx := context.Background()
 
-		apiTokensParams := &iam.ListApiTokensParams{}
+		apiTokensParams := &platform_v1.ListApiTokensParams{}
 
 		if input.organization {
 			apiTokensParams.IncludeOnlyOrganizationTokens = lo.ToPtr(true)

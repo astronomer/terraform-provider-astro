@@ -28,6 +28,18 @@ resource "astro_cluster" "aws_example" {
   }
 }
 
+# Private Network Egress disables public Internet connectivity from the cluster's
+# Deployments and metrics exports. AWS clusters only.
+resource "astro_cluster" "aws_private_network_egress_example" {
+  type                              = "DEDICATED"
+  name                              = "my private-egress aws cluster"
+  region                            = "us-east-1"
+  cloud_provider                    = "AWS"
+  vpc_subnet_range                  = "172.20.0.0/20"
+  workspace_ids                     = []
+  is_private_network_egress_enabled = true
+}
+
 resource "astro_cluster" "azure_example" {
   type             = "DEDICATED"
   name             = "my first azure cluster"
@@ -135,6 +147,7 @@ resource "astro_cluster" "imported_cluster" {
 - `enable_replication_time_control` (Boolean) Whether to enable Replication Time Control for Disaster Recovery task log replication. Only valid when `is_dr_enabled` is true. For `AZURE` clusters: if left unset, this is automatically enabled when `region` and `dr_region` are on the same continent, and left disabled otherwise. Explicitly setting this to `true` when `region` and `dr_region` are on different continents will fail at plan time. You may always explicitly set this to `false`, regardless of the region pair.
 - `is_dr_enabled` (Boolean) Whether Disaster Recovery is enabled on the cluster. Supported for `AWS`, `GCP`, and `AZURE` clusters. For `AWS` and `GCP`, DR can only be enabled at cluster creation time; enabling DR on an existing `AWS` or `GCP` cluster requires the admin API. For `AZURE`, DR can be enabled or disabled on an existing cluster via this resource. Can be set to `false` to disable DR on an existing cluster for any provider.
 - `is_failed_over` (Boolean) Whether the cluster is currently failed over to the DR region. Set to `true` to trigger failover; set to `false` to fail back.
+- `is_private_network_egress_enabled` (Boolean) Whether Private Network Egress mode is enabled, which disables public Internet connectivity from the cluster's Deployments and metrics exports. For `AWS` clusters only.
 - `pod_subnet_range` (String) Cluster pod subnet range - required for 'GCP' clusters. If changed, the cluster will be recreated.
 - `secondary_vpc_cidr` (String) Secondary CIDR for pod networking (AWS only, /16 to /20). Cannot be changed once set.
 - `service_peering_range` (String) Cluster service peering range - required for 'GCP' clusters. If changed, the cluster will be recreated.

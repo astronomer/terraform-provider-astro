@@ -16,7 +16,7 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 
@@ -115,7 +115,7 @@ func main() {
 		log.Fatalf("Failed to create platform client: %v", err)
 	}
 
-	iamClient, err := iam.NewIamClient(host, token, "import")
+	platformV1Client, err := platform_v1.NewPlatformV1Client(host, token, "import")
 	if err != nil {
 		log.Fatalf("Failed to create iam client: %v", err)
 		return
@@ -139,7 +139,7 @@ provider "astro" {
 
 	//	for each resource, we get the list of entities and generate the terraform import command
 
-	resourceHandlers := map[string]func(context.Context, *platform.ClientWithResponses, *iam.ClientWithResponses, string) (string, error){
+	resourceHandlers := map[string]func(context.Context, *platform.ClientWithResponses, *platform_v1.ClientWithResponses, string) (string, error){
 		"workspace":            handleWorkspaces,
 		"deployment":           handleDeployments,
 		"cluster":              handleClusters,
@@ -166,7 +166,7 @@ provider "astro" {
 				results <- HandlerResult{Resource: resource, Error: fmt.Errorf("resource not supported")}
 				return
 			}
-			result, err := handler(ctx, platformClient, iamClient, organizationId)
+			result, err := handler(ctx, platformClient, platformV1Client, organizationId)
 			if err != nil {
 				log.Printf("Error handling resource %s: %v", resource, err)
 				results <- HandlerResult{Resource: resource, Error: err}
@@ -243,7 +243,7 @@ provider "astro" {
 
 	// Add deployment import blocks and HCL to the generated file
 	if deploymentImportString != "" {
-		err = addDeploymentsToGeneratedFile(deploymentImportString, organizationId, platformClient, ctx)
+		err = addDeploymentsToGeneratedFile(deploymentImportString, organizationId, platformV1Client, ctx)
 		if err != nil {
 			log.Fatalf("Failed to add deployments to generated file: %v", err)
 			return
@@ -388,10 +388,10 @@ func generateTerraformConfig() error {
 	return nil
 }
 
-func handleWorkspaces(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
+func handleWorkspaces(ctx context.Context, platformClient *platform.ClientWithResponses, platformV1Client *platform_v1.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing workspaces for organization %s", organizationId)
 
-	workspacesResp, err := platformClient.ListWorkspacesWithResponse(ctx, organizationId, &platform.ListWorkspacesParams{Limit: lo.ToPtr(1000)})
+	workspacesResp, err := platformV1Client.ListWorkspacesWithResponse(ctx, organizationId, &platform_v1.ListWorkspacesParams{Limit: lo.ToPtr(1000)})
 	if err != nil {
 		return "", fmt.Errorf("failed to list workspaces: %v", err)
 	}
@@ -414,7 +414,7 @@ func handleWorkspaces(ctx context.Context, platformClient *platform.ClientWithRe
 		return "", fmt.Errorf("workspaces list is nil")
 	}
 
-	workspaceIds := lo.Map(workspaces, func(workspace platform.Workspace, _ int) string {
+	workspaceIds := lo.Map(workspaces, func(workspace platform_v1.Workspace, _ int) string {
 		return workspace.Id
 	})
 
@@ -435,10 +435,10 @@ import {
 	return importString, nil
 }
 
-func handleDeployments(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
+func handleDeployments(ctx context.Context, platformClient *platform.ClientWithResponses, platformV1Client *platform_v1.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing deployments for organization %s", organizationId)
 
-	deploymentsResp, err := platformClient.ListDeploymentsWithResponse(ctx, organizationId, &platform.ListDeploymentsParams{Limit: lo.ToPtr(1000)})
+	deploymentsResp, err := platformV1Client.ListDeploymentsWithResponse(ctx, organizationId, &platform_v1.ListDeploymentsParams{Limit: lo.ToPtr(1000)})
 	if err != nil {
 		return "", fmt.Errorf("failed to list deployments: %v", err)
 	}
@@ -461,7 +461,7 @@ func handleDeployments(ctx context.Context, platformClient *platform.ClientWithR
 		return "", fmt.Errorf("deployments list is nil")
 	}
 
-	deploymentIds := lo.Map(deployments, func(deployment platform.Deployment, _ int) string {
+	deploymentIds := lo.Map(deployments, func(deployment platform_v1.Deployment, _ int) string {
 		return deployment.Id
 	})
 	log.Printf("Importing Deployments: %v", deploymentIds)
@@ -481,10 +481,10 @@ import {
 	return importString, nil
 }
 
-func handleClusters(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
+func handleClusters(ctx context.Context, platformClient *platform.ClientWithResponses, platformV1Client *platform_v1.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing clusters for organization %s", organizationId)
 
-	clustersResp, err := platformClient.ListClustersWithResponse(ctx, organizationId, &platform.ListClustersParams{Limit: lo.ToPtr(1000)})
+	clustersResp, err := platformV1Client.ListClustersWithResponse(ctx, organizationId, &platform_v1.ListClustersParams{Limit: lo.ToPtr(1000)})
 	if err != nil {
 		return "", fmt.Errorf("failed to list clusters: %v", err)
 	}
@@ -507,7 +507,7 @@ func handleClusters(ctx context.Context, platformClient *platform.ClientWithResp
 		return "", fmt.Errorf("clusters list is nil")
 	}
 
-	clusterMap := make(map[string]platform.ClusterType)
+	clusterMap := make(map[string]platform_v1.ClusterType)
 	for _, cluster := range clusters {
 		if cluster.Id != "" {
 			clusterMap[cluster.Id] = cluster.Type
@@ -519,7 +519,7 @@ func handleClusters(ctx context.Context, platformClient *platform.ClientWithResp
 	var importString string
 	var clusterImportString string
 	for clusterId, clusterType := range clusterMap {
-		if clusterType != platform.ClusterTypeHYBRID {
+		if clusterType != platform_v1.ClusterTypeHYBRID {
 			clusterImportString = fmt.Sprintf(`
 import {
 	provider = astro
@@ -541,10 +541,10 @@ import {
 	return importString, nil
 }
 
-func handleApiTokens(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
+func handleApiTokens(ctx context.Context, platformClient *platform.ClientWithResponses, platformV1Client *platform_v1.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing API tokens for organization %s", organizationId)
 
-	apiTokensResp, err := iamClient.ListApiTokensWithResponse(ctx, organizationId, nil)
+	apiTokensResp, err := platformV1Client.ListApiTokensWithResponse(ctx, organizationId, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to list API tokens: %v", err)
 	}
@@ -567,7 +567,7 @@ func handleApiTokens(ctx context.Context, platformClient *platform.ClientWithRes
 		return "", fmt.Errorf("API tokens list is nil")
 	}
 
-	apiTokenIds := lo.Map(apiTokens, func(apiToken iam.ApiToken, _ int) string {
+	apiTokenIds := lo.Map(apiTokens, func(apiToken platform_v1.ApiToken, _ int) string {
 		return apiToken.Id
 	})
 
@@ -588,11 +588,11 @@ import {
 	return importString, nil
 }
 
-func handleAgentTokens(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
+func handleAgentTokens(ctx context.Context, platformClient *platform.ClientWithResponses, platformV1Client *platform_v1.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing Agent tokens for organization %s", organizationId)
 
 	// First, list deployments in the organization configured with Remote Execution, if any, then, import the agent tokens
-	deploymentsResp, err := platformClient.ListDeploymentsWithResponse(ctx, organizationId, &platform.ListDeploymentsParams{Limit: lo.ToPtr(1000)})
+	deploymentsResp, err := platformV1Client.ListDeploymentsWithResponse(ctx, organizationId, &platform_v1.ListDeploymentsParams{Limit: lo.ToPtr(1000)})
 	if err != nil {
 		return "", fmt.Errorf("failed to list deployments: %v", err)
 	}
@@ -625,7 +625,7 @@ func handleAgentTokens(ctx context.Context, platformClient *platform.ClientWithR
 	agentTokenIds := map[string]string{}
 	for _, deploymentId := range remoteExecutionDeploymentIds {
 		// Fetch Agent tokens for each deployment using remote execution, since agent tokens are a sub-resource of a deployment
-		agentTokensResp, err := iamClient.ListAgentTokensWithResponse(ctx, organizationId, deploymentId, nil)
+		agentTokensResp, err := platformV1Client.ListAgentTokensWithResponse(ctx, organizationId, deploymentId, nil)
 		if err != nil {
 			return "", fmt.Errorf("failed to list API tokens: %v", err)
 		}
@@ -648,7 +648,7 @@ func handleAgentTokens(ctx context.Context, platformClient *platform.ClientWithR
 			return "", fmt.Errorf("API tokens list is nil")
 		}
 
-		lo.ForEach(agentTokens, func(agentToken iam.ApiToken, _ int) {
+		lo.ForEach(agentTokens, func(agentToken platform_v1.ApiToken, _ int) {
 			// Since agent token is a sub-resource of a deployment, the import needs to use a composite key like "$deployment_id/$agent_token_id"
 			agentTokenIds[agentToken.Id] = fmt.Sprintf("%s/%s", deploymentId, agentToken.Id)
 		})
@@ -671,7 +671,7 @@ import {
 	return importString, nil
 }
 
-func handleTeams(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
+func handleTeams(ctx context.Context, platformClient *platform.ClientWithResponses, platformV1Client *platform_v1.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing teams for organization %s", organizationId)
 
 	// Check if SCIM is enabled for the organization, if so, exit as teams cannot be imported
@@ -698,7 +698,7 @@ func handleTeams(ctx context.Context, platformClient *platform.ClientWithRespons
 		return "", fmt.Errorf("SCIM is enabled for the organization, teams cannot be imported")
 	}
 
-	teamsResp, err := iamClient.ListTeamsWithResponse(ctx, organizationId, nil)
+	teamsResp, err := platformV1Client.ListTeamsWithResponse(ctx, organizationId, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to list teams: %v", err)
 	}
@@ -721,7 +721,7 @@ func handleTeams(ctx context.Context, platformClient *platform.ClientWithRespons
 		return "", fmt.Errorf("teams list is nil")
 	}
 
-	teamIds := lo.Map(teams, func(team iam.Team, _ int) string {
+	teamIds := lo.Map(teams, func(team platform_v1.Team, _ int) string {
 		return team.Id
 	})
 
@@ -742,10 +742,10 @@ import {
 	return importString, nil
 }
 
-func handleTeamRoles(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
+func handleTeamRoles(ctx context.Context, platformClient *platform.ClientWithResponses, platformV1Client *platform_v1.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing team roles for organization %s", organizationId)
 
-	teamsResp, err := iamClient.ListTeamsWithResponse(ctx, organizationId, nil)
+	teamsResp, err := platformV1Client.ListTeamsWithResponse(ctx, organizationId, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to list teams: %v", err)
 	}
@@ -768,7 +768,7 @@ func handleTeamRoles(ctx context.Context, platformClient *platform.ClientWithRes
 		return "", fmt.Errorf("teams list is nil")
 	}
 
-	teamIds := lo.Map(teams, func(team iam.Team, _ int) string {
+	teamIds := lo.Map(teams, func(team platform_v1.Team, _ int) string {
 		return team.Id
 	})
 
@@ -789,10 +789,10 @@ import {
 	return importString, nil
 }
 
-func handleUserRoles(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
+func handleUserRoles(ctx context.Context, platformClient *platform.ClientWithResponses, platformV1Client *platform_v1.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing user roles for organization %s", organizationId)
 
-	usersResp, err := iamClient.ListUsersWithResponse(ctx, organizationId, nil)
+	usersResp, err := platformV1Client.ListUsersWithResponse(ctx, organizationId, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to list users: %v", err)
 	}
@@ -815,7 +815,7 @@ func handleUserRoles(ctx context.Context, platformClient *platform.ClientWithRes
 		return "", fmt.Errorf("users list is nil")
 	}
 
-	userIds := lo.Map(users, func(user iam.User, _ int) string {
+	userIds := lo.Map(users, func(user platform_v1.User, _ int) string {
 		return user.Id
 	})
 
@@ -836,7 +836,7 @@ import {
 	return importString, nil
 }
 
-func handleAlerts(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
+func handleAlerts(ctx context.Context, platformClient *platform.ClientWithResponses, platformV1Client *platform_v1.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing alerts for organization %s", organizationId)
 
 	alertsResp, err := platformClient.ListAlertsWithResponse(ctx, organizationId, &platform.ListAlertsParams{Limit: lo.ToPtr(1000)})
@@ -909,7 +909,7 @@ import {
 	return importString, nil
 }
 
-func handleNotificationChannels(ctx context.Context, platformClient *platform.ClientWithResponses, iamClient *iam.ClientWithResponses, organizationId string) (string, error) {
+func handleNotificationChannels(ctx context.Context, platformClient *platform.ClientWithResponses, platformV1Client *platform_v1.ClientWithResponses, organizationId string) (string, error) {
 	log.Printf("Importing notification channels for organization %s", organizationId)
 
 	notificationChannelsResp, err := platformClient.ListNotificationChannelsWithResponse(ctx, organizationId, &platform.ListNotificationChannelsParams{Limit: lo.ToPtr(1000)})
@@ -952,7 +952,7 @@ import {
 }
 
 // addDeploymentsToGeneratedFile adds the deployment import blocks and HCL to the generated.tf file
-func addDeploymentsToGeneratedFile(deploymentImportString string, organizationId string, platformClient *platform.ClientWithResponses, ctx context.Context) error {
+func addDeploymentsToGeneratedFile(deploymentImportString string, organizationId string, platformV1Client *platform_v1.ClientWithResponses, ctx context.Context) error {
 	var contentBytes []byte
 	var err error
 
@@ -970,7 +970,7 @@ func addDeploymentsToGeneratedFile(deploymentImportString string, organizationId
 	}
 
 	// Generate deployment HCL
-	deploymentHCL, err := generateDeploymentHCL(ctx, platformClient, organizationId)
+	deploymentHCL, err := generateDeploymentHCL(ctx, platformV1Client, organizationId)
 	if err != nil {
 		return fmt.Errorf("failed to generate deployment HCL: %v", err)
 	}
@@ -1054,8 +1054,8 @@ func addNotificationChannelsToGeneratedFile(notificationChannelImportString stri
 
 // generateDeploymentHCL generates the HCL for all deployments in the organization
 // generateTerraformConfig has trouble with deployments, so we generate the HCL manually
-func generateDeploymentHCL(ctx context.Context, platformClient *platform.ClientWithResponses, organizationId string) (string, error) {
-	deploymentsResp, err := platformClient.ListDeploymentsWithResponse(ctx, organizationId, &platform.ListDeploymentsParams{Limit: lo.ToPtr(1000)})
+func generateDeploymentHCL(ctx context.Context, platformV1Client *platform_v1.ClientWithResponses, organizationId string) (string, error) {
+	deploymentsResp, err := platformV1Client.ListDeploymentsWithResponse(ctx, organizationId, &platform_v1.ListDeploymentsParams{Limit: lo.ToPtr(1000)})
 	if err != nil {
 		return "", fmt.Errorf("failed to list deployments: %v", err)
 	}
@@ -1073,7 +1073,7 @@ func generateDeploymentHCL(ctx context.Context, platformClient *platform.ClientW
 		return "", fmt.Errorf("deployments list is nil")
 	}
 
-	deploymentIds := lo.Map(deployments, func(deployment platform.Deployment, _ int) string {
+	deploymentIds := lo.Map(deployments, func(deployment platform_v1.Deployment, _ int) string {
 		return deployment.Id
 	})
 
@@ -1082,7 +1082,7 @@ func generateDeploymentHCL(ctx context.Context, platformClient *platform.ClientW
 		var deploymentHCL string
 
 		// get deployment details
-		deploymentResp, err := platformClient.GetDeploymentWithResponse(ctx, organizationId, deploymentId)
+		deploymentResp, err := platformV1Client.GetDeploymentWithResponse(ctx, organizationId, deploymentId)
 		if err != nil {
 			return "", fmt.Errorf("failed to get deployment %s: %v", deploymentId, err)
 		}
@@ -1107,7 +1107,7 @@ func generateDeploymentHCL(ctx context.Context, platformClient *platform.ClientW
 		remoteExecutionString := formatRemoteExecution(deployment.RemoteExecution)
 		scalingSpecString := formatScalingSpec(deployment.ScalingSpec)
 
-		workloadIdentity := deployment.WorkloadIdentity
+		workloadIdentity := deployment.EffectiveWorkloadIdentity
 		workloadIdentityString := ""
 		if workloadIdentity != nil {
 			workloadIdentityString = fmt.Sprintf(`desired_workload_identity = "%s"`, *workloadIdentity)
@@ -1137,7 +1137,7 @@ func generateDeploymentHCL(ctx context.Context, platformClient *platform.ClientW
 			resourceQuotaMemoryString = fmt.Sprintf(`resource_quota_memory = "%s"`, *resourceQuotaMemory)
 		}
 
-		if *deploymentType == platform.DeploymentTypeDEDICATED {
+		if *deploymentType == platform_v1.DeploymentTypeDEDICATED {
 			deploymentHCL = fmt.Sprintf(`
 resource "astro_deployment" "deployment_%s" {
 	cluster_id = "%s"
@@ -1186,7 +1186,7 @@ resource "astro_deployment" "deployment_%s" {
 				workloadIdentityString,
 				remoteExecutionString,
 			)
-		} else if *deploymentType == platform.DeploymentTypeSTANDARD {
+		} else if *deploymentType == platform_v1.DeploymentTypeSTANDARD {
 			deploymentHCL = fmt.Sprintf(`
 resource "astro_deployment" "deployment_%s" {
 	cloud_provider = "%s"
@@ -1235,7 +1235,7 @@ resource "astro_deployment" "deployment_%s" {
 				workerQueuesString,
 				workloadIdentityString,
 			)
-		} else if *deploymentType == platform.DeploymentTypeHYBRID {
+		} else if *deploymentType == platform_v1.DeploymentTypeHYBRID {
 			taskPodNodePoolIdString := ""
 			if deployment.TaskPodNodePoolId != nil {
 				taskPodNodePoolIdString = fmt.Sprintf(`task_pod_node_pool_id = "%s"`, *deployment.TaskPodNodePoolId)
@@ -1462,11 +1462,11 @@ func formatContactEmails(emails *[]string) string {
 	return fmt.Sprintf(`contact_emails = [%s]`, strings.Join(quotedEmails, ", "))
 }
 
-func formatEnvironmentVariables(envVars *[]platform.DeploymentEnvironmentVariable) string {
+func formatEnvironmentVariables(envVars *[]platform_v1.DeploymentEnvironmentVariable) string {
 	if envVars == nil || len(*envVars) == 0 {
 		return fmt.Sprintf(`environment_variables = []`)
 	}
-	variables := lo.Map(*envVars, func(envVar platform.DeploymentEnvironmentVariable, _ int) string {
+	variables := lo.Map(*envVars, func(envVar platform_v1.DeploymentEnvironmentVariable, _ int) string {
 		var value string
 		if envVar.IsSecret || envVar.Value == nil {
 			value = "null"
@@ -1483,7 +1483,7 @@ func formatEnvironmentVariables(envVars *[]platform.DeploymentEnvironmentVariabl
 	return fmt.Sprintf(`environment_variables = [%s]`, strings.Join(variables, ", "))
 }
 
-func formatWorkerQueues(queues *[]platform.WorkerQueue, executor *string, deploymentType *string) string {
+func formatWorkerQueues(queues *[]platform_v1.WorkerQueue, executor *string, deploymentType *string) string {
 	// If queues is nil and executor is not CELERY, return an empty string
 	if queues == nil && (executor == nil || *executor != "CELERY") {
 		return ""
@@ -1496,8 +1496,8 @@ func formatWorkerQueues(queues *[]platform.WorkerQueue, executor *string, deploy
 
 	// If we have queues, format them
 	if queues != nil && len(*queues) > 0 {
-		workerQueues := lo.Map(*queues, func(queue platform.WorkerQueue, _ int) string {
-			if deploymentType != nil && *deploymentType == string(platform.DeploymentTypeHYBRID) {
+		workerQueues := lo.Map(*queues, func(queue platform_v1.WorkerQueue, _ int) string {
+			if deploymentType != nil && *deploymentType == string(platform_v1.DeploymentTypeHYBRID) {
 				// HYBRID deployments use node_pool_id instead of astro_machine
 				nodePoolIdString := ""
 				if queue.NodePoolId != nil {
@@ -1530,7 +1530,7 @@ func formatWorkerQueues(queues *[]platform.WorkerQueue, executor *string, deploy
 	return ""
 }
 
-func formatRemoteExecution(remoteExecution *platform.DeploymentRemoteExecution) string {
+func formatRemoteExecution(remoteExecution *platform_v1.DeploymentRemoteExecution) string {
 	if remoteExecution == nil {
 		return ""
 	}
@@ -1559,7 +1559,7 @@ func formatRemoteExecution(remoteExecution *platform.DeploymentRemoteExecution) 
 	return ""
 }
 
-func formatScalingSpec(spec *platform.DeploymentScalingSpec) string {
+func formatScalingSpec(spec *platform_v1.DeploymentScalingSpec) string {
 	if spec == nil || spec.HibernationSpec == nil {
 		return ""
 	}
@@ -1573,7 +1573,7 @@ func formatScalingSpec(spec *platform.DeploymentScalingSpec) string {
 
 	// Handle schedules
 	if hibernationSpec.Schedules != nil && len(*hibernationSpec.Schedules) > 0 {
-		schedules := lo.Map(*hibernationSpec.Schedules, func(schedule platform.DeploymentHibernationSchedule, _ int) string {
+		schedules := lo.Map(*hibernationSpec.Schedules, func(schedule platform_v1.DeploymentHibernationSchedule, _ int) string {
 			return fmt.Sprintf(`{
 			description = "%s"
 			hibernate_at_cron = "%s"

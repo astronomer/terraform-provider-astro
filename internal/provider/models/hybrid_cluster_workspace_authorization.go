@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -13,7 +13,7 @@ type HybridClusterWorkspaceAuthorizationResource struct {
 }
 
 func (data *HybridClusterWorkspaceAuthorizationResource) ReadFromResponse(
-	cluster *platform.Cluster,
+	cluster *platform_v1.Cluster,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.ClusterId = types.StringValue(cluster.Id)

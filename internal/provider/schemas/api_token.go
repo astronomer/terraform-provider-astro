@@ -1,7 +1,7 @@
 package schemas
 
 import (
-	"github.com/astronomer/terraform-provider-astro/internal/clients/iam"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -104,9 +104,9 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			MarkdownDescription: "API Token type - if changing this value, the API Token will be recreated with the new type",
 			Required:            true,
 			Validators: []validator.String{
-				stringvalidator.OneOf(string(iam.ApiTokenTypeORGANIZATION),
-					string(iam.ApiTokenTypeWORKSPACE),
-					string(iam.ApiTokenRoleEntityTypeDEPLOYMENT),
+				stringvalidator.OneOf(string(platform_v1.ApiTokenScopeORGANIZATION),
+					string(platform_v1.ApiTokenScopeWORKSPACE),
+					string(platform_v1.ApiTokenRoleEntityTypeDEPLOYMENT),
 				),
 			},
 			PlanModifiers: []planmodifier.String{

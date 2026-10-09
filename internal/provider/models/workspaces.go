@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -19,7 +19,7 @@ type Workspaces struct {
 
 func (data *Workspaces) ReadFromResponse(
 	ctx context.Context,
-	workspaces []platform.Workspace,
+	workspaces []platform_v1.Workspace,
 ) diag.Diagnostics {
 	values := make([]attr.Value, len(workspaces))
 	for i, workspace := range workspaces {

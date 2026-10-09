@@ -1,7 +1,7 @@
 package schemas
 
 import (
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -47,16 +47,17 @@ func ClustersElementAttributeTypes() map[string]attr.Type {
 				AttrTypes: ClusterTagAttributeTypes(),
 			},
 		},
-		"is_limited":                      types.BoolType,
-		"is_dr_enabled":                   types.BoolType,
-		"dr_region":                       types.StringType,
-		"dr_vpc_subnet_range":             types.StringType,
-		"dr_secondary_vpc_cidr":           types.StringType,
-		"enable_replication_time_control": types.BoolType,
-		"is_failed_over":                  types.BoolType,
-		"dr_pod_subnet_range":             types.StringType,
-		"dr_service_peering_range":        types.StringType,
-		"dr_service_subnet_range":         types.StringType,
+		"is_limited":                        types.BoolType,
+		"is_dr_enabled":                     types.BoolType,
+		"dr_region":                         types.StringType,
+		"dr_vpc_subnet_range":               types.StringType,
+		"dr_secondary_vpc_cidr":             types.StringType,
+		"enable_replication_time_control":   types.BoolType,
+		"is_failed_over":                    types.BoolType,
+		"is_private_network_egress_enabled": types.BoolType,
+		"dr_pod_subnet_range":               types.StringType,
+		"dr_service_peering_range":          types.StringType,
+		"dr_service_subnet_range":           types.StringType,
 	}
 }
 
@@ -73,9 +74,9 @@ func ClustersDataSourceSchemaAttributes() map[string]schema.Attribute {
 			Optional:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(platform.ClusterCloudProviderAWS),
-					string(platform.ClusterCloudProviderGCP),
-					string(platform.ClusterCloudProviderAZURE),
+					string(platform_v1.ClusterCloudProviderAWS),
+					string(platform_v1.ClusterCloudProviderGCP),
+					string(platform_v1.ClusterCloudProviderAZURE),
 				),
 			},
 		},

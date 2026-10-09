@@ -6,7 +6,7 @@ import (
 
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 
-	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -84,7 +84,7 @@ type WorkloadIdentityOption struct {
 
 func (data *DeploymentOptions) ReadFromResponse(
 	ctx context.Context,
-	options *platform.DeploymentOptions,
+	options *platform_v1.DeploymentOptions,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 	data.Executors, diags = utils.StringSet(&options.Executors)
@@ -121,7 +121,7 @@ func (data *DeploymentOptions) ReadFromResponse(
 
 func ResourceRangeTypesObject(
 	ctx context.Context,
-	resourceRange platform.ResourceRange,
+	resourceRange platform_v1.ResourceRange,
 ) (types.Object, diag.Diagnostics) {
 	obj := ResourceRange{
 		Floor:   types.StringValue(resourceRange.Floor),
@@ -134,7 +134,7 @@ func ResourceRangeTypesObject(
 
 func RangeTypesObject(
 	ctx context.Context,
-	range_ platform.Range,
+	range_ platform_v1.Range,
 ) (types.Object, diag.Diagnostics) {
 	floor := strconv.FormatFloat(float64(range_.Floor), 'f', -1, 64)
 	default_ := strconv.FormatFloat(float64(range_.Default), 'f', -1, 64)
@@ -150,7 +150,7 @@ func RangeTypesObject(
 
 func ResourceOptionTypesObject(
 	ctx context.Context,
-	resourceOption platform.ResourceOption,
+	resourceOption platform_v1.ResourceOption,
 ) (types.Object, diag.Diagnostics) {
 	cpu, diags := ResourceRangeTypesObject(ctx, resourceOption.Cpu)
 	if diags.HasError() {
@@ -169,7 +169,7 @@ func ResourceOptionTypesObject(
 
 func ResourceQuotaOptionsObject(
 	ctx context.Context,
-	resourceQuotaOptions platform.ResourceQuotaOptions,
+	resourceQuotaOptions platform_v1.ResourceQuotaOptions,
 ) (types.Object, diag.Diagnostics) {
 	resourceQuota, diags := ResourceOptionTypesObject(ctx, resourceQuotaOptions.ResourceQuota)
 	if diags.HasError() {
@@ -189,7 +189,7 @@ func ResourceQuotaOptionsObject(
 
 func RuntimeReleaseTypesObject(
 	ctx context.Context,
-	runtimeRelease platform.RuntimeRelease,
+	runtimeRelease platform_v1.RuntimeRelease,
 ) (types.Object, diag.Diagnostics) {
 	obj := RuntimeRelease{
 		Version:                  types.StringValue(runtimeRelease.Version),
@@ -205,7 +205,7 @@ func RuntimeReleaseTypesObject(
 
 func MachineSpecTypesObject(
 	ctx context.Context,
-	machineSpec platform.MachineSpec,
+	machineSpec platform_v1.MachineSpec,
 ) (types.Object, diag.Diagnostics) {
 	obj := MachineSpec{
 		Cpu:              types.StringValue(machineSpec.Cpu),
@@ -221,7 +221,7 @@ func MachineSpecTypesObject(
 
 func SchedulerMachineTypesObject(
 	ctx context.Context,
-	schedulerMachine platform.SchedulerMachine,
+	schedulerMachine platform_v1.SchedulerMachine,
 ) (types.Object, diag.Diagnostics) {
 	spec, diags := MachineSpecTypesObject(ctx, schedulerMachine.Spec)
 	if diags.HasError() {
@@ -237,7 +237,7 @@ func SchedulerMachineTypesObject(
 
 func WorkerMachineTypesObject(
 	ctx context.Context,
-	workerMachine platform.WorkerMachine,
+	workerMachine platform_v1.WorkerMachine,
 ) (types.Object, diag.Diagnostics) {
 	spec, diags := MachineSpecTypesObject(ctx, workerMachine.Spec)
 	if diags.HasError() {
@@ -258,7 +258,7 @@ func WorkerMachineTypesObject(
 
 func WorkerQueueOptionsTypesObject(
 	ctx context.Context,
-	workerQueueOptions platform.WorkerQueueOptions,
+	workerQueueOptions platform_v1.WorkerQueueOptions,
 ) (types.Object, diag.Diagnostics) {
 	minWorkers, diags := RangeTypesObject(ctx, workerQueueOptions.MinWorkers)
 	if diags.HasError() {
@@ -283,7 +283,7 @@ func WorkerQueueOptionsTypesObject(
 
 func WorkloadIdentityOptionTypesObject(
 	ctx context.Context,
-	workloadIdentityOption platform.WorkloadIdentityOption,
+	workloadIdentityOption platform_v1.WorkloadIdentityOption,
 ) (types.Object, diag.Diagnostics) {
 	obj := WorkloadIdentityOption{
 		Role:  types.StringValue(workloadIdentityOption.Role),
