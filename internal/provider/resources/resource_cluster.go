@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -106,6 +107,9 @@ func (r *ClusterResource) Create(
 			DrVpcSubnetRange:             data.DrVpcSubnetRange.ValueStringPointer(),
 			DrSecondaryVpcCidr:           data.DrSecondaryVpcCidr.ValueStringPointer(),
 			EnableReplicationTimeControl: data.EnableReplicationTimeControl.ValueBoolPointer(),
+			// Private Network Egress is AWS only. The attribute is Optional+Computed, so an
+			// omitted value arrives as unknown and must be left to the platform default.
+			IsPrivateNetworkEgressEnabled: configuredBool(data.IsPrivateNetworkEgressEnabled),
 		}
 
 		// workspaceIds
@@ -345,6 +349,10 @@ func (r *ClusterResource) Update(
 	// Set IsFailedOver if specified (must be an explicit value, not null or unknown)
 	if !data.IsFailedOver.IsNull() && !data.IsFailedOver.IsUnknown() {
 		updateDedicatedClusterRequest.IsFailedOver = data.IsFailedOver.ValueBoolPointer()
+	}
+	// Private Network Egress can be toggled on an existing cluster, but only for AWS.
+	if platform_v1.ClusterCloudProvider(data.CloudProvider.ValueString()) == platform_v1.ClusterCloudProviderAWS {
+		updateDedicatedClusterRequest.IsPrivateNetworkEgressEnabled = configuredBool(data.IsPrivateNetworkEgressEnabled)
 	}
 
 	// workspaceIds
@@ -661,6 +669,14 @@ func validateAzureConfig(ctx context.Context, data *models.ClusterResource) diag
 		)
 	}
 
+	// Private Network Egress is AWS only
+	if !data.IsPrivateNetworkEgressEnabled.IsNull() && !data.IsPrivateNetworkEgressEnabled.IsUnknown() {
+		diags.AddError(
+			"is_private_network_egress_enabled is not allowed for 'AZURE' cluster",
+			"Private Network Egress is supported for 'AWS' clusters only. Please remove is_private_network_egress_enabled",
+		)
+	}
+
 	// dr_pod_subnet_range, dr_service_peering_range, dr_service_subnet_range are GCP only
 	if !data.DrPodSubnetRange.IsNull() {
 		diags.AddError(
@@ -765,6 +781,16 @@ func validateAzureReplicationTimeControlRegionPair(data *models.ClusterResource)
 	return diags
 }
 
+// configuredBool returns a pointer to the value only when the user actually set it. Omitted
+// Optional+Computed attributes arrive as unknown on create and as the value last read from the
+// API on update; sending either would pin a platform-managed default into the request.
+func configuredBool(value types.Bool) *bool {
+	if value.IsNull() || value.IsUnknown() {
+		return nil
+	}
+	return value.ValueBoolPointer()
+}
+
 // azureEffectiveEnableReplicationTimeControl determines the value to send to the
 // API for enable_replication_time_control on an Azure cluster.
 //
@@ -845,6 +871,14 @@ func validateGcpConfig(ctx context.Context, data *models.ClusterResource) diag.D
 		diags.AddError(
 			"dr_secondary_vpc_cidr is not allowed for 'GCP' cluster",
 			"Please remove dr_secondary_vpc_cidr",
+		)
+	}
+
+	// Private Network Egress is AWS only
+	if !data.IsPrivateNetworkEgressEnabled.IsNull() && !data.IsPrivateNetworkEgressEnabled.IsUnknown() {
+		diags.AddError(
+			"is_private_network_egress_enabled is not allowed for 'GCP' cluster",
+			"Private Network Egress is supported for 'AWS' clusters only. Please remove is_private_network_egress_enabled",
 		)
 	}
 

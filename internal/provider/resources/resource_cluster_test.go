@@ -18,6 +18,7 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/clients/platform"
 	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -95,6 +96,8 @@ func TestAcc_ResourceClusterAwsWithDedicatedDeployments(t *testing.T) {
 					resource.TestCheckResourceAttr(awsResourceVar, "workspace_ids.#", "1"),
 					// Check DR fields are not set for non-DR cluster
 					resource.TestCheckResourceAttr(awsResourceVar, "is_dr_enabled", "false"),
+					// Private Network Egress defaults to disabled on AWS when left unset
+					resource.TestCheckResourceAttr(awsResourceVar, "is_private_network_egress_enabled", "false"),
 
 					// Check via API that cluster exists
 					testAccCheckClusterExistence(t, awsClusterName, true, true),
@@ -551,6 +554,132 @@ func TestAcc_ResourceClusterAwsWithDr(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"health_status", "health_status.value", "status"},
+			},
+		},
+	})
+}
+
+func TestAcc_ResourceClusterAwsWithPrivateNetworkEgress(t *testing.T) {
+	if os.Getenv(SKIP_CLUSTER_RESOURCE_TESTS) == "True" {
+		t.Skip(SKIP_CLUSTER_RESOURCE_TESTS_REASON)
+	}
+	namePrefix := utils.GenerateTestResourceName(10)
+
+	awsClusterName := fmt.Sprintf("%v_aws_egress", namePrefix)
+	awsResourceVar := fmt.Sprintf("astro_cluster.%v", awsClusterName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckClusterExistence(t, awsClusterName, true, false),
+		Steps: []resource.TestStep{
+			// Create AWS cluster with Private Network Egress enabled
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					cluster(clusterInput{
+						Name:                          awsClusterName,
+						Region:                        "us-east-1",
+						CloudProvider:                 "AWS",
+						IsPrivateNetworkEgressEnabled: lo.ToPtr(true),
+					}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(awsResourceVar, "name", awsClusterName),
+					resource.TestCheckResourceAttr(awsResourceVar, "region", "us-east-1"),
+					resource.TestCheckResourceAttr(awsResourceVar, "cloud_provider", "AWS"),
+					resource.TestCheckResourceAttr(awsResourceVar, "is_private_network_egress_enabled", "true"),
+
+					testAccCheckClusterExistence(t, awsClusterName, true, true),
+				),
+			},
+			// Private Network Egress can be turned back off on an existing cluster
+			{
+				PreConfig: func() { waitForClusterStableState(t, awsClusterName) },
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) +
+					cluster(clusterInput{
+						Name:                          awsClusterName,
+						Region:                        "us-east-1",
+						CloudProvider:                 "AWS",
+						IsPrivateNetworkEgressEnabled: lo.ToPtr(false),
+					}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(awsResourceVar, "is_private_network_egress_enabled", "false"),
+
+					testAccCheckClusterExistence(t, awsClusterName, true, true),
+				),
+			},
+			// Import the cluster and verify the flag round-trips
+			{
+				PreConfig:               func() { waitForClusterStableState(t, awsClusterName) },
+				ResourceName:            awsResourceVar,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"health_status", "health_status.value", "status"},
+			},
+		},
+	})
+}
+
+// Private Network Egress is an AWS-only capability, so configuring it on any other cloud
+// provider must fail at plan time rather than reaching the API.
+func TestAcc_ResourceClusterPrivateNetworkEgressValidation(t *testing.T) {
+	if os.Getenv(SKIP_CLUSTER_RESOURCE_TESTS) == "True" {
+		t.Skip(SKIP_CLUSTER_RESOURCE_TESTS_REASON)
+	}
+	namePrefix := utils.GenerateTestResourceName(10)
+	clusterName := fmt.Sprintf("%v_egress_validate", namePrefix)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		Steps: []resource.TestStep{
+			// Test: is_private_network_egress_enabled on Azure should fail
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "westus2"
+	cloud_provider = "AZURE"
+	vpc_subnet_range = "172.20.0.0/20"
+	is_private_network_egress_enabled = true
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				ExpectError: regexp.MustCompile(`is_private_network_egress_enabled is not allowed for 'AZURE' cluster`),
+			},
+			// Test: is_private_network_egress_enabled on GCP should fail
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "us-central1"
+	cloud_provider = "GCP"
+	vpc_subnet_range = "172.20.0.0/22"
+	pod_subnet_range = "100.64.0.0/16"
+	service_peering_range = "100.66.0.0/21"
+	service_subnet_range = "100.65.0.0/22"
+	is_private_network_egress_enabled = true
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				ExpectError: regexp.MustCompile(`is_private_network_egress_enabled is not allowed for 'GCP' cluster`),
+			},
+			// Test: explicitly setting it to false on a non-AWS cluster is still rejected, so the
+			// error points at the unsupported attribute instead of silently doing nothing
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + fmt.Sprintf(`
+resource "astro_cluster" "%v" {
+	name = "%v"
+	type = "DEDICATED"
+	region = "westus2"
+	cloud_provider = "AZURE"
+	vpc_subnet_range = "172.20.0.0/20"
+	is_private_network_egress_enabled = false
+	workspace_ids = []
+}
+`, clusterName, clusterName),
+				ExpectError: regexp.MustCompile(`is_private_network_egress_enabled is not allowed for 'AZURE' cluster`),
 			},
 		},
 	})
@@ -1148,6 +1277,9 @@ type clusterInput struct {
 	DrServiceSubnetRange               string
 	DrSecondaryVpcCidr                 string
 	EnableReplicationTimeControl       bool
+	// IsPrivateNetworkEgressEnabled controls the `is_private_network_egress_enabled` HCL field.
+	// nil → field is omitted entirely, so the platform default applies.
+	IsPrivateNetworkEgressEnabled *bool
 }
 
 func cluster(input clusterInput) string {
@@ -1197,6 +1329,11 @@ func cluster(input clusterInput) string {
 	enable_replication_time_control = true`
 		}
 	}
+	privateNetworkEgressField := ""
+	if input.IsPrivateNetworkEgressEnabled != nil {
+		privateNetworkEgressField = fmt.Sprintf(`
+	is_private_network_egress_enabled = %v`, *input.IsPrivateNetworkEgressEnabled)
+	}
 	return fmt.Sprintf(`resource "astro_cluster" "%v" {
 	name = "%s"
 	type = "DEDICATED"
@@ -1206,9 +1343,10 @@ func cluster(input clusterInput) string {
 	%v
 	%v
 	%v
+	%v
 	workspace_ids = [%v]
 }
-`, input.Name, input.Name, input.Region, input.CloudProvider, gcpNetworkFields, secondaryVpcCidrField, drFields, workspaceId)
+`, input.Name, input.Name, input.Region, input.CloudProvider, gcpNetworkFields, secondaryVpcCidrField, drFields, privateNetworkEgressField, workspaceId)
 }
 
 func clusterWithVariableName(input clusterInput) string {

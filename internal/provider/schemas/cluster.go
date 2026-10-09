@@ -200,6 +200,11 @@ func ClusterResourceSchemaAttributes(ctx context.Context) map[string]resourceSch
 				nullWhenDrDisabledBoolPlanModifier{},
 			},
 		},
+		"is_private_network_egress_enabled": resourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether Private Network Egress mode is enabled, which disables public Internet connectivity from the cluster's Deployments and metrics exports. For `AWS` clusters only.",
+			Optional:            true,
+			Computed:            true,
+		},
 		"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 			Create: true,
 			Update: true,
@@ -346,6 +351,10 @@ func ClusterDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 		},
 		"is_failed_over": datasourceSchema.BoolAttribute{
 			MarkdownDescription: "Whether the cluster is currently failed over to the DR region",
+			Computed:            true,
+		},
+		"is_private_network_egress_enabled": datasourceSchema.BoolAttribute{
+			MarkdownDescription: "Whether Private Network Egress mode is enabled, which disables public Internet connectivity from the cluster's Deployments and metrics exports (AWS only)",
 			Computed:            true,
 		},
 		"dr_pod_subnet_range": datasourceSchema.StringAttribute{
