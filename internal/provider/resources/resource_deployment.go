@@ -811,6 +811,14 @@ func validateHybridConfig(ctx context.Context, data *models.DeploymentResource) 
 					"Please provide a node_pool_id",
 				)
 			}
+			// Hybrid worker queue pod sizing comes from the node pool's instance type, and the
+			// v1 create payload (HybridWorkerQueueRequest) has no ephemeral storage field.
+			if !workerQueue.PodEphemeralStorage.IsNull() && !workerQueue.PodEphemeralStorage.IsUnknown() {
+				diags.AddError(
+					"pod_ephemeral_storage is not allowed for 'HYBRID' worker_queues",
+					"Please remove pod_ephemeral_storage",
+				)
+			}
 		}
 
 		// Check for duplicate worker_queue names
@@ -1170,12 +1178,13 @@ func RequestHostedWorkerQueues(ctx context.Context, workerQueuesObjSet types.Set
 	}
 	platformWorkerQueues := lo.Map(workerQueues, func(workerQueue models.WorkerQueueResource, _ int) platform_v1.WorkerQueueRequest {
 		return platform_v1.WorkerQueueRequest{
-			AstroMachine:      platform_v1.WorkerQueueRequestAstroMachine(workerQueue.AstroMachine.ValueString()),
-			IsDefault:         workerQueue.IsDefault.ValueBool(),
-			MaxWorkerCount:    int(workerQueue.MaxWorkerCount.ValueInt64()),
-			MinWorkerCount:    int(workerQueue.MinWorkerCount.ValueInt64()),
-			Name:              workerQueue.Name.ValueString(),
-			WorkerConcurrency: int(workerQueue.WorkerConcurrency.ValueInt64()),
+			AstroMachine:        platform_v1.WorkerQueueRequestAstroMachine(workerQueue.AstroMachine.ValueString()),
+			IsDefault:           workerQueue.IsDefault.ValueBool(),
+			MaxWorkerCount:      int(workerQueue.MaxWorkerCount.ValueInt64()),
+			MinWorkerCount:      int(workerQueue.MinWorkerCount.ValueInt64()),
+			Name:                workerQueue.Name.ValueString(),
+			PodEphemeralStorage: configuredPodEphemeralStorage(workerQueue),
+			WorkerConcurrency:   int(workerQueue.WorkerConcurrency.ValueInt64()),
 		}
 	})
 	return &platformWorkerQueues, nil
@@ -1207,12 +1216,13 @@ func RequestHostedUpdateWorkerQueues(ctx context.Context, workerQueuesObjSet typ
 	}
 	platformWorkerQueues := lo.Map(workerQueues, func(workerQueue models.WorkerQueueResource, _ int) platform_v1.UpdateWorkerQueueRequest {
 		return platform_v1.UpdateWorkerQueueRequest{
-			AstroMachine:      lo.ToPtr(platform_v1.UpdateWorkerQueueRequestAstroMachine(workerQueue.AstroMachine.ValueString())),
-			IsDefault:         workerQueue.IsDefault.ValueBool(),
-			MaxWorkerCount:    int(workerQueue.MaxWorkerCount.ValueInt64()),
-			MinWorkerCount:    int(workerQueue.MinWorkerCount.ValueInt64()),
-			Name:              workerQueue.Name.ValueString(),
-			WorkerConcurrency: int(workerQueue.WorkerConcurrency.ValueInt64()),
+			AstroMachine:        lo.ToPtr(platform_v1.UpdateWorkerQueueRequestAstroMachine(workerQueue.AstroMachine.ValueString())),
+			IsDefault:           workerQueue.IsDefault.ValueBool(),
+			MaxWorkerCount:      int(workerQueue.MaxWorkerCount.ValueInt64()),
+			MinWorkerCount:      int(workerQueue.MinWorkerCount.ValueInt64()),
+			Name:                workerQueue.Name.ValueString(),
+			PodEphemeralStorage: configuredPodEphemeralStorage(workerQueue),
+			WorkerConcurrency:   int(workerQueue.WorkerConcurrency.ValueInt64()),
 		}
 	})
 	return &platformWorkerQueues, nil
@@ -1234,6 +1244,17 @@ func RequestHybridUpdateWorkerQueues(ctx context.Context, workerQueuesObjSet typ
 		}
 	})
 	return &platformWorkerQueues, nil
+}
+
+// configuredPodEphemeralStorage returns the worker queue's pod_ephemeral_storage only when the
+// user actually set it. The attribute is Optional+Computed, so an omitted value arrives as
+// unknown on create and as the platform default read back from the API on update; sending
+// either would turn a platform-managed default into a value the provider pins.
+func configuredPodEphemeralStorage(workerQueue models.WorkerQueueResource) *string {
+	if workerQueue.PodEphemeralStorage.IsNull() || workerQueue.PodEphemeralStorage.IsUnknown() {
+		return nil
+	}
+	return workerQueue.PodEphemeralStorage.ValueStringPointer()
 }
 
 func workerQueueResources(ctx context.Context, workerQueuesObjSet types.Set) ([]models.WorkerQueueResource, diag.Diagnostics) {

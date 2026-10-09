@@ -12,6 +12,7 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/samber/lo"
 )
 
 // overrideUntil is the instant 2075-04-25T12:58:00+05:30, which the API returns normalized
@@ -118,4 +119,48 @@ func TestUnit_ConfiguredOverrideUntil_RoundTrip(t *testing.T) {
 	require.False(t, diags.HasError())
 
 	assert.Equal(t, "2075-04-25T12:58:00+05:30", models.ConfiguredOverrideUntil(ctx, scalingSpec).ValueString())
+}
+
+// The worker queue read path must surface pod_ephemeral_storage, otherwise a value set in
+// config never lands in state and every plan shows drift.
+func TestUnit_WorkerQueueTypesObject_ReadsPodEphemeralStorage(t *testing.T) {
+	ctx := context.Background()
+	workerQueue := platform_v1.WorkerQueue{
+		Id:                  "clt1y2z3a4b5c6d7e8f9g0h1i",
+		Name:                "default",
+		AstroMachine:        lo.ToPtr("A5"),
+		IsDefault:           true,
+		MaxWorkerCount:      10,
+		MinWorkerCount:      0,
+		PodCpu:              "1",
+		PodMemory:           "2Gi",
+		PodEphemeralStorage: lo.ToPtr("20Gi"),
+		WorkerConcurrency:   5,
+	}
+
+	resourceObj, diags := models.WorkerQueueResourceTypesObject(ctx, workerQueue)
+	require.False(t, diags.HasError())
+	assert.Equal(t, "20Gi", resourceObj.Attributes()["pod_ephemeral_storage"].(types.String).ValueString())
+
+	dataSourceObj, diags := models.WorkerQueueDataSourceTypesObject(ctx, workerQueue)
+	require.False(t, diags.HasError())
+	assert.Equal(t, "20Gi", dataSourceObj.Attributes()["pod_ephemeral_storage"].(types.String).ValueString())
+}
+
+// A worker queue the API reports without ephemeral storage leaves the attribute null rather
+// than inventing an empty string.
+func TestUnit_WorkerQueueTypesObject_NullPodEphemeralStorage(t *testing.T) {
+	obj, diags := models.WorkerQueueResourceTypesObject(context.Background(), platform_v1.WorkerQueue{
+		Id:                "clt1y2z3a4b5c6d7e8f9g0h1i",
+		Name:              "default",
+		AstroMachine:      lo.ToPtr("A5"),
+		IsDefault:         true,
+		MaxWorkerCount:    10,
+		MinWorkerCount:    0,
+		PodCpu:            "1",
+		PodMemory:         "2Gi",
+		WorkerConcurrency: 5,
+	})
+	require.False(t, diags.HasError())
+	assert.True(t, obj.Attributes()["pod_ephemeral_storage"].(types.String).IsNull())
 }
