@@ -69,6 +69,7 @@ func TestAcc_DataSourceDeployments(t *testing.T) {
 
 					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_celery", "executor", "CELERY"),
 					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_celery", "worker_queues.0.name", "default"),
+					resource.TestCheckResourceAttr("data.astro_deployment.test_data_deployment_celery", "worker_queues.0.pod_ephemeral_storage", "20Gi"),
 
 					// These checks are for the deployments data source (plural)
 					checkDeployments("test_data_deployments_no_filters", deploymentName+"-1"),
@@ -172,6 +173,7 @@ resource "astro_deployment" "test_deployment_celery" {
 		max_worker_count = 10
 		min_worker_count = 0
 		worker_concurrency = 1
+		pod_ephemeral_storage = "20Gi"
 	}]
 }
 

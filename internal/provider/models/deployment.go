@@ -390,28 +390,30 @@ type DeploymentEnvironmentVariable struct {
 }
 
 type WorkerQueueDataSource struct {
-	Id                types.String `tfsdk:"id"`
-	Name              types.String `tfsdk:"name"`
-	AstroMachine      types.String `tfsdk:"astro_machine"`
-	IsDefault         types.Bool   `tfsdk:"is_default"`
-	MaxWorkerCount    types.Int64  `tfsdk:"max_worker_count"`
-	MinWorkerCount    types.Int64  `tfsdk:"min_worker_count"`
-	NodePoolId        types.String `tfsdk:"node_pool_id"`
-	PodCpu            types.String `tfsdk:"pod_cpu"`
-	PodMemory         types.String `tfsdk:"pod_memory"`
-	WorkerConcurrency types.Int64  `tfsdk:"worker_concurrency"`
+	Id                  types.String `tfsdk:"id"`
+	Name                types.String `tfsdk:"name"`
+	AstroMachine        types.String `tfsdk:"astro_machine"`
+	IsDefault           types.Bool   `tfsdk:"is_default"`
+	MaxWorkerCount      types.Int64  `tfsdk:"max_worker_count"`
+	MinWorkerCount      types.Int64  `tfsdk:"min_worker_count"`
+	NodePoolId          types.String `tfsdk:"node_pool_id"`
+	PodCpu              types.String `tfsdk:"pod_cpu"`
+	PodMemory           types.String `tfsdk:"pod_memory"`
+	PodEphemeralStorage types.String `tfsdk:"pod_ephemeral_storage"`
+	WorkerConcurrency   types.Int64  `tfsdk:"worker_concurrency"`
 }
 
 type WorkerQueueResource struct {
-	Name              types.String `tfsdk:"name"`
-	AstroMachine      types.String `tfsdk:"astro_machine"`
-	IsDefault         types.Bool   `tfsdk:"is_default"`
-	MaxWorkerCount    types.Int64  `tfsdk:"max_worker_count"`
-	MinWorkerCount    types.Int64  `tfsdk:"min_worker_count"`
-	NodePoolId        types.String `tfsdk:"node_pool_id"`
-	PodCpu            types.String `tfsdk:"pod_cpu"`
-	PodMemory         types.String `tfsdk:"pod_memory"`
-	WorkerConcurrency types.Int64  `tfsdk:"worker_concurrency"`
+	Name                types.String `tfsdk:"name"`
+	AstroMachine        types.String `tfsdk:"astro_machine"`
+	IsDefault           types.Bool   `tfsdk:"is_default"`
+	MaxWorkerCount      types.Int64  `tfsdk:"max_worker_count"`
+	MinWorkerCount      types.Int64  `tfsdk:"min_worker_count"`
+	NodePoolId          types.String `tfsdk:"node_pool_id"`
+	PodCpu              types.String `tfsdk:"pod_cpu"`
+	PodMemory           types.String `tfsdk:"pod_memory"`
+	PodEphemeralStorage types.String `tfsdk:"pod_ephemeral_storage"`
+	WorkerConcurrency   types.Int64  `tfsdk:"worker_concurrency"`
 }
 
 func DeploymentEnvironmentVariableTypesObject(
@@ -433,15 +435,16 @@ func WorkerQueueResourceTypesObject(
 	workerQueue platform_v1.WorkerQueue,
 ) (types.Object, diag.Diagnostics) {
 	obj := WorkerQueueResource{
-		Name:              types.StringValue(workerQueue.Name),
-		AstroMachine:      types.StringPointerValue(workerQueue.AstroMachine),
-		IsDefault:         types.BoolValue(workerQueue.IsDefault),
-		MaxWorkerCount:    types.Int64Value(int64(workerQueue.MaxWorkerCount)),
-		MinWorkerCount:    types.Int64Value(int64(workerQueue.MinWorkerCount)),
-		NodePoolId:        types.StringPointerValue(workerQueue.NodePoolId),
-		PodCpu:            types.StringValue(workerQueue.PodCpu),
-		PodMemory:         types.StringValue(workerQueue.PodMemory),
-		WorkerConcurrency: types.Int64Value(int64(workerQueue.WorkerConcurrency)),
+		Name:                types.StringValue(workerQueue.Name),
+		AstroMachine:        types.StringPointerValue(workerQueue.AstroMachine),
+		IsDefault:           types.BoolValue(workerQueue.IsDefault),
+		MaxWorkerCount:      types.Int64Value(int64(workerQueue.MaxWorkerCount)),
+		MinWorkerCount:      types.Int64Value(int64(workerQueue.MinWorkerCount)),
+		NodePoolId:          types.StringPointerValue(workerQueue.NodePoolId),
+		PodCpu:              types.StringValue(workerQueue.PodCpu),
+		PodMemory:           types.StringValue(workerQueue.PodMemory),
+		PodEphemeralStorage: types.StringPointerValue(workerQueue.PodEphemeralStorage),
+		WorkerConcurrency:   types.Int64Value(int64(workerQueue.WorkerConcurrency)),
 	}
 
 	return types.ObjectValueFrom(ctx, schemas.WorkerQueueResourceAttributeTypes(), obj)
@@ -452,16 +455,17 @@ func WorkerQueueDataSourceTypesObject(
 	workerQueue platform_v1.WorkerQueue,
 ) (types.Object, diag.Diagnostics) {
 	obj := WorkerQueueDataSource{
-		Id:                types.StringValue(workerQueue.Id),
-		Name:              types.StringValue(workerQueue.Name),
-		AstroMachine:      types.StringPointerValue(workerQueue.AstroMachine),
-		IsDefault:         types.BoolValue(workerQueue.IsDefault),
-		MaxWorkerCount:    types.Int64Value(int64(workerQueue.MaxWorkerCount)),
-		MinWorkerCount:    types.Int64Value(int64(workerQueue.MinWorkerCount)),
-		NodePoolId:        types.StringPointerValue(workerQueue.NodePoolId),
-		PodCpu:            types.StringValue(workerQueue.PodCpu),
-		PodMemory:         types.StringValue(workerQueue.PodMemory),
-		WorkerConcurrency: types.Int64Value(int64(workerQueue.WorkerConcurrency)),
+		Id:                  types.StringValue(workerQueue.Id),
+		Name:                types.StringValue(workerQueue.Name),
+		AstroMachine:        types.StringPointerValue(workerQueue.AstroMachine),
+		IsDefault:           types.BoolValue(workerQueue.IsDefault),
+		MaxWorkerCount:      types.Int64Value(int64(workerQueue.MaxWorkerCount)),
+		MinWorkerCount:      types.Int64Value(int64(workerQueue.MinWorkerCount)),
+		NodePoolId:          types.StringPointerValue(workerQueue.NodePoolId),
+		PodCpu:              types.StringValue(workerQueue.PodCpu),
+		PodMemory:           types.StringValue(workerQueue.PodMemory),
+		PodEphemeralStorage: types.StringPointerValue(workerQueue.PodEphemeralStorage),
+		WorkerConcurrency:   types.Int64Value(int64(workerQueue.WorkerConcurrency)),
 	}
 
 	return types.ObjectValueFrom(ctx, schemas.WorkerQueueDataSourceAttributeTypes(), obj)
