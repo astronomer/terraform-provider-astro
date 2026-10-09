@@ -11,18 +11,67 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
+// maxConsecutivePollTransportFailures is how many back-to-back transport-level failures the
+// cluster poller tolerates before giving up.
+//
+// Cluster mutations are polled for up to three hours, so the poll loop is exposed to every
+// transient network fault in that window: a reset connection, a dropped keep-alive, a brief
+// DNS or proxy blip. WaitForStateContext aborts on the first error a refresh func returns, so
+// without this a single blip fails an otherwise healthy multi-hour apply.
+//
+// The counter resets after any successful poll, so this bounds a run of consecutive failures,
+// not the total over the life of the operation. A genuinely unreachable API still fails, just
+// after this many attempts instead of one.
+const maxConsecutivePollTransportFailures = 5
+
 // ClusterResourceRefreshFunc returns a retry.StateRefreshFunc that polls the platform API for the cluster status
 // If the cluster is not found, it returns "DELETED" status
 // If the cluster is found, it returns the cluster status
 // If there is an error, it returns the error
 // WaitForStateContext will keep polling until the target status is reached, the timeout is reached or an err is returned
+//
+// Transport-level failures are the exception: they are retried up to
+// maxConsecutivePollTransportFailures times rather than failing the operation outright. Such a
+// failure is reported to WaitForStateContext as a nil result, which it treats as "not found
+// yet" and keeps polling. That consumes one of its NotFoundChecks (20 by default, and also
+// reset by any successful poll), so the retry budget here must stay below that to be the
+// binding limit.
 func ClusterResourceRefreshFunc(ctx context.Context, platformV1Client *platform_v1.ClientWithResponses, organizationId string, clusterId string) retry.StateRefreshFunc {
+	// Scoped per returned func, so each cluster operation gets its own budget.
+	consecutiveTransportFailures := 0
+
 	return func() (any, string, error) {
 		cluster, err := platformV1Client.GetClusterWithResponse(ctx, organizationId, clusterId)
 		if err != nil {
-			tflog.Error(ctx, "failed to get cluster while polling for cluster 'CREATED' status", map[string]interface{}{"error": err})
-			return nil, "", err
+			// A cancelled or timed-out context is terminal - retrying cannot succeed, and the
+			// caller needs the error rather than a poll loop that spins until its own timeout.
+			if ctxErr := ctx.Err(); ctxErr != nil {
+				tflog.Error(ctx, "stopped polling for cluster status: context is done", map[string]interface{}{"error": err})
+				return nil, "", err
+			}
+
+			consecutiveTransportFailures++
+			if consecutiveTransportFailures >= maxConsecutivePollTransportFailures {
+				tflog.Error(ctx, "failed to get cluster while polling for cluster status", map[string]interface{}{
+					"error":                        err,
+					"consecutiveTransportFailures": consecutiveTransportFailures,
+				})
+				return nil, "", fmt.Errorf(
+					"unable to reach the API while polling cluster '%v' after %d consecutive attempts, got error: %w",
+					clusterId, consecutiveTransportFailures, err,
+				)
+			}
+
+			tflog.Warn(ctx, "failed to get cluster while polling for cluster status, retrying", map[string]interface{}{
+				"error":                        err,
+				"consecutiveTransportFailures": consecutiveTransportFailures,
+				"maxConsecutiveFailures":       maxConsecutivePollTransportFailures,
+			})
+			// nil result, nil error: WaitForStateContext keeps polling.
+			return nil, "", nil
 		}
+		consecutiveTransportFailures = 0
+
 		statusCode, diagnostic := clients.NormalizeAPIError(ctx, cluster.HTTPResponse, cluster.Body)
 		if statusCode == http.StatusNotFound {
 			return &platform_v1.Cluster{}, "DELETED", nil
