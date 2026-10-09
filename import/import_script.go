@@ -1513,6 +1513,12 @@ func formatWorkerQueues(queues *[]platform_v1.WorkerQueue, executor *string, dep
 	}`, queue.Name, queue.IsDefault, queue.MaxWorkerCount, queue.MinWorkerCount, queue.WorkerConcurrency, nodePoolIdString)
 			} else {
 				// For non-HYBRID deployments, use astro_machine
+				// pod_ephemeral_storage is only emitted when the queue overrides the
+				// astro_machine default; HYBRID worker queues do not support it at all.
+				podEphemeralStorageString := ""
+				if queue.PodEphemeralStorage != nil {
+					podEphemeralStorageString = fmt.Sprintf(`pod_ephemeral_storage = "%s"`, *queue.PodEphemeralStorage)
+				}
 				return fmt.Sprintf(`{
 		astro_machine = "%s"
 		name = "%s"
@@ -1520,7 +1526,8 @@ func formatWorkerQueues(queues *[]platform_v1.WorkerQueue, executor *string, dep
 		max_worker_count = %d
 		min_worker_count = %d
 		worker_concurrency = %d
-	}`, stringValue(queue.AstroMachine), queue.Name, queue.IsDefault, queue.MaxWorkerCount, queue.MinWorkerCount, queue.WorkerConcurrency)
+		%s
+	}`, stringValue(queue.AstroMachine), queue.Name, queue.IsDefault, queue.MaxWorkerCount, queue.MinWorkerCount, queue.WorkerConcurrency, podEphemeralStorageString)
 			}
 		})
 		return fmt.Sprintf(`worker_queues = [%s]`, strings.Join(workerQueues, ", "))
