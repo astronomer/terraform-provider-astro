@@ -143,10 +143,6 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			MarkdownDescription: "API Token expiry period in days",
 			Optional:            true,
 		},
-		"last_used_at": resourceSchema.StringAttribute{
-			MarkdownDescription: "API Token last used timestamp",
-			Computed:            true,
-		},
 		"roles": resourceSchema.SetNestedAttribute{
 			NestedObject: resourceSchema.NestedAttributeObject{
 				Attributes: ResourceApiTokenRoleSchemaAttributes(),
