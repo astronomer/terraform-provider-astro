@@ -368,7 +368,7 @@ Optional:
 
 - `astro_machine` (String) Worker queue Astro machine value - required for 'STANDARD' and 'DEDICATED' deployments. Allowed values: `A5`, `A10`, `A20`, `A40`, `A60`, `A120`, `A160`.
 - `node_pool_id` (String) Worker queue Node pool identifier - required for 'HYBRID' deployments
-- `pod_ephemeral_storage` (String) Worker queue pod ephemeral storage limit, as a Kubernetes resource string (for example `10Gi`). Supported for the `CELERY` and `ASTRO` executors on 'STANDARD' and 'DEDICATED' deployments. If omitted, the platform default for the worker queue's `astro_machine` is used.
+- `pod_ephemeral_storage` (String) Worker queue pod ephemeral storage limit, as a Kubernetes resource string (for example `20Gi`). Supported for the `CELERY` and `ASTRO` executors on 'STANDARD' and 'DEDICATED' deployments. Must be between `10Gi` and `100Gi`; if omitted, the platform default of `10Gi` is used. Note that once a value has been applied, removing this attribute from your configuration does not revert the worker queue to the default: the API has no way to unset it, so Terraform keeps the last applied value and plans no change. To return to the default, set this to `10Gi` explicitly.
 
 Read-Only:
 
