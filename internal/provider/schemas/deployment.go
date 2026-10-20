@@ -242,7 +242,7 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			Optional:            true,
 		},
 		"scheduler_size": resourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment scheduler size - required for 'STANDARD' and 'DEDICATED' deployments. Allowed values: `SMALL`, `MEDIUM`, `LARGE`, `EXTRALARGE`.",
+			MarkdownDescription: "Deployment scheduler size - required for 'STANDARD' and 'DEDICATED' deployments. Allowed values: `SMALL`, `MEDIUM`, `LARGE`, `EXTRA_LARGE`.",
 			Optional:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
@@ -510,7 +510,7 @@ func DeploymentDataSourceSchemaAttributes() map[string]datasourceSchema.Attribut
 			Computed:            true,
 		},
 		"scheduler_size": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Deployment scheduler size. Allowed values: `SMALL`, `MEDIUM`, `LARGE`, `EXTRALARGE`.",
+			MarkdownDescription: "Deployment scheduler size. Allowed values: `SMALL`, `MEDIUM`, `LARGE`, `EXTRA_LARGE`.",
 			Computed:            true,
 		},
 		"is_high_availability": datasourceSchema.BoolAttribute{

@@ -67,7 +67,7 @@ output "deployment" {
 - `scheduler_cpu` (String) Deployment scheduler CPU
 - `scheduler_memory` (String) Deployment scheduler memory
 - `scheduler_replicas` (Number) Deployment scheduler replicas
-- `scheduler_size` (String) Deployment scheduler size. Allowed values: `SMALL`, `MEDIUM`, `LARGE`, `EXTRALARGE`.
+- `scheduler_size` (String) Deployment scheduler size. Allowed values: `SMALL`, `MEDIUM`, `LARGE`, `EXTRA_LARGE`.
 - `status` (String) Deployment status
 - `status_reason` (String) Deployment status reason
 - `task_pod_node_pool_id` (String) Deployment task pod node pool identifier
