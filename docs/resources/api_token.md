@@ -133,6 +133,21 @@ resource "astro_api_token" "deployment_token_with_tag_role" {
   ]
 }
 
+resource "astro_api_token" "direct_access_workspace_token" {
+  name        = "direct access workspace api token"
+  description = "a token that can call the Airflow API directly, bypassing the Astro IP access list"
+  type        = "WORKSPACE"
+  kind        = "DIRECT_ACCESS"
+  # A DIRECT_ACCESS token embeds its Airflow permissions in the token value, so it must have exactly
+  # one role and changing that role recreates the token
+  roles = [{
+    "role" : "WORKSPACE_OWNER",
+    "entity_id" : "clx42sxw501gl01o0gjenthnh",
+    "entity_type" : "WORKSPACE"
+  }]
+  expiry_period_in_days = 30
+}
+
 # Import an existing api token
 import {
   id = "clxm46ged05b301neuucdqwox" // ID of the existing api token
@@ -156,13 +171,14 @@ resource "astro_api_token" "imported_api_token" {
 ### Required
 
 - `name` (String) API Token name
-- `roles` (Attributes Set) The roles assigned to the API Token (see [below for nested schema](#nestedatt--roles))
+- `roles` (Attributes Set) The roles assigned to the API Token. A 'DIRECT_ACCESS' API Token must have exactly one role, and changing it recreates the token since its permissions are baked into the token value (see [below for nested schema](#nestedatt--roles))
 - `type` (String) API Token type - if changing this value, the API Token will be recreated with the new type
 
 ### Optional
 
 - `description` (String) API Token description
 - `expiry_period_in_days` (Number) API Token expiry period in days
+- `kind` (String) API Token kind - 'STANDARD' (default) or 'DIRECT_ACCESS'. 'DIRECT_ACCESS' tokens embed their Airflow permissions in the token itself, so they can call the Airflow API directly without going through the Astro IP access list. The kind cannot be changed after creation - if changing this value, the API Token will be recreated with the new kind
 
 ### Read-Only
 

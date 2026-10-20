@@ -27,6 +27,10 @@ data "astro_api_tokens" "deployment_example" {
   deployment_id = "clx44jyu001m201m5dzsbexqr"
 }
 
+data "astro_api_tokens" "direct_access_example" {
+  kind = "DIRECT_ACCESS"
+}
+
 # Output the API tokens using terraform apply
 output "api_tokens" {
   value = data.astro_api_tokens.example_api_tokens
@@ -40,6 +44,7 @@ output "api_tokens" {
 
 - `deployment_id` (String)
 - `include_only_organization_tokens` (Boolean)
+- `kind` (String) Only list API tokens of this kind - 'STANDARD' or 'DIRECT_ACCESS'
 - `workspace_id` (String)
 
 ### Read-Only
@@ -60,6 +65,7 @@ Read-Only:
 - `description` (String) API Token description
 - `end_at` (String) time when the API token will expire in UTC
 - `expiry_period_in_days` (Number) API Token expiry period in days
+- `kind` (String) API Token kind - 'STANDARD' or 'DIRECT_ACCESS'
 - `last_used_at` (String) API Token last used timestamp
 - `name` (String) API Token name
 - `roles` (Attributes Set) The roles assigned to the API Token (see [below for nested schema](#nestedatt--api_tokens--roles))

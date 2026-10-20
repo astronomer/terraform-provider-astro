@@ -1,7 +1,9 @@
 package schemas
 
 import (
+	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -15,6 +17,7 @@ func ApiTokensElementAttributeTypes() map[string]attr.Type {
 		"description": types.StringType,
 		"short_token": types.StringType,
 		"type":        types.StringType,
+		"kind":        types.StringType,
 		"start_at":    types.StringType,
 		"end_at":      types.StringType,
 		"created_at":  types.StringType,
@@ -53,6 +56,16 @@ func ApiTokensDataSourceSchemaAttributes() map[string]schema.Attribute {
 		},
 		"include_only_organization_tokens": schema.BoolAttribute{
 			Optional: true,
+		},
+		"kind": schema.StringAttribute{
+			MarkdownDescription: "Only list API tokens of this kind - 'STANDARD' or 'DIRECT_ACCESS'",
+			Optional:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(platform_v1.ApiTokenKindSTANDARD),
+					string(platform_v1.ApiTokenKindDIRECTACCESS),
+				),
+			},
 		},
 	}
 }

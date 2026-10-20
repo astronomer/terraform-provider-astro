@@ -16,6 +16,7 @@ type ApiTokens struct {
 	WorkspaceId                   types.String `tfsdk:"workspace_id"`                     // query parameter
 	DeploymentId                  types.String `tfsdk:"deployment_id"`                    // query parameter
 	IncludeOnlyOrganizationTokens types.Bool   `tfsdk:"include_only_organization_tokens"` // query parameter
+	Kind                          types.String `tfsdk:"kind"`                             // query parameter
 }
 
 func (data *ApiTokens) ReadFromResponse(ctx context.Context, apiTokens []platform_v1.ApiToken) diag.Diagnostics {
