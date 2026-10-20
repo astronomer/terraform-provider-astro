@@ -118,6 +118,21 @@ resource "astro_api_token" "deployment_token_with_tag_role" {
   ]
 }
 
+resource "astro_api_token" "direct_access_workspace_token" {
+  name        = "direct access workspace api token"
+  description = "a token that can call the Airflow API directly, bypassing the Astro IP access list"
+  type        = "WORKSPACE"
+  kind        = "DIRECT_ACCESS"
+  # A DIRECT_ACCESS token embeds its Airflow permissions in the token value, so it must have exactly
+  # one role and changing that role recreates the token
+  roles = [{
+    "role" : "WORKSPACE_OWNER",
+    "entity_id" : "clx42sxw501gl01o0gjenthnh",
+    "entity_type" : "WORKSPACE"
+  }]
+  expiry_period_in_days = 30
+}
+
 # Import an existing api token
 import {
   id = "clxm46ged05b301neuucdqwox" // ID of the existing api token

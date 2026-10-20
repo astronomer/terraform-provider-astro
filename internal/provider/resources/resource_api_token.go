@@ -145,6 +145,23 @@ func (r *ApiTokenResource) Create(
 		Scope: platform_v1.CreateApiTokenRequestScope(data.Type.ValueString()),
 	}
 
+	// A 'DIRECT_ACCESS' token embeds its Airflow permissions in the token value, so the API does not
+	// allow its roles to be updated after creation. Since additional roles are applied with a separate
+	// update call, only the single role given at creation time is supported for that kind.
+	isDirectAccess := data.Kind.ValueString() == string(platform_v1.ApiTokenKindDIRECTACCESS)
+	if isDirectAccess {
+		if len(roles) > 1 {
+			resp.Diagnostics.AddError(
+				"API Token of kind 'DIRECT_ACCESS' cannot have more than one role",
+				"Please provide exactly one role for the API Token entity type, as roles cannot be added to a 'DIRECT_ACCESS' API Token",
+			)
+			return
+		}
+		createApiTokenRequest.Kind = lo.ToPtr(platform_v1.CreateApiTokenRequestKindDIRECTACCESS)
+	} else if !data.Kind.IsNull() && !data.Kind.IsUnknown() {
+		createApiTokenRequest.Kind = lo.ToPtr(platform_v1.CreateApiTokenRequestKind(data.Kind.ValueString()))
+	}
+
 	// If the entity type is WORKSPACE or DEPLOYMENT, set the entity id
 	if createApiTokenRequest.Scope == platform_v1.CreateApiTokenRequestScopeWORKSPACE || createApiTokenRequest.Scope == platform_v1.CreateApiTokenRequestScopeDEPLOYMENT {
 		createApiTokenRequest.EntityId = lo.ToPtr(role.EntityId)
@@ -371,28 +388,32 @@ func (r *ApiTokenResource) Update(
 		return
 	}
 
-	// Update API token roles
-	updateApiTokenRolesRequest := platform_v1.UpdateApiTokenRolesRequest{
-		Roles: roles,
-	}
-	updatedApiToken, err := r.PlatformV1Client.UpdateApiTokenRolesWithResponse(
-		ctx,
-		r.OrganizationId,
-		data.Id.ValueString(),
-		updateApiTokenRolesRequest,
-	)
-	if err != nil {
-		tflog.Error(ctx, "failed to update API token", map[string]interface{}{"error": err})
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to update API token, got error: %s", err),
+	// The API rejects role updates for 'DIRECT_ACCESS' tokens, so skip the call entirely for them.
+	// A change to their roles is handled as a resource replacement by the 'roles' plan modifier.
+	if currentState.Kind.ValueString() != string(platform_v1.ApiTokenKindDIRECTACCESS) {
+		// Update API token roles
+		updateApiTokenRolesRequest := platform_v1.UpdateApiTokenRolesRequest{
+			Roles: roles,
+		}
+		updatedApiToken, err := r.PlatformV1Client.UpdateApiTokenRolesWithResponse(
+			ctx,
+			r.OrganizationId,
+			data.Id.ValueString(),
+			updateApiTokenRolesRequest,
 		)
-		return
-	}
-	_, diagnostic := clients.NormalizeAPIError(ctx, updatedApiToken.HTTPResponse, updatedApiToken.Body)
-	if diagnostic != nil {
-		resp.Diagnostics.Append(diagnostic)
-		return
+		if err != nil {
+			tflog.Error(ctx, "failed to update API token", map[string]interface{}{"error": err})
+			resp.Diagnostics.AddError(
+				"Client Error",
+				fmt.Sprintf("Unable to update API token, got error: %s", err),
+			)
+			return
+		}
+		_, diagnostic := clients.NormalizeAPIError(ctx, updatedApiToken.HTTPResponse, updatedApiToken.Body)
+		if diagnostic != nil {
+			resp.Diagnostics.Append(diagnostic)
+			return
+		}
 	}
 
 	// update request
@@ -421,7 +442,7 @@ func (r *ApiTokenResource) Update(
 		)
 		return
 	}
-	_, diagnostic = clients.NormalizeAPIError(ctx, apiToken.HTTPResponse, apiToken.Body)
+	_, diagnostic := clients.NormalizeAPIError(ctx, apiToken.HTTPResponse, apiToken.Body)
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return
