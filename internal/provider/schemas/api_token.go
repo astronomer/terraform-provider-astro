@@ -1,15 +1,20 @@
 package schemas
 
 import (
+	"context"
+
 	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func ApiTokenDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
@@ -33,6 +38,10 @@ func ApiTokenDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute 
 		},
 		"type": datasourceSchema.StringAttribute{
 			MarkdownDescription: "API Token type",
+			Computed:            true,
+		},
+		"kind": datasourceSchema.StringAttribute{
+			MarkdownDescription: "API Token kind - 'STANDARD' or 'DIRECT_ACCESS'",
 			Computed:            true,
 		},
 		"start_at": datasourceSchema.StringAttribute{
@@ -113,6 +122,21 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 				stringplanmodifier.RequiresReplaceIfConfigured(),
 			},
 		},
+		"kind": resourceSchema.StringAttribute{
+			MarkdownDescription: "API Token kind - 'STANDARD' (default) or 'DIRECT_ACCESS'. 'DIRECT_ACCESS' tokens embed their Airflow permissions in the token itself, so they can call the Airflow API directly without going through the Astro IP access list. The kind cannot be changed after creation - if changing this value, the API Token will be recreated with the new kind",
+			Optional:            true,
+			Computed:            true,
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(platform_v1.ApiTokenKindSTANDARD),
+					string(platform_v1.ApiTokenKindDIRECTACCESS),
+				),
+			},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplaceIfConfigured(),
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
 		"start_at": resourceSchema.StringAttribute{
 			MarkdownDescription: "time when the API token will become valid in UTC",
 			Computed:            true,
@@ -152,9 +176,16 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 				Attributes: ResourceApiTokenRoleSchemaAttributes(),
 			},
 			Required:            true,
-			MarkdownDescription: "The roles assigned to the API Token",
+			MarkdownDescription: "The roles assigned to the API Token. A 'DIRECT_ACCESS' API Token must have exactly one role, and changing it recreates the token since its permissions are baked into the token value",
 			Validators: []validator.Set{
 				setvalidator.SizeAtLeast(1),
+			},
+			PlanModifiers: []planmodifier.Set{
+				setplanmodifier.RequiresReplaceIf(
+					requiresReplaceIfDirectAccessToken,
+					directAccessRolesReplaceDescription,
+					directAccessRolesReplaceDescription,
+				),
 			},
 		},
 		"token": resourceSchema.StringAttribute{
@@ -162,5 +193,25 @@ func ApiTokenResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			Computed:            true,
 			Sensitive:           true,
 		},
+	}
+}
+
+const directAccessRolesReplaceDescription = "The roles of a 'DIRECT_ACCESS' API Token cannot be updated in place because its Airflow permissions are embedded in the token value. Therefore, the API Token will be recreated with the new roles"
+
+// requiresReplaceIfDirectAccessToken forces a replace when the roles of an existing 'DIRECT_ACCESS'
+// API Token change, since the API rejects role updates for that kind of token.
+func requiresReplaceIfDirectAccessToken(
+	ctx context.Context,
+	req planmodifier.SetRequest,
+	resp *setplanmodifier.RequiresReplaceIfFuncResponse,
+) {
+	var kind types.String
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("kind"), &kind)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if kind.ValueString() == string(platform_v1.ApiTokenKindDIRECTACCESS) {
+		resp.RequiresReplace = true
 	}
 }

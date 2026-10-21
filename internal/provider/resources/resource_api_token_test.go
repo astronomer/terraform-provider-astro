@@ -882,6 +882,127 @@ func TestAcc_ResourceDeploymentApiToken(t *testing.T) {
 	})
 }
 
+func TestAcc_ResourceDirectAccessApiToken(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
+
+	organizationId := os.Getenv("HOSTED_ORGANIZATION_ID")
+	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
+
+	apiTokenName := fmt.Sprintf("%v_direct_access", namePrefix)
+	resourceVar := fmt.Sprintf("astro_api_token.%v", apiTokenName)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: false}),
+		),
+		Steps: []resource.TestStep{
+			// A direct access token cannot be created with more than one role
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
+					Name: apiTokenName,
+					Type: string(platform_v1.ApiTokenScopeORGANIZATION),
+					Kind: string(platform_v1.ApiTokenKindDIRECTACCESS),
+					Roles: []apiTokenRole{
+						{
+							Role:       string(platform_v1.ORGANIZATIONOWNER),
+							EntityId:   organizationId,
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
+						},
+						{
+							Role:       string(platform_v1.WORKSPACEOWNER),
+							EntityId:   workspaceId,
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeWORKSPACE),
+						},
+					},
+					ExpiryPeriodInDays: 30,
+				}),
+				ExpectError: regexp.MustCompile("API Token of kind 'DIRECT_ACCESS' cannot have more than one role"),
+			},
+			// Create a direct access token
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
+					Name:        apiTokenName,
+					Description: utils.TestResourceDescription,
+					Type:        string(platform_v1.ApiTokenScopeORGANIZATION),
+					Kind:        string(platform_v1.ApiTokenKindDIRECTACCESS),
+					Roles: []apiTokenRole{
+						{
+							Role:       string(platform_v1.ORGANIZATIONOWNER),
+							EntityId:   organizationId,
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
+						},
+					},
+					ExpiryPeriodInDays: 30,
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "name", apiTokenName),
+					resource.TestCheckResourceAttr(resourceVar, "kind", string(platform_v1.ApiTokenKindDIRECTACCESS)),
+					resource.TestCheckResourceAttr(resourceVar, "type", string(platform_v1.ApiTokenScopeORGANIZATION)),
+					resource.TestCheckResourceAttrSet(resourceVar, "token"),
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
+				),
+			},
+			// Updating the name and description of a direct access token is an in-place update
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
+					Name:        apiTokenName,
+					Description: "updated description",
+					Type:        string(platform_v1.ApiTokenScopeORGANIZATION),
+					Kind:        string(platform_v1.ApiTokenKindDIRECTACCESS),
+					Roles: []apiTokenRole{
+						{
+							Role:       string(platform_v1.ORGANIZATIONOWNER),
+							EntityId:   organizationId,
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
+						},
+					},
+					ExpiryPeriodInDays: 30,
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "description", "updated description"),
+					resource.TestCheckResourceAttr(resourceVar, "kind", string(platform_v1.ApiTokenKindDIRECTACCESS)),
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
+				),
+			},
+			// Changing the roles of a direct access token recreates it
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + apiToken(apiTokenInput{
+					Name:        apiTokenName,
+					Description: "updated description",
+					Type:        string(platform_v1.ApiTokenScopeORGANIZATION),
+					Kind:        string(platform_v1.ApiTokenKindDIRECTACCESS),
+					Roles: []apiTokenRole{
+						{
+							Role:       string(platform_v1.ORGANIZATIONMEMBER),
+							EntityId:   organizationId,
+							EntityType: string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
+						},
+					},
+					ExpiryPeriodInDays: 30,
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "kind", string(platform_v1.ApiTokenKindDIRECTACCESS)),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceVar, "roles.*", map[string]string{
+						"role":        string(platform_v1.ORGANIZATIONMEMBER),
+						"entity_id":   organizationId,
+						"entity_type": string(platform_v1.ApiTokenRoleEntityTypeORGANIZATION),
+					}),
+					testAccCheckApiTokenExistence(t, checkApiTokensExistenceInput{name: apiTokenName, organization: true, shouldExist: true}),
+				),
+			},
+			// Import existing direct access api token and check it is correctly imported
+			{
+				ResourceName:            resourceVar,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"token"},
+			},
+		},
+	})
+}
+
 type apiTokenRole struct {
 	Role         string
 	EntityId     string
@@ -893,6 +1014,7 @@ type apiTokenInput struct {
 	Name               string
 	Description        string
 	Type               string
+	Kind               string
 	Roles              []apiTokenRole
 	ExpiryPeriodInDays int
 }
@@ -922,14 +1044,20 @@ func apiToken(input apiTokenInput) string {
 		rolesString = fmt.Sprintf("roles = [%v]", strings.Join(roles, ", "))
 	}
 
+	var kind string
+	if input.Kind != "" {
+		kind = fmt.Sprintf("kind = \"%v\"", input.Kind)
+	}
+
 	return fmt.Sprintf(`
 resource astro_api_token "%v" {
 	name = "%v"
 	%v
 	type = "%s"
 	%v
+	%v
 	expiry_period_in_days = %v
-}`, input.Name, input.Name, description, input.Type, rolesString, input.ExpiryPeriodInDays)
+}`, input.Name, input.Name, description, input.Type, kind, rolesString, input.ExpiryPeriodInDays)
 }
 
 type checkApiTokensExistenceInput struct {

@@ -99,6 +99,10 @@ func (d *apiTokensDataSource) Read(
 	if includeOnlyOrganizationTokens {
 		params.IncludeOnlyOrganizationTokens = &includeOnlyOrganizationTokens
 	}
+	kind := data.Kind.ValueString()
+	if kind != "" {
+		params.Kind = lo.ToPtr(platform_v1.ListApiTokensParamsKind(kind))
+	}
 
 	var apiTokens []platform_v1.ApiToken
 	offset := 0

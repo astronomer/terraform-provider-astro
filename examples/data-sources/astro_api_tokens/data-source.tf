@@ -12,6 +12,10 @@ data "astro_api_tokens" "deployment_example" {
   deployment_id = "clx44jyu001m201m5dzsbexqr"
 }
 
+data "astro_api_tokens" "direct_access_example" {
+  kind = "DIRECT_ACCESS"
+}
+
 # Output the API tokens using terraform apply
 output "api_tokens" {
   value = data.astro_api_tokens.example_api_tokens

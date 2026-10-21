@@ -72,12 +72,13 @@ resource "astro_deployment" "standard" {
   workspace_id                   = "clnp86ly500a401ndaga20g81"
   environment_variables          = []
   worker_queues = [{
-    name               = "default"
-    is_default         = true
-    astro_machine      = "A5"
-    max_worker_count   = 10
-    min_worker_count   = 0
-    worker_concurrency = 1
+    name                  = "default"
+    is_default            = true
+    astro_machine         = "A5"
+    max_worker_count      = 10
+    min_worker_count      = 0
+    worker_concurrency    = 1
+    pod_ephemeral_storage = "20Gi" # Optional: overrides the default ephemeral storage for the astro_machine
   }]
 }
 
@@ -102,12 +103,13 @@ resource "astro_deployment" "standard_astro" {
   workspace_id                   = "clnp86ly500a401ndaga20g81"
   environment_variables          = []
   worker_queues = [{
-    name               = "default"
-    is_default         = true
-    astro_machine      = "A5"
-    max_worker_count   = 10
-    min_worker_count   = 0
-    worker_concurrency = 1
+    name                  = "default"
+    is_default            = true
+    astro_machine         = "A5"
+    max_worker_count      = 10
+    min_worker_count      = 0
+    worker_concurrency    = 1
+    pod_ephemeral_storage = "20Gi" # Optional: overrides the default ephemeral storage for the astro_machine
   }]
 }
 
