@@ -477,13 +477,9 @@ func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 }
 
 func buildUpdateLinks(ctx context.Context, data *models.EnvironmentObject, req *platform_v1.UpdateEnvironmentObjectRequest) diag.Diagnostics {
-	// The API endpoint replaces the whole links list on update — sending nothing
-	// leaves the existing links in place. To let users clear links by removing
-	// them from config, always emit the list; when unset in the plan, send an
-	// empty slice so the API strips prior entries.
+	// An omitted `links` plans as unknown; leaving it out of the request keeps the
+	// existing links and their per-link overrides, while `links = []` clears them.
 	if data.Links.IsNull() || data.Links.IsUnknown() {
-		empty := []platform_v1.UpdateEnvironmentObjectLinkRequest{}
-		req.Links = &empty
 		return nil
 	}
 	var linkInputs []models.EnvironmentObjectLinkInput
@@ -510,8 +506,8 @@ func buildUpdateLinks(ctx context.Context, data *models.EnvironmentObject, req *
 }
 
 func buildUpdateExcludeLinks(ctx context.Context, data *models.EnvironmentObject, req *platform_v1.UpdateEnvironmentObjectRequest) diag.Diagnostics {
-	// Same "emit empty to clear" rule as buildUpdateLinks above — without this
-	// the API keeps prior exclude_links after the user removes them from config.
+	// Always emit the list; without this the API keeps prior exclude_links after
+	// the user removes them from config.
 	if data.ExcludeLinks.IsNull() || data.ExcludeLinks.IsUnknown() {
 		empty := []platform_v1.ExcludeLinkEnvironmentObjectRequest{}
 		req.ExcludeLinks = &empty

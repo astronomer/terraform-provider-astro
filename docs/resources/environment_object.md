@@ -264,7 +264,7 @@ import {
 - `host` (String) The host address for the connection (only valid when object_type=CONNECTION)
 - `is_secret` (Boolean) Whether the value is a secret (only valid when object_type=AIRFLOW_VARIABLE or ENVIRONMENT_VARIABLE). Immutable on the API; toggling forces resource replacement.
 - `labels` (Map of String) Key-value pair metrics labels for your export (only valid when object_type=METRICS_EXPORT)
-- `links` (Attributes Set) The Deployments linked to the environment object. Only applicable for WORKSPACE scope (see [below for nested schema](#nestedatt--links))
+- `links` (Attributes Set) The Deployments linked to the environment object. Only applicable for WORKSPACE scope. Omit to leave the existing links and their overrides unchanged; set to `[]` to remove them all. (see [below for nested schema](#nestedatt--links))
 - `login` (String) The username used for the connection (only valid when object_type=CONNECTION)
 - `password` (String, Sensitive) The password — the connection password when object_type=CONNECTION, the HTTP Basic-auth password when object_type=METRICS_EXPORT
 - `port` (Number) The port for the connection (only valid when object_type=CONNECTION)

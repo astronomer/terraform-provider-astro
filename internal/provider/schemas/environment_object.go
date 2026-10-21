@@ -872,7 +872,7 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 		},
 		// Links
 		"links": resourceSchema.SetNestedAttribute{
-			MarkdownDescription: "The Deployments linked to the environment object. Only applicable for WORKSPACE scope",
+			MarkdownDescription: "The Deployments linked to the environment object. Only applicable for WORKSPACE scope. Omit to leave the existing links and their overrides unchanged; set to `[]` to remove them all.",
 			Optional:            true,
 			Computed:            true,
 			NestedObject: resourceSchema.NestedAttributeObject{
