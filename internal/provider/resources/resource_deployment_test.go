@@ -50,6 +50,21 @@ func TestAcc_ResourceDeploymentHybrid(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile(`worker_queue names must be unique`),
 			},
+			// pod_ephemeral_storage should be blocked for HYBRID worker queues - hybrid pod sizing
+			// comes from the node pool and the v1 hybrid create payload has no such field
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HYBRID) + hybridDeployment(hybridDeploymentInput{
+					Name:                        deploymentName,
+					Description:                 utils.TestResourceDescription,
+					ClusterId:                   clusterId,
+					Executor:                    "CELERY",
+					IncludeEnvironmentVariables: false,
+					SchedulerAu:                 6,
+					NodePoolId:                  nodePoolId,
+					PodEphemeralStorage:         "20Gi",
+				}),
+				ExpectError: regexp.MustCompile(`pod_ephemeral_storage is not allowed for 'HYBRID' worker_queues`),
+			},
 			// ASTRO executor should be blocked for HYBRID deployments
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HYBRID) + hybridDeployment(hybridDeploymentInput{
@@ -443,13 +458,15 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Executor:                    "CELERY",
 					SchedulerSize:               string(platform.SchedulerMachineNameEXTRALARGE),
 					IncludeEnvironmentVariables: false,
-					WorkerQueuesStr:             workerQueuesStr(""),
+					WorkerQueuesStr:             workerQueuesStr("", "20Gi"),
 					DesiredWorkloadIdentity:     "arn:aws:iam::123456789:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0",
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(awsResourceVar, "description", utils.TestResourceDescription),
 					resource.TestCheckResourceAttr(awsResourceVar, "scheduler_size", string(platform.SchedulerMachineNameEXTRALARGE)),
 					resource.TestCheckResourceAttr(awsResourceVar, "worker_queues.0.name", "default"),
+					// Celery executor worker queue ephemeral storage override
+					resource.TestCheckResourceAttr(awsResourceVar, "worker_queues.0.pod_ephemeral_storage", "20Gi"),
 					resource.TestCheckNoResourceAttr(awsResourceVar, "environment_variables.0.key"),
 					resource.TestCheckResourceAttr(awsResourceVar, "executor", "CELERY"),
 					resource.TestCheckResourceAttr(awsResourceVar, "desired_workload_identity", "arn:aws:iam::123456789:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0"),
@@ -582,12 +599,14 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					Executor:                    "ASTRO",
 					SchedulerSize:               string(platform.SchedulerMachineNameSMALL),
 					IncludeEnvironmentVariables: true,
-					WorkerQueuesStr:             `worker_queues = [{ name = "default", is_default = true, astro_machine = "A5", max_worker_count = 2, min_worker_count = 1, worker_concurrency = 5 }]`,
+					WorkerQueuesStr:             `worker_queues = [{ name = "default", is_default = true, astro_machine = "A5", max_worker_count = 2, min_worker_count = 1, worker_concurrency = 5, pod_ephemeral_storage = "20Gi" }]`,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(awsResourceVar+"_astro", "executor", "ASTRO"),
 					resource.TestCheckResourceAttr(awsResourceVar+"_astro", "worker_queues.0.name", "default"),
 					resource.TestCheckResourceAttr(awsResourceVar+"_astro", "worker_queues.0.astro_machine", "A5"),
+					// Astro executor worker queue ephemeral storage override
+					resource.TestCheckResourceAttr(awsResourceVar+"_astro", "worker_queues.0.pod_ephemeral_storage", "20Gi"),
 				),
 			},
 		},
@@ -620,6 +639,9 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					resource.TestCheckResourceAttr(azureCeleryResourceVar, "cloud_provider", "AZURE"),
 					resource.TestCheckResourceAttr(azureCeleryResourceVar, "executor", "CELERY"),
 					resource.TestCheckResourceAttr(azureCeleryResourceVar, "worker_queues.0.name", "default"),
+					// Omitting pod_ephemeral_storage leaves the platform default, which is still
+					// recorded in state because the attribute is Computed
+					resource.TestCheckResourceAttrSet(azureCeleryResourceVar, "worker_queues.0.pod_ephemeral_storage"),
 					resource.TestCheckResourceAttr(azureCeleryResourceVar, "scheduler_size", string(platform.SchedulerMachineNameSMALL)),
 					resource.TestCheckResourceAttrSet(azureCeleryResourceVar, "environment_variables.0.key"),
 					// Check via API that deployment exists
@@ -928,10 +950,17 @@ func TestAcc_ResourceDeploymentStandardRemovedOutsideOfTerraform(t *testing.T) {
 	})
 }
 
-func workerQueuesStr(nodePoolId string) string {
+// workerQueuesStr renders a single default worker queue. podEphemeralStorage is variadic so the
+// existing call sites keep omitting the attribute entirely, which is the case that must leave
+// the platform default in place.
+func workerQueuesStr(nodePoolId string, podEphemeralStorage ...string) string {
 	workerStr := `astro_machine = "A5"`
 	if nodePoolId != "" {
 		workerStr = fmt.Sprintf(`node_pool_id = "%v"`, nodePoolId)
+	}
+	if len(podEphemeralStorage) > 0 {
+		workerStr += fmt.Sprintf(`
+	pod_ephemeral_storage = "%v"`, podEphemeralStorage[0])
 	}
 	return fmt.Sprintf(`worker_queues = [{
 	name = "default"
@@ -993,15 +1022,21 @@ type hybridDeploymentInput struct {
 	NodePoolId                  string
 	DuplicateWorkerQueues       bool
 	DesiredWorkloadIdentity     string
+	// PodEphemeralStorage sets `pod_ephemeral_storage` on the worker queue. Hybrid worker
+	// queues do not support it, so this exists to exercise the validation error.
+	PodEphemeralStorage string
 }
 
 func hybridDeployment(input hybridDeploymentInput) string {
 	wqStr := ""
 	taskPodNodePoolIdStr := ""
 	if input.Executor == string(platform.DeploymentExecutorCELERY) {
-		if input.DuplicateWorkerQueues {
+		switch {
+		case input.DuplicateWorkerQueues:
 			wqStr = workerQueuesDuplicateStr(input.NodePoolId)
-		} else {
+		case input.PodEphemeralStorage != "":
+			wqStr = workerQueuesStr(input.NodePoolId, input.PodEphemeralStorage)
+		default:
 			wqStr = workerQueuesStr(input.NodePoolId)
 		}
 	} else {

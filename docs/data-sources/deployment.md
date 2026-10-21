@@ -200,5 +200,6 @@ Read-Only:
 - `name` (String) Worker queue name
 - `node_pool_id` (String) Worker queue node pool identifier
 - `pod_cpu` (String) Worker queue pod CPU
+- `pod_ephemeral_storage` (String) Worker queue pod ephemeral storage
 - `pod_memory` (String) Worker queue pod memory
 - `worker_concurrency` (Number) Worker queue worker concurrency
