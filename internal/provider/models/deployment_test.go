@@ -114,6 +114,7 @@ func TestUnit_ConfiguredOverrideUntil_RoundTrip(t *testing.T) {
 	require.False(t, diags.HasError())
 
 	scalingSpec, diags := types.ObjectValueFrom(ctx, schemas.ScalingSpecAttributeTypes(), models.DeploymentScalingSpec{
+		Autoscaling:     types.ObjectNull(schemas.AutoscalingAttributeTypes()),
 		HibernationSpec: hibernationSpec,
 	})
 	require.False(t, diags.HasError())
