@@ -191,6 +191,74 @@ func TestUnit_EnvironmentObject_ReadFromResponse_MetricsExport_Preserve(t *testi
 	})
 }
 
+func TestUnit_EnvironmentObject_ReadFromResponse_MetricsExport_Datadog(t *testing.T) {
+	site := platform_v1.EnvironmentObjectMetricsExportDataDogSiteDatadoghqEu
+
+	t.Run("site comes from API, api key preserved from plan", func(t *testing.T) {
+		obj := newDatadogMetricsExportAPIResponse(&site)
+		preserve := &models.EnvironmentObjectPreserve{DataDogApiKey: lo.ToPtr("dd_key_from_plan")}
+		var data models.EnvironmentObject
+		diags := data.ReadFromResponse(context.Background(), obj, preserve)
+		require.False(t, diags.HasError(), "diags: %v", diags)
+		assert.Equal(t, "DATADOG", data.ExporterType.ValueString())
+		assert.Equal(t, "datadoghq.eu", data.DataDogSite.ValueString())
+		assert.Equal(t, "dd_key_from_plan", data.DataDogApiKey.ValueString())
+		assert.True(t, data.AuthType.IsNull())
+		assert.True(t, data.BasicToken.IsNull())
+		assert.True(t, data.Password.IsNull())
+	})
+
+	t.Run("api key is null with nil preserve (import)", func(t *testing.T) {
+		obj := newDatadogMetricsExportAPIResponse(&site)
+		var data models.EnvironmentObject
+		diags := data.ReadFromResponse(context.Background(), obj, nil)
+		require.False(t, diags.HasError(), "diags: %v", diags)
+		assert.Equal(t, "datadoghq.eu", data.DataDogSite.ValueString())
+		assert.True(t, data.DataDogApiKey.IsNull())
+	})
+
+	t.Run("empty site from API maps to null", func(t *testing.T) {
+		empty := platform_v1.EnvironmentObjectMetricsExportDataDogSite("")
+		obj := newDatadogMetricsExportAPIResponse(&empty)
+		var data models.EnvironmentObject
+		diags := data.ReadFromResponse(context.Background(), obj, nil)
+		require.False(t, diags.HasError(), "diags: %v", diags)
+		assert.True(t, data.DataDogSite.IsNull())
+	})
+
+	t.Run("prometheus export leaves datadog fields null", func(t *testing.T) {
+		obj := newMetricsExportAPIResponse(nil, nil, nil)
+		var data models.EnvironmentObject
+		diags := data.ReadFromResponse(context.Background(), obj, &models.EnvironmentObjectPreserve{})
+		require.False(t, diags.HasError(), "diags: %v", diags)
+		assert.True(t, data.DataDogSite.IsNull())
+		assert.True(t, data.DataDogApiKey.IsNull())
+	})
+
+	t.Run("link override: site from API, api key preserved", func(t *testing.T) {
+		depId := "cmq6m73on0hnl01ktk3xftlwf"
+		overrideSite := platform_v1.EnvironmentObjectMetricsExportOverridesDataDogSiteUs5DatadoghqCom
+		obj := newDatadogMetricsExportAPIResponse(&site)
+		obj.Links = &[]platform_v1.EnvironmentObjectLink{{
+			Scope:         platform_v1.EnvironmentObjectLinkScopeDEPLOYMENT,
+			ScopeEntityId: depId,
+			MetricsExportOverrides: &platform_v1.EnvironmentObjectMetricsExportOverrides{
+				DataDogSite: &overrideSite,
+			},
+		}}
+		preserve := &models.EnvironmentObjectPreserve{
+			LinkOverrides: map[string]*models.EnvironmentObjectLinkOverridePreserve{
+				models.LinkPreserveKey("DEPLOYMENT", depId): {DataDogApiKey: lo.ToPtr("override_dd_key")},
+			},
+		}
+		var data models.EnvironmentObject
+		diags := data.ReadFromResponse(context.Background(), obj, preserve)
+		require.False(t, diags.HasError(), "diags: %v", diags)
+		assert.Equal(t, "us5.datadoghq.com", overrideValueFromLinks(t, data.Links, "data_dog_site"))
+		assert.Equal(t, "override_dd_key", overrideValueFromLinks(t, data.Links, "data_dog_api_key"))
+	})
+}
+
 // TestUnit_EnvironmentObject_ReadFromResponse_LinkOverridesPreserve covers the
 // per-link override preserve path: secrets, JSON, and auth_type must survive
 // when the API doesn't echo them back. Lookup is keyed by scope:scope_entity_id.
@@ -355,6 +423,21 @@ func newMetricsExportAPIResponse(
 			AuthType:     authType,
 			Username:     username,
 			BasicToken:   basicToken,
+		},
+	}
+}
+
+func newDatadogMetricsExportAPIResponse(site *platform_v1.EnvironmentObjectMetricsExportDataDogSite) *platform_v1.EnvironmentObject {
+	id := "cm6envobjid000datadog"
+	return &platform_v1.EnvironmentObject{
+		Id:            &id,
+		ObjectKey:     "k",
+		ObjectType:    platform_v1.EnvironmentObjectObjectTypeMETRICSEXPORT,
+		Scope:         platform_v1.EnvironmentObjectScopeWORKSPACE,
+		ScopeEntityId: "ws_id",
+		MetricsExport: &platform_v1.EnvironmentObjectMetricsExport{
+			ExporterType: platform_v1.EnvironmentObjectMetricsExportExporterTypeDATADOG,
+			DataDogSite:  site,
 		},
 	}
 }

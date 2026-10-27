@@ -232,6 +232,19 @@ resource "astro_environment_object" "metrics_deployment_only" {
   exporter_type = "PROMETHEUS"
 }
 
+# METRICS_EXPORT — Datadog. The intake URL is derived from `data_dog_site`; `endpoint` and the Prometheus auth fields are not allowed.
+resource "astro_environment_object" "metrics_workspace_datadog" {
+  object_key      = "datadog_export"
+  object_type     = "METRICS_EXPORT"
+  scope           = "WORKSPACE"
+  scope_entity_id = "clx42sxw501gl01o0gjenthnh"
+
+  exporter_type    = "DATADOG"
+  data_dog_site    = "datadoghq.com"
+  data_dog_api_key = "REPLACE_ME"
+  labels           = { environment = "prod" }
+}
+
 # Import an existing environment object
 import {
   id = "cm4ntm56001gk01mbhudv1elv"
@@ -255,10 +268,12 @@ import {
 - `auth_type_id` (String) The ID for the connection auth type (only valid when object_type=CONNECTION). Provided on create/update; not returned by the API
 - `auto_link_deployments` (Boolean) Whether to automatically link Deployments to the environment object. Only applicable for WORKSPACE scope
 - `basic_token` (String, Sensitive) The bearer token to connect to the remote endpoint (only valid when object_type=METRICS_EXPORT)
+- `data_dog_api_key` (String, Sensitive) The Datadog API key used to authenticate the export (required when exporter_type=DATADOG). The API never returns it, so the value is kept from configuration
+- `data_dog_site` (String) The Datadog site to send metrics to (required when exporter_type=DATADOG). Values: datadoghq.com, us3.datadoghq.com, us5.datadoghq.com, datadoghq.eu, ap1.datadoghq.com, ap2.datadoghq.com, ddog-gov.com
 - `description` (String) The description of the environment object
-- `endpoint` (String) The Prometheus endpoint where the metrics are exported (required when object_type=METRICS_EXPORT)
+- `endpoint` (String) The Prometheus endpoint where the metrics are exported (required when exporter_type=PROMETHEUS, not allowed when exporter_type=DATADOG)
 - `exclude_links` (Attributes Set) The excluded links for the environment object. Only applicable for WORKSPACE scope (see [below for nested schema](#nestedatt--exclude_links))
-- `exporter_type` (String) The type of exporter (required when object_type=METRICS_EXPORT)
+- `exporter_type` (String) The type of exporter (required when object_type=METRICS_EXPORT). Values: PROMETHEUS, DATADOG
 - `extra` (String) Extra connection details as JSON string (only valid when object_type=CONNECTION). Use jsonencode({...})
 - `headers` (Map of String) HTTP request headers for the remote endpoint (only valid when object_type=METRICS_EXPORT)
 - `host` (String) The host address for the connection (only valid when object_type=CONNECTION)
@@ -312,6 +327,8 @@ Optional:
 
 - `auth_type` (String) Override auth type (only valid when object_type=METRICS_EXPORT)
 - `basic_token` (String, Sensitive) Override bearer token (only valid when object_type=METRICS_EXPORT)
+- `data_dog_api_key` (String, Sensitive) Override Datadog API key (only valid when object_type=METRICS_EXPORT and exporter_type=DATADOG)
+- `data_dog_site` (String) Override Datadog site (only valid when object_type=METRICS_EXPORT and exporter_type=DATADOG)
 - `endpoint` (String) Override Prometheus endpoint (only valid when object_type=METRICS_EXPORT)
 - `exporter_type` (String) Override exporter type (only valid when object_type=METRICS_EXPORT)
 - `extra` (String) Override extra JSON (only valid when object_type=CONNECTION)

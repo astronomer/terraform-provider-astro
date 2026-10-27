@@ -84,13 +84,15 @@ func EnvironmentObjectOverridesAttributeTypes() map[string]attr.Type {
 		"extra":    types.StringType,
 		"password": types.StringType, // polymorphic: connection password OR basic-auth password
 		// METRICS_EXPORT
-		"auth_type":     types.StringType,
-		"endpoint":      types.StringType,
-		"basic_token":   types.StringType,
-		"exporter_type": types.StringType,
-		"username":      types.StringType,
-		"headers":       types.MapType{ElemType: types.StringType},
-		"labels":        types.MapType{ElemType: types.StringType},
+		"auth_type":        types.StringType,
+		"endpoint":         types.StringType,
+		"basic_token":      types.StringType,
+		"exporter_type":    types.StringType,
+		"username":         types.StringType,
+		"headers":          types.MapType{ElemType: types.StringType},
+		"labels":           types.MapType{ElemType: types.StringType},
+		"data_dog_site":    types.StringType,
+		"data_dog_api_key": types.StringType,
 	}
 }
 
@@ -248,6 +250,15 @@ func environmentObjectOverridesDataSourceSchemaAttributes() map[string]datasourc
 			MarkdownDescription: "Override metrics labels (only used when object_type=METRICS_EXPORT)",
 			Computed:            true,
 		},
+		"data_dog_site": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Override Datadog site (only used when object_type=METRICS_EXPORT and exporter_type=DATADOG)",
+			Computed:            true,
+		},
+		"data_dog_api_key": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Override Datadog API key. Null unless show_secrets = true on astro_environment_objects; the API masks it otherwise",
+			Computed:            true,
+			Sensitive:           true,
+		},
 	}
 }
 
@@ -371,7 +382,7 @@ func EnvironmentObjectDataSourceSchemaAttributes() map[string]datasourceSchema.A
 		},
 		// METRICS_EXPORT fields
 		"endpoint": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The Prometheus endpoint where the metrics are exported (only used when object_type=METRICS_EXPORT)",
+			MarkdownDescription: "The Prometheus endpoint where the metrics are exported (only used when object_type=METRICS_EXPORT and exporter_type=PROMETHEUS)",
 			Computed:            true,
 		},
 		"exporter_type": datasourceSchema.StringAttribute{
@@ -400,6 +411,15 @@ func EnvironmentObjectDataSourceSchemaAttributes() map[string]datasourceSchema.A
 			ElementType:         types.StringType,
 			MarkdownDescription: "Key-value pair metrics labels (only used when object_type=METRICS_EXPORT)",
 			Computed:            true,
+		},
+		"data_dog_site": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The Datadog site metrics are sent to (only used when object_type=METRICS_EXPORT and exporter_type=DATADOG)",
+			Computed:            true,
+		},
+		"data_dog_api_key": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The Datadog API key. Null unless show_secrets = true on astro_environment_objects; the API masks it otherwise",
+			Computed:            true,
+			Sensitive:           true,
 		},
 		// Polymorphic — used by both CONNECTION and METRICS_EXPORT
 		"password": datasourceSchema.StringAttribute{
@@ -596,6 +616,17 @@ func environmentObjectOverridesResourceSchemaAttributes() map[string]resourceSch
 			ElementType:         types.StringType,
 			MarkdownDescription: "Override metrics labels (only valid when object_type=METRICS_EXPORT)",
 			Optional:            true,
+		},
+		"data_dog_site": resourceSchema.StringAttribute{
+			MarkdownDescription: "Override Datadog site (only valid when object_type=METRICS_EXPORT and exporter_type=DATADOG)",
+			Optional:            true,
+			Validators:          []validator.String{dataDogSiteValidator()},
+		},
+		"data_dog_api_key": resourceSchema.StringAttribute{
+			MarkdownDescription: "Override Datadog API key (only valid when object_type=METRICS_EXPORT and exporter_type=DATADOG)",
+			Optional:            true,
+			Sensitive:           true,
+			Validators:          []validator.String{dataDogApiKeyValidator()},
 		},
 		// Polymorphic
 		"password": resourceSchema.StringAttribute{
@@ -817,17 +848,18 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 		},
 		// METRICS_EXPORT fields (only valid when object_type=METRICS_EXPORT)
 		"endpoint": resourceSchema.StringAttribute{
-			MarkdownDescription: "The Prometheus endpoint where the metrics are exported (required when object_type=METRICS_EXPORT)",
+			MarkdownDescription: "The Prometheus endpoint where the metrics are exported (required when exporter_type=PROMETHEUS, not allowed when exporter_type=DATADOG)",
 			Optional:            true,
 			Computed:            true,
 		},
 		"exporter_type": resourceSchema.StringAttribute{
-			MarkdownDescription: "The type of exporter (required when object_type=METRICS_EXPORT)",
+			MarkdownDescription: "The type of exporter (required when object_type=METRICS_EXPORT). Values: PROMETHEUS, DATADOG",
 			Optional:            true,
 			Computed:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
 					string(platform_v1.CreateEnvironmentObjectMetricsExportRequestExporterTypePROMETHEUS),
+					string(platform_v1.CreateEnvironmentObjectMetricsExportRequestExporterTypeDATADOG),
 				),
 			},
 		},
@@ -863,6 +895,17 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 			MarkdownDescription: "Key-value pair metrics labels for your export (only valid when object_type=METRICS_EXPORT)",
 			Optional:            true,
 			Computed:            true,
+		},
+		"data_dog_site": resourceSchema.StringAttribute{
+			MarkdownDescription: "The Datadog site to send metrics to (required when exporter_type=DATADOG). Values: datadoghq.com, us3.datadoghq.com, us5.datadoghq.com, datadoghq.eu, ap1.datadoghq.com, ap2.datadoghq.com, ddog-gov.com",
+			Optional:            true,
+			Validators:          []validator.String{dataDogSiteValidator()},
+		},
+		"data_dog_api_key": resourceSchema.StringAttribute{
+			MarkdownDescription: "The Datadog API key used to authenticate the export (required when exporter_type=DATADOG). The API never returns it, so the value is kept from configuration",
+			Optional:            true,
+			Sensitive:           true,
+			Validators:          []validator.String{dataDogApiKeyValidator()},
 		},
 		// Polymorphic — applies to both CONNECTION and METRICS_EXPORT
 		"password": resourceSchema.StringAttribute{
@@ -913,4 +956,21 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 			Attributes:          ResourceSubjectProfileSchemaAttributes(),
 		},
 	}
+}
+
+// dataDogApiKeyValidator mirrors the API's request bound on dataDogApiKey.
+func dataDogApiKeyValidator() validator.String {
+	return stringvalidator.LengthBetween(1, 64)
+}
+
+func dataDogSiteValidator() validator.String {
+	return stringvalidator.OneOf(
+		string(platform_v1.CreateEnvironmentObjectMetricsExportRequestDataDogSiteDatadoghqCom),
+		string(platform_v1.CreateEnvironmentObjectMetricsExportRequestDataDogSiteUs3DatadoghqCom),
+		string(platform_v1.CreateEnvironmentObjectMetricsExportRequestDataDogSiteUs5DatadoghqCom),
+		string(platform_v1.CreateEnvironmentObjectMetricsExportRequestDataDogSiteDatadoghqEu),
+		string(platform_v1.CreateEnvironmentObjectMetricsExportRequestDataDogSiteAp1DatadoghqCom),
+		string(platform_v1.CreateEnvironmentObjectMetricsExportRequestDataDogSiteAp2DatadoghqCom),
+		string(platform_v1.CreateEnvironmentObjectMetricsExportRequestDataDogSiteDdogGovCom),
+	)
 }

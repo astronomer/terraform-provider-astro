@@ -39,8 +39,10 @@ output "environment_object" {
 - `connection_auth_type` (Attributes) The resolved auth type of the connection (only used when object_type=CONNECTION) (see [below for nested schema](#nestedatt--connection_auth_type))
 - `created_at` (String) Environment Object creation timestamp
 - `created_by` (Attributes) Environment Object creator (see [below for nested schema](#nestedatt--created_by))
+- `data_dog_api_key` (String, Sensitive) The Datadog API key. Null unless show_secrets = true on astro_environment_objects; the API masks it otherwise
+- `data_dog_site` (String) The Datadog site metrics are sent to (only used when object_type=METRICS_EXPORT and exporter_type=DATADOG)
 - `description` (String) The description of the environment object
-- `endpoint` (String) The Prometheus endpoint where the metrics are exported (only used when object_type=METRICS_EXPORT)
+- `endpoint` (String) The Prometheus endpoint where the metrics are exported (only used when object_type=METRICS_EXPORT and exporter_type=PROMETHEUS)
 - `exclude_links` (Attributes Set) The excluded links for the environment object (see [below for nested schema](#nestedatt--exclude_links))
 - `exporter_type` (String) The type of exporter (only used when object_type=METRICS_EXPORT)
 - `extra` (String) Extra connection details as JSON string (only used when object_type=CONNECTION)
@@ -135,6 +137,8 @@ Read-Only:
 
 - `auth_type` (String) Override auth type (only used when object_type=METRICS_EXPORT)
 - `basic_token` (String, Sensitive) Override bearer token (only used when object_type=METRICS_EXPORT)
+- `data_dog_api_key` (String, Sensitive) Override Datadog API key. Null unless show_secrets = true on astro_environment_objects; the API masks it otherwise
+- `data_dog_site` (String) Override Datadog site (only used when object_type=METRICS_EXPORT and exporter_type=DATADOG)
 - `endpoint` (String) Override Prometheus endpoint (only used when object_type=METRICS_EXPORT)
 - `exporter_type` (String) Override exporter type (only used when object_type=METRICS_EXPORT)
 - `extra` (String) Override extra JSON (only used when object_type=CONNECTION)
