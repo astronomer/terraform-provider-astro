@@ -202,13 +202,19 @@ func (r *environmentObjectResource) Update(
 		return
 	}
 
+	var prior models.EnvironmentObject
+	resp.Diagnostics.Append(req.State.Get(ctx, &prior)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	preserve, diags := buildPreserveFromModel(ctx, &data)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
 	}
 
-	updateReq, diags := buildUpdateRequest(ctx, &data)
+	updateReq, diags := buildUpdateRequest(ctx, &data, &prior)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -329,14 +335,18 @@ func buildCreateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 		req.Connection = connReq
 	case platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
 		meReq := &platform_v1.CreateEnvironmentObjectMetricsExportRequest{
-			Endpoint:     data.Endpoint.ValueStringPointer(),
-			ExporterType: platform_v1.CreateEnvironmentObjectMetricsExportRequestExporterType(data.ExporterType.ValueString()),
-			BasicToken:   data.BasicToken.ValueStringPointer(),
-			Username:     data.Username.ValueStringPointer(),
-			Password:     data.Password.ValueStringPointer(),
+			Endpoint:      data.Endpoint.ValueStringPointer(),
+			ExporterType:  platform_v1.CreateEnvironmentObjectMetricsExportRequestExporterType(data.ExporterType.ValueString()),
+			BasicToken:    data.BasicToken.ValueStringPointer(),
+			Username:      data.Username.ValueStringPointer(),
+			Password:      data.Password.ValueStringPointer(),
+			DataDogApiKey: data.DataDogApiKey.ValueStringPointer(),
 		}
 		if !data.AuthType.IsNull() && !data.AuthType.IsUnknown() {
 			meReq.AuthType = lo.ToPtr(platform_v1.CreateEnvironmentObjectMetricsExportRequestAuthType(data.AuthType.ValueString()))
+		}
+		if isUserSet(data.DataDogSite) {
+			meReq.DataDogSite = lo.ToPtr(platform_v1.CreateEnvironmentObjectMetricsExportRequestDataDogSite(data.DataDogSite.ValueString()))
 		}
 		if !data.Headers.IsNull() && !data.Headers.IsUnknown() {
 			h := tfMapToStringMap(data.Headers)
@@ -405,7 +415,7 @@ func buildCreateExcludeLinks(ctx context.Context, data *models.EnvironmentObject
 	return nil
 }
 
-func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (platform_v1.UpdateEnvironmentObjectJSONRequestBody, diag.Diagnostics) {
+func buildUpdateRequest(ctx context.Context, data, prior *models.EnvironmentObject) (platform_v1.UpdateEnvironmentObjectJSONRequestBody, diag.Diagnostics) {
 	req := platform_v1.UpdateEnvironmentObjectRequest{
 		Description:         data.Description.ValueStringPointer(),
 		AutoLinkDeployments: data.AutoLinkDeployments.ValueBoolPointer(),
@@ -444,13 +454,17 @@ func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 		req.Connection = connReq
 	case platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
 		meReq := &platform_v1.UpdateEnvironmentObjectMetricsExportRequest{
-			Endpoint:   data.Endpoint.ValueStringPointer(),
-			BasicToken: data.BasicToken.ValueStringPointer(),
-			Username:   data.Username.ValueStringPointer(),
-			Password:   data.Password.ValueStringPointer(),
+			Endpoint:      data.Endpoint.ValueStringPointer(),
+			BasicToken:    data.BasicToken.ValueStringPointer(),
+			Username:      data.Username.ValueStringPointer(),
+			Password:      data.Password.ValueStringPointer(),
+			DataDogApiKey: data.DataDogApiKey.ValueStringPointer(),
 		}
 		if !data.ExporterType.IsNull() && !data.ExporterType.IsUnknown() {
 			meReq.ExporterType = lo.ToPtr(platform_v1.UpdateEnvironmentObjectMetricsExportRequestExporterType(data.ExporterType.ValueString()))
+		}
+		if isUserSet(data.DataDogSite) {
+			meReq.DataDogSite = lo.ToPtr(platform_v1.UpdateEnvironmentObjectMetricsExportRequestDataDogSite(data.DataDogSite.ValueString()))
 		}
 		if !data.AuthType.IsNull() && !data.AuthType.IsUnknown() {
 			meReq.AuthType = lo.ToPtr(platform_v1.UpdateEnvironmentObjectMetricsExportRequestAuthType(data.AuthType.ValueString()))
@@ -466,7 +480,7 @@ func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 		req.MetricsExport = meReq
 	}
 
-	if d := buildUpdateLinks(ctx, data, &req); d.HasError() {
+	if d := buildUpdateLinks(ctx, data, prior, &req); d.HasError() {
 		return req, d
 	}
 	if d := buildUpdateExcludeLinks(ctx, data, &req); d.HasError() {
@@ -476,7 +490,7 @@ func buildUpdateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 	return req, nil
 }
 
-func buildUpdateLinks(ctx context.Context, data *models.EnvironmentObject, req *platform_v1.UpdateEnvironmentObjectRequest) diag.Diagnostics {
+func buildUpdateLinks(ctx context.Context, data, prior *models.EnvironmentObject, req *platform_v1.UpdateEnvironmentObjectRequest) diag.Diagnostics {
 	// The API endpoint replaces the whole links list on update — sending nothing
 	// leaves the existing links in place. To let users clear links by removing
 	// them from config, always emit the list; when unset in the plan, send an
@@ -490,6 +504,10 @@ func buildUpdateLinks(ctx context.Context, data *models.EnvironmentObject, req *
 	if d := data.Links.ElementsAs(ctx, &linkInputs, false); d.HasError() {
 		return d
 	}
+	priorOverrides, d := linkOverridesByKey(ctx, prior)
+	if d.HasError() {
+		return d
+	}
 	updateLinks := make([]platform_v1.UpdateEnvironmentObjectLinkRequest, len(linkInputs))
 	objectType := platform_v1.CreateEnvironmentObjectRequestObjectType(data.ObjectType.ValueString())
 	for i, li := range linkInputs {
@@ -497,7 +515,8 @@ func buildUpdateLinks(ctx context.Context, data *models.EnvironmentObject, req *
 			Scope:         platform_v1.UpdateEnvironmentObjectLinkRequestScope(li.Scope.ValueString()),
 			ScopeEntityId: li.ScopeEntityId.ValueString(),
 		}
-		overrides, d := buildUpdateOverrides(ctx, li.Overrides, objectType)
+		priorOverride := priorOverrides[models.LinkPreserveKey(li.Scope.ValueString(), li.ScopeEntityId.ValueString())]
+		overrides, d := buildUpdateOverrides(ctx, li.Overrides, priorOverride, objectType)
 		if d.HasError() {
 			return d
 		}
@@ -507,6 +526,22 @@ func buildUpdateLinks(ctx context.Context, data *models.EnvironmentObject, req *
 	}
 	req.Links = &updateLinks
 	return nil
+}
+
+// linkOverridesByKey indexes the prior state's link overrides by LinkPreserveKey.
+func linkOverridesByKey(ctx context.Context, prior *models.EnvironmentObject) (map[string]types.Object, diag.Diagnostics) {
+	if prior == nil || prior.Links.IsNull() || prior.Links.IsUnknown() {
+		return nil, nil
+	}
+	var linkInputs []models.EnvironmentObjectLinkInput
+	if d := prior.Links.ElementsAs(ctx, &linkInputs, false); d.HasError() {
+		return nil, d
+	}
+	out := make(map[string]types.Object, len(linkInputs))
+	for _, li := range linkInputs {
+		out[models.LinkPreserveKey(li.Scope.ValueString(), li.ScopeEntityId.ValueString())] = li.Overrides
+	}
+	return out, nil
 }
 
 func buildUpdateExcludeLinks(ctx context.Context, data *models.EnvironmentObject, req *platform_v1.UpdateEnvironmentObjectRequest) diag.Diagnostics {
@@ -582,10 +617,14 @@ func buildCreateOverrides(ctx context.Context, overrides types.Object, objectTyp
 		out.Connection = connOvr
 	case platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
 		meOvr := &platform_v1.CreateEnvironmentObjectMetricsExportOverridesRequest{
-			Endpoint:   ov.Endpoint.ValueStringPointer(),
-			BasicToken: ov.BasicToken.ValueStringPointer(),
-			Username:   ov.Username.ValueStringPointer(),
-			Password:   ov.Password.ValueStringPointer(),
+			Endpoint:      ov.Endpoint.ValueStringPointer(),
+			BasicToken:    ov.BasicToken.ValueStringPointer(),
+			Username:      ov.Username.ValueStringPointer(),
+			Password:      ov.Password.ValueStringPointer(),
+			DataDogApiKey: ov.DataDogApiKey.ValueStringPointer(),
+		}
+		if isUserSet(ov.DataDogSite) {
+			meOvr.DataDogSite = lo.ToPtr(platform_v1.CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSite(ov.DataDogSite.ValueString()))
 		}
 		if !ov.AuthType.IsNull() && !ov.AuthType.IsUnknown() {
 			meOvr.AuthType = lo.ToPtr(platform_v1.CreateEnvironmentObjectMetricsExportOverridesRequestAuthType(ov.AuthType.ValueString()))
@@ -608,8 +647,27 @@ func buildCreateOverrides(ctx context.Context, overrides types.Object, objectTyp
 }
 
 // buildUpdateOverrides is the Update counterpart to buildCreateOverrides.
-func buildUpdateOverrides(ctx context.Context, overrides types.Object, objectType platform_v1.CreateEnvironmentObjectRequestObjectType) (*platform_v1.UpdateEnvironmentObjectOverridesRequest, diag.Diagnostics) {
+// priorOverrides is the same link's overrides from prior state (null when the
+// link is new), used to tell the API which removed secrets to clear.
+func buildUpdateOverrides(ctx context.Context, overrides, priorOverrides types.Object, objectType platform_v1.CreateEnvironmentObjectRequestObjectType) (*platform_v1.UpdateEnvironmentObjectOverridesRequest, diag.Diagnostics) {
+	// The API copies a removed override secret back from storage unless it is
+	// listed in unsetFields, so a key dropped from config would stay live.
+	priorHadDataDogApiKey := false
+	if objectType == platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT && !priorOverrides.IsNull() && !priorOverrides.IsUnknown() {
+		var prior models.EnvironmentObjectOverridesInput
+		if d := priorOverrides.As(ctx, &prior, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true}); d.HasError() {
+			return nil, d
+		}
+		priorHadDataDogApiKey = isUserSet(prior.DataDogApiKey)
+	}
+
 	if overrides.IsNull() || overrides.IsUnknown() {
+		if priorHadDataDogApiKey {
+			return &platform_v1.UpdateEnvironmentObjectOverridesRequest{
+				MetricsExport: &platform_v1.UpdateEnvironmentObjectMetricsExportOverridesRequest{},
+				UnsetFields:   &[]string{"dataDogApiKey"},
+			}, nil
+		}
 		return nil, nil
 	}
 	var ov models.EnvironmentObjectOverridesInput
@@ -618,6 +676,9 @@ func buildUpdateOverrides(ctx context.Context, overrides types.Object, objectTyp
 	}
 
 	out := &platform_v1.UpdateEnvironmentObjectOverridesRequest{}
+	if priorHadDataDogApiKey && ov.DataDogApiKey.IsNull() {
+		out.UnsetFields = &[]string{"dataDogApiKey"}
+	}
 
 	switch objectType {
 	case platform_v1.CreateEnvironmentObjectRequestObjectTypeAIRFLOWVARIABLE:
@@ -654,10 +715,14 @@ func buildUpdateOverrides(ctx context.Context, overrides types.Object, objectTyp
 		out.Connection = connOvr
 	case platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
 		meOvr := &platform_v1.UpdateEnvironmentObjectMetricsExportOverridesRequest{
-			Endpoint:   ov.Endpoint.ValueStringPointer(),
-			BasicToken: ov.BasicToken.ValueStringPointer(),
-			Username:   ov.Username.ValueStringPointer(),
-			Password:   ov.Password.ValueStringPointer(),
+			Endpoint:      ov.Endpoint.ValueStringPointer(),
+			BasicToken:    ov.BasicToken.ValueStringPointer(),
+			Username:      ov.Username.ValueStringPointer(),
+			Password:      ov.Password.ValueStringPointer(),
+			DataDogApiKey: ov.DataDogApiKey.ValueStringPointer(),
+		}
+		if isUserSet(ov.DataDogSite) {
+			meOvr.DataDogSite = lo.ToPtr(platform_v1.UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSite(ov.DataDogSite.ValueString()))
 		}
 		if !ov.AuthType.IsNull() && !ov.AuthType.IsUnknown() {
 			meOvr.AuthType = lo.ToPtr(platform_v1.UpdateEnvironmentObjectMetricsExportOverridesRequestAuthType(ov.AuthType.ValueString()))
@@ -720,6 +785,7 @@ func buildPreserveFromModel(ctx context.Context, data *models.EnvironmentObject)
 		preserve.Password = data.Password.ValueStringPointer()
 		preserve.BasicToken = data.BasicToken.ValueStringPointer()
 		preserve.MetricsExportAuthType = data.AuthType.ValueStringPointer()
+		preserve.DataDogApiKey = data.DataDogApiKey.ValueStringPointer()
 	}
 
 	// Per-link overrides
@@ -757,6 +823,7 @@ func extractLinkOverridePreserve(ctx context.Context, overrides types.Object) (*
 	lop.Extra = ov.Extra.ValueStringPointer()
 	lop.BasicToken = ov.BasicToken.ValueStringPointer()
 	lop.AuthType = ov.AuthType.ValueStringPointer()
+	lop.DataDogApiKey = ov.DataDogApiKey.ValueStringPointer()
 	return lop, nil
 }
 
@@ -865,16 +932,19 @@ func validateConnectionFields(data *models.EnvironmentObject) diag.Diagnostics {
 }
 
 // validateMetricsExportFields enforces: variable + connection fields
-// are absent, and `endpoint` + `exporter_type` are required.
+// are absent, `exporter_type` is required, and the exporter-specific fields
+// match the exporter_type.
 func validateMetricsExportFields(data *models.EnvironmentObject) diag.Diagnostics {
 	var diags diag.Diagnostics
-	if data.Endpoint.IsNull() && !data.Endpoint.IsUnknown() {
-		diags.AddAttributeError(path.Root("endpoint"), "Missing required field",
-			"endpoint is required when object_type=METRICS_EXPORT")
-	}
 	if data.ExporterType.IsNull() && !data.ExporterType.IsUnknown() {
 		diags.AddAttributeError(path.Root("exporter_type"), "Missing required field",
 			"exporter_type is required when object_type=METRICS_EXPORT")
+	}
+	switch platform_v1.CreateEnvironmentObjectMetricsExportRequestExporterType(data.ExporterType.ValueString()) {
+	case platform_v1.CreateEnvironmentObjectMetricsExportRequestExporterTypePROMETHEUS:
+		diags.Append(validatePrometheusExportFields(data)...)
+	case platform_v1.CreateEnvironmentObjectMetricsExportRequestExporterTypeDATADOG:
+		diags.Append(validateDatadogExportFields(data)...)
 	}
 	for _, f := range variableOnlyFields(data) {
 		diags.AddAttributeError(path.Root(f.name), "Conflicting field",
@@ -883,6 +953,61 @@ func validateMetricsExportFields(data *models.EnvironmentObject) diag.Diagnostic
 	for _, f := range connectionOnlyFields(data) {
 		diags.AddAttributeError(path.Root(f.name), "Conflicting field",
 			fmt.Sprintf("%s is only valid when object_type=CONNECTION", f.name))
+	}
+	return diags
+}
+
+func validatePrometheusExportFields(data *models.EnvironmentObject) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if data.Endpoint.IsNull() && !data.Endpoint.IsUnknown() {
+		diags.AddAttributeError(path.Root("endpoint"), "Missing required field",
+			"endpoint is required when exporter_type=PROMETHEUS")
+	}
+	for _, f := range []struct {
+		name string
+		v    types.String
+	}{
+		{"data_dog_site", data.DataDogSite},
+		{"data_dog_api_key", data.DataDogApiKey},
+	} {
+		if isUserSet(f.v) {
+			diags.AddAttributeError(path.Root(f.name), "Conflicting field",
+				fmt.Sprintf("%s is only valid when exporter_type=DATADOG", f.name))
+		}
+	}
+	return diags
+}
+
+// validateDatadogExportFields mirrors the API, which rejects the Prometheus
+// endpoint and auth fields on a DATADOG export rather than ignoring them.
+func validateDatadogExportFields(data *models.EnvironmentObject) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if data.DataDogSite.IsNull() && !data.DataDogSite.IsUnknown() {
+		diags.AddAttributeError(path.Root("data_dog_site"), "Missing required field",
+			"data_dog_site is required when exporter_type=DATADOG")
+	}
+	if data.DataDogApiKey.IsNull() && !data.DataDogApiKey.IsUnknown() {
+		diags.AddAttributeError(path.Root("data_dog_api_key"), "Missing required field",
+			"data_dog_api_key is required when exporter_type=DATADOG")
+	}
+	for _, f := range []struct {
+		name string
+		v    types.String
+	}{
+		{"endpoint", data.Endpoint},
+		{"auth_type", data.AuthType},
+		{"basic_token", data.BasicToken},
+		{"username", data.Username},
+		{"password", data.Password},
+	} {
+		if isUserSet(f.v) {
+			diags.AddAttributeError(path.Root(f.name), "Conflicting field",
+				fmt.Sprintf("%s is not valid when exporter_type=DATADOG", f.name))
+		}
+	}
+	if !data.Headers.IsNull() && !data.Headers.IsUnknown() {
+		diags.AddAttributeError(path.Root("headers"), "Conflicting field",
+			"headers is not valid when exporter_type=DATADOG")
 	}
 	return diags
 }
@@ -944,6 +1069,8 @@ func metricsExportOnlyFields(data *models.EnvironmentObject) []namedField {
 		{"basic_token", data.BasicToken},
 		{"exporter_type", data.ExporterType},
 		{"username", data.Username},
+		{"data_dog_site", data.DataDogSite},
+		{"data_dog_api_key", data.DataDogApiKey},
 	}
 	var out []namedField
 	for _, c := range checks {

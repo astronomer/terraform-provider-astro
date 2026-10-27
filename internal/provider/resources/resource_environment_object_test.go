@@ -689,6 +689,153 @@ func TestAcc_ResourceEnvironmentObjectMetricsExport_BasicAuth(t *testing.T) {
 	})
 }
 
+func TestAcc_ResourceEnvironmentObjectMetricsExport_Datadog(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
+	meKey := fmt.Sprintf("test_me_dd_%v", namePrefix)
+	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
+	resourceVar := "astro_environment_object.test"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckEnvironmentObjectDestroyed(t, meKey),
+		Steps: []resource.TestStep{
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExportDatadog(
+					"test", meKey, workspaceId, "datadoghq.com",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckEnvironmentObjectExists(t, meKey),
+					resource.TestCheckResourceAttr(resourceVar, "exporter_type", "DATADOG"),
+					resource.TestCheckResourceAttr(resourceVar, "data_dog_site", "datadoghq.com"),
+					resource.TestCheckResourceAttr(resourceVar, "data_dog_api_key", "0123456789abcdef0123456789abcdef"),
+					resource.TestCheckResourceAttr(resourceVar, "labels.team", "data"),
+				),
+			},
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExportDatadog(
+					"test", meKey, workspaceId, "datadoghq.eu",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "data_dog_site", "datadoghq.eu"),
+					resource.TestCheckResourceAttr(resourceVar, "data_dog_api_key", "0123456789abcdef0123456789abcdef"),
+				),
+			},
+			// Import — the API never returns data_dog_api_key; auth_type is
+			// ignored for the same reason as the other METRICS_EXPORT tests.
+			{
+				ResourceName:            resourceVar,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"data_dog_api_key", "auth_type"},
+			},
+		},
+	})
+}
+
+// TestAcc_ResourceEnvironmentObjectMetricsExport_DatadogLinkOverride adds a
+// Datadog site/key override on a linked Deployment, then removes it, so the
+// removal sends unsetFields and the follow-up plan must be empty.
+func TestAcc_ResourceEnvironmentObjectMetricsExport_DatadogLinkOverride(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
+	meKey := fmt.Sprintf("test_me_dd_link_%v", namePrefix)
+	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
+	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
+	resourceVar := "astro_environment_object.test"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckEnvironmentObjectDestroyed(t, meKey),
+		Steps: []resource.TestStep{
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExportDatadogWithLinkOverride(
+					"test", meKey, workspaceId, deploymentId, true,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckEnvironmentObjectExists(t, meKey),
+					resource.TestCheckResourceAttr(resourceVar, "exporter_type", "DATADOG"),
+					resource.TestCheckResourceAttr(resourceVar, "links.#", "1"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceVar, "links.*", map[string]string{
+						"scope_entity_id":              deploymentId,
+						"overrides.data_dog_site":      "datadoghq.eu",
+						"overrides.data_dog_api_key":   "fedcba9876543210fedcba9876543210",
+						"overrides.labels.environment": "staging",
+					}),
+				),
+			},
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExportDatadogWithLinkOverride(
+					"test", meKey, workspaceId, deploymentId, false,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceVar, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "links.#", "1"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceVar, "links.*", map[string]string{
+						"scope_entity_id":              deploymentId,
+						"overrides.labels.environment": "staging",
+					}),
+					resource.TestCheckNoResourceAttr(resourceVar, "links.0.overrides.data_dog_site"),
+					resource.TestCheckNoResourceAttr(resourceVar, "links.0.overrides.data_dog_api_key"),
+				),
+			},
+		},
+	})
+}
+
+// TestAcc_ResourceEnvironmentObjectMetricsExport_ExporterSwitch switches one
+// export PROMETHEUS -> DATADOG -> PROMETHEUS in place; each step's implicit
+// empty-plan check catches state drift between the planned and read values.
+func TestAcc_ResourceEnvironmentObjectMetricsExport_ExporterSwitch(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
+	meKey := fmt.Sprintf("test_me_switch_%v", namePrefix)
+	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
+	resourceVar := "astro_environment_object.test"
+	inPlace := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(resourceVar, plancheck.ResourceActionUpdate),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckEnvironmentObjectDestroyed(t, meKey),
+		Steps: []resource.TestStep{
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExport("test", meKey, "WORKSPACE", workspaceId, "https://prometheus.example.com/api/v1/write"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "exporter_type", "PROMETHEUS"),
+					resource.TestCheckNoResourceAttr(resourceVar, "data_dog_site"),
+				),
+			},
+			{
+				Config:           astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExportDatadog("test", meKey, workspaceId, "datadoghq.com"),
+				ConfigPlanChecks: inPlace,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "exporter_type", "DATADOG"),
+					resource.TestCheckResourceAttr(resourceVar, "data_dog_site", "datadoghq.com"),
+					resource.TestCheckResourceAttr(resourceVar, "endpoint", ""),
+				),
+			},
+			{
+				Config:           astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExport("test", meKey, "WORKSPACE", workspaceId, "https://prometheus.example.com/api/v1/write"),
+				ConfigPlanChecks: inPlace,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "exporter_type", "PROMETHEUS"),
+					resource.TestCheckResourceAttr(resourceVar, "endpoint", "https://prometheus.example.com/api/v1/write"),
+					resource.TestCheckNoResourceAttr(resourceVar, "data_dog_site"),
+					resource.TestCheckNoResourceAttr(resourceVar, "data_dog_api_key"),
+				),
+			},
+		},
+	})
+}
+
 // TestAcc_ResourceEnvironmentObject_LinkLifecycle exercises add / modify /
 // remove for the links block. Each transition is a fresh refresh+plan, so
 // any drift in the link state would surface as a non-empty plan failure.
@@ -963,6 +1110,51 @@ resource "astro_environment_object" "%s" {
   password      = "%s"
 }
 `, tfName, meKey, workspaceId, username, password)
+}
+
+func envObjMetricsExportDatadog(tfName, meKey, workspaceId, site string) string {
+	return fmt.Sprintf(`
+resource "astro_environment_object" "%s" {
+  object_key      = "%s"
+  object_type     = "METRICS_EXPORT"
+  scope           = "WORKSPACE"
+  scope_entity_id = "%s"
+
+  exporter_type    = "DATADOG"
+  data_dog_site    = "%s"
+  data_dog_api_key = "0123456789abcdef0123456789abcdef"
+  labels           = { team = "data" }
+}
+`, tfName, meKey, workspaceId, site)
+}
+
+func envObjMetricsExportDatadogWithLinkOverride(tfName, meKey, workspaceId, deploymentId string, withDatadogOverride bool) string {
+	datadogOverride := ""
+	if withDatadogOverride {
+		datadogOverride = `
+      data_dog_site    = "datadoghq.eu"
+      data_dog_api_key = "fedcba9876543210fedcba9876543210"`
+	}
+	return fmt.Sprintf(`
+resource "astro_environment_object" "%s" {
+  object_key      = "%s"
+  object_type     = "METRICS_EXPORT"
+  scope           = "WORKSPACE"
+  scope_entity_id = "%s"
+
+  exporter_type    = "DATADOG"
+  data_dog_site    = "datadoghq.com"
+  data_dog_api_key = "0123456789abcdef0123456789abcdef"
+
+  links = [{
+    scope           = "DEPLOYMENT"
+    scope_entity_id = "%s"
+    overrides = {%s
+      labels = { environment = "staging" }
+    }
+  }]
+}
+`, tfName, meKey, workspaceId, deploymentId, datadogOverride)
 }
 
 // --- Existence checks ---

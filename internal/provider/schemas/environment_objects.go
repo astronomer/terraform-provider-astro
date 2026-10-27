@@ -41,13 +41,15 @@ func EnvironmentObjectsElementAttributeTypes() map[string]attr.Type {
 			AttrTypes: EnvironmentObjectConnectionAuthTypeAttributeTypes(),
 		},
 		// METRICS_EXPORT
-		"auth_type":     types.StringType,
-		"endpoint":      types.StringType,
-		"basic_token":   types.StringType,
-		"exporter_type": types.StringType,
-		"username":      types.StringType,
-		"headers":       types.MapType{ElemType: types.StringType},
-		"labels":        types.MapType{ElemType: types.StringType},
+		"auth_type":        types.StringType,
+		"endpoint":         types.StringType,
+		"basic_token":      types.StringType,
+		"exporter_type":    types.StringType,
+		"username":         types.StringType,
+		"headers":          types.MapType{ElemType: types.StringType},
+		"labels":           types.MapType{ElemType: types.StringType},
+		"data_dog_site":    types.StringType,
+		"data_dog_api_key": types.StringType,
 		// Polymorphic
 		"password": types.StringType,
 		// Links
