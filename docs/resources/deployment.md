@@ -326,7 +326,7 @@ Optional:
 <a id="nestedatt--scaling_spec--autoscaling"></a>
 ### Nested Schema for `scaling_spec.autoscaling`
 
-Optional:
+Required:
 
 - `api_server` (Attributes) Autoscaling configuration for the API server. (see [below for nested schema](#nestedatt--scaling_spec--autoscaling--api_server))
 

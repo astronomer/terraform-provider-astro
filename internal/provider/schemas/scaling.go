@@ -168,7 +168,7 @@ func AutoscalingResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
 		"api_server": resourceSchema.SingleNestedAttribute{
 			Attributes:          ReplicaScalingResourceSchemaAttributes(),
-			Optional:            true,
+			Required:            true,
 			MarkdownDescription: "Autoscaling configuration for the API server.",
 		},
 	}

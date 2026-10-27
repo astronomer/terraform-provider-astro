@@ -720,6 +720,13 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 			},
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + developmentDeployment(scalingSpecDeploymentName,
+					`scaling_spec = {
+							autoscaling = {}
+						}`),
+				ExpectError: regexp.MustCompile(`Inappropriate value for attribute "scaling_spec"`),
+			},
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + developmentDeployment(scalingSpecDeploymentName,
 					`
 						scaling_spec = {
 							hibernation_spec = {
