@@ -1139,6 +1139,16 @@ type ApiTokensPaginated struct {
 	TotalCount int `json:"totalCount"`
 }
 
+// AutoscalingRequest defines model for AutoscalingRequest.
+type AutoscalingRequest struct {
+	ApiServer *ScalingSpecRequest `json:"apiServer,omitempty"`
+}
+
+// AutoscalingSpec defines model for AutoscalingSpec.
+type AutoscalingSpec struct {
+	ApiServer *ScalingSpec `json:"apiServer,omitempty"`
+}
+
 // BasicSubjectProfile defines model for BasicSubjectProfile.
 type BasicSubjectProfile struct {
 	// ApiTokenName The API token's name. Returned only when `SubjectType` is `SERVICEKEY`.
@@ -2669,11 +2679,13 @@ type DeploymentRole struct {
 
 // DeploymentScalingSpec defines model for DeploymentScalingSpec.
 type DeploymentScalingSpec struct {
+	Autoscaling     *AutoscalingSpec           `json:"autoscaling,omitempty"`
 	HibernationSpec *DeploymentHibernationSpec `json:"hibernationSpec,omitempty"`
 }
 
 // DeploymentScalingSpecRequest defines model for DeploymentScalingSpecRequest.
 type DeploymentScalingSpecRequest struct {
+	Autoscaling     *AutoscalingRequest               `json:"autoscaling,omitempty"`
 	HibernationSpec *DeploymentHibernationSpecRequest `json:"hibernationSpec,omitempty"`
 }
 
@@ -3310,6 +3322,30 @@ type RuntimeRelease struct {
 
 	// Version The Astro Runtime version.
 	Version string `json:"version"`
+}
+
+// ScalingSpec defines model for ScalingSpec.
+type ScalingSpec struct {
+	// IsEnabled True when scaling is enabled
+	IsEnabled bool `json:"isEnabled"`
+
+	// MaxReplicas The maximum number of replicas
+	MaxReplicas int `json:"maxReplicas"`
+
+	// MinReplicas The minimum number of replicas
+	MinReplicas int `json:"minReplicas"`
+}
+
+// ScalingSpecRequest defines model for ScalingSpecRequest.
+type ScalingSpecRequest struct {
+	// IsEnabled True when scaling is enabled
+	IsEnabled bool `json:"isEnabled"`
+
+	// MaxReplicas The maximum number of replicas
+	MaxReplicas int `json:"maxReplicas"`
+
+	// MinReplicas The minimum number of replicas
+	MinReplicas int `json:"minReplicas"`
 }
 
 // SchedulerMachine defines model for SchedulerMachine.
@@ -11696,6 +11732,7 @@ type CreateClusterResponse struct {
 	JSON403      *Error
 	JSON404      *Error
 	JSON412      *Error
+	JSON423      *Error
 	JSON500      *Error
 }
 
@@ -11722,6 +11759,7 @@ type DeleteClusterResponse struct {
 	JSON401      *Error
 	JSON403      *Error
 	JSON404      *Error
+	JSON423      *Error
 	JSON500      *Error
 }
 
@@ -11777,6 +11815,7 @@ type UpdateClusterResponse struct {
 	JSON403      *Error
 	JSON404      *Error
 	JSON412      *Error
+	JSON423      *Error
 	JSON500      *Error
 }
 
@@ -14477,6 +14516,13 @@ func ParseCreateClusterResponse(rsp *http.Response) (*CreateClusterResponse, err
 		}
 		response.JSON412 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -14530,6 +14576,13 @@ func ParseDeleteClusterResponse(rsp *http.Response) (*DeleteClusterResponse, err
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest Error
@@ -14659,6 +14712,13 @@ func ParseUpdateClusterResponse(rsp *http.Response) (*UpdateClusterResponse, err
 			return nil, err
 		}
 		response.JSON412 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest Error

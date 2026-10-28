@@ -716,6 +716,13 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + developmentDeployment(scalingSpecDeploymentName,
 					`scaling_spec = {}`,
 				),
+				ExpectError: regexp.MustCompile(`At least one attribute out of`),
+			},
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + developmentDeployment(scalingSpecDeploymentName,
+					`scaling_spec = {
+							autoscaling = {}
+						}`),
 				ExpectError: regexp.MustCompile(`Inappropriate value for attribute "scaling_spec"`),
 			},
 			{
@@ -885,6 +892,91 @@ func TestAcc_ResourceDeploymentStandardScalingSpec(t *testing.T) {
 								  } : null`),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.%", "0"), // scaling spec should be null
+				),
+			},
+			// API server autoscaling can be configured without hibernation_spec
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + developmentDeployment(scalingSpecDeploymentName,
+					`scaling_spec = {
+						autoscaling = {
+							api_server = {
+								is_enabled   = true
+								min_replicas = 2
+								max_replicas = 5
+							}
+						}
+					}`),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.autoscaling.api_server.is_enabled", "true"),
+					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.autoscaling.api_server.min_replicas", "2"),
+					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.autoscaling.api_server.max_replicas", "5"),
+				),
+			},
+			// Disabling autoscaling keeps the replica bounds
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + developmentDeployment(scalingSpecDeploymentName,
+					`scaling_spec = {
+						autoscaling = {
+							api_server = {
+								is_enabled   = false
+								min_replicas = 2
+								max_replicas = 5
+							}
+						}
+					}`),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.autoscaling.api_server.is_enabled", "false"),
+					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.autoscaling.api_server.min_replicas", "2"),
+					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.autoscaling.api_server.max_replicas", "5"),
+				),
+			},
+			// Autoscaling alongside hibernation_spec
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + developmentDeployment(scalingSpecDeploymentName,
+					`scaling_spec = {
+						autoscaling = {
+							api_server = {
+								is_enabled   = true
+								min_replicas = 2
+								max_replicas = 4
+							}
+						}
+						hibernation_spec = {
+							schedules = [{
+								is_enabled        = true
+								hibernate_at_cron = "0 22 * * *"
+								wake_at_cron      = "0 14 * * *"
+							}]
+						}
+					}`),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.autoscaling.api_server.max_replicas", "4"),
+					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.hibernation_spec.schedules.0.is_enabled", "true"),
+				),
+			},
+			// Removing the autoscaling block stops Terraform managing it, with no error and no diff afterwards
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + developmentDeployment(scalingSpecDeploymentName,
+					`scaling_spec = {
+						hibernation_spec = {
+							schedules = [{
+								is_enabled        = true
+								hibernate_at_cron = "0 22 * * *"
+								wake_at_cron      = "0 14 * * *"
+							}]
+						}
+					}`),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckNoResourceAttr(scalingSpecResourceVar, "scaling_spec.autoscaling.api_server.is_enabled"),
+					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.hibernation_spec.schedules.0.is_enabled", "true"),
+				),
+			},
+			// Autoscaling still set on the deployment is ignored when scaling_spec is not configured
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + developmentDeployment(scalingSpecDeploymentName,
+					` `),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(scalingSpecResourceVar, "scaling_spec.%", "0"),
 				),
 			},
 			// Import existing deployment and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests

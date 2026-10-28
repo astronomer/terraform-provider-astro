@@ -217,6 +217,19 @@ resource "astro_environment_object" "metrics_deployment_only" {
   exporter_type = "PROMETHEUS"
 }
 
+# METRICS_EXPORT — Datadog. The intake URL is derived from `data_dog_site`; `endpoint` and the Prometheus auth fields are not allowed.
+resource "astro_environment_object" "metrics_workspace_datadog" {
+  object_key      = "datadog_export"
+  object_type     = "METRICS_EXPORT"
+  scope           = "WORKSPACE"
+  scope_entity_id = "clx42sxw501gl01o0gjenthnh"
+
+  exporter_type    = "DATADOG"
+  data_dog_site    = "datadoghq.com"
+  data_dog_api_key = "REPLACE_ME"
+  labels           = { environment = "prod" }
+}
+
 # Import an existing environment object
 import {
   id = "cm4ntm56001gk01mbhudv1elv"

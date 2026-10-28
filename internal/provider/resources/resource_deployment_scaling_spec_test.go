@@ -54,8 +54,8 @@ func nightlySchedules(t *testing.T) types.Set {
 	return set
 }
 
-// scalingSpecObject wraps an override and schedules into a scaling_spec object; either may be null.
-func scalingSpecObject(t *testing.T, override types.Object, schedules types.Set) types.Object {
+// hibernationScalingSpecObject wraps an override and schedules into a scaling_spec object; either may be null.
+func hibernationScalingSpecObject(t *testing.T, override types.Object, schedules types.Set) types.Object {
 	t.Helper()
 	hibernationSpec, diags := types.ObjectValue(schemas.HibernationSpecAttributeTypes(), map[string]attr.Value{
 		"override":  override,
@@ -63,6 +63,7 @@ func scalingSpecObject(t *testing.T, override types.Object, schedules types.Set)
 	})
 	require.False(t, diags.HasError())
 	scalingSpec, diags := types.ObjectValue(schemas.ScalingSpecAttributeTypes(), map[string]attr.Value{
+		"autoscaling":      types.ObjectNull(schemas.AutoscalingAttributeTypes()),
 		"hibernation_spec": hibernationSpec,
 	})
 	require.False(t, diags.HasError())
@@ -70,7 +71,7 @@ func scalingSpecObject(t *testing.T, override types.Object, schedules types.Set)
 }
 
 func TestUnit_RequestScalingSpec_FutureOverrideUntilIsSent(t *testing.T) {
-	spec := scalingSpecObject(t, overrideObject(t, types.BoolUnknown(), true, types.StringValue("2075-01-01T00:00:00Z")), nullSchedules())
+	spec := hibernationScalingSpecObject(t, overrideObject(t, types.BoolUnknown(), true, types.StringValue("2075-01-01T00:00:00Z")), nullSchedules())
 
 	req, diags := RequestScalingSpec(context.Background(), spec, scalingSpecNow)
 	require.False(t, diags.HasError(), "unexpected diags: %v", diags)
@@ -90,7 +91,7 @@ func TestUnit_RequestScalingSpec_FutureOverrideUntilIsSent(t *testing.T) {
 func TestUnit_RequestScalingSpec_ExpiredOverrideUntilIsAnError(t *testing.T) {
 	// The shape ignore_changes produces: the override object comes from the prior state, so
 	// is_active is known (and false, as the API reports it once the override has ended).
-	spec := scalingSpecObject(t, overrideObject(t, types.BoolValue(false), false, types.StringValue("2025-12-31T23:00:00Z")), nightlySchedules(t))
+	spec := hibernationScalingSpecObject(t, overrideObject(t, types.BoolValue(false), false, types.StringValue("2025-12-31T23:00:00Z")), nightlySchedules(t))
 
 	req, diags := RequestScalingSpec(context.Background(), spec, scalingSpecNow)
 	require.True(t, diags.HasError())
@@ -108,7 +109,7 @@ func TestUnit_RequestScalingSpec_ExpiredOverrideUntilIsAnError(t *testing.T) {
 
 // An override that ends exactly now has not expired yet; the boundary belongs to the API.
 func TestUnit_RequestScalingSpec_OverrideUntilAtNowIsSent(t *testing.T) {
-	spec := scalingSpecObject(t, overrideObject(t, types.BoolUnknown(), true, types.StringValue(scalingSpecNow.Format(time.RFC3339))), nullSchedules())
+	spec := hibernationScalingSpecObject(t, overrideObject(t, types.BoolUnknown(), true, types.StringValue(scalingSpecNow.Format(time.RFC3339))), nullSchedules())
 
 	req, diags := RequestScalingSpec(context.Background(), spec, scalingSpecNow)
 	require.False(t, diags.HasError(), "unexpected diags: %v", diags)
@@ -119,7 +120,7 @@ func TestUnit_RequestScalingSpec_OverrideUntilAtNowIsSent(t *testing.T) {
 
 // An override with no override_until lasts until it is removed; nothing to validate.
 func TestUnit_RequestScalingSpec_OverrideWithoutOverrideUntilIsSent(t *testing.T) {
-	spec := scalingSpecObject(t, overrideObject(t, types.BoolUnknown(), true, types.StringNull()), nullSchedules())
+	spec := hibernationScalingSpecObject(t, overrideObject(t, types.BoolUnknown(), true, types.StringNull()), nullSchedules())
 
 	req, diags := RequestScalingSpec(context.Background(), spec, scalingSpecNow)
 	require.False(t, diags.HasError(), "unexpected diags: %v", diags)
@@ -131,7 +132,7 @@ func TestUnit_RequestScalingSpec_OverrideWithoutOverrideUntilIsSent(t *testing.T
 
 // A value that is not RFC3339 is passed through unchanged; the API validates the format.
 func TestUnit_RequestScalingSpec_UnparseableOverrideUntilIsPassedThrough(t *testing.T) {
-	spec := scalingSpecObject(t, overrideObject(t, types.BoolUnknown(), true, types.StringValue("not-a-timestamp")), nullSchedules())
+	spec := hibernationScalingSpecObject(t, overrideObject(t, types.BoolUnknown(), true, types.StringValue("not-a-timestamp")), nullSchedules())
 
 	req, diags := RequestScalingSpec(context.Background(), spec, scalingSpecNow)
 	require.False(t, diags.HasError(), "unexpected diags: %v", diags)
@@ -143,7 +144,7 @@ func TestUnit_RequestScalingSpec_UnparseableOverrideUntilIsPassedThrough(t *test
 // With no override in the plan, none is sent and the schedules go through as they are. After Read
 // drops an expired override from state this is the request the #350 configuration produces.
 func TestUnit_RequestScalingSpec_SchedulesOnlyOmitsOverride(t *testing.T) {
-	spec := scalingSpecObject(t, nullOverride(), nightlySchedules(t))
+	spec := hibernationScalingSpecObject(t, nullOverride(), nightlySchedules(t))
 
 	req, diags := RequestScalingSpec(context.Background(), spec, scalingSpecNow)
 	require.False(t, diags.HasError(), "unexpected diags: %v", diags)
@@ -156,7 +157,7 @@ func TestUnit_RequestScalingSpec_SchedulesOnlyOmitsOverride(t *testing.T) {
 }
 
 func TestUnit_RequestScalingSpec_RequiresOverrideOrSchedules(t *testing.T) {
-	spec := scalingSpecObject(t, nullOverride(), nullSchedules())
+	spec := hibernationScalingSpecObject(t, nullOverride(), nullSchedules())
 
 	_, diags := RequestScalingSpec(context.Background(), spec, scalingSpecNow)
 	require.True(t, diags.HasError())

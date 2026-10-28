@@ -1,6 +1,8 @@
 package schemas
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -14,9 +16,28 @@ import (
 // ScalingSpec
 func ScalingSpecAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
+		"autoscaling": types.ObjectType{
+			AttrTypes: AutoscalingAttributeTypes(),
+		},
 		"hibernation_spec": types.ObjectType{
 			AttrTypes: HibernationSpecAttributeTypes(),
 		},
+	}
+}
+
+func AutoscalingAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"api_server": types.ObjectType{
+			AttrTypes: ReplicaScalingAttributeTypes(),
+		},
+	}
+}
+
+func ReplicaScalingAttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"is_enabled":   types.BoolType,
+		"max_replicas": types.Int64Type,
+		"min_replicas": types.Int64Type,
 	}
 }
 
@@ -35,9 +56,39 @@ func HibernationSpecAttributeTypes() map[string]attr.Type {
 
 func ScalingSpecDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
 	return map[string]datasourceSchema.Attribute{
+		"autoscaling": datasourceSchema.SingleNestedAttribute{
+			Attributes: AutoscalingDataSourceSchemaAttributes(),
+			Computed:   true,
+		},
 		"hibernation_spec": datasourceSchema.SingleNestedAttribute{
 			Attributes: HibernationSpecDataSourceSchemaAttributes(),
 			Computed:   true,
+		},
+	}
+}
+
+func AutoscalingDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
+	return map[string]datasourceSchema.Attribute{
+		"api_server": datasourceSchema.SingleNestedAttribute{
+			Attributes: ReplicaScalingDataSourceSchemaAttributes(),
+			Computed:   true,
+		},
+	}
+}
+
+func ReplicaScalingDataSourceSchemaAttributes() map[string]datasourceSchema.Attribute {
+	return map[string]datasourceSchema.Attribute{
+		"is_enabled": datasourceSchema.BoolAttribute{
+			Computed:            true,
+			MarkdownDescription: "Whether autoscaling is enabled",
+		},
+		"max_replicas": datasourceSchema.Int64Attribute{
+			Computed:            true,
+			MarkdownDescription: "Maximum number of replicas",
+		},
+		"min_replicas": datasourceSchema.Int64Attribute{
+			Computed:            true,
+			MarkdownDescription: "Minimum number of replicas",
 		},
 	}
 }
@@ -97,10 +148,48 @@ func HibernationScheduleDataSourceSchemaAttributes() map[string]datasourceSchema
 
 func ScalingSpecResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
+		"autoscaling": resourceSchema.SingleNestedAttribute{
+			Attributes:          AutoscalingResourceSchemaAttributes(),
+			Optional:            true,
+			MarkdownDescription: "Autoscaling configuration for the deployment's components. Removing this block stops Terraform managing autoscaling and leaves the deployment's current setting unchanged. To turn autoscaling off, set `is_enabled` to false; the replica bounds are kept.",
+		},
 		"hibernation_spec": resourceSchema.SingleNestedAttribute{
-			Attributes:          HibernationSpecResourceSchemaAttributes(),
-			Required:            true,
+			Attributes: HibernationSpecResourceSchemaAttributes(),
+			Optional:   true,
+			Validators: []validator.Object{
+				objectvalidator.AtLeastOneOf(path.MatchRelative().AtParent().AtName("autoscaling")),
+			},
 			MarkdownDescription: "Hibernation configuration for the deployment. The deployment will hibernate according to the schedules defined in this configuration. To remove the hibernation configuration, set scaling_spec to null.",
+		},
+	}
+}
+
+func AutoscalingResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"api_server": resourceSchema.SingleNestedAttribute{
+			Attributes:          ReplicaScalingResourceSchemaAttributes(),
+			Required:            true,
+			MarkdownDescription: "Autoscaling configuration for the API server.",
+		},
+	}
+}
+
+func ReplicaScalingResourceSchemaAttributes() map[string]resourceSchema.Attribute {
+	return map[string]resourceSchema.Attribute{
+		"is_enabled": resourceSchema.BoolAttribute{
+			Required:            true,
+			MarkdownDescription: "Whether autoscaling is enabled",
+		},
+		"max_replicas": resourceSchema.Int64Attribute{
+			Required:            true,
+			MarkdownDescription: "Maximum number of replicas",
+		},
+		"min_replicas": resourceSchema.Int64Attribute{
+			Required:            true,
+			MarkdownDescription: "Minimum number of replicas",
+			Validators: []validator.Int64{
+				int64validator.AtLeast(1),
+			},
 		},
 	}
 }

@@ -40,13 +40,15 @@ type EnvironmentObject struct {
 	AuthTypeId         types.String `tfsdk:"auth_type_id"`
 	ConnectionAuthType types.Object `tfsdk:"connection_auth_type"`
 	// METRICS_EXPORT
-	AuthType     types.String `tfsdk:"auth_type"`
-	Endpoint     types.String `tfsdk:"endpoint"`
-	BasicToken   types.String `tfsdk:"basic_token"`
-	ExporterType types.String `tfsdk:"exporter_type"`
-	Username     types.String `tfsdk:"username"`
-	Headers      types.Map    `tfsdk:"headers"`
-	Labels       types.Map    `tfsdk:"labels"`
+	AuthType      types.String `tfsdk:"auth_type"`
+	Endpoint      types.String `tfsdk:"endpoint"`
+	BasicToken    types.String `tfsdk:"basic_token"`
+	ExporterType  types.String `tfsdk:"exporter_type"`
+	Username      types.String `tfsdk:"username"`
+	Headers       types.Map    `tfsdk:"headers"`
+	Labels        types.Map    `tfsdk:"labels"`
+	DataDogSite   types.String `tfsdk:"data_dog_site"`
+	DataDogApiKey types.String `tfsdk:"data_dog_api_key"`
 	// Polymorphic (CONNECTION + METRICS_EXPORT)
 	Password types.String `tfsdk:"password"`
 	// Links
@@ -88,13 +90,15 @@ type EnvironmentObjectOverridesInput struct {
 	Login  types.String `tfsdk:"login"`
 	Extra  types.String `tfsdk:"extra"`
 	// METRICS_EXPORT
-	AuthType     types.String `tfsdk:"auth_type"`
-	Endpoint     types.String `tfsdk:"endpoint"`
-	BasicToken   types.String `tfsdk:"basic_token"`
-	ExporterType types.String `tfsdk:"exporter_type"`
-	Username     types.String `tfsdk:"username"`
-	Headers      types.Map    `tfsdk:"headers"`
-	Labels       types.Map    `tfsdk:"labels"`
+	AuthType      types.String `tfsdk:"auth_type"`
+	Endpoint      types.String `tfsdk:"endpoint"`
+	BasicToken    types.String `tfsdk:"basic_token"`
+	ExporterType  types.String `tfsdk:"exporter_type"`
+	Username      types.String `tfsdk:"username"`
+	Headers       types.Map    `tfsdk:"headers"`
+	Labels        types.Map    `tfsdk:"labels"`
+	DataDogSite   types.String `tfsdk:"data_dog_site"`
+	DataDogApiKey types.String `tfsdk:"data_dog_api_key"`
 	// Polymorphic
 	Password types.String `tfsdk:"password"`
 }
@@ -115,6 +119,7 @@ type EnvironmentObjectPreserve struct {
 	EnvironmentVariableValue *string // ENVIRONMENT_VARIABLE — same preserve rule as AIRFLOW_VARIABLE
 	BasicToken               *string // METRICS_EXPORT
 	MetricsExportAuthType    *string // METRICS_EXPORT — API does not echo it back on GET
+	DataDogApiKey            *string // METRICS_EXPORT (DATADOG)
 	// Per-link overrides, keyed by LinkPreserveKey(scope, scope_entity_id).
 	LinkOverrides map[string]*EnvironmentObjectLinkOverridePreserve
 }
@@ -122,11 +127,12 @@ type EnvironmentObjectPreserve struct {
 // EnvironmentObjectLinkOverridePreserve carries per-link override secrets/JSON
 // that the API strips on GET. Same polymorphism rules as the parent.
 type EnvironmentObjectLinkOverridePreserve struct {
-	Password   *string
-	Extra      *string
-	BasicToken *string
-	Value      *string
-	AuthType   *string // METRICS_EXPORT override — API does not echo it back
+	Password      *string
+	Extra         *string
+	BasicToken    *string
+	Value         *string
+	AuthType      *string // METRICS_EXPORT override — API does not echo it back
+	DataDogApiKey *string
 }
 
 // LinkPreserveKey builds the composite key used to look up per-link preserve
@@ -292,6 +298,8 @@ func (data *EnvironmentObject) nullAllTypeSpecific() {
 	data.Username = types.StringNull()
 	data.Headers = types.MapNull(types.StringType)
 	data.Labels = types.MapNull(types.StringType)
+	data.DataDogSite = types.StringNull()
+	data.DataDogApiKey = types.StringNull()
 	// Polymorphic
 	data.Password = types.StringNull()
 }
@@ -378,8 +386,11 @@ func (data *EnvironmentObject) populateMetricsExport(me *platform_v1.Environment
 	}
 	data.Labels = labels
 
+	data.DataDogSite = nonEmptyStringValue((*string)(me.DataDogSite))
+
 	data.BasicToken = preserveSecret(me.BasicToken, ifPreserve(preserve, func(p *EnvironmentObjectPreserve) *string { return p.BasicToken }))
 	data.Password = preserveSecret(me.Password, ifPreserve(preserve, func(p *EnvironmentObjectPreserve) *string { return p.Password }))
+	data.DataDogApiKey = preserveSecret(me.DataDogApiKey, ifPreserve(preserve, func(p *EnvironmentObjectPreserve) *string { return p.DataDogApiKey }))
 	return nil
 }
 
@@ -456,21 +467,23 @@ func environmentObjectOverridesTypesObject(link *platform_v1.EnvironmentObjectLi
 
 	// Start with everything null; populate per type.
 	values := map[string]attr.Value{
-		"value":         types.StringNull(),
-		"type":          types.StringNull(),
-		"host":          types.StringNull(),
-		"port":          types.Int64Null(),
-		"schema":        types.StringNull(),
-		"login":         types.StringNull(),
-		"extra":         types.StringNull(),
-		"password":      types.StringNull(),
-		"auth_type":     types.StringNull(),
-		"endpoint":      types.StringNull(),
-		"basic_token":   types.StringNull(),
-		"exporter_type": types.StringNull(),
-		"username":      types.StringNull(),
-		"headers":       types.MapNull(types.StringType),
-		"labels":        types.MapNull(types.StringType),
+		"value":            types.StringNull(),
+		"type":             types.StringNull(),
+		"host":             types.StringNull(),
+		"port":             types.Int64Null(),
+		"schema":           types.StringNull(),
+		"login":            types.StringNull(),
+		"extra":            types.StringNull(),
+		"password":         types.StringNull(),
+		"auth_type":        types.StringNull(),
+		"endpoint":         types.StringNull(),
+		"basic_token":      types.StringNull(),
+		"exporter_type":    types.StringNull(),
+		"username":         types.StringNull(),
+		"headers":          types.MapNull(types.StringType),
+		"labels":           types.MapNull(types.StringType),
+		"data_dog_site":    types.StringNull(),
+		"data_dog_api_key": types.StringNull(),
 	}
 
 	if link.AirflowVariableOverrides != nil {
@@ -542,8 +555,10 @@ func environmentObjectOverridesTypesObject(link *platform_v1.EnvironmentObjectLi
 		values["username"] = types.StringPointerValue(mo.Username)
 		values["headers"] = headers
 		values["labels"] = labels
+		values["data_dog_site"] = nonEmptyStringValue((*string)(mo.DataDogSite))
 		values["basic_token"] = preserveSecretLink(mo.BasicToken, preserve, func(p *EnvironmentObjectLinkOverridePreserve) *string { return p.BasicToken })
 		values["password"] = preserveSecretLink(mo.Password, preserve, func(p *EnvironmentObjectLinkOverridePreserve) *string { return p.Password })
+		values["data_dog_api_key"] = preserveSecretLink(mo.DataDogApiKey, preserve, func(p *EnvironmentObjectLinkOverridePreserve) *string { return p.DataDogApiKey })
 	}
 
 	return types.ObjectValue(overridesAttrTypes, values)
@@ -558,6 +573,15 @@ func stringMapToTFMap(m *map[string]string) (types.Map, diag.Diagnostics) {
 		elems[k] = types.StringValue(v)
 	}
 	return types.MapValue(types.StringType, elems)
+}
+
+// nonEmptyStringValue maps both nil and "" to null so an Optional-only
+// attribute the user never set doesn't trip the post-apply consistency check.
+func nonEmptyStringValue(v *string) types.String {
+	if v == nil || *v == "" {
+		return types.StringNull()
+	}
+	return types.StringValue(*v)
 }
 
 // preserveSecret returns a types.String for a sensitive field. The Astro API

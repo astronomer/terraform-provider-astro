@@ -126,6 +126,15 @@ resource "astro_deployment" "standard_astro" {
     worker_concurrency    = 1
     pod_ephemeral_storage = "20Gi" # Optional: overrides the default ephemeral storage for the astro_machine
   }]
+  scaling_spec = {
+    autoscaling = {
+      api_server = {
+        is_enabled   = true
+        min_replicas = 2
+        max_replicas = 5
+      }
+    }
+  }
 }
 
 resource "astro_deployment" "hybrid" {
@@ -309,9 +318,28 @@ Read-Only:
 <a id="nestedatt--scaling_spec"></a>
 ### Nested Schema for `scaling_spec`
 
+Optional:
+
+- `autoscaling` (Attributes) Autoscaling configuration for the deployment's components. Removing this block stops Terraform managing autoscaling and leaves the deployment's current setting unchanged. To turn autoscaling off, set `is_enabled` to false; the replica bounds are kept. (see [below for nested schema](#nestedatt--scaling_spec--autoscaling))
+- `hibernation_spec` (Attributes) Hibernation configuration for the deployment. The deployment will hibernate according to the schedules defined in this configuration. To remove the hibernation configuration, set scaling_spec to null. (see [below for nested schema](#nestedatt--scaling_spec--hibernation_spec))
+
+<a id="nestedatt--scaling_spec--autoscaling"></a>
+### Nested Schema for `scaling_spec.autoscaling`
+
 Required:
 
-- `hibernation_spec` (Attributes) Hibernation configuration for the deployment. The deployment will hibernate according to the schedules defined in this configuration. To remove the hibernation configuration, set scaling_spec to null. (see [below for nested schema](#nestedatt--scaling_spec--hibernation_spec))
+- `api_server` (Attributes) Autoscaling configuration for the API server. (see [below for nested schema](#nestedatt--scaling_spec--autoscaling--api_server))
+
+<a id="nestedatt--scaling_spec--autoscaling--api_server"></a>
+### Nested Schema for `scaling_spec.autoscaling.api_server`
+
+Required:
+
+- `is_enabled` (Boolean) Whether autoscaling is enabled
+- `max_replicas` (Number) Maximum number of replicas
+- `min_replicas` (Number) Minimum number of replicas
+
+
 
 <a id="nestedatt--scaling_spec--hibernation_spec"></a>
 ### Nested Schema for `scaling_spec.hibernation_spec`
