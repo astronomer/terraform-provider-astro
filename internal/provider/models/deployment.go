@@ -267,7 +267,7 @@ func (data *DeploymentResource) ReadFromResponse(
 		return diags
 	}
 	configuredOverrideUntil := ConfiguredOverrideUntil(ctx, data.ScalingSpec)
-	data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, deployment.ScalingSpec, configuredOverrideUntil)
+	data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, ManagedScalingSpec(ctx, data.ScalingSpec, deployment.ScalingSpec), configuredOverrideUntil)
 	if diags.HasError() {
 		return diags
 	}
@@ -472,7 +472,18 @@ func WorkerQueueDataSourceTypesObject(
 }
 
 type DeploymentScalingSpec struct {
+	Autoscaling     types.Object `tfsdk:"autoscaling"`
 	HibernationSpec types.Object `tfsdk:"hibernation_spec"`
+}
+
+type Autoscaling struct {
+	ApiServer types.Object `tfsdk:"api_server"`
+}
+
+type ReplicaScaling struct {
+	IsEnabled   types.Bool  `tfsdk:"is_enabled"`
+	MaxReplicas types.Int64 `tfsdk:"max_replicas"`
+	MinReplicas types.Int64 `tfsdk:"min_replicas"`
 }
 
 type DeploymentStatus struct {
@@ -624,6 +635,71 @@ func HibernationSpecTypesObject(
 	return types.ObjectValueFrom(ctx, schemas.HibernationSpecAttributeTypes(), obj)
 }
 
+func ReplicaScalingTypesObject(
+	ctx context.Context,
+	spec *platform_v1.ScalingSpec,
+) (types.Object, diag.Diagnostics) {
+	if spec == nil {
+		return types.ObjectNull(schemas.ReplicaScalingAttributeTypes()), nil
+	}
+	obj := ReplicaScaling{
+		IsEnabled:   types.BoolValue(spec.IsEnabled),
+		MaxReplicas: types.Int64Value(int64(spec.MaxReplicas)),
+		MinReplicas: types.Int64Value(int64(spec.MinReplicas)),
+	}
+	return types.ObjectValueFrom(ctx, schemas.ReplicaScalingAttributeTypes(), obj)
+}
+
+func AutoscalingTypesObject(
+	ctx context.Context,
+	autoscaling *platform_v1.AutoscalingSpec,
+) (types.Object, diag.Diagnostics) {
+	if autoscaling == nil {
+		return types.ObjectNull(schemas.AutoscalingAttributeTypes()), nil
+	}
+	apiServer, diags := ReplicaScalingTypesObject(ctx, autoscaling.ApiServer)
+	if diags.HasError() {
+		return types.ObjectNull(schemas.AutoscalingAttributeTypes()), diags
+	}
+	obj := Autoscaling{
+		ApiServer: apiServer,
+	}
+	return types.ObjectValueFrom(ctx, schemas.AutoscalingAttributeTypes(), obj)
+}
+
+// ManagedScalingSpec drops autoscaling from the API's scaling spec unless the prior value
+// manages it. Core leaves autoscaling it was not asked to change, so state only tracks it
+// once the configuration includes it.
+func ManagedScalingSpec(
+	ctx context.Context,
+	prior types.Object,
+	scalingSpec *platform_v1.DeploymentScalingSpec,
+) *platform_v1.DeploymentScalingSpec {
+	if scalingSpec == nil {
+		return nil
+	}
+	managed := *scalingSpec
+	if !autoscalingConfigured(ctx, prior) {
+		managed.Autoscaling = nil
+	}
+	if managed.HibernationSpec == nil && managed.Autoscaling == nil {
+		return nil
+	}
+	return &managed
+}
+
+func autoscalingConfigured(ctx context.Context, scalingSpecObj types.Object) bool {
+	if scalingSpecObj.IsNull() || scalingSpecObj.IsUnknown() {
+		return false
+	}
+	var scalingSpec DeploymentScalingSpec
+	diags := scalingSpecObj.As(ctx, &scalingSpec, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	return !diags.HasError() && !scalingSpec.Autoscaling.IsNull() && !scalingSpec.Autoscaling.IsUnknown()
+}
+
 func ScalingStatusTypesObject(
 	ctx context.Context,
 	scalingStatus *platform_v1.DeploymentScalingStatus,
@@ -655,7 +731,12 @@ func ScalingSpecTypesObject(
 	if diags.HasError() {
 		return types.ObjectNull(schemas.ScalingSpecAttributeTypes()), diags
 	}
+	autoscaling, diags := AutoscalingTypesObject(ctx, scalingSpec.Autoscaling)
+	if diags.HasError() {
+		return types.ObjectNull(schemas.ScalingSpecAttributeTypes()), diags
+	}
 	obj := DeploymentScalingSpec{
+		Autoscaling:     autoscaling,
 		HibernationSpec: hibernationSpec,
 	}
 	return types.ObjectValueFrom(ctx, schemas.ScalingSpecAttributeTypes(), obj)

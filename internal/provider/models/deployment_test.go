@@ -12,6 +12,7 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/samber/lo"
 )
 
@@ -114,6 +115,7 @@ func TestUnit_ConfiguredOverrideUntil_RoundTrip(t *testing.T) {
 	require.False(t, diags.HasError())
 
 	scalingSpec, diags := types.ObjectValueFrom(ctx, schemas.ScalingSpecAttributeTypes(), models.DeploymentScalingSpec{
+		Autoscaling:     types.ObjectNull(schemas.AutoscalingAttributeTypes()),
 		HibernationSpec: hibernationSpec,
 	})
 	require.False(t, diags.HasError())
@@ -163,4 +165,92 @@ func TestUnit_WorkerQueueTypesObject_NullPodEphemeralStorage(t *testing.T) {
 	})
 	require.False(t, diags.HasError())
 	assert.True(t, obj.Attributes()["pod_ephemeral_storage"].(types.String).IsNull())
+}
+
+func TestUnit_ScalingSpecTypesObject_Autoscaling(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("disabled autoscaling keeps its bounds", func(t *testing.T) {
+		obj, diags := models.ScalingSpecTypesObject(ctx, &platform_v1.DeploymentScalingSpec{
+			Autoscaling: &platform_v1.AutoscalingSpec{
+				ApiServer: &platform_v1.ScalingSpec{IsEnabled: false, MinReplicas: 2, MaxReplicas: 5},
+			},
+		}, types.StringNull())
+		require.False(t, diags.HasError())
+
+		var scalingSpec models.DeploymentScalingSpec
+		require.False(t, obj.As(ctx, &scalingSpec, basetypes.ObjectAsOptions{}).HasError())
+		assert.True(t, scalingSpec.HibernationSpec.IsNull())
+
+		var autoscaling models.Autoscaling
+		require.False(t, scalingSpec.Autoscaling.As(ctx, &autoscaling, basetypes.ObjectAsOptions{}).HasError())
+		var apiServer models.ReplicaScaling
+		require.False(t, autoscaling.ApiServer.As(ctx, &apiServer, basetypes.ObjectAsOptions{}).HasError())
+		assert.False(t, apiServer.IsEnabled.ValueBool())
+		assert.Equal(t, int64(2), apiServer.MinReplicas.ValueInt64())
+		assert.Equal(t, int64(5), apiServer.MaxReplicas.ValueInt64())
+	})
+
+	t.Run("absent autoscaling is null", func(t *testing.T) {
+		obj, diags := models.ScalingSpecTypesObject(ctx, &platform_v1.DeploymentScalingSpec{}, types.StringNull())
+		require.False(t, diags.HasError())
+
+		var scalingSpec models.DeploymentScalingSpec
+		require.False(t, obj.As(ctx, &scalingSpec, basetypes.ObjectAsOptions{}).HasError())
+		assert.True(t, scalingSpec.Autoscaling.IsNull())
+	})
+}
+
+func TestUnit_ManagedScalingSpec(t *testing.T) {
+	ctx := context.Background()
+
+	apiAutoscaling := &platform_v1.AutoscalingSpec{
+		ApiServer: &platform_v1.ScalingSpec{IsEnabled: true, MinReplicas: 2, MaxReplicas: 5},
+	}
+	apiHibernation := &platform_v1.DeploymentHibernationSpec{
+		Schedules: &[]platform_v1.DeploymentHibernationSchedule{{
+			HibernateAtCron: "0 20 * * *",
+			IsEnabled:       true,
+			WakeAtCron:      "0 8 * * *",
+		}},
+	}
+
+	priorWith := func(t *testing.T, autoscaling types.Object) types.Object {
+		t.Helper()
+		obj, diags := types.ObjectValueFrom(ctx, schemas.ScalingSpecAttributeTypes(), models.DeploymentScalingSpec{
+			Autoscaling:     autoscaling,
+			HibernationSpec: types.ObjectNull(schemas.HibernationSpecAttributeTypes()),
+		})
+		require.False(t, diags.HasError())
+		return obj
+	}
+	managedAutoscaling, diags := types.ObjectValueFrom(ctx, schemas.AutoscalingAttributeTypes(), models.Autoscaling{
+		ApiServer: types.ObjectNull(schemas.ReplicaScalingAttributeTypes()),
+	})
+	require.False(t, diags.HasError())
+
+	t.Run("autoscaling the config does not manage is ignored", func(t *testing.T) {
+		got := models.ManagedScalingSpec(ctx, types.ObjectNull(schemas.ScalingSpecAttributeTypes()), &platform_v1.DeploymentScalingSpec{Autoscaling: apiAutoscaling})
+		assert.Nil(t, got)
+	})
+
+	t.Run("hibernation is kept when autoscaling is ignored", func(t *testing.T) {
+		got := models.ManagedScalingSpec(ctx, priorWith(t, types.ObjectNull(schemas.AutoscalingAttributeTypes())), &platform_v1.DeploymentScalingSpec{
+			Autoscaling:     apiAutoscaling,
+			HibernationSpec: apiHibernation,
+		})
+		require.NotNil(t, got)
+		assert.Nil(t, got.Autoscaling)
+		assert.NotNil(t, got.HibernationSpec)
+	})
+
+	t.Run("autoscaling is kept once the config manages it", func(t *testing.T) {
+		got := models.ManagedScalingSpec(ctx, priorWith(t, managedAutoscaling), &platform_v1.DeploymentScalingSpec{Autoscaling: apiAutoscaling})
+		require.NotNil(t, got)
+		assert.Equal(t, apiAutoscaling, got.Autoscaling)
+	})
+
+	t.Run("no scaling spec stays nil", func(t *testing.T) {
+		assert.Nil(t, models.ManagedScalingSpec(ctx, priorWith(t, managedAutoscaling), nil))
+	})
 }

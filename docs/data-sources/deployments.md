@@ -145,7 +145,26 @@ Read-Only:
 
 Read-Only:
 
+- `autoscaling` (Attributes) (see [below for nested schema](#nestedatt--deployments--scaling_spec--autoscaling))
 - `hibernation_spec` (Attributes) (see [below for nested schema](#nestedatt--deployments--scaling_spec--hibernation_spec))
+
+<a id="nestedatt--deployments--scaling_spec--autoscaling"></a>
+### Nested Schema for `deployments.scaling_spec.autoscaling`
+
+Read-Only:
+
+- `api_server` (Attributes) (see [below for nested schema](#nestedatt--deployments--scaling_spec--autoscaling--api_server))
+
+<a id="nestedatt--deployments--scaling_spec--autoscaling--api_server"></a>
+### Nested Schema for `deployments.scaling_spec.autoscaling.api_server`
+
+Read-Only:
+
+- `is_enabled` (Boolean) Whether autoscaling is enabled
+- `max_replicas` (Number) Maximum number of replicas
+- `min_replicas` (Number) Minimum number of replicas
+
+
 
 <a id="nestedatt--deployments--scaling_spec--hibernation_spec"></a>
 ### Nested Schema for `deployments.scaling_spec.hibernation_spec`

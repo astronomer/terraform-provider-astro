@@ -944,30 +944,6 @@ func validateHostedConfig(ctx context.Context, data *models.DeploymentResource) 
 		)
 	}
 
-	// Need to check that scaling_spec has either override or schedules
-	if !data.ScalingSpec.IsNull() {
-		var scalingSpec models.DeploymentScalingSpec
-		diags = append(diags, data.ScalingSpec.As(ctx, &scalingSpec, basetypes.ObjectAsOptions{
-			UnhandledNullAsEmpty:    true,
-			UnhandledUnknownAsEmpty: true,
-		})...)
-		if diags.HasError() {
-			tflog.Error(ctx, "failed to convert scaling spec", map[string]interface{}{"error": diags})
-			return diags
-		}
-
-		// scalingSpec.HibernationSpec is required if ScalingSpec is set via schemas/deployment.go
-		var hibernationSpec models.HibernationSpec
-		diags = scalingSpec.HibernationSpec.As(ctx, &hibernationSpec, basetypes.ObjectAsOptions{
-			UnhandledNullAsEmpty:    true,
-			UnhandledUnknownAsEmpty: true,
-		})
-		if diags.HasError() {
-			tflog.Error(ctx, "failed to convert hibernation spec", map[string]interface{}{"error": diags})
-			return diags
-		}
-	}
-
 	// Need to check worker_queues for hosted deployments have `astro_machine` and do not have `node_pool_id`
 	if len(data.WorkerQueues.Elements()) > 0 {
 		var workerQueues []models.WorkerQueueResource
@@ -1077,9 +1053,37 @@ func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*plat
 	}
 
 	platformScalingSpec := &platform_v1.DeploymentScalingSpecRequest{}
+	if !scalingSpec.Autoscaling.IsNull() {
+		var autoscaling models.Autoscaling
+		diags = scalingSpec.Autoscaling.As(ctx, &autoscaling, basetypes.ObjectAsOptions{
+			UnhandledNullAsEmpty:    true,
+			UnhandledUnknownAsEmpty: true,
+		})
+		if diags.HasError() {
+			tflog.Error(ctx, "failed to convert autoscaling", map[string]interface{}{"error": diags})
+			return nil, diags
+		}
+		if !autoscaling.ApiServer.IsNull() {
+			var apiServer models.ReplicaScaling
+			diags = autoscaling.ApiServer.As(ctx, &apiServer, basetypes.ObjectAsOptions{
+				UnhandledNullAsEmpty:    true,
+				UnhandledUnknownAsEmpty: true,
+			})
+			if diags.HasError() {
+				tflog.Error(ctx, "failed to convert autoscaling api_server", map[string]interface{}{"error": diags})
+				return nil, diags
+			}
+			platformScalingSpec.Autoscaling = &platform_v1.AutoscalingRequest{
+				ApiServer: &platform_v1.ScalingSpecRequest{
+					IsEnabled:   apiServer.IsEnabled.ValueBool(),
+					MaxReplicas: int(apiServer.MaxReplicas.ValueInt64()),
+					MinReplicas: int(apiServer.MinReplicas.ValueInt64()),
+				},
+			}
+		}
+	}
 	if scalingSpec.HibernationSpec.IsNull() {
 		// If the hibernation spec is not set, return a scaling spec without hibernation spec for the request
-		platformScalingSpec.HibernationSpec = nil
 		return platformScalingSpec, nil
 	}
 	var hibernationSpec models.HibernationSpec

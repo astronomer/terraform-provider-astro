@@ -111,6 +111,15 @@ resource "astro_deployment" "standard_astro" {
     worker_concurrency    = 1
     pod_ephemeral_storage = "20Gi" # Optional: overrides the default ephemeral storage for the astro_machine
   }]
+  scaling_spec = {
+    autoscaling = {
+      api_server = {
+        is_enabled   = true
+        min_replicas = 2
+        max_replicas = 5
+      }
+    }
+  }
 }
 
 resource "astro_deployment" "hybrid" {
