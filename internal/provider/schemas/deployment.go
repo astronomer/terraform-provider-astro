@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
 	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
+	"github.com/astronomer/terraform-provider-astro/internal/provider/planmodifiers"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -133,6 +134,11 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 		"image_version": resourceSchema.StringAttribute{
 			MarkdownDescription: "Deployment image version",
 			Computed:            true,
+			// A deploy sets this, not an update, so the value can move between the refresh
+			// that builds the plan and the response that apply reads.
+			PlanModifiers: []planmodifier.String{
+				planmodifiers.UnknownStringOnUpdate(),
+			},
 		},
 		"environment_variables": resourceSchema.SetNestedAttribute{
 			NestedObject: resourceSchema.NestedAttributeObject{
@@ -306,6 +312,11 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			MarkdownDescription: "Deployment scaling status",
 			Computed:            true,
 			Attributes:          ScalingStatusResourceAttributes(),
+			// hibernation_status.next_event_at and next_event_type advance with the
+			// deployment's hibernation schedule, independently of any apply.
+			PlanModifiers: []planmodifier.Object{
+				planmodifiers.UnknownObjectOnUpdate(),
+			},
 		},
 		"scaling_spec": resourceSchema.SingleNestedAttribute{
 			MarkdownDescription: "Deployment scaling spec - only for 'STANDARD' and 'DEDICATED' deployments",
