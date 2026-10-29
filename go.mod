@@ -1,8 +1,8 @@
 module github.com/astronomer/terraform-provider-astro
 
-go 1.22.0
+go 1.26.10
 
-toolchain go1.22.7
+toolchain go1.27.3
 
 require (
 	github.com/hashicorp/go-version v1.7.0
