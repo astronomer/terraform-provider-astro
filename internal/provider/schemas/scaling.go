@@ -197,7 +197,7 @@ func ReplicaScalingResourceSchemaAttributes() map[string]resourceSchema.Attribut
 func HibernationSpecResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 	return map[string]resourceSchema.Attribute{
 		"override": resourceSchema.SingleNestedAttribute{
-			MarkdownDescription: "Hibernation override configuration. Set to null to remove the override.",
+			MarkdownDescription: "Hibernation override configuration. Set to null to remove the override. An override whose override_until has already passed is not stored in state.",
 			Attributes:          HibernationOverrideResourceSchemaAttributes(),
 			Optional:            true,
 		},
@@ -224,7 +224,8 @@ func HibernationOverrideResourceSchemaAttributes() map[string]resourceSchema.Att
 			Required: true,
 		},
 		"override_until": resourceSchema.StringAttribute{
-			Optional: true,
+			Optional:            true,
+			MarkdownDescription: "RFC3339 timestamp until which the override is in effect; it must be in the future. Omit it for an override that lasts until it is removed.",
 			Validators: []validator.String{
 				stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("is_hibernating")),
 			},

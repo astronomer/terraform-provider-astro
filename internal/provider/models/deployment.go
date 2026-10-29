@@ -267,7 +267,7 @@ func (data *DeploymentResource) ReadFromResponse(
 		return diags
 	}
 	configuredOverrideUntil := ConfiguredOverrideUntil(ctx, data.ScalingSpec)
-	data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, ManagedScalingSpec(ctx, data.ScalingSpec, deployment.ScalingSpec), configuredOverrideUntil)
+	data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, ManagedScalingSpec(ctx, data.ScalingSpec, deployment.ScalingSpec), configuredOverrideUntil, time.Now())
 	if diags.HasError() {
 		return diags
 	}
@@ -370,7 +370,9 @@ func (data *DeploymentDataSource) ReadFromResponse(
 	if diags.HasError() {
 		return diags
 	}
-	data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, deployment.ScalingSpec, types.StringNull())
+	// Nothing configured to reconcile override_until against, and the zero time keeps an expired
+	// override in the result so the data source still reports it with is_active = false.
+	data.ScalingSpec, diags = ScalingSpecTypesObject(ctx, deployment.ScalingSpec, types.StringNull(), time.Time{})
 	if diags.HasError() {
 		return diags
 	}
@@ -532,12 +534,22 @@ func HibernationStatusTypesObject(
 	return types.ObjectValueFrom(ctx, schemas.HibernationStatusAttributeTypes(), obj)
 }
 
+// HibernationOverrideTypesObject maps an API hibernation override to its state object. now is the
+// instant override_until is measured against: an override that ended before now is dropped (a null
+// object) instead of being written to state, and the zero time disables that check.
+//
+// The resource passes the current time. The API keeps returning an override after its
+// override_until has passed (with is_active = false); once that is in state, a
+// lifecycle.ignore_changes on the override carries it into the next plan, the update request
+// resends the stale timestamp, and the API rejects it with "Override until time must be in the
+// future" (#350). The data source passes the zero time so it keeps reporting expired overrides.
 func HibernationOverrideTypesObject(
 	ctx context.Context,
 	hibernationOverride *platform_v1.DeploymentHibernationOverride,
 	configuredOverrideUntil types.String,
+	now time.Time,
 ) (types.Object, diag.Diagnostics) {
-	if hibernationOverride == nil {
+	if hibernationOverride == nil || HibernationOverrideExpired(hibernationOverride.OverrideUntil, now) {
 		return types.ObjectNull(schemas.HibernationOverrideAttributeTypes()), nil
 	}
 	obj := HibernationSpecOverride{
@@ -560,6 +572,16 @@ func HibernationOverrideTypesObject(
 		}
 	}
 	return types.ObjectValueFrom(ctx, schemas.HibernationOverrideAttributeTypes(), obj)
+}
+
+// HibernationOverrideExpired reports whether a hibernation override that ends at until has already
+// passed as of now. An override without an override_until never expires, and the zero time as now
+// disables the check so every override counts as current.
+func HibernationOverrideExpired(until *time.Time, now time.Time) bool {
+	if until == nil || now.IsZero() {
+		return false
+	}
+	return until.Before(now)
 }
 
 // ConfiguredOverrideUntil digs scaling_spec.hibernation_spec.override.override_until out of a
@@ -615,14 +637,21 @@ func HibernationSpecTypesObject(
 	ctx context.Context,
 	hibernationSpec *platform_v1.DeploymentHibernationSpec,
 	configuredOverrideUntil types.String,
+	now time.Time,
 ) (types.Object, diag.Diagnostics) {
-	if hibernationSpec == nil || (hibernationSpec.Override == nil && hibernationSpec.Schedules == nil) {
+	if hibernationSpec == nil {
 		return types.ObjectNull(schemas.HibernationSpecAttributeTypes()), nil
 	}
 
-	override, diags := HibernationOverrideTypesObject(ctx, hibernationSpec.Override, configuredOverrideUntil)
+	override, diags := HibernationOverrideTypesObject(ctx, hibernationSpec.Override, configuredOverrideUntil, now)
 	if diags.HasError() {
 		return types.ObjectNull(schemas.HibernationSpecAttributeTypes()), diags
+	}
+	// The override is null when the API sent none or when it had expired (see
+	// HibernationOverrideTypesObject). Either way a spec without schedules has nothing left in it,
+	// and a configuration with no hibernation_spec expects null rather than an empty object.
+	if override.IsNull() && hibernationSpec.Schedules == nil {
+		return types.ObjectNull(schemas.HibernationSpecAttributeTypes()), nil
 	}
 	schedules, diags := utils.ObjectSet(ctx, hibernationSpec.Schedules, schemas.HibernationScheduleAttributeTypes(), HibernationScheduleTypesObject)
 	if diags.HasError() {
@@ -718,16 +747,19 @@ func ScalingStatusTypesObject(
 	return types.ObjectValueFrom(ctx, schemas.ScalingStatusAttributeTypes(), obj)
 }
 
+// ScalingSpecTypesObject maps an API scaling spec to its state object. now is the instant an
+// override's override_until is measured against; see HibernationOverrideTypesObject.
 func ScalingSpecTypesObject(
 	ctx context.Context,
 	scalingSpec *platform_v1.DeploymentScalingSpec,
 	configuredOverrideUntil types.String,
+	now time.Time,
 ) (types.Object, diag.Diagnostics) {
 	if scalingSpec == nil {
 		return types.ObjectNull(schemas.ScalingSpecAttributeTypes()), nil
 	}
 
-	hibernationSpec, diags := HibernationSpecTypesObject(ctx, scalingSpec.HibernationSpec, configuredOverrideUntil)
+	hibernationSpec, diags := HibernationSpecTypesObject(ctx, scalingSpec.HibernationSpec, configuredOverrideUntil, now)
 	if diags.HasError() {
 		return types.ObjectNull(schemas.ScalingSpecAttributeTypes()), diags
 	}
