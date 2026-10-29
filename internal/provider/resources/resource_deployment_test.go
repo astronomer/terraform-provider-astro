@@ -583,11 +583,14 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				),
 			},
 			// Import existing deployment and check it is correctly imported - https://stackoverflow.com/questions/68824711/how-can-i-test-terraform-import-in-acceptance-tests
+			// next_event_at and next_event_type move with wall-clock time: the preceding steps leave
+			// the deployment with a wake cron, so the import read can cross a boundary the applied
+			// state was written before. They are server-side status, so they are not comparable here.
 			{
 				ResourceName:            awsResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips", "environment_variables.1.value", "scaling_status.%", "scaling_status.hibernation_status.%", "scaling_status.hibernation_status.is_hibernating", "scaling_status.hibernation_status.reason", "webserver_airflow_api_url", "webserver_url", "webserver_ingress_hostname"}, // environment_variables.1.value is a secret value
+				ImportStateVerifyIgnore: []string{"external_ips", "environment_variables.1.value", "scaling_status.%", "scaling_status.hibernation_status.%", "scaling_status.hibernation_status.is_hibernating", "scaling_status.hibernation_status.reason", "scaling_status.hibernation_status.next_event_at", "scaling_status.hibernation_status.next_event_type", "webserver_airflow_api_url", "webserver_url", "webserver_ingress_hostname"}, // environment_variables.1.value is a secret value
 			},
 			// ASTRO executor test
 			{
