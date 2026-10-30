@@ -249,7 +249,7 @@ resource "astro_deployment" "imported_deployment" {
 - `scaling_spec` (Attributes) Deployment scaling spec - only for 'STANDARD' and 'DEDICATED' deployments (see [below for nested schema](#nestedatt--scaling_spec))
 - `scheduler_au` (Number) Deployment scheduler AU - required for 'HYBRID' deployments
 - `scheduler_replicas` (Number) Deployment scheduler replicas - required for 'HYBRID' deployments
-- `scheduler_size` (String) Deployment scheduler size - required for 'STANDARD' and 'DEDICATED' deployments. Allowed values: `SMALL`, `MEDIUM`, `LARGE`, `EXTRALARGE`.
+- `scheduler_size` (String) Deployment scheduler size - required for 'STANDARD' and 'DEDICATED' deployments. Allowed values: `SMALL`, `MEDIUM`, `LARGE`, `EXTRA_LARGE`.
 - `task_pod_node_pool_id` (String) Deployment task pod node pool identifier - required if executor is 'KUBERNETES' and type is 'HYBRID'
 - `worker_queues` (Attributes Set) Deployment worker queues - required for deployments with 'CELERY' executor. For 'STANDARD' and 'DEDICATED' deployments, use astro_machine. For 'HYBRID' deployments, use node_pool_id. (see [below for nested schema](#nestedatt--worker_queues))
 
