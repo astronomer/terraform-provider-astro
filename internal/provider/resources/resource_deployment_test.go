@@ -656,7 +656,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				ResourceName:            azureCeleryResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url", "scaling_status", "environment_variables.1.value", "scaling_status.hibernation_status.%", "scaling_status.hibernation_status.is_hibernating", "scaling_status.hibernation_status.reason", "webserver_airflow_api_url", "webserver_url", "webserver_ingress_hostname"}, // environment_variables.0.value is a secret value
+				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url", "image_version", "scaling_status", "environment_variables.1.value", "scaling_status.hibernation_status.%", "scaling_status.hibernation_status.is_hibernating", "scaling_status.hibernation_status.reason", "webserver_airflow_api_url", "webserver_url", "webserver_ingress_hostname"}, // environment_variables.0.value is a secret value
 			},
 		},
 	})
@@ -698,7 +698,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 				ResourceName:            gcpKubernetesResourceVar,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url", "scaling_status", "environment_variables.1.value", "scaling_status.hibernation_status.%", "scaling_status.hibernation_status.is_hibernating", "scaling_status.hibernation_status.reason", "webserver_airflow_api_url", "webserver_url", "webserver_ingress_hostname"}, // environment_variables.0.value is a secret value
+				ImportStateVerifyIgnore: []string{"external_ips", "oidc_issuer_url", "image_version", "scaling_status", "environment_variables.1.value", "scaling_status.hibernation_status.%", "scaling_status.hibernation_status.is_hibernating", "scaling_status.hibernation_status.reason", "webserver_airflow_api_url", "webserver_url", "webserver_ingress_hostname"}, // environment_variables.0.value is a secret value
 			},
 		},
 	})
