@@ -192,12 +192,50 @@ func TestUnit_ScalingSpecTypesObject_Autoscaling(t *testing.T) {
 	})
 
 	t.Run("absent autoscaling is null", func(t *testing.T) {
-		obj, diags := models.ScalingSpecTypesObject(ctx, &platform_v1.DeploymentScalingSpec{}, types.StringNull())
+		obj, diags := models.ScalingSpecTypesObject(ctx, &platform_v1.DeploymentScalingSpec{
+			HibernationSpec: &platform_v1.DeploymentHibernationSpec{
+				Schedules: &[]platform_v1.DeploymentHibernationSchedule{{HibernateAtCron: "0 20 * * *", WakeAtCron: "0 8 * * *"}},
+			},
+		}, types.StringNull())
 		require.False(t, diags.HasError())
 
 		var scalingSpec models.DeploymentScalingSpec
 		require.False(t, obj.As(ctx, &scalingSpec, basetypes.ObjectAsOptions{}).HasError())
 		assert.True(t, scalingSpec.Autoscaling.IsNull())
+	})
+}
+
+func TestUnit_ScalingSpecTypesObject_EmptyIsNull(t *testing.T) {
+	ctx := context.Background()
+	isActive := false
+
+	for name, spec := range map[string]*platform_v1.DeploymentScalingSpec{
+		"empty scaling spec":     {},
+		"empty hibernation spec": {HibernationSpec: &platform_v1.DeploymentHibernationSpec{}},
+		"empty schedules":        {HibernationSpec: &platform_v1.DeploymentHibernationSpec{Schedules: &[]platform_v1.DeploymentHibernationSchedule{}}},
+		"inactive override only": {HibernationSpec: &platform_v1.DeploymentHibernationSpec{
+			Override:  &platform_v1.DeploymentHibernationOverride{IsActive: &isActive},
+			Schedules: &[]platform_v1.DeploymentHibernationSchedule{},
+		}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			obj, diags := models.ScalingSpecTypesObject(ctx, spec, types.StringNull())
+			require.False(t, diags.HasError())
+			assert.True(t, obj.IsNull())
+		})
+	}
+
+	t.Run("empty schedules dropped alongside an override", func(t *testing.T) {
+		isHibernating := true
+		obj, diags := models.HibernationSpecTypesObject(ctx, &platform_v1.DeploymentHibernationSpec{
+			Override:  &platform_v1.DeploymentHibernationOverride{IsHibernating: &isHibernating},
+			Schedules: &[]platform_v1.DeploymentHibernationSchedule{},
+		}, types.StringNull())
+		require.False(t, diags.HasError())
+		var spec models.HibernationSpec
+		require.False(t, obj.As(ctx, &spec, basetypes.ObjectAsOptions{}).HasError())
+		assert.False(t, spec.Override.IsNull())
+		assert.True(t, spec.Schedules.IsNull())
 	})
 }
 
