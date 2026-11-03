@@ -639,21 +639,33 @@ func HibernationSpecTypesObject(
 	configuredOverrideUntil types.String,
 	now time.Time,
 ) (types.Object, diag.Diagnostics) {
-	if hibernationSpec == nil {
+	// The /v1 API returns an empty hibernation spec (no schedules, an override with no
+	// is_hibernating) for deployments that have none configured; treat that as absent.
+	var apiOverride *platform_v1.DeploymentHibernationOverride
+	var apiSchedules *[]platform_v1.DeploymentHibernationSchedule
+	if hibernationSpec != nil {
+		if o := hibernationSpec.Override; o != nil && (o.IsHibernating != nil || o.OverrideUntil != nil) {
+			apiOverride = o
+		}
+		if s := hibernationSpec.Schedules; s != nil && len(*s) > 0 {
+			apiSchedules = s
+		}
+	}
+	if apiOverride == nil && apiSchedules == nil {
 		return types.ObjectNull(schemas.HibernationSpecAttributeTypes()), nil
 	}
 
-	override, diags := HibernationOverrideTypesObject(ctx, hibernationSpec.Override, configuredOverrideUntil, now)
+	override, diags := HibernationOverrideTypesObject(ctx, apiOverride, configuredOverrideUntil, now)
 	if diags.HasError() {
 		return types.ObjectNull(schemas.HibernationSpecAttributeTypes()), diags
 	}
-	// The override is null when the API sent none or when it had expired (see
-	// HibernationOverrideTypesObject). Either way a spec without schedules has nothing left in it,
-	// and a configuration with no hibernation_spec expects null rather than an empty object.
-	if override.IsNull() && hibernationSpec.Schedules == nil {
+	// The override is also null when it had expired (see HibernationOverrideTypesObject). A spec
+	// with no schedules then has nothing left in it, and a configuration without a
+	// hibernation_spec expects null rather than an empty object.
+	if override.IsNull() && apiSchedules == nil {
 		return types.ObjectNull(schemas.HibernationSpecAttributeTypes()), nil
 	}
-	schedules, diags := utils.ObjectSet(ctx, hibernationSpec.Schedules, schemas.HibernationScheduleAttributeTypes(), HibernationScheduleTypesObject)
+	schedules, diags := utils.ObjectSet(ctx, apiSchedules, schemas.HibernationScheduleAttributeTypes(), HibernationScheduleTypesObject)
 	if diags.HasError() {
 		return types.ObjectNull(schemas.HibernationSpecAttributeTypes()), diags
 	}
@@ -766,6 +778,9 @@ func ScalingSpecTypesObject(
 	autoscaling, diags := AutoscalingTypesObject(ctx, scalingSpec.Autoscaling)
 	if diags.HasError() {
 		return types.ObjectNull(schemas.ScalingSpecAttributeTypes()), diags
+	}
+	if hibernationSpec.IsNull() && autoscaling.IsNull() {
+		return types.ObjectNull(schemas.ScalingSpecAttributeTypes()), nil
 	}
 	obj := DeploymentScalingSpec{
 		Autoscaling:     autoscaling,
