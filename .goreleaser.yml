@@ -28,6 +28,9 @@ builds:
   ignore:
     - goos: darwin
       goarch: '386'
+    # The Go toolchain pinned in go.mod no longer supports the 32-bit windows/arm port.
+    - goos: windows
+      goarch: arm
   binary: '{{ .ProjectName }}_v{{ .Version }}'
 archives:
 - format: zip
