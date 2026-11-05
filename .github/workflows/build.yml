@@ -39,6 +39,11 @@ jobs:
             ${{ runner.os }}-go-mod-
       - run: go mod download
       - run: go build -v .
+      # TestUnit_ResourceAiSpendingCaps_Terraform runs the real Terraform CLI against a fake API.
+      - uses: hashicorp/setup-terraform@651471c36a6092792c552e8b1bef71e592b462d8 # v3.1.1
+        with:
+          terraform_version: latest
+          terraform_wrapper: false
       - name: Run unit tests
         run: make test
 

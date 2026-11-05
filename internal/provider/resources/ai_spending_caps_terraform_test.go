@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http/httptest"
+	"os/exec"
 	"regexp"
 	"testing"
 
@@ -52,6 +53,11 @@ func (p *capsTestProvider) DataSources(context.Context) []func() datasource.Data
 // what the direct tests of the resource's methods cannot see is covered here: the schema's
 // validators, a plan that is empty after every apply, and drift.
 func TestUnit_ResourceAiSpendingCaps_Terraform(t *testing.T) {
+	// The test needs a Terraform binary on the PATH, which CI installs. Without one, the testing
+	// library would try to download Terraform, so skip instead.
+	if _, err := exec.LookPath("terraform"); err != nil {
+		t.Skip("terraform is not on the PATH; skipping the test that runs the real Terraform CLI")
+	}
 	api := utils.NewFakeAiSpendingCapsAPI()
 	srv := httptest.NewServer(api)
 	t.Cleanup(srv.Close)
