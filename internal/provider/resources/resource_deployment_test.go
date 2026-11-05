@@ -316,6 +316,10 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 	gcpKubernetesDeploymentName := fmt.Sprintf("%v_gcp_kubernetes", namePrefix)
 
 	awsResourceVar := fmt.Sprintf("astro_deployment.%v", awsDeploymentName)
+
+	// Captured before the is_development_mode flips so we can assert the deployment is updated in place
+	var deploymentIdBeforeDevModeChange string
+
 	azureCeleryResourceVar := fmt.Sprintf("astro_deployment.%v", azureCeleryDeploymentName)
 	gcpKubernetesResourceVar := fmt.Sprintf("astro_deployment.%v", gcpKubernetesDeploymentName)
 
@@ -540,6 +544,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					resource.TestCheckNoResourceAttr(awsResourceVar, "worker_queues"),
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
+					testAccCaptureResourceAttr(awsResourceVar, "id", &deploymentIdBeforeDevModeChange),
 				),
 			},
 			// Change is_development_mode to true (will not recreate)
@@ -554,9 +559,13 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					IncludeEnvironmentVariables: false,
 					IsDevelopmentMode:           true,
 				}),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(awsResourceVar, plancheck.ResourceActionUpdate)},
+				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(awsResourceVar, "scheduler_size", string(platform.SchedulerMachineNameSMALL)),
 					resource.TestCheckResourceAttr(awsResourceVar, "is_development_mode", "true"),
+					testAccCheckResourceAttrEquals(awsResourceVar, "id", &deploymentIdBeforeDevModeChange),
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
 				),
@@ -573,9 +582,13 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					IncludeEnvironmentVariables: true,
 					IsDevelopmentMode:           false,
 				}),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(awsResourceVar, plancheck.ResourceActionUpdate)},
+				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(awsResourceVar, "scheduler_size", string(platform.SchedulerMachineNameSMALL)),
 					resource.TestCheckResourceAttr(awsResourceVar, "is_development_mode", "false"),
+					testAccCheckResourceAttrEquals(awsResourceVar, "id", &deploymentIdBeforeDevModeChange),
 					resource.TestCheckResourceAttrSet(awsResourceVar, "environment_variables.0.key"),
 					resource.TestCheckResourceAttrSet(awsResourceVar, "environment_variables.1.key"),
 					// Check via API that deployment exists
@@ -1325,6 +1338,35 @@ func testAccCheckDeploymentExistence(t *testing.T, name string, isHosted, should
 			if len(resp.JSON200.Deployments) != 0 {
 				return fmt.Errorf("deployment %s should not exist", name)
 			}
+		}
+		return nil
+	}
+}
+
+// testAccCaptureResourceAttr stores the value of a resource attribute so later steps can compare against it.
+func testAccCaptureResourceAttr(resourceName, attr string, dest *string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource %s not found in state", resourceName)
+		}
+		*dest = rs.Primary.Attributes[attr]
+		return nil
+	}
+}
+
+// testAccCheckResourceAttrEquals asserts a resource attribute equals a previously captured value.
+func testAccCheckResourceAttrEquals(resourceName, attr string, expected *string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource %s not found in state", resourceName)
+		}
+		if *expected == "" {
+			return fmt.Errorf("no captured value for %s.%s to compare against", resourceName, attr)
+		}
+		if actual := rs.Primary.Attributes[attr]; actual != *expected {
+			return fmt.Errorf("expected %s.%s to remain %q, got %q (resource was recreated)", resourceName, attr, *expected, actual)
 		}
 		return nil
 	}
