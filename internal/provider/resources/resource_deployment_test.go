@@ -542,7 +542,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
 				),
 			},
-			// Change property that requires destroy and recreate (currently: is_development_mode)
+			// Change is_development_mode to true (will not recreate)
 			{
 				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + standardDeployment(standardDeploymentInput{
 					Name:                        awsDeploymentName,
