@@ -239,7 +239,7 @@ resource "astro_deployment" "imported_deployment" {
 - `default_task_pod_cpu` (String) Deployment default task pod CPU - required for 'STANDARD' and 'DEDICATED' deployments
 - `default_task_pod_memory` (String) Deployment default task pod memory - required for 'STANDARD' and 'DEDICATED' deployments
 - `desired_workload_identity` (String) Deployment's desired workload identity. The Terraform provider will use this provided workload identity to create the Deployment. If it is not provided the workload identity will be assigned automatically.
-- `is_development_mode` (Boolean) Deployment development mode - required for 'STANDARD' and 'DEDICATED' deployments. If changing from 'False' to 'True', the deployment will be recreated
+- `is_development_mode` (Boolean) Deployment development mode - required for 'STANDARD' and 'DEDICATED' deployments
 - `is_high_availability` (Boolean) Deployment high availability - required for 'STANDARD' and 'DEDICATED' deployments
 - `original_astro_runtime_version` (String) Deployment's original Astro Runtime version. The Terraform provider uses this value to create the Deployment. If not provided, defaults to the current Astro runtime version. This value is immutable after the Deployment is created — to upgrade the Astro Runtime version, update your Astro project's Dockerfile and deploy the new image (for example with `astro deploy`). Changing this attribute in Terraform will produce an error at plan time rather than recreate the Deployment, which would destroy connections, DAG history, and other state that is not managed by Terraform.
 - `region` (String) Deployment region - required for 'STANDARD' deployments. If changing this value, the deployment will be recreated in the new region
