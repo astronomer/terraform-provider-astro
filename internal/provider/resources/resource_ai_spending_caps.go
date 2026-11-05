@@ -67,7 +67,7 @@ var (
 )
 
 // aiSpendingCapsResource manages an organization's per-user and per-API-token AI spending caps as a
-// single resource: the two defaults, and the own cap of each user and API token. An attribute that
+// single resource: the two defaults, and the override of each user and API token. An attribute that
 // is not set is not managed. A map that is set is authoritative for its kind of subject, so a cap
 // that is not in it is removed on apply.
 //
@@ -85,18 +85,18 @@ func (r *aiSpendingCapsResource) Metadata(ctx context.Context, req resource.Meta
 func (r *aiSpendingCapsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manage an organization's per-user and per-API-token Astro AI spending caps as a single " +
-			"resource: the default cap for users, the default cap for API tokens, and the own cap of each user and " +
-			"API token. A cap is a monthly limit in USD cents on Astro AI spend, and an own cap replaces the default " +
+			"resource: the default cap for users, the default cap for API tokens, and the override of each user and " +
+			"API token. A cap is a monthly limit in USD cents on Astro AI spend, and an override replaces the default " +
 			"for that user or API token. `0` turns AI off.\n\n" +
 			"~> **Labs.** The AI spending caps API is a Labs feature, turned on per organization. If it is not turned " +
 			"on for your organization, every request fails with a \"not available\" error.\n\n" +
 			"~> **Warning: authoritative maps.** When `user_cap_cents` or `api_token_cap_cents` is set, any user or API " +
-			"token with a cap of its own that is not in the map has it removed on apply, including caps set in the " +
-			"Astro UI. A removed cap makes the user or API token follow the default, and a default of `0` turns AI " +
-			"off for them. Leave a map unset to leave that kind of cap to the Astro UI, and use at most one " +
+			"token with an override that is not in the map has it removed on apply, including overrides set in the " +
+			"Astro UI. A removed override makes the user or API token follow the default, and a default of `0` turns AI " +
+			"off for them. Leave a map unset to leave that kind of override to the Astro UI, and use at most one " +
 			"`astro_ai_spending_caps` resource.\n\n" +
-			"~> **Note** Destroying this resource removes the defaults and caps it manages, so those users and API " +
-			"tokens have no limit of their own afterwards. The organization-wide AI spending cap is not managed here.",
+			"~> **Note** Destroying this resource removes the defaults and overrides it manages, so those users and API " +
+			"tokens have no per-subject limit afterwards. The organization-wide AI spending cap is not managed here.",
 		Attributes: schemas.AiSpendingCapsResourceSchemaAttributes(),
 	}
 }
@@ -114,7 +114,7 @@ func (r *aiSpendingCapsResource) Configure(ctx context.Context, req resource.Con
 	r.organizationId = apiClients.OrganizationId
 }
 
-// ValidateConfig refuses a configuration that gives more users and API tokens a cap of their own
+// ValidateConfig refuses a configuration that gives more users and API tokens an override
 // than an organization can have, so the apply does not fail partway on the API's limit. The limit
 // counts the organization's other caps too, which only the API knows.
 func (r *aiSpendingCapsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
@@ -124,8 +124,8 @@ func (r *aiSpendingCapsResource) ValidateConfig(ctx context.Context, req resourc
 		return
 	}
 	if total := len(data.UserCapCents.Elements()) + len(data.ApiTokenCapCents.Elements()); total > schemas.MaxAiSpendingCapSubjects {
-		resp.Diagnostics.AddAttributeError(path.Root("user_cap_cents"), "Too many spending caps",
-			fmt.Sprintf("An organization can have at most %d users and API tokens with a spending cap of their own, and this configuration has %d.",
+		resp.Diagnostics.AddAttributeError(path.Root("user_cap_cents"), "Too many overrides",
+			fmt.Sprintf("An organization can have at most %d users and API tokens with an override, and this configuration has %d.",
 				schemas.MaxAiSpendingCapSubjects, total))
 	}
 }
@@ -226,7 +226,7 @@ func (r *aiSpendingCapsResource) Delete(ctx context.Context, req resource.Delete
 
 // ImportState imports the organization's AI spending caps. The resource is a singleton for the
 // organization configured on the provider, so the import ID is only cosmetic (use the organization
-// ID). Everything is read: both defaults when set, and every user's and API token's own cap. The
+// ID). Everything is read: both defaults when set, and every user's and API token's override. The
 // configuration then has to list what it keeps, since an attribute missing from it is removed.
 func (r *aiSpendingCapsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	defaults, diags := r.getDefaults(ctx)
@@ -312,7 +312,7 @@ func (r *aiSpendingCapsResource) apply(ctx context.Context, plan, state models.A
 	return diags
 }
 
-// capChanges is what one map needs: the caps to set and the subjects whose own cap to remove.
+// capChanges is what one map needs: the caps to set and the subjects whose override to remove.
 type capChanges struct {
 	set    map[string]int64
 	remove []string
@@ -396,7 +396,7 @@ func (r *aiSpendingCapsResource) getDefaults(ctx context.Context) (labs.AiSpendi
 	return *resp.JSON200, diags
 }
 
-// setCaps sets the own cap of each entry, chunked by the API's per-request limit. The response
+// setCaps sets the override of each entry, chunked by the API's per-request limit. The response
 // reports each entry, so a failed one is an error even though the request succeeded.
 func (r *aiSpendingCapsResource) setCaps(ctx context.Context, entries []labs.AiSpendingCapRequest) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -419,7 +419,7 @@ func (r *aiSpendingCapsResource) setCaps(ctx context.Context, entries []labs.AiS
 	return diags
 }
 
-// removeCaps removes the own cap of each subject, chunked by the API's per-request limit.
+// removeCaps removes the override of each subject, chunked by the API's per-request limit.
 func (r *aiSpendingCapsResource) removeCaps(ctx context.Context, subjects []labs.AiSpendingCapSubject) diag.Diagnostics {
 	var diags diag.Diagnostics
 	for _, chunk := range chunkSlice(subjects, aiSpendingCapsBulkLimit) {
@@ -441,7 +441,7 @@ func (r *aiSpendingCapsResource) removeCaps(ctx context.Context, subjects []labs
 	return diags
 }
 
-// listCaps pages through the organization's users or API tokens that have a cap of their own and
+// listCaps pages through the organization's users or API tokens that have an override and
 // returns them by ID. The resource owns the list, so a page that goes missing would plan the
 // removal of caps that exist or hide ones that should go; the number of subjects read must match
 // the count the API reports.

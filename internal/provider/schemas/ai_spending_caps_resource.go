@@ -14,8 +14,8 @@ import (
 const (
 	// MaxAiSpendingCapCents is the highest cap the API takes, $100,000, in USD cents.
 	MaxAiSpendingCapCents = 10_000_000
-	// MaxAiSpendingCapSubjects is the most users and API tokens an organization can give a cap of
-	// their own.
+	// MaxAiSpendingCapSubjects is the most users and API tokens an organization can give an
+	// override.
 	MaxAiSpendingCapSubjects = 1000
 )
 
@@ -41,35 +41,35 @@ func AiSpendingCapsResourceSchemaAttributes() map[string]resourceSchema.Attribut
 			},
 		},
 		"default_user_cap_cents": resourceSchema.Int64Attribute{
-			MarkdownDescription: "The default monthly AI spending cap, in USD cents, for every user without a cap of " +
-				"their own in `user_cap_cents`. At most `10000000` ($100,000). `0` turns AI off for those users. " +
+			MarkdownDescription: "The default monthly AI spending cap, in USD cents, for every user without an " +
+				"override in `user_cap_cents`. At most `10000000` ($100,000). `0` turns AI off for those users. " +
 				"If unset, the default is not managed by this resource. If it was set and is removed from the " +
 				"configuration, the default is removed.",
 			Optional:   true,
 			Validators: capValue,
 		},
 		"default_api_token_cap_cents": resourceSchema.Int64Attribute{
-			MarkdownDescription: "The default monthly AI spending cap, in USD cents, for every API token without a " +
-				"cap of its own in `api_token_cap_cents`. Set independently of the user default. At most " +
+			MarkdownDescription: "The default monthly AI spending cap, in USD cents, for every API token without an " +
+				"override in `api_token_cap_cents`. Set independently of the user default. At most " +
 				"`10000000` ($100,000). `0` turns AI off for those API tokens. If unset, the default is not managed " +
 				"by this resource. If it was set and is removed from the configuration, the default is removed.",
 			Optional:   true,
 			Validators: capValue,
 		},
 		"user_cap_cents": resourceSchema.MapAttribute{
-			MarkdownDescription: "The own monthly AI spending cap of each user, in USD cents, keyed by user ID. A " +
-				"user's own cap replaces the user default for them, higher or lower; `0` turns AI off for the user. " +
+			MarkdownDescription: "The override of each user, a monthly AI spending cap in USD cents, keyed by user ID. A " +
+				"user's override replaces the user default for them, higher or lower; `0` turns AI off for the user. " +
 				"At most `10000000` ($100,000) each. When set, this attribute is authoritative for the " +
-				"organization's users: a user with a cap of their own that is not in the map has it removed on " +
-				"apply, including one set in the Astro UI. Set it to `{}` to remove every user's own cap. If unset, " +
-				"users' caps are not managed by this resource. If it was set and is removed from the configuration, " +
-				"the caps it held are removed.",
+				"organization's users: a user with an override that is not in the map has it removed on " +
+				"apply, including one set in the Astro UI. Set it to `{}` to remove every user's override. If unset, " +
+				"users' overrides are not managed by this resource. If it was set and is removed from the configuration, " +
+				"the overrides it held are removed.",
 			Optional:    true,
 			ElementType: types.Int64Type,
 			Validators:  capMap(),
 		},
 		"api_token_cap_cents": resourceSchema.MapAttribute{
-			MarkdownDescription: "The own monthly AI spending cap of each API token, in USD cents, keyed by API token " +
+			MarkdownDescription: "The override of each API token, a monthly AI spending cap in USD cents, keyed by API token " +
 				"ID. It works like `user_cap_cents`, for API tokens: authoritative when set, `0` turns AI off for the " +
 				"API token, and not managed when unset.",
 			Optional:    true,

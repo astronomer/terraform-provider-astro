@@ -11,7 +11,7 @@ import (
 )
 
 // FakeAiSpendingCapsAPI is an in-process stand-in for Core's labs AI spending caps endpoints. It keeps the
-// defaults and the own caps, answers each entry the way Core does (UPDATED, UNCHANGED, or FAILED for
+// defaults and the overrides, answers each entry the way Core does (UPDATED, UNCHANGED, or FAILED for
 // the IDs in FailIds), pages the list, and records the order and size of the requests.
 type FakeAiSpendingCapsAPI struct {
 	mu sync.Mutex
@@ -23,7 +23,7 @@ type FakeAiSpendingCapsAPI struct {
 	TotalCountPadding int
 
 	Defaults map[string]int            // "USER" or "SERVICEKEY" to the default
-	Caps     map[string]map[string]int // "USER" or "SERVICEKEY" to subject ID to own cap
+	Caps     map[string]map[string]int // "USER" or "SERVICEKEY" to subject ID to override
 	// calls records each request as "set-caps:3", "remove-caps:1", "set-defaults", "remove-defaults",
 	// "get-defaults" or "list:USER".
 	calls []string
@@ -150,7 +150,7 @@ func (f *FakeAiSpendingCapsAPI) ServeHTTP(w http.ResponseWriter, r *http.Request
 		subjectType := r.URL.Query().Get("subjectType")
 		f.calls = append(f.calls, "list:"+subjectType)
 		if r.URL.Query().Get("hasOverride") != "true" {
-			http.Error(w, "the resource reads only subjects with an own cap", http.StatusBadRequest)
+			http.Error(w, "the resource reads only subjects with an override", http.StatusBadRequest)
 			return
 		}
 		limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))

@@ -486,19 +486,19 @@ type AiSpendingCap struct {
 	// AvatarUrl A user's avatar. Absent for API tokens.
 	AvatarUrl *string `json:"avatarUrl,omitempty"`
 
-	// EffectiveSpendingCap The lowest cap that applies to the subject in USD cents: its own cap, else its type's default, and the organization's AI spending cap on all spend, which no subject can pass. Absent when none is set.
+	// EffectiveSpendingCap The lowest cap that applies to the subject in USD cents: its override, else its type's default, and the organization's AI spending cap on all spend, which no subject can pass. Absent when none is set.
 	EffectiveSpendingCap *int `json:"effectiveSpendingCap,omitempty"`
 
 	// Email A user's email. Absent for API tokens.
 	Email *string `json:"email,omitempty"`
 
-	// IsCapReached Whether the subject's AI is blocked now by a spending limit: its own cap, else its type's default, or the organization's AI spending cap on all spend.
+	// IsCapReached Whether the subject's AI is blocked now by a spending limit: its override, else its type's default, or the organization's AI spending cap on all spend.
 	IsCapReached bool `json:"isCapReached"`
 
 	// Name A user's full name or an API token's name.
 	Name string `json:"name"`
 
-	// SpendingCap The subject's own monthly cap in USD cents. Absent when it follows its type's default.
+	// SpendingCap The subject's override in USD cents. Absent when it has none and follows its type's default.
 	SpendingCap *int `json:"spendingCap,omitempty"`
 
 	// SubjectId The ID of the user or API token.
@@ -519,13 +519,13 @@ type AiSpendingCapDefaults struct {
 	// ApiTokenSpendingCap The same default for API tokens.
 	ApiTokenSpendingCap *int `json:"apiTokenSpendingCap,omitempty"`
 
-	// UserSpendingCap The default monthly AI spending cap, in USD cents, for users without a cap of their own. Absent means no default.
+	// UserSpendingCap The default monthly AI spending cap, in USD cents, for users without an override. Absent means no default.
 	UserSpendingCap *int `json:"userSpendingCap,omitempty"`
 }
 
 // AiSpendingCapRequest defines model for AiSpendingCapRequest.
 type AiSpendingCapRequest struct {
-	// SpendingCap The subject's own monthly AI spending cap in USD cents, at most 10000000 ($100,000). Send 0 to turn AI off for the subject.
+	// SpendingCap The subject's override, its monthly AI spending cap, in USD cents, at most 10000000 ($100,000). Send 0 to turn AI off for the subject.
 	SpendingCap int `json:"spendingCap"`
 
 	// SubjectId The ID of a user in the organization or of an API token with a scope in it.
@@ -540,7 +540,7 @@ type AiSpendingCapRequestSubjectType string
 
 // AiSpendingCapResult defines model for AiSpendingCapResult.
 type AiSpendingCapResult struct {
-	// SpendingCap The subject's own cap in USD cents after the call; absent when it follows its type's default. For a failed entry it is the cap still in force.
+	// SpendingCap The subject's override in USD cents after the call; absent when it has none and follows its type's default. For a failed entry it is the cap still in force.
 	SpendingCap *int `json:"spendingCap,omitempty"`
 
 	// Status UPDATED, UNCHANGED or FAILED. A failed entry changed nothing and can be sent again.
@@ -1395,7 +1395,7 @@ type UpdateAiSpendingCapDefaultsRequest struct {
 	// ApiTokenSpendingCap The same default for API tokens, set independently of the user default.
 	ApiTokenSpendingCap *int `json:"apiTokenSpendingCap,omitempty"`
 
-	// UserSpendingCap The default monthly AI spending cap, in USD cents, for every user without a cap of their own, at most 10000000 ($100,000). Omit it to leave the default unchanged. Send 0 to turn AI off for those users.
+	// UserSpendingCap The default monthly AI spending cap, in USD cents, for every user without an override, at most 10000000 ($100,000). Omit it to leave the default unchanged. Send 0 to turn AI off for those users.
 	UserSpendingCap *int `json:"userSpendingCap,omitempty"`
 }
 
@@ -1670,7 +1670,7 @@ type LabsListAiSpendingCapsParams struct {
 	// Sorts Sort order, name:asc by default.
 	Sorts *LabsListAiSpendingCapsParamsSorts `form:"sorts,omitempty" json:"sorts,omitempty"`
 
-	// HasOverride true lists only subjects with a cap of their own, false only those without one.
+	// HasOverride true lists only subjects with an override, false only those without one.
 	HasOverride *bool `form:"hasOverride,omitempty" json:"hasOverride,omitempty"`
 
 	// Offset Offset of the page.
