@@ -19,6 +19,9 @@ type FakeAiSpendingCapsAPI struct {
 	GateOff bool
 	// FailIds are the subjects whose entry fails.
 	FailIds map[string]bool
+	// UnknownIds are subjects that are not in the organization: a request naming one answers 404
+	// with the subject in the message and changes nothing, as Core does.
+	UnknownIds map[string]bool
 	// TotalCountPadding is added to the list's totalCount, to simulate a page that went missing.
 	TotalCountPadding int
 
@@ -31,9 +34,10 @@ type FakeAiSpendingCapsAPI struct {
 
 func NewFakeAiSpendingCapsAPI() *FakeAiSpendingCapsAPI {
 	return &FakeAiSpendingCapsAPI{
-		FailIds:  map[string]bool{},
-		Defaults: map[string]int{},
-		Caps:     map[string]map[string]int{"USER": {}, "SERVICEKEY": {}},
+		FailIds:    map[string]bool{},
+		UnknownIds: map[string]bool{},
+		Defaults:   map[string]int{},
+		Caps:       map[string]map[string]int{"USER": {}, "SERVICEKEY": {}},
 	}
 }
 
@@ -103,6 +107,12 @@ func (f *FakeAiSpendingCapsAPI) ServeHTTP(w http.ResponseWriter, r *http.Request
 		}
 		_ = json.Unmarshal(body, &req)
 		f.calls = append(f.calls, "set-caps:"+strconv.Itoa(len(req.SpendingCaps)))
+		for _, entry := range req.SpendingCaps {
+			if f.UnknownIds[entry.SubjectId] {
+				f.subjectNotFound(w, entry.SubjectType, entry.SubjectId)
+				return
+			}
+		}
 		results := []map[string]any{}
 		for _, entry := range req.SpendingCaps {
 			result := map[string]any{"subjectId": entry.SubjectId, "subjectType": entry.SubjectType}
@@ -131,6 +141,12 @@ func (f *FakeAiSpendingCapsAPI) ServeHTTP(w http.ResponseWriter, r *http.Request
 		}
 		_ = json.Unmarshal(body, &req)
 		f.calls = append(f.calls, "remove-caps:"+strconv.Itoa(len(req.Subjects)))
+		for _, entry := range req.Subjects {
+			if f.UnknownIds[entry.SubjectId] {
+				f.subjectNotFound(w, entry.SubjectType, entry.SubjectId)
+				return
+			}
+		}
 		results := []map[string]any{}
 		for _, entry := range req.Subjects {
 			result := map[string]any{"subjectId": entry.SubjectId, "subjectType": entry.SubjectType}
@@ -173,6 +189,15 @@ func (f *FakeAiSpendingCapsAPI) ServeHTTP(w http.ResponseWriter, r *http.Request
 			"isUsageAvailable": false, "isUsageEstimated": false,
 		})
 	}
+}
+
+func (f *FakeAiSpendingCapsAPI) subjectNotFound(w http.ResponseWriter, subjectType, id string) {
+	kind := "user"
+	if subjectType == "SERVICEKEY" {
+		kind = "api token"
+	}
+	w.WriteHeader(http.StatusNotFound)
+	_ = json.NewEncoder(w).Encode(map[string]any{"message": kind + " with id " + id + " not found", "statusCode": 404, "requestId": "test"})
 }
 
 func (f *FakeAiSpendingCapsAPI) defaultsBody() map[string]any {

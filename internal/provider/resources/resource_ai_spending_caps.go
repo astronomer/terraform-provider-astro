@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sort"
@@ -258,9 +259,10 @@ func (r *aiSpendingCapsResource) ImportState(ctx context.Context, req resource.I
 
 // apply brings the organization from the state to the plan. A set attribute is set when it is new
 // or differs, and an attribute the plan leaves out is removed when the state had it, which is what
-// the resource set. Everything that sets runs before anything that removes, so a user or API token
-// never falls back to the default, which may be 0, while it is waiting for its new cap. Every step
-// is idempotent, so an apply that fails partway can be run again.
+// the resource set. Everything that sets runs before anything that removes, and overrides are set
+// before defaults, so a user or API token never falls back to a default, which may be 0, while it
+// is waiting for its new cap. Every step is idempotent, so an apply that fails partway can be run
+// again, and a step that fails stops the ones after it.
 func (r *aiSpendingCapsResource) apply(ctx context.Context, plan, state models.AiSpendingCapsResource) diag.Diagnostics {
 	var diags diag.Diagnostics
 
@@ -290,13 +292,14 @@ func (r *aiSpendingCapsResource) apply(ctx context.Context, plan, state models.A
 		}
 	}
 
-	if userSet != nil || tokenSet != nil {
-		diags.Append(r.setDefaults(ctx, userSet, tokenSet)...)
-	}
+	// A subject's new override goes in before a new default can apply to it.
 	if len(sets) > 0 {
 		diags.Append(r.setCaps(ctx, sets)...)
 	}
-	if len(removes) > 0 {
+	if !diags.HasError() && (userSet != nil || tokenSet != nil) {
+		diags.Append(r.setDefaults(ctx, userSet, tokenSet)...)
+	}
+	if !diags.HasError() && len(removes) > 0 {
 		diags.Append(r.removeCaps(ctx, removes)...)
 	}
 	var removedDefaults []labs.DeleteAiSpendingCapDefaultsRequestSubjectTypes
@@ -481,11 +484,12 @@ func (r *aiSpendingCapsResource) listCaps(ctx context.Context, subject capSubjec
 	}
 }
 
-// capsAPIProblem turns a response that is not a success with a body into a diagnostic. A 404 means
-// Core is not serving the endpoints to this organization, and never that the resource is gone, so it
-// is an error here and the resource is never dropped from state on it.
+// capsAPIProblem turns a response that is not a success with a body into a diagnostic. Core answers
+// 404 "Path ... not found" when it is not serving the endpoints to this organization, and never when
+// the resource is gone, so that is an error here and the resource is never dropped from state on it.
+// Any other 404, such as a user or API token that does not exist, is reported with Core's message.
 func capsAPIProblem[T any](ctx context.Context, httpResp *http.Response, body []byte, json200 *T, operation string) diag.Diagnostic {
-	if httpResp != nil && httpResp.StatusCode == http.StatusNotFound {
+	if httpResp != nil && httpResp.StatusCode == http.StatusNotFound && isGateNotFound(body) {
 		return diag.NewErrorDiagnostic(
 			"AI spending caps are not available",
 			fmt.Sprintf("Unable to %s: the AI spending caps API answered 404. It is a Labs feature that Astro turns on per organization, "+
@@ -494,6 +498,18 @@ func capsAPIProblem[T any](ctx context.Context, httpResp *http.Response, body []
 	}
 	_, d := clients.NormalizeAPIResponseWithBody(ctx, httpResp, body, json200, operation)
 	return d
+}
+
+// isGateNotFound says whether a 404 body is Core's answer for an endpoint it does not serve to the
+// organization ("Path ... not found"), as opposed to a 404 for something in the request.
+func isGateNotFound(body []byte) bool {
+	var decoded struct {
+		Message string `json:"message"`
+	}
+	if err := json.Unmarshal(body, &decoded); err != nil {
+		return false
+	}
+	return strings.HasPrefix(decoded.Message, "Path ") && strings.HasSuffix(decoded.Message, " not found")
 }
 
 // failedEntries is an error naming the subjects whose entry failed, or nil. A failed entry changed

@@ -187,8 +187,8 @@ func TestUnit_AiSpendingCaps_Update_SendsOnlyWhatChangedAndSetsBeforeRemoving(t 
 	resp := h.update(plan, state)
 
 	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
-	assert.Equal(t, []string{"set-defaults", "set-caps:2", "remove-caps:1", "remove-defaults"}, h.api.CallsMade(),
-		"the unchanged cap is not sent, and everything that sets runs before anything that removes")
+	assert.Equal(t, []string{"set-caps:2", "set-defaults", "remove-caps:1", "remove-defaults"}, h.api.CallsMade(),
+		"the unchanged cap is not sent, overrides are set before defaults, and everything that sets runs before anything that removes")
 	assert.Equal(t, map[string]int{"keep": 100, "change": 250, "new": 50}, h.api.Caps["USER"])
 	assert.Equal(t, map[string]int{"USER": 6000}, h.api.Defaults, "the API token default left the configuration, so it is removed")
 }
@@ -269,6 +269,25 @@ func TestUnit_AiSpendingCaps_AFailedEntryIsAnErrorNamingTheSubject(t *testing.T)
 	require.True(t, resp.Diagnostics.HasError())
 	assert.Contains(t, resp.Diagnostics.Errors()[0].Detail(), "user-b")
 	assert.NotContains(t, resp.Diagnostics.Errors()[0].Detail(), "user-a")
+}
+
+func TestUnit_AiSpendingCaps_AnUnknownSubjectIsReportedAsItselfAndNotAsTheGate(t *testing.T) {
+	h := newCapsHarness(t)
+	h.api.UnknownIds["gone-token"] = true
+
+	create := h.create(desired(nil, nil, nil, map[string]int64{"gone-token": 100}))
+	require.True(t, create.Diagnostics.HasError())
+	errs := create.Diagnostics.Errors()
+	assert.NotContains(t, errs[0].Summary(), "not available", "a 404 for a subject does not mean the feature is off")
+	assert.NotContains(t, errs[0].Detail(), "Contact Astronomer")
+	assert.Contains(t, errs[0].Detail(), "api token with id gone-token not found")
+
+	h.api.Seed("USER", map[string]int{"gone-user": 5})
+	h.api.UnknownIds["gone-user"] = true
+	update := h.update(desired(nil, nil, map[string]int64{}, nil), desired(nil, nil, map[string]int64{"gone-user": 5}, nil))
+	require.True(t, update.Diagnostics.HasError())
+	assert.NotContains(t, update.Diagnostics.Errors()[0].Summary(), "not available")
+	assert.Contains(t, update.Diagnostics.Errors()[0].Detail(), "user with id gone-user not found")
 }
 
 func TestUnit_AiSpendingCaps_TheGateBeingOffIsAnErrorAndNeverDropsTheResource(t *testing.T) {
