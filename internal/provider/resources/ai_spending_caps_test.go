@@ -9,7 +9,6 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/clients/labs"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/models"
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
-	"github.com/astronomer/terraform-provider-astro/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	rschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -22,7 +21,7 @@ import (
 // capsHarness drives the resource's methods against the fake, the way Terraform does.
 type capsHarness struct {
 	t       *testing.T
-	api     *utils.FakeAiSpendingCapsAPI
+	api     *FakeAiSpendingCapsAPI
 	r       *aiSpendingCapsResource
 	schema  rschema.Schema
 	objType tftypes.Object
@@ -30,7 +29,7 @@ type capsHarness struct {
 
 func newCapsHarness(t *testing.T) *capsHarness {
 	t.Helper()
-	api := utils.NewFakeAiSpendingCapsAPI()
+	api := NewFakeAiSpendingCapsAPI()
 	srv := httptest.NewServer(api)
 	t.Cleanup(srv.Close)
 	labsClient, err := labs.NewLabsClient(srv.URL, "token", "test")
