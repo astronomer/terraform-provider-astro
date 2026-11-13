@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -157,7 +158,7 @@ func (r *DeploymentResource) Create(
 		}
 
 		// scaling spec
-		createStandardDeploymentRequest.ScalingSpec, diags = RequestScalingSpec(ctx, data.ScalingSpec)
+		createStandardDeploymentRequest.ScalingSpec, diags = RequestScalingSpec(ctx, data.ScalingSpec, time.Now())
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -220,7 +221,7 @@ func (r *DeploymentResource) Create(
 		}
 
 		// scaling spec
-		createDedicatedDeploymentRequest.ScalingSpec, diags = RequestScalingSpec(ctx, data.ScalingSpec)
+		createDedicatedDeploymentRequest.ScalingSpec, diags = RequestScalingSpec(ctx, data.ScalingSpec, time.Now())
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -454,7 +455,7 @@ func (r *DeploymentResource) Update(
 		}
 
 		// scaling spec
-		updateStandardDeploymentRequest.ScalingSpec, diags = RequestScalingSpec(ctx, data.ScalingSpec)
+		updateStandardDeploymentRequest.ScalingSpec, diags = RequestScalingSpec(ctx, data.ScalingSpec, time.Now())
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -516,7 +517,7 @@ func (r *DeploymentResource) Update(
 		}
 
 		// scaling spec
-		updateDedicatedDeploymentRequest.ScalingSpec, diags = RequestScalingSpec(ctx, data.ScalingSpec)
+		updateDedicatedDeploymentRequest.ScalingSpec, diags = RequestScalingSpec(ctx, data.ScalingSpec, time.Now())
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -1036,8 +1037,9 @@ func validateClusterIdConfig(ctx context.Context, data *models.DeploymentResourc
 	return diags
 }
 
-// RequestScalingSpec converts a Terraform object to a platform_v1.DeploymentScalingSpecRequest to be used in create and update requests
-func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*platform_v1.DeploymentScalingSpecRequest, diag.Diagnostics) {
+// RequestScalingSpec converts a Terraform object to a platform_v1.DeploymentScalingSpecRequest to be used in create and update requests.
+// now is the instant scaling_spec.hibernation_spec.override.override_until is validated against, see expiredOverrideUntilDiagnostics.
+func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object, now time.Time) (*platform_v1.DeploymentScalingSpecRequest, diag.Diagnostics) {
 	if scalingSpecObj.IsNull() {
 		// If the scaling spec is not set, return an empty scaling spec for the request
 		return &platform_v1.DeploymentScalingSpecRequest{}, nil
@@ -1111,6 +1113,9 @@ func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*plat
 			tflog.Error(ctx, "failed to convert hibernation override", map[string]interface{}{"error": diags})
 			return nil, diags
 		}
+		if diags := expiredOverrideUntilDiagnostics(override.OverrideUntil, now); diags.HasError() {
+			return nil, diags
+		}
 		platformScalingSpec.HibernationSpec.Override = &platform_v1.DeploymentHibernationOverrideRequest{
 			IsHibernating: override.IsHibernating.ValueBoolPointer(),
 			OverrideUntil: override.OverrideUntil.ValueStringPointer(),
@@ -1135,6 +1140,35 @@ func RequestScalingSpec(ctx context.Context, scalingSpecObj types.Object) (*plat
 	}
 
 	return platformScalingSpec, nil
+}
+
+// expiredOverrideUntilDiagnostics returns an error when overrideUntil is an RFC3339 timestamp that
+// has already passed as of now. The API rejects such a request with "Override until time must be in
+// the future" (400), so fail before sending it, with a message that names the attribute. A value
+// that does not parse is left for the API to validate.
+//
+// Read drops an expired override from state (models.HibernationOverrideTypesObject), so one can only
+// reach a request from the configuration, from a plan made with -refresh=false, or from an override
+// that was still active at plan time and expired before apply. It is an error rather than silently
+// omitted because the API treats hibernationSpec as a full replacement: omitting the override would
+// clear it server-side, and the response without it would contradict the plan, which still holds
+// the object, so Terraform would fail with "Provider produced inconsistent result after apply".
+func expiredOverrideUntilDiagnostics(overrideUntil types.String, now time.Time) diag.Diagnostics {
+	if overrideUntil.IsNull() || overrideUntil.IsUnknown() {
+		return nil
+	}
+	until, err := time.Parse(time.RFC3339, overrideUntil.ValueString())
+	if err != nil || !models.HibernationOverrideExpired(&until, now) {
+		return nil
+	}
+	return diag.Diagnostics{diag.NewAttributeErrorDiagnostic(
+		path.Root("scaling_spec").AtName("hibernation_spec").AtName("override").AtName("override_until"),
+		"scaling_spec.hibernation_spec.override.override_until must be in the future",
+		fmt.Sprintf("The hibernation override ends at %s, which has already passed, and the Astro API rejects an override whose override_until is in the past. "+
+			"Set override_until to a future timestamp or remove the override from scaling_spec.hibernation_spec. "+
+			"If the value is not in your configuration it was carried over from a stale plan: plan again with refresh enabled so the expired override is dropped from the state.",
+			overrideUntil.ValueString()),
+	)}
 }
 
 // RequestRemoteExecution converts a Terraform object to a platform_v1.RemoteExecutionRequest to be used in create and update requests
