@@ -35,7 +35,7 @@ func TestUnit_RequestScalingSpec_Autoscaling(t *testing.T) {
 	require.False(t, diags.HasError())
 
 	t.Run("autoscaling without hibernation is sent as-is", func(t *testing.T) {
-		req, diags := RequestScalingSpec(ctx, scalingSpecObject(t, autoscaling))
+		req, diags := RequestScalingSpec(ctx, scalingSpecObject(t, autoscaling), scalingSpecNow)
 		require.False(t, diags.HasError())
 		require.NotNil(t, req.Autoscaling)
 		require.NotNil(t, req.Autoscaling.ApiServer)
@@ -46,7 +46,7 @@ func TestUnit_RequestScalingSpec_Autoscaling(t *testing.T) {
 	})
 
 	t.Run("absent autoscaling is omitted", func(t *testing.T) {
-		req, diags := RequestScalingSpec(ctx, scalingSpecObject(t, types.ObjectNull(schemas.AutoscalingAttributeTypes())))
+		req, diags := RequestScalingSpec(ctx, scalingSpecObject(t, types.ObjectNull(schemas.AutoscalingAttributeTypes())), scalingSpecNow)
 		require.False(t, diags.HasError())
 		assert.Nil(t, req.Autoscaling)
 	})
