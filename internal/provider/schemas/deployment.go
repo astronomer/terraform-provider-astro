@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -258,21 +257,8 @@ func DeploymentResourceSchemaAttributes() map[string]resourceSchema.Attribute {
 			Optional:            true,
 		},
 		"is_development_mode": resourceSchema.BoolAttribute{
-			MarkdownDescription: "Deployment development mode - required for 'STANDARD' and 'DEDICATED' deployments. If changing from 'False' to 'True', the deployment will be recreated",
+			MarkdownDescription: "Deployment development mode - required for 'STANDARD' and 'DEDICATED' deployments",
 			Optional:            true,
-			PlanModifiers: []planmodifier.Bool{
-				boolplanmodifier.RequiresReplaceIf(
-					func(_ context.Context, req planmodifier.BoolRequest, resp *boolplanmodifier.RequiresReplaceIfFuncResponse) {
-						prevIsDevelopmentMode := req.StateValue.ValueBool()
-						newIsDevelopmentMode := req.ConfigValue.ValueBool()
-						if prevIsDevelopmentMode == false && newIsDevelopmentMode == true {
-							resp.RequiresReplace = true
-						}
-					},
-					"Converting a non-development mode deployment to a development mode deployment is not allowed. Therefore, the deployment will be recreated as a development-mode deployment",
-					"Converting a non-development mode deployment to a development mode deployment is not allowed. Therefore, the deployment will be recreated as a development-mode deployment",
-				),
-			},
 		},
 		"resource_quota_cpu": resourceSchema.StringAttribute{
 			MarkdownDescription: "Deployment resource quota CPU - required for 'STANDARD' and 'DEDICATED' deployments",
