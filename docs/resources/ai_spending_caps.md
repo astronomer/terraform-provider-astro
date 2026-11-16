@@ -6,7 +6,8 @@ description: |-
   Manage an organization's per-user and per-API-token Astro AI spending caps as a single resource: the default cap for users, the default cap for API tokens, and the override of each user and API token. A cap is a monthly limit in USD cents on Astro AI spend, and an override replaces the default for that user or API token. 0 turns AI off.
   ~> Labs. The AI spending caps API is a Labs feature, turned on per organization. If it is not turned on for your organization, every request fails with a "not available" error.
   ~> Warning: authoritative maps. When user_cap_cents or api_token_cap_cents is set, any user or API token with an override that is not in the map has it removed on apply, including overrides set in the Astro UI. A removed override makes the user or API token follow the default, and a default of 0 turns AI off for them. Leave a map unset to leave that kind of override to the Astro UI, and use at most one astro_ai_spending_caps resource.
-  ~> Note Destroying this resource removes the defaults and overrides it manages, so those users and API tokens have no per-subject limit afterwards. The organization-wide AI spending cap is not managed here.
+  ~> Note Nothing is removed by leaving it out. Removing a default or a map from the configuration stops managing it: the default keeps its value and the overrides stay in place, including ones Terraform set. To remove every override of a kind, set its map to {}. To lift a default, set it to a high value, up to 10000000 ($100,000), or change it in the Astro UI or the Labs API. Destroying this resource removes no default or override, so set the maps to {} and apply first if they should go. The organization-wide AI spending cap is not managed here.
+  ~> Note The first apply of a map does not remove overrides that are not in it. Terraform only reads the overrides of a map it manages, so overrides that already exist, such as ones set in the Astro UI, show up in the next plan as removals, and the next apply removes them. The same goes for a map that was unmanaged and becomes {}. Every removal appears in a plan before it happens.
 ---
 
 # astro_ai_spending_caps (Resource)
@@ -17,7 +18,9 @@ Manage an organization's per-user and per-API-token Astro AI spending caps as a 
 
 ~> **Warning: authoritative maps.** When `user_cap_cents` or `api_token_cap_cents` is set, any user or API token with an override that is not in the map has it removed on apply, including overrides set in the Astro UI. A removed override makes the user or API token follow the default, and a default of `0` turns AI off for them. Leave a map unset to leave that kind of override to the Astro UI, and use at most one `astro_ai_spending_caps` resource.
 
-~> **Note** Destroying this resource removes the defaults and overrides it manages, so those users and API tokens have no per-subject limit afterwards. The organization-wide AI spending cap is not managed here.
+~> **Note** Nothing is removed by leaving it out. Removing a default or a map from the configuration stops managing it: the default keeps its value and the overrides stay in place, including ones Terraform set. To remove every override of a kind, set its map to `{}`. To lift a default, set it to a high value, up to `10000000` ($100,000), or change it in the Astro UI or the Labs API. Destroying this resource removes no default or override, so set the maps to `{}` and apply first if they should go. The organization-wide AI spending cap is not managed here.
+
+~> **Note** The first apply of a map does not remove overrides that are not in it. Terraform only reads the overrides of a map it manages, so overrides that already exist, such as ones set in the Astro UI, show up in the next plan as removals, and the next apply removes them. The same goes for a map that was unmanaged and becomes `{}`. Every removal appears in a plan before it happens.
 
 ## Example Usage
 
@@ -27,7 +30,10 @@ Manage an organization's per-user and per-API-token Astro AI spending caps as a 
 #
 # Every attribute is optional, and one that is not set is not managed. A map that is set is
 # authoritative: a user or API token with an override that is not in it has the override removed on
-# apply, including one set in the Astro UI. Use at most one astro_ai_spending_caps resource.
+# apply, including one set in the Astro UI. Nothing is removed by leaving it out: removing a default
+# or a map from the configuration stops managing it and leaves it in place. `{}` removes every
+# override of a kind, and a default is lifted by setting it high (at most 10000000). Destroying the
+# resource removes nothing. Use at most one astro_ai_spending_caps resource.
 #
 # The AI spending caps API is a Labs feature that Astro turns on per organization.
 
@@ -54,10 +60,10 @@ resource "astro_ai_spending_caps" "org" {
 
 ### Optional
 
-- `api_token_cap_cents` (Map of Number) The override of each API token, a monthly AI spending cap in USD cents, keyed by API token ID. It works like `user_cap_cents`, for API tokens: authoritative when set, `0` turns AI off for the API token, and not managed when unset.
-- `default_api_token_cap_cents` (Number) The default monthly AI spending cap, in USD cents, for every API token without an override in `api_token_cap_cents`. Set independently of the user default. At most `10000000` ($100,000). `0` turns AI off for those API tokens. If unset, the default is not managed by this resource. If it was set and is removed from the configuration, the default is removed.
-- `default_user_cap_cents` (Number) The default monthly AI spending cap, in USD cents, for every user without an override in `user_cap_cents`. At most `10000000` ($100,000). `0` turns AI off for those users. If unset, the default is not managed by this resource. If it was set and is removed from the configuration, the default is removed.
-- `user_cap_cents` (Map of Number) The override of each user, a monthly AI spending cap in USD cents, keyed by user ID. A user's override replaces the user default for them, higher or lower; `0` turns AI off for the user. At most `10000000` ($100,000) each. When set, this attribute is authoritative for the organization's users: a user with an override that is not in the map has it removed on apply, including one set in the Astro UI. Set it to `{}` to remove every user's override. If unset, users' overrides are not managed by this resource. If it was set and is removed from the configuration, the overrides it held are removed.
+- `api_token_cap_cents` (Map of Number) The override of each API token, a monthly AI spending cap in USD cents, keyed by API token ID. It works like `user_cap_cents`, for API tokens: authoritative when set, `0` turns AI off for the API token, `{}` removes every API token's override, and not managed when unset or removed from the configuration, which leaves the overrides in place.
+- `default_api_token_cap_cents` (Number) The default monthly AI spending cap, in USD cents, for every API token without an override in `api_token_cap_cents`. Set independently of the user default. At most `10000000` ($100,000). `0` turns AI off for those API tokens. If unset, the default is not managed by this resource. Removing the attribute from the configuration stops managing the default and leaves its value in place; to lift it, set a high value.
+- `default_user_cap_cents` (Number) The default monthly AI spending cap, in USD cents, for every user without an override in `user_cap_cents`. At most `10000000` ($100,000). `0` turns AI off for those users. If unset, the default is not managed by this resource. Removing the attribute from the configuration stops managing the default and leaves its value in place; to lift it, set a high value.
+- `user_cap_cents` (Map of Number) The override of each user, a monthly AI spending cap in USD cents, keyed by user ID. A user's override replaces the user default for them, higher or lower; `0` turns AI off for the user. At most `10000000` ($100,000) each. When set, this attribute is authoritative for the organization's users: a user with an override that is not in the map has it removed on apply, including one set in the Astro UI. Set it to `{}` to remove every user's override. If unset, users' overrides are not managed by this resource. Removing the attribute from the configuration stops managing the overrides and leaves them all in place; only `{}` removes them.
 
 ### Read-Only
 

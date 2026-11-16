@@ -43,27 +43,24 @@ func NewAiSpendingCapsResource() resource.Resource {
 // capSubject is one of the two kinds of subject with a cap, with its spelling in each request type
 // the generated client has for it.
 type capSubject struct {
-	label   string
-	set     labs.AiSpendingCapRequestSubjectType
-	remove  labs.AiSpendingCapSubjectSubjectType
-	list    labs.LabsListAiSpendingCapsParamsSubjectType
-	removed labs.DeleteAiSpendingCapDefaultsRequestSubjectTypes
+	label  string
+	set    labs.AiSpendingCapRequestSubjectType
+	remove labs.AiSpendingCapSubjectSubjectType
+	list   labs.LabsListAiSpendingCapsParamsSubjectType
 }
 
 var (
 	capSubjectUser = capSubject{
-		label:   "user",
-		set:     labs.AiSpendingCapRequestSubjectTypeUSER,
-		remove:  labs.AiSpendingCapSubjectSubjectTypeUSER,
-		list:    labs.USER,
-		removed: labs.DeleteAiSpendingCapDefaultsRequestSubjectTypesUSER,
+		label:  "user",
+		set:    labs.AiSpendingCapRequestSubjectTypeUSER,
+		remove: labs.AiSpendingCapSubjectSubjectTypeUSER,
+		list:   labs.USER,
 	}
 	capSubjectApiToken = capSubject{
-		label:   "API token",
-		set:     labs.AiSpendingCapRequestSubjectTypeSERVICEKEY,
-		remove:  labs.AiSpendingCapSubjectSubjectTypeSERVICEKEY,
-		list:    labs.SERVICEKEY,
-		removed: labs.DeleteAiSpendingCapDefaultsRequestSubjectTypesSERVICEKEY,
+		label:  "API token",
+		set:    labs.AiSpendingCapRequestSubjectTypeSERVICEKEY,
+		remove: labs.AiSpendingCapSubjectSubjectTypeSERVICEKEY,
+		list:   labs.SERVICEKEY,
 	}
 )
 
@@ -71,6 +68,11 @@ var (
 // single resource: the two defaults, and the override of each user and API token. An attribute that
 // is not set is not managed. A map that is set is authoritative for its kind of subject, so a cap
 // that is not in it is removed on apply.
+//
+// Nothing is removed by leaving it out: not a map, which stops being managed and keeps its
+// overrides, and not a default, which keeps its value. The only removal is an empty map, which
+// removes every override of its kind. A destroy removes nothing. A cap is lifted by setting it
+// high, up to the largest the API takes.
 //
 // It runs over the labs AI spending caps endpoints, which Core serves only to organizations it has
 // turned them on for.
@@ -96,8 +98,16 @@ func (r *aiSpendingCapsResource) Schema(ctx context.Context, req resource.Schema
 			"Astro UI. A removed override makes the user or API token follow the default, and a default of `0` turns AI " +
 			"off for them. Leave a map unset to leave that kind of override to the Astro UI, and use at most one " +
 			"`astro_ai_spending_caps` resource.\n\n" +
-			"~> **Note** Destroying this resource removes the defaults and overrides it manages, so those users and API " +
-			"tokens have no per-subject limit afterwards. The organization-wide AI spending cap is not managed here.",
+			"~> **Note** Nothing is removed by leaving it out. Removing a default or a map from the configuration stops " +
+			"managing it: the default keeps its value and the overrides stay in place, including ones Terraform set. To " +
+			"remove every override of a kind, set its map to `{}`. To lift a default, set it to a high value, up to " +
+			"`10000000` ($100,000), or change it in the Astro UI or the Labs API. Destroying this resource removes no " +
+			"default or override, so set the maps to `{}` and apply first if they should go. The organization-wide AI " +
+			"spending cap is not managed here.\n\n" +
+			"~> **Note** The first apply of a map does not remove overrides that are not in it. Terraform only reads " +
+			"the overrides of a map it manages, so overrides that already exist, such as ones set in the Astro UI, " +
+			"show up in the next plan as removals, and the next apply removes them. The same goes for a map that was " +
+			"unmanaged and becomes `{}`. Every removal appears in a plan before it happens.",
 		Attributes: schemas.AiSpendingCapsResourceSchemaAttributes(),
 	}
 }
@@ -213,22 +223,22 @@ func (r *aiSpendingCapsResource) Update(ctx context.Context, req resource.Update
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-// Delete removes what the resource manages: a configuration that sets nothing, applied over the
-// state.
+// Delete removes nothing, as nothing is ever removed by leaving it out: the state holds every
+// override of a kind, including ones set in the Astro UI, so a destroy cannot know that removing any
+// cap is wanted. It says so, since that is not what a destroy usually does.
 func (r *aiSpendingCapsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state models.AiSpendingCapsResource
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(r.apply(ctx, models.AiSpendingCapsResource{}, state)...)
+	resp.Diagnostics.AddWarning("The AI spending caps were left in place",
+		"Destroying astro_ai_spending_caps stops managing the organization's AI spending caps and removes none of them: "+
+			"the defaults and every override stay as they are in Astro. To remove overrides, set user_cap_cents or "+
+			"api_token_cap_cents to {} and apply before destroying. To lift a default, set it to a high value, up to "+
+			"10000000 ($100,000), or change it in the Astro UI or the Labs API.")
 }
 
 // ImportState imports the organization's AI spending caps. The resource is a singleton for the
 // organization configured on the provider, so the import ID is only cosmetic (use the organization
 // ID). Everything is read: both defaults when set, and every user's and API token's override. The
-// configuration then has to list what it keeps, since an attribute missing from it is removed.
+// configuration then has to list what it keeps in each map it sets, since a cap missing from a set
+// map is removed. A map or default left out is not managed.
 func (r *aiSpendingCapsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	defaults, diags := r.getDefaults(ctx)
 	resp.Diagnostics.Append(diags...)
@@ -258,16 +268,18 @@ func (r *aiSpendingCapsResource) ImportState(ctx context.Context, req resource.I
 }
 
 // apply brings the organization from the state to the plan. A set attribute is set when it is new
-// or differs, and an attribute the plan leaves out is removed when the state had it, which is what
-// the resource set. Everything that sets runs before anything that removes, and overrides are set
+// or differs. An attribute the plan leaves out is not managed and is never removed: a default keeps
+// its value, and a map keeps its overrides, which after a refresh include every one of that kind,
+// even those set in the Astro UI. Only an empty map removes overrides, on purpose.
+// Everything that sets runs before anything that removes, and overrides are set
 // before defaults, so a user or API token never falls back to a default, which may be 0, while it
 // is waiting for its new cap. Every step is idempotent, so an apply that fails partway can be run
 // again, and a step that fails stops the ones after it.
 func (r *aiSpendingCapsResource) apply(ctx context.Context, plan, state models.AiSpendingCapsResource) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	userSet, userRemoved := diffDefault(plan.DefaultUserCapCents, state.DefaultUserCapCents)
-	tokenSet, tokenRemoved := diffDefault(plan.DefaultApiTokenCapCents, state.DefaultApiTokenCapCents)
+	userSet := diffDefault(plan.DefaultUserCapCents, state.DefaultUserCapCents)
+	tokenSet := diffDefault(plan.DefaultApiTokenCapCents, state.DefaultApiTokenCapCents)
 
 	var sets []labs.AiSpendingCapRequest
 	var removes []labs.AiSpendingCapSubject
@@ -276,6 +288,9 @@ func (r *aiSpendingCapsResource) apply(ctx context.Context, plan, state models.A
 		plan    types.Map
 		state   types.Map
 	}{{capSubjectUser, plan.UserCapCents, state.UserCapCents}, {capSubjectApiToken, plan.ApiTokenCapCents, state.ApiTokenCapCents}} {
+		if kind.plan.IsNull() || kind.plan.IsUnknown() {
+			continue
+		}
 		desired, d := capsFromMap(ctx, kind.plan)
 		diags.Append(d...)
 		current, d := capsFromMap(ctx, kind.state)
@@ -302,16 +317,6 @@ func (r *aiSpendingCapsResource) apply(ctx context.Context, plan, state models.A
 	if !diags.HasError() && len(removes) > 0 {
 		diags.Append(r.removeCaps(ctx, removes)...)
 	}
-	var removedDefaults []labs.DeleteAiSpendingCapDefaultsRequestSubjectTypes
-	if userRemoved {
-		removedDefaults = append(removedDefaults, capSubjectUser.removed)
-	}
-	if tokenRemoved {
-		removedDefaults = append(removedDefaults, capSubjectApiToken.removed)
-	}
-	if !diags.HasError() && len(removedDefaults) > 0 {
-		diags.Append(r.removeDefaults(ctx, removedDefaults)...)
-	}
 	return diags
 }
 
@@ -321,9 +326,9 @@ type capChanges struct {
 	remove []string
 }
 
-// diffCaps compares the caps the plan wants with the ones in the state. A nil desired map is an
-// attribute the plan leaves out, so everything the state held is removed. A map that is set, even
-// an empty one, keeps only what it lists.
+// diffCaps compares the caps the plan wants with the ones in the state. A map that is set, even an
+// empty one, keeps only what it lists. The caller does not call it for a map the plan leaves out,
+// which is not managed.
 func diffCaps(desired, current map[string]int64) capChanges {
 	changes := capChanges{set: map[string]int64{}}
 	for id, value := range desired {
@@ -341,15 +346,15 @@ func diffCaps(desired, current map[string]int64) capChanges {
 }
 
 // diffDefault says what a default needs: a value to set when the plan has one that is new or
-// differs, or a removal when the plan leaves it out and the state had it.
-func diffDefault(plan, state types.Int64) (set *int, remove bool) {
-	switch {
-	case plan.IsNull() || plan.IsUnknown():
-		return nil, !state.IsNull()
-	case state.IsNull() || state.ValueInt64() != plan.ValueInt64():
-		return new(int(plan.ValueInt64())), false
+// differs, nil otherwise. A default the plan leaves out is not managed, so it is never removed.
+func diffDefault(plan, state types.Int64) *int {
+	if plan.IsNull() || plan.IsUnknown() {
+		return nil
 	}
-	return nil, false
+	if state.IsNull() || state.ValueInt64() != plan.ValueInt64() {
+		return new(int(plan.ValueInt64()))
+	}
+	return nil
 }
 
 func (r *aiSpendingCapsResource) setDefaults(ctx context.Context, user, apiToken *int) diag.Diagnostics {
@@ -362,21 +367,6 @@ func (r *aiSpendingCapsResource) setDefaults(ctx context.Context, user, apiToken
 		return diags
 	}
 	if d := capsAPIProblem(ctx, resp.HTTPResponse, resp.Body, resp.JSON200, "set the default AI spending caps"); d != nil {
-		diags.Append(d)
-	}
-	return diags
-}
-
-func (r *aiSpendingCapsResource) removeDefaults(ctx context.Context, subjectTypes []labs.DeleteAiSpendingCapDefaultsRequestSubjectTypes) diag.Diagnostics {
-	var diags diag.Diagnostics
-	resp, err := r.labsClient.LabsDeleteAiSpendingCapDefaultsWithResponse(ctx, r.organizationId,
-		labs.DeleteAiSpendingCapDefaultsRequest{SubjectTypes: subjectTypes})
-	if err != nil {
-		tflog.Error(ctx, "failed to remove the default AI spending caps", map[string]interface{}{"error": err})
-		diags.AddError("Client Error", fmt.Sprintf("Unable to remove the default AI spending caps: %s", err))
-		return diags
-	}
-	if d := capsAPIProblem(ctx, resp.HTTPResponse, resp.Body, resp.JSON200, "remove the default AI spending caps"); d != nil {
 		diags.Append(d)
 	}
 	return diags

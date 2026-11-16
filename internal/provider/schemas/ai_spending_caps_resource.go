@@ -43,8 +43,9 @@ func AiSpendingCapsResourceSchemaAttributes() map[string]resourceSchema.Attribut
 		"default_user_cap_cents": resourceSchema.Int64Attribute{
 			MarkdownDescription: "The default monthly AI spending cap, in USD cents, for every user without an " +
 				"override in `user_cap_cents`. At most `10000000` ($100,000). `0` turns AI off for those users. " +
-				"If unset, the default is not managed by this resource. If it was set and is removed from the " +
-				"configuration, the default is removed.",
+				"If unset, the default is not managed by this resource. Removing the attribute from the " +
+				"configuration stops managing the default and leaves its value in place; to lift it, set a high " +
+				"value.",
 			Optional:   true,
 			Validators: capValue,
 		},
@@ -52,7 +53,8 @@ func AiSpendingCapsResourceSchemaAttributes() map[string]resourceSchema.Attribut
 			MarkdownDescription: "The default monthly AI spending cap, in USD cents, for every API token without an " +
 				"override in `api_token_cap_cents`. Set independently of the user default. At most " +
 				"`10000000` ($100,000). `0` turns AI off for those API tokens. If unset, the default is not managed " +
-				"by this resource. If it was set and is removed from the configuration, the default is removed.",
+				"by this resource. Removing the attribute from the configuration stops managing the default and " +
+				"leaves its value in place; to lift it, set a high value.",
 			Optional:   true,
 			Validators: capValue,
 		},
@@ -62,8 +64,8 @@ func AiSpendingCapsResourceSchemaAttributes() map[string]resourceSchema.Attribut
 				"At most `10000000` ($100,000) each. When set, this attribute is authoritative for the " +
 				"organization's users: a user with an override that is not in the map has it removed on " +
 				"apply, including one set in the Astro UI. Set it to `{}` to remove every user's override. If unset, " +
-				"users' overrides are not managed by this resource. If it was set and is removed from the configuration, " +
-				"the overrides it held are removed.",
+				"users' overrides are not managed by this resource. Removing the attribute from the configuration " +
+				"stops managing the overrides and leaves them all in place; only `{}` removes them.",
 			Optional:    true,
 			ElementType: types.Int64Type,
 			Validators:  capMap(),
@@ -71,7 +73,8 @@ func AiSpendingCapsResourceSchemaAttributes() map[string]resourceSchema.Attribut
 		"api_token_cap_cents": resourceSchema.MapAttribute{
 			MarkdownDescription: "The override of each API token, a monthly AI spending cap in USD cents, keyed by API token " +
 				"ID. It works like `user_cap_cents`, for API tokens: authoritative when set, `0` turns AI off for the " +
-				"API token, and not managed when unset.",
+				"API token, `{}` removes every API token's override, and not managed when unset or removed from the " +
+				"configuration, which leaves the overrides in place.",
 			Optional:    true,
 			ElementType: types.Int64Type,
 			Validators:  capMap(),

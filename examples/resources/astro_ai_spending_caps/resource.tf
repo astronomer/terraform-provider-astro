@@ -3,7 +3,10 @@
 #
 # Every attribute is optional, and one that is not set is not managed. A map that is set is
 # authoritative: a user or API token with an override that is not in it has the override removed on
-# apply, including one set in the Astro UI. Use at most one astro_ai_spending_caps resource.
+# apply, including one set in the Astro UI. Nothing is removed by leaving it out: removing a default
+# or a map from the configuration stops managing it and leaves it in place. `{}` removes every
+# override of a kind, and a default is lifted by setting it high (at most 10000000). Destroying the
+# resource removes nothing. Use at most one astro_ai_spending_caps resource.
 #
 # The AI spending caps API is a Labs feature that Astro turns on per organization.
 

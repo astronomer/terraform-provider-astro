@@ -109,6 +109,14 @@ func (h *capsHarness) read(state models.AiSpendingCapsResource) *resource.ReadRe
 	return resp
 }
 
+// refreshed is the state Terraform hands to Update and Delete: it refreshes before it plans, so a
+// state that was only just applied has first been through Read.
+func (h *capsHarness) refreshed(state models.AiSpendingCapsResource) models.AiSpendingCapsResource {
+	resp := h.read(state)
+	require.False(h.t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
+	return h.model(resp.State)
+}
+
 func (h *capsHarness) destroy(state models.AiSpendingCapsResource) *resource.DeleteResponse {
 	prior := h.state(state)
 	resp := &resource.DeleteResponse{State: prior}
@@ -186,28 +194,48 @@ func TestUnit_AiSpendingCaps_Update_SendsOnlyWhatChangedAndSetsBeforeRemoving(t 
 	resp := h.update(plan, state)
 
 	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
-	assert.Equal(t, []string{"set-caps:2", "set-defaults", "remove-caps:1", "remove-defaults"}, h.api.CallsMade(),
+	assert.Equal(t, []string{"set-caps:2", "set-defaults", "remove-caps:1"}, h.api.CallsMade(),
 		"the unchanged cap is not sent, overrides are set before defaults, and everything that sets runs before anything that removes")
 	assert.Equal(t, map[string]int{"keep": 100, "change": 250, "new": 50}, h.api.Caps["USER"])
-	assert.Equal(t, map[string]int{"USER": 6000}, h.api.Defaults, "the API token default left the configuration, so it is removed")
+	assert.Equal(t, map[string]int{"USER": 6000, "SERVICEKEY": 2500}, h.api.Defaults,
+		"the API token default left the configuration, so it is not managed and keeps its value")
 }
 
-func TestUnit_AiSpendingCaps_Update_RemovingAMapRemovesOnlyWhatTerraformHeld(t *testing.T) {
+func TestUnit_AiSpendingCaps_Update_RemovingADefaultLeavesItsValueAlone(t *testing.T) {
 	h := newCapsHarness(t)
-	h.api.Seed("USER", map[string]int{"managed": 100, "set-in-the-ui": 700})
-	state := desired(nil, nil, map[string]int64{"managed": 100}, nil)
+	h.api.Defaults = map[string]int{"USER": 5000, "SERVICEKEY": 2500}
+	state := h.refreshed(desired(ptr(5000), ptr(2500), nil, nil))
 
 	resp := h.update(desired(nil, nil, nil, nil), state)
 
 	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
-	assert.Equal(t, map[string]int{"set-in-the-ui": 700}, h.api.Caps["USER"])
-	assert.True(t, h.model(resp.State).UserCapCents.IsNull())
+	assert.Equal(t, map[string]int{"USER": 5000, "SERVICEKEY": 2500}, h.api.Defaults, "leaving a default out removes nothing")
+	assert.Equal(t, []string{"get-defaults"}, h.api.CallsMade(), "and sends nothing beyond the refresh before it")
+	got := h.model(resp.State)
+	assert.True(t, got.DefaultUserCapCents.IsNull())
+	assert.True(t, got.DefaultApiTokenCapCents.IsNull(), "the defaults are no longer managed")
 }
 
-func TestUnit_AiSpendingCaps_Update_AnEmptyMapRemovesEveryCapItHolds(t *testing.T) {
+func TestUnit_AiSpendingCaps_Update_RemovingAMapLeavesItsOverridesAlone(t *testing.T) {
 	h := newCapsHarness(t)
-	h.api.Seed("SERVICEKEY", map[string]int{"token-a": 1, "token-b": 2})
-	state := desired(nil, nil, nil, map[string]int64{"token-a": 1, "token-b": 2})
+	// An admin gave "set-in-the-ui" a 0 cap, which turns AI off for them. Terraform refreshes before
+	// it plans, so by Update the state holds that override too.
+	h.api.Seed("USER", map[string]int{"managed": 100, "set-in-the-ui": 0})
+	state := h.refreshed(desired(nil, nil, map[string]int64{"managed": 100}, nil))
+	require.Equal(t, map[string]int64{"managed": 100, "set-in-the-ui": 0}, elements(t, state.UserCapCents))
+
+	resp := h.update(desired(nil, nil, nil, nil), state)
+
+	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
+	assert.Equal(t, map[string]int{"managed": 100, "set-in-the-ui": 0}, h.api.Caps["USER"], "leaving the map out removes nothing")
+	assert.Equal(t, []string{"list:USER"}, h.api.CallsMade(), "and sends nothing beyond the refresh before it")
+	assert.True(t, h.model(resp.State).UserCapCents.IsNull(), "the map is no longer managed")
+}
+
+func TestUnit_AiSpendingCaps_Update_AnEmptyMapRemovesEveryOverrideOfItsKind(t *testing.T) {
+	h := newCapsHarness(t)
+	h.api.Seed("SERVICEKEY", map[string]int{"token-a": 1, "token-b": 2, "set-in-the-ui": 3})
+	state := h.refreshed(desired(nil, nil, nil, map[string]int64{"token-a": 1, "token-b": 2}))
 
 	resp := h.update(desired(nil, nil, nil, map[string]int64{}), state)
 
@@ -308,19 +336,37 @@ func TestUnit_AiSpendingCaps_TheGateBeingOffIsAnErrorAndNeverDropsTheResource(t 
 	assert.True(t, imported.Diagnostics.HasError())
 }
 
-func TestUnit_AiSpendingCaps_Delete_RemovesWhatTheStateHoldsAndNothingElse(t *testing.T) {
+func TestUnit_AiSpendingCaps_Delete_RemovesNothingAndSaysSo(t *testing.T) {
 	h := newCapsHarness(t)
 	h.api.Seed("USER", map[string]int{"managed": 100, "set-in-the-ui": 700})
 	h.api.Seed("SERVICEKEY", map[string]int{"token-a": 5})
 	h.api.Defaults = map[string]int{"USER": 5000, "SERVICEKEY": 2500}
-	state := desired(ptr(5000), nil, map[string]int64{"managed": 100}, nil)
+	state := h.refreshed(desired(ptr(5000), nil, map[string]int64{"managed": 100}, nil))
+	callsBefore := len(h.api.CallsMade())
 
 	resp := h.destroy(state)
 
 	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
-	assert.Equal(t, map[string]int{"set-in-the-ui": 700}, h.api.Caps["USER"])
+	assert.Equal(t, map[string]int{"managed": 100, "set-in-the-ui": 700}, h.api.Caps["USER"], "a destroy removes no override, managed or not")
 	assert.Equal(t, map[string]int{"token-a": 5}, h.api.Caps["SERVICEKEY"], "an unmanaged map is left alone")
-	assert.Equal(t, map[string]int{"SERVICEKEY": 2500}, h.api.Defaults, "only the managed default is removed")
+	assert.Equal(t, map[string]int{"USER": 5000, "SERVICEKEY": 2500}, h.api.Defaults, "and no default, managed or not")
+	assert.Len(t, h.api.CallsMade(), callsBefore, "it sends nothing")
+	require.Equal(t, 1, resp.Diagnostics.WarningsCount(), "it says the caps were left in place")
+	assert.Contains(t, resp.Diagnostics.Warnings()[0].Detail(), "{}")
+}
+
+func TestUnit_AiSpendingCaps_Delete_AfterEmptyingTheMapsRemovesTheOverrides(t *testing.T) {
+	h := newCapsHarness(t)
+	h.api.Seed("USER", map[string]int{"managed": 100, "set-in-the-ui": 700})
+	state := h.refreshed(desired(nil, nil, map[string]int64{"managed": 100}, nil))
+
+	// The documented way to remove them before a destroy: set the map to {} and apply.
+	applied := h.update(desired(nil, nil, map[string]int64{}, nil), state)
+	require.False(t, applied.Diagnostics.HasError(), "%v", applied.Diagnostics)
+	resp := h.destroy(h.refreshed(h.model(applied.State)))
+
+	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
+	assert.Empty(t, h.api.Caps["USER"])
 }
 
 func TestUnit_AiSpendingCaps_ImportReadsEverything(t *testing.T) {
@@ -369,30 +415,16 @@ func TestUnit_diffCaps(t *testing.T) {
 	assert.Equal(t, map[string]int64{"b": 2, "c": 3}, changes.set)
 	assert.Equal(t, []string{"d", "e"}, changes.remove)
 
-	assert.Equal(t, []string{"a"}, diffCaps(nil, map[string]int64{"a": 1}).remove, "a map left out removes what the state held")
-	assert.Equal(t, []string{"a"}, diffCaps(map[string]int64{}, map[string]int64{"a": 1}).remove, "an empty map does too")
+	assert.Equal(t, []string{"a"}, diffCaps(map[string]int64{}, map[string]int64{"a": 1}).remove, "an empty map removes what the state held")
 	assert.Empty(t, diffCaps(map[string]int64{"a": 1}, map[string]int64{"a": 1}).set, "an unchanged cap is not sent")
 	assert.Equal(t, map[string]int64{"a": 0}, diffCaps(map[string]int64{"a": 0}, nil).set, "a cap of 0 is a cap to set")
 }
 
 func TestUnit_diffDefault(t *testing.T) {
-	set, remove := diffDefault(types.Int64Value(5), types.Int64Null())
-	assert.Equal(t, 5, *set)
-	assert.False(t, remove)
-
-	set, remove = diffDefault(types.Int64Value(0), types.Int64Value(5))
-	assert.Equal(t, 0, *set, "0 is a default to set")
-	assert.False(t, remove)
-
-	set, remove = diffDefault(types.Int64Value(5), types.Int64Value(5))
-	assert.Nil(t, set)
-	assert.False(t, remove)
-
-	set, remove = diffDefault(types.Int64Null(), types.Int64Value(5))
-	assert.Nil(t, set)
-	assert.True(t, remove, "left out of the configuration after it was set")
-
-	set, remove = diffDefault(types.Int64Null(), types.Int64Null())
-	assert.Nil(t, set)
-	assert.False(t, remove, "never managed")
+	assert.Equal(t, 5, *diffDefault(types.Int64Value(5), types.Int64Null()), "a new default is set")
+	assert.Equal(t, 0, *diffDefault(types.Int64Value(0), types.Int64Value(5)), "0 is a default to set")
+	assert.Nil(t, diffDefault(types.Int64Value(5), types.Int64Value(5)), "an unchanged default is not sent")
+	assert.Nil(t, diffDefault(types.Int64Null(), types.Int64Value(5)), "left out of the configuration after it was set: not managed, not removed")
+	assert.Nil(t, diffDefault(types.Int64Unknown(), types.Int64Value(5)))
+	assert.Nil(t, diffDefault(types.Int64Null(), types.Int64Null()), "never managed")
 }
