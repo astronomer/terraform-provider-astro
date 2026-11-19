@@ -56,13 +56,13 @@ var (
 		label:  "user",
 		set:    labs.AiSpendingCapRequestSubjectTypeUSER,
 		remove: labs.AiSpendingCapSubjectSubjectTypeUSER,
-		list:   labs.USER,
+		list:   labs.LabsListAiSpendingCapsParamsSubjectType("USER"),
 	}
 	capSubjectApiToken = capSubject{
 		label:  "API token",
 		set:    labs.AiSpendingCapRequestSubjectTypeSERVICEKEY,
 		remove: labs.AiSpendingCapSubjectSubjectTypeSERVICEKEY,
-		list:   labs.SERVICEKEY,
+		list:   labs.LabsListAiSpendingCapsParamsSubjectType("SERVICEKEY"),
 	}
 )
 
@@ -156,7 +156,8 @@ func (r *aiSpendingCapsResource) ValidateConfig(ctx context.Context, req resourc
 }
 
 // ModifyPlan fails a create that would change or remove caps the organization already has: with no
-// prior state, the plan cannot show them, so the resource has to be imported first. On a destroy it
+// prior state, the plan cannot show them, so the resource has to be imported first. A value not known
+// until apply is checked when Terraform plans again during the apply, before Create. On a destroy it
 // warns that nothing is removed.
 func (r *aiSpendingCapsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() {
@@ -194,19 +195,23 @@ func (r *aiSpendingCapsResource) ModifyPlan(ctx context.Context, req resource.Mo
 }
 
 // createConflicts names the existing caps that applying config would change or remove: for each
-// attribute the config sets, a value that differs or is missing from it.
+// attribute the config sets, a value that differs or is missing from it. A value not yet known is
+// skipped; it is checked again once known.
 func createConflicts(ctx context.Context, config, current models.AiSpendingCapsResource) ([]string, diag.Diagnostics) {
 	var conflicts []string
 	var diags diag.Diagnostics
+	differs := func(have, want types.Int64) bool {
+		return !have.IsNull() && !want.IsUnknown() && !have.Equal(want)
+	}
 	if !config.DefaultCapCents.IsNull() && !config.DefaultCapCents.IsUnknown() {
 		want, d := defaultsOf(ctx, config.DefaultCapCents)
 		diags.Append(d...)
 		have, d := defaultsOf(ctx, current.DefaultCapCents)
 		diags.Append(d...)
-		if !have.User.IsNull() && !have.User.Equal(want.User) {
+		if differs(have.User, want.User) {
 			conflicts = append(conflicts, "the user default")
 		}
-		if !have.ApiToken.IsNull() && !have.ApiToken.Equal(want.ApiToken) {
+		if differs(have.ApiToken, want.ApiToken) {
 			conflicts = append(conflicts, "the API token default")
 		}
 	}
@@ -217,12 +222,12 @@ func createConflicts(ctx context.Context, config, current models.AiSpendingCapsR
 		if kind.want.IsNull() || kind.want.IsUnknown() {
 			continue
 		}
-		want, d := capsFromMap(ctx, kind.want)
-		diags.Append(d...)
+		want := map[string]types.Int64{}
+		diags.Append(kind.want.ElementsAs(ctx, &want, false)...)
 		have, d := capsFromMap(ctx, kind.current)
 		diags.Append(d...)
 		for _, id := range sortedKeys(have) {
-			if value, ok := want[id]; !ok || value != have[id] {
+			if value, ok := want[id]; !ok || differs(types.Int64Value(have[id]), value) {
 				conflicts = append(conflicts, fmt.Sprintf("the override of %s %s", kind.label, id))
 			}
 		}
@@ -611,7 +616,7 @@ func isGateNotFound(body []byte) bool {
 func failedEntries(verb string, results []labs.AiSpendingCapResult) diag.Diagnostic {
 	var failed []string
 	for _, result := range results {
-		if result.Status == labs.FAILED {
+		if result.Status == labs.AiSpendingCapResultStatus("FAILED") {
 			failed = append(failed, result.SubjectId)
 		}
 	}

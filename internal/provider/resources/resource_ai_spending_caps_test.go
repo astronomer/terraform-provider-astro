@@ -146,7 +146,7 @@ func userHasAiSpendingCapOverride(userId string) (bool, error) {
 	}
 	ctx := context.Background()
 	hasOverride := true
-	list, err := client.LabsListAiSpendingCapsWithResponse(ctx, os.Getenv("HOSTED_ORGANIZATION_ID"), &labs.LabsListAiSpendingCapsParams{SubjectType: labs.USER, HasOverride: &hasOverride})
+	list, err := client.LabsListAiSpendingCapsWithResponse(ctx, os.Getenv("HOSTED_ORGANIZATION_ID"), &labs.LabsListAiSpendingCapsParams{SubjectType: labs.LabsListAiSpendingCapsParamsSubjectType("USER"), HasOverride: &hasOverride})
 	if err != nil {
 		return false, fmt.Errorf("failed to list the AI spending caps: %v", err)
 	}

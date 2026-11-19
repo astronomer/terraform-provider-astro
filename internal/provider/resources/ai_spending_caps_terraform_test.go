@@ -228,3 +228,101 @@ func TestUnit_ResourceAiSpendingCaps_Terraform(t *testing.T) {
 		},
 	})
 }
+
+// TestUnit_ResourceAiSpendingCaps_TerraformUnknownValues covers the create check when a key or value
+// in the configuration comes from another resource and is not known until apply. The plan cannot
+// check it, so the check runs when Terraform plans again during the apply, before Create sends
+// anything: a conflict fails the apply and leaves the caps as they were.
+func TestUnit_ResourceAiSpendingCaps_TerraformUnknownValues(t *testing.T) {
+	if _, err := exec.LookPath("terraform"); err != nil {
+		t.Skip("terraform is not on the PATH; skipping the test that runs the real Terraform CLI")
+	}
+	existing, other := cuid.New(), cuid.New()
+	// terraform_data's output is not known until it is created: lateId is other's ID, lateCap is 5000.
+	lateValues := fmt.Sprintf(`
+resource "terraform_data" "late_id" { input = %q }
+resource "terraform_data" "late_cap" { input = 5000 }
+`, other)
+	for _, tc := range []struct {
+		name         string
+		defaults     map[string]int
+		tokens       map[string]int
+		body         string
+		wantError    string
+		wantDefaults map[string]int
+		wantTokens   map[string]int
+	}{
+		{
+			name:       "a key known at apply, with an existing override the map changes",
+			tokens:     map[string]int{existing: 0},
+			body:       fmt.Sprintf("api_token_cap_cents = {\n(terraform_data.late_id.output) = 100\n%q = 5000\n}", existing),
+			wantError:  `(?s)Error running apply.*already has AI spending caps.*override of API token\s+` + existing,
+			wantTokens: map[string]int{existing: 0},
+		},
+		{
+			name:       "a value known at apply that changes an existing override",
+			tokens:     map[string]int{existing: 0},
+			body:       fmt.Sprintf("api_token_cap_cents = { %q = terraform_data.late_cap.output }", existing),
+			wantError:  `(?s)Error running apply.*already has AI spending caps.*override of API token\s+` + existing,
+			wantTokens: map[string]int{existing: 0},
+		},
+		{
+			name:       "a value known at apply that matches the existing override",
+			tokens:     map[string]int{existing: 5000},
+			body:       fmt.Sprintf("api_token_cap_cents = { %q = terraform_data.late_cap.output }", existing),
+			wantTokens: map[string]int{existing: 5000},
+		},
+		{
+			name:       "a value known at apply, with no existing caps",
+			body:       fmt.Sprintf("api_token_cap_cents = { %q = terraform_data.late_cap.output }", other),
+			wantTokens: map[string]int{other: 5000},
+		},
+		{
+			name:         "a default known at apply that changes the existing default",
+			defaults:     map[string]int{"SERVICEKEY": 0},
+			body:         "default_cap_cents = { api_token = terraform_data.late_cap.output }",
+			wantError:    `(?s)Error running apply.*already has AI spending caps.*the API token default`,
+			wantDefaults: map[string]int{"SERVICEKEY": 0},
+		},
+		{
+			name:         "a default known at apply that matches the existing default",
+			defaults:     map[string]int{"SERVICEKEY": 5000},
+			body:         "default_cap_cents = { api_token = terraform_data.late_cap.output }",
+			wantDefaults: map[string]int{"SERVICEKEY": 5000},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			api := resources.NewFakeAiSpendingCapsAPI()
+			srv := httptest.NewServer(api)
+			t.Cleanup(srv.Close)
+			labsClient, err := labs.NewLabsClient(srv.URL, "token", "test")
+			require.NoError(t, err)
+			for kind, value := range tc.defaults {
+				api.Defaults[kind] = value
+			}
+			for id, value := range tc.tokens {
+				api.Caps["SERVICEKEY"][id] = value
+			}
+			step := tfresource.TestStep{
+				Config: lateValues + fmt.Sprintf("resource \"astro_ai_spending_caps\" \"test\" {\n%s\n}\n", tc.body),
+			}
+			if tc.wantError != "" {
+				step.ExpectError = regexp.MustCompile(tc.wantError)
+			}
+			tfresource.UnitTest(t, tfresource.TestCase{
+				ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+					"astro": providerserver.NewProtocol6WithError(&capsTestProvider{labsClient: labsClient}),
+				},
+				Steps: []tfresource.TestStep{step},
+			})
+			want := func(m map[string]int) map[string]int {
+				if m == nil {
+					return map[string]int{}
+				}
+				return m
+			}
+			assert.Equal(t, want(tc.wantDefaults), api.Defaults, "defaults")
+			assert.Equal(t, want(tc.wantTokens), api.Caps["SERVICEKEY"], "API token caps")
+		})
+	}
+}
