@@ -1,5 +1,5 @@
 # The AI spending caps are a singleton per organization. Import them using the organization ID. The
-# provider reads both defaults, when they are set, and every user's and API token's override into the
-# resource, so the configuration then has to list the defaults and caps you keep: an attribute
-# missing from it is removed on the next apply.
+# provider reads both defaults and every user's and API token's override. Import first when the
+# organization already has caps that the configuration would change or remove: the create fails and
+# asks for it. The next plan then shows what the configuration would change or remove.
 terraform import astro_ai_spending_caps.org <organization_id>

@@ -18,7 +18,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// capsHarness drives the resource's methods against the fake, the way Terraform does.
+// These tests call the resource's methods directly, the way the framework does, for what is easier
+// to check here than through the Terraform CLI: the requests sent and their order, chunking, paging,
+// failed entries and the 404 gate. ai_spending_caps_terraform_test.go runs the real CLI.
+
+// capsHarness drives the resource's methods against the fake.
 type capsHarness struct {
 	t       *testing.T
 	api     *FakeAiSpendingCapsAPI
@@ -42,6 +46,15 @@ func newCapsHarness(t *testing.T) *capsHarness {
 	}
 }
 
+// defaults is a default_cap_cents object; a nil field is left out of it.
+type defaults struct{ user, apiToken *int64 }
+
+// config is a configuration; a nil field is an attribute left out.
+type config struct {
+	defaults         *defaults
+	users, apiTokens map[string]int64
+}
+
 func capsMapValue(caps map[string]int64) types.Map {
 	if caps == nil {
 		return types.MapNull(types.Int64Type)
@@ -57,30 +70,73 @@ func int64Value(value *int64) types.Int64 {
 	return types.Int64Value(*value)
 }
 
-// desired builds the model for a configuration: a nil map or default is an attribute left out.
-func desired(defaultUser, defaultApiToken *int64, users, apiTokens map[string]int64) models.AiSpendingCapsResource {
-	return models.AiSpendingCapsResource{
-		Id:                      types.StringUnknown(),
-		DefaultUserCapCents:     int64Value(defaultUser),
-		DefaultApiTokenCapCents: int64Value(defaultApiToken),
-		UserCapCents:            capsMapValue(users),
-		ApiTokenCapCents:        capsMapValue(apiTokens),
+func defaultsValue(d *defaults) types.Object {
+	if d == nil {
+		return types.ObjectNull(models.AiSpendingCapDefaultsAttrTypes)
 	}
+	value, _ := types.ObjectValueFrom(context.Background(), models.AiSpendingCapDefaultsAttrTypes,
+		models.AiSpendingCapDefaults{User: int64Value(d.user), ApiToken: int64Value(d.apiToken)})
+	return value
+}
+
+// model is the configuration as the resource reads it: what is left out is null.
+func (c config) model() models.AiSpendingCapsResource {
+	return models.AiSpendingCapsResource{
+		Id:               types.StringNull(),
+		DefaultCapCents:  defaultsValue(c.defaults),
+		UserCapCents:     capsMapValue(c.users),
+		ApiTokenCapCents: capsMapValue(c.apiTokens),
+	}
+}
+
+// planFor is what Terraform plans for the configuration: what it sets, and for what it leaves out,
+// the prior state's value (UseStateForUnknown), or unknown on a create.
+func planFor(c config, prior *models.AiSpendingCapsResource) models.AiSpendingCapsResource {
+	plan := c.model()
+	if prior == nil {
+		plan.Id = types.StringUnknown()
+		if c.defaults == nil {
+			plan.DefaultCapCents = types.ObjectUnknown(models.AiSpendingCapDefaultsAttrTypes)
+		}
+		if c.users == nil {
+			plan.UserCapCents = types.MapUnknown(types.Int64Type)
+		}
+		if c.apiTokens == nil {
+			plan.ApiTokenCapCents = types.MapUnknown(types.Int64Type)
+		}
+		return plan
+	}
+	plan.Id = prior.Id
+	if c.defaults == nil {
+		plan.DefaultCapCents = prior.DefaultCapCents
+	}
+	if c.users == nil {
+		plan.UserCapCents = prior.UserCapCents
+	}
+	if c.apiTokens == nil {
+		plan.ApiTokenCapCents = prior.ApiTokenCapCents
+	}
+	return plan
 }
 
 func (h *capsHarness) null() tftypes.Value { return tftypes.NewValue(h.objType, nil) }
 
-func (h *capsHarness) plan(m models.AiSpendingCapsResource) tfsdk.Plan {
+func (h *capsHarness) raw(m models.AiSpendingCapsResource) tftypes.Value {
 	p := tfsdk.Plan{Schema: h.schema, Raw: h.null()}
 	require.False(h.t, p.Set(context.Background(), &m).HasError())
-	return p
+	return p.Raw
 }
 
-func (h *capsHarness) state(m models.AiSpendingCapsResource) tfsdk.State {
-	m.Id = types.StringValue("org")
-	st := tfsdk.State{Schema: h.schema, Raw: h.null()}
-	require.False(h.t, st.Set(context.Background(), &m).HasError())
-	return st
+func (h *capsHarness) tfConfig(c config) tfsdk.Config {
+	return tfsdk.Config{Schema: h.schema, Raw: h.raw(c.model())}
+}
+
+func (h *capsHarness) tfPlan(m models.AiSpendingCapsResource) tfsdk.Plan {
+	return tfsdk.Plan{Schema: h.schema, Raw: h.raw(m)}
+}
+
+func (h *capsHarness) tfState(m models.AiSpendingCapsResource) tfsdk.State {
+	return tfsdk.State{Schema: h.schema, Raw: h.raw(m)}
 }
 
 func (h *capsHarness) model(st tfsdk.State) models.AiSpendingCapsResource {
@@ -89,36 +145,48 @@ func (h *capsHarness) model(st tfsdk.State) models.AiSpendingCapsResource {
 	return m
 }
 
-func (h *capsHarness) create(m models.AiSpendingCapsResource) *resource.CreateResponse {
+func (h *capsHarness) create(c config) *resource.CreateResponse {
 	resp := &resource.CreateResponse{State: tfsdk.State{Schema: h.schema, Raw: h.null()}}
-	h.r.Create(context.Background(), resource.CreateRequest{Plan: h.plan(m)}, resp)
+	h.r.Create(context.Background(), resource.CreateRequest{Config: h.tfConfig(c), Plan: h.tfPlan(planFor(c, nil))}, resp)
 	return resp
 }
 
-func (h *capsHarness) update(plan, state models.AiSpendingCapsResource) *resource.UpdateResponse {
-	prior := h.state(state)
-	resp := &resource.UpdateResponse{State: prior}
-	h.r.Update(context.Background(), resource.UpdateRequest{Plan: h.plan(plan), State: prior}, resp)
-	return resp
+// refresh is the state Terraform hands to Update and Delete: it refreshes before it plans.
+func (h *capsHarness) refresh() models.AiSpendingCapsResource {
+	resp := h.read()
+	require.False(h.t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
+	return h.model(resp.State)
 }
 
-func (h *capsHarness) read(state models.AiSpendingCapsResource) *resource.ReadResponse {
-	prior := h.state(state)
+func (h *capsHarness) read() *resource.ReadResponse {
+	// Read ignores the prior state, so any will do.
+	prior := h.tfState(models.AiSpendingCapsResource{
+		Id: types.StringValue("org"), DefaultCapCents: defaultsValue(nil),
+		UserCapCents: capsMapValue(nil), ApiTokenCapCents: capsMapValue(nil),
+	})
 	resp := &resource.ReadResponse{State: prior}
 	h.r.Read(context.Background(), resource.ReadRequest{State: prior}, resp)
 	return resp
 }
 
-// refreshed is the state Terraform hands to Update and Delete: it refreshes before it plans, so a
-// state that was only just applied has first been through Read.
-func (h *capsHarness) refreshed(state models.AiSpendingCapsResource) models.AiSpendingCapsResource {
-	resp := h.read(state)
-	require.False(h.t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
-	return h.model(resp.State)
+func (h *capsHarness) update(c config, state models.AiSpendingCapsResource) *resource.UpdateResponse {
+	prior := h.tfState(state)
+	resp := &resource.UpdateResponse{State: prior}
+	h.r.Update(context.Background(), resource.UpdateRequest{Config: h.tfConfig(c), Plan: h.tfPlan(planFor(c, &state)), State: prior}, resp)
+	return resp
+}
+
+func (h *capsHarness) planCreate(c config) *resource.ModifyPlanResponse {
+	plan := h.tfPlan(planFor(c, nil))
+	resp := &resource.ModifyPlanResponse{Plan: plan}
+	h.r.ModifyPlan(context.Background(), resource.ModifyPlanRequest{
+		Config: h.tfConfig(c), Plan: plan, State: tfsdk.State{Schema: h.schema, Raw: h.null()},
+	}, resp)
+	return resp
 }
 
 func (h *capsHarness) destroy(state models.AiSpendingCapsResource) *resource.DeleteResponse {
-	prior := h.state(state)
+	prior := h.tfState(state)
 	resp := &resource.DeleteResponse{State: prior}
 	h.r.Delete(context.Background(), resource.DeleteRequest{State: prior}, resp)
 	return resp
@@ -133,41 +201,37 @@ func elements(t *testing.T, m types.Map) map[string]int64 {
 	return out
 }
 
+func defaultsIn(t *testing.T, o types.Object) models.AiSpendingCapDefaults {
+	t.Helper()
+	d, diags := defaultsOf(context.Background(), o)
+	require.False(t, diags.HasError())
+	return d
+}
+
 func TestUnit_AiSpendingCaps_SchemaIsValid(t *testing.T) {
 	s := rschema.Schema{Attributes: schemas.AiSpendingCapsResourceSchemaAttributes()}
 	assert.False(t, s.ValidateImplementation(context.Background()).HasError())
 }
 
-func TestUnit_AiSpendingCaps_Create_SetsWhatIsConfiguredAndStoresThePlan(t *testing.T) {
+func TestUnit_AiSpendingCaps_Create_SetsWhatIsConfiguredAndReadsWhatIsLeftOut(t *testing.T) {
 	h := newCapsHarness(t)
-	plan := desired(ptr(5000), ptr(2500), map[string]int64{"user-a": 100, "user-b": 0}, map[string]int64{"token-a": 300})
+	h.api.Seed("SERVICEKEY", map[string]int{"set-in-the-ui": 5})
 
-	resp := h.create(plan)
+	resp := h.create(config{
+		defaults: &defaults{user: ptr(5000), apiToken: ptr(2500)},
+		users:    map[string]int64{"user-a": 100, "user-b": 0},
+	})
 
 	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
+	assert.Equal(t, []string{"set-caps:2", "set-defaults", "get-defaults", "list:USER", "list:SERVICEKEY"}, h.api.CallsMade(),
+		"overrides before defaults, then a read of what the configuration leaves out")
 	assert.Equal(t, map[string]int{"USER": 5000, "SERVICEKEY": 2500}, h.api.Defaults)
 	assert.Equal(t, map[string]int{"user-a": 100, "user-b": 0}, h.api.Caps["USER"], "0 is a cap, not an absent one")
-	assert.Equal(t, map[string]int{"token-a": 300}, h.api.Caps["SERVICEKEY"])
+	assert.Equal(t, map[string]int{"set-in-the-ui": 5}, h.api.Caps["SERVICEKEY"], "a map left out is not changed")
 	stored := h.model(resp.State)
 	assert.Equal(t, "org", stored.Id.ValueString())
-	assert.Equal(t, int64(5000), stored.DefaultUserCapCents.ValueInt64())
 	assert.Equal(t, map[string]int64{"user-a": 100, "user-b": 0}, elements(t, stored.UserCapCents))
-}
-
-func TestUnit_AiSpendingCaps_Create_LeavesUnmanagedAttributesAlone(t *testing.T) {
-	h := newCapsHarness(t)
-	h.api.Seed("USER", map[string]int{"set-in-the-ui": 700})
-	h.api.Defaults["SERVICEKEY"] = 99
-
-	resp := h.create(desired(ptr(5000), nil, nil, nil))
-
-	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
-	assert.Equal(t, []string{"set-defaults"}, h.api.CallsMade(), "only the one default that is configured is sent")
-	assert.Equal(t, map[string]int{"set-in-the-ui": 700}, h.api.Caps["USER"], "a map that is not set is not managed")
-	assert.Equal(t, 99, h.api.Defaults["SERVICEKEY"], "a default that is not set is not managed")
-	stored := h.model(resp.State)
-	assert.True(t, stored.UserCapCents.IsNull())
-	assert.True(t, stored.DefaultApiTokenCapCents.IsNull())
+	assert.Equal(t, map[string]int64{"set-in-the-ui": 5}, elements(t, stored.ApiTokenCapCents), "a map left out is read into the state")
 }
 
 func TestUnit_AiSpendingCaps_Create_ChunksTheBulkRequests(t *testing.T) {
@@ -177,90 +241,82 @@ func TestUnit_AiSpendingCaps_Create_ChunksTheBulkRequests(t *testing.T) {
 		users[fmt.Sprintf("user-%04d", i)] = int64(i)
 	}
 
-	resp := h.create(desired(nil, nil, users, nil))
+	resp := h.create(config{users: users})
 
 	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
-	assert.Equal(t, []string{"set-caps:500", "set-caps:500", "set-caps:100"}, h.api.CallsMade())
+	assert.Equal(t, []string{"set-caps:500", "set-caps:500", "set-caps:100"}, h.api.CallsMade()[:3])
 	assert.Len(t, h.api.Caps["USER"], 1100)
 }
 
-func TestUnit_AiSpendingCaps_Update_SendsOnlyWhatChangedAndSetsBeforeRemoving(t *testing.T) {
+func TestUnit_AiSpendingCaps_Update_SendsOnlyWhatChangedInOrder(t *testing.T) {
 	h := newCapsHarness(t)
 	h.api.Seed("USER", map[string]int{"keep": 100, "change": 200, "drop": 300})
-	state := desired(ptr(5000), ptr(2500), map[string]int64{"keep": 100, "change": 200, "drop": 300}, nil)
-	plan := desired(ptr(6000), nil, map[string]int64{"keep": 100, "change": 250, "new": 50}, nil)
 	h.api.Defaults = map[string]int{"USER": 5000, "SERVICEKEY": 2500}
+	state := h.refresh()
+	callsBefore := len(h.api.CallsMade())
 
-	resp := h.update(plan, state)
+	resp := h.update(config{
+		defaults: &defaults{user: ptr(6000)}, // api_token left out of a set object: removed
+		users:    map[string]int64{"keep": 100, "change": 250, "new": 50},
+	}, state)
 
 	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
-	assert.Equal(t, []string{"set-caps:2", "set-defaults", "remove-caps:1"}, h.api.CallsMade(),
-		"the unchanged cap is not sent, overrides are set before defaults, and everything that sets runs before anything that removes")
+	assert.Equal(t, []string{"set-caps:2", "set-defaults", "remove-defaults", "remove-caps:1"}, h.api.CallsMade()[callsBefore:],
+		"the unchanged cap is not sent, overrides are set before defaults, and removals come last")
 	assert.Equal(t, map[string]int{"keep": 100, "change": 250, "new": 50}, h.api.Caps["USER"])
-	assert.Equal(t, map[string]int{"USER": 6000, "SERVICEKEY": 2500}, h.api.Defaults,
-		"the API token default left the configuration, so it is not managed and keeps its value")
+	assert.Equal(t, map[string]int{"USER": 6000}, h.api.Defaults)
 }
 
-func TestUnit_AiSpendingCaps_Update_RemovingADefaultLeavesItsValueAlone(t *testing.T) {
+func TestUnit_AiSpendingCaps_Update_WhatIsLeftOutIsNotChanged(t *testing.T) {
 	h := newCapsHarness(t)
-	h.api.Defaults = map[string]int{"USER": 5000, "SERVICEKEY": 2500}
-	state := h.refreshed(desired(ptr(5000), ptr(2500), nil, nil))
-
-	resp := h.update(desired(nil, nil, nil, nil), state)
-
-	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
-	assert.Equal(t, map[string]int{"USER": 5000, "SERVICEKEY": 2500}, h.api.Defaults, "leaving a default out removes nothing")
-	assert.Equal(t, []string{"get-defaults"}, h.api.CallsMade(), "and sends nothing beyond the refresh before it")
-	got := h.model(resp.State)
-	assert.True(t, got.DefaultUserCapCents.IsNull())
-	assert.True(t, got.DefaultApiTokenCapCents.IsNull(), "the defaults are no longer managed")
-}
-
-func TestUnit_AiSpendingCaps_Update_RemovingAMapLeavesItsOverridesAlone(t *testing.T) {
-	h := newCapsHarness(t)
-	// An admin gave "set-in-the-ui" a 0 cap, which turns AI off for them. Terraform refreshes before
-	// it plans, so by Update the state holds that override too.
+	// An admin gave "set-in-the-ui" a 0 cap, which turns AI off for them.
 	h.api.Seed("USER", map[string]int{"managed": 100, "set-in-the-ui": 0})
-	state := h.refreshed(desired(nil, nil, map[string]int64{"managed": 100}, nil))
-	require.Equal(t, map[string]int64{"managed": 100, "set-in-the-ui": 0}, elements(t, state.UserCapCents))
+	h.api.Seed("SERVICEKEY", map[string]int{"token-a": 1})
+	h.api.Defaults = map[string]int{"USER": 5000}
+	state := h.refresh()
+	callsBefore := len(h.api.CallsMade())
 
-	resp := h.update(desired(nil, nil, nil, nil), state)
-
-	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
-	assert.Equal(t, map[string]int{"managed": 100, "set-in-the-ui": 0}, h.api.Caps["USER"], "leaving the map out removes nothing")
-	assert.Equal(t, []string{"list:USER"}, h.api.CallsMade(), "and sends nothing beyond the refresh before it")
-	assert.True(t, h.model(resp.State).UserCapCents.IsNull(), "the map is no longer managed")
-}
-
-func TestUnit_AiSpendingCaps_Update_AnEmptyMapRemovesEveryOverrideOfItsKind(t *testing.T) {
-	h := newCapsHarness(t)
-	h.api.Seed("SERVICEKEY", map[string]int{"token-a": 1, "token-b": 2, "set-in-the-ui": 3})
-	state := h.refreshed(desired(nil, nil, nil, map[string]int64{"token-a": 1, "token-b": 2}))
-
-	resp := h.update(desired(nil, nil, nil, map[string]int64{}), state)
+	resp := h.update(config{apiTokens: map[string]int64{"token-a": 2}}, state)
 
 	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
-	assert.Empty(t, h.api.Caps["SERVICEKEY"])
-	assert.NotNil(t, elements(t, h.model(resp.State).ApiTokenCapCents), "an empty map stays set")
-	assert.False(t, h.model(resp.State).ApiTokenCapCents.IsNull())
+	assert.Equal(t, []string{"set-caps:1"}, h.api.CallsMade()[callsBefore:], "only the map the configuration sets is sent")
+	assert.Equal(t, map[string]int{"managed": 100, "set-in-the-ui": 0}, h.api.Caps["USER"])
+	assert.Equal(t, map[string]int{"USER": 5000}, h.api.Defaults)
+	got := h.model(resp.State)
+	assert.Equal(t, map[string]int64{"managed": 100, "set-in-the-ui": 0}, elements(t, got.UserCapCents), "and keeps its value in the state")
+	assert.Equal(t, int64(5000), defaultsIn(t, got.DefaultCapCents).User.ValueInt64())
 }
 
-func TestUnit_AiSpendingCaps_Read_AMapIsAuthoritativeAndAnUnsetOneIsNotRead(t *testing.T) {
+func TestUnit_AiSpendingCaps_Update_EmptyRemovesEverythingItCovers(t *testing.T) {
 	h := newCapsHarness(t)
-	h.api.Seed("USER", map[string]int{"managed": 100, "set-in-the-ui": 700})
+	h.api.Seed("USER", map[string]int{"a": 1, "set-in-the-ui": 2})
+	h.api.Seed("SERVICEKEY", map[string]int{"token-a": 3})
+	h.api.Defaults = map[string]int{"USER": 5000, "SERVICEKEY": 2500}
+	state := h.refresh()
+
+	resp := h.update(config{defaults: &defaults{}, users: map[string]int64{}}, state)
+
+	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
+	assert.Empty(t, h.api.Defaults, "{} removes both defaults")
+	assert.Empty(t, h.api.Caps["USER"], "{} removes every user's override, including ones set in the UI")
+	assert.Equal(t, map[string]int{"token-a": 3}, h.api.Caps["SERVICEKEY"], "a map left out is not changed")
+}
+
+func TestUnit_AiSpendingCaps_Read_ReadsEverything(t *testing.T) {
+	h := newCapsHarness(t)
+	h.api.Seed("USER", map[string]int{"a": 100})
 	h.api.Seed("SERVICEKEY", map[string]int{"token-a": 5})
 	h.api.Defaults["USER"] = 4000
-	state := desired(ptr(5000), ptr(1000), map[string]int64{"managed": 100}, nil)
 
-	resp := h.read(state)
+	got := h.refresh()
 
-	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
-	got := h.model(resp.State)
-	assert.Equal(t, map[string]int64{"managed": 100, "set-in-the-ui": 700}, elements(t, got.UserCapCents), "a cap set in the UI shows as drift")
-	assert.True(t, got.ApiTokenCapCents.IsNull(), "a map that is not managed stays null")
-	assert.Equal(t, int64(4000), got.DefaultUserCapCents.ValueInt64(), "a default changed behind Terraform's back shows as drift")
-	assert.True(t, got.DefaultApiTokenCapCents.IsNull(), "a managed default removed behind Terraform's back reads as unset")
-	assert.NotContains(t, h.api.CallsMade(), "list:SERVICEKEY")
+	assert.Equal(t, "org", got.Id.ValueString())
+	assert.Equal(t, map[string]int64{"a": 100}, elements(t, got.UserCapCents))
+	assert.Equal(t, map[string]int64{"token-a": 5}, elements(t, got.ApiTokenCapCents))
+	d := defaultsIn(t, got.DefaultCapCents)
+	assert.False(t, got.DefaultCapCents.IsNull(), "the object is always set, so {} in the configuration matches no defaults")
+	assert.Equal(t, int64(4000), d.User.ValueInt64())
+	assert.True(t, d.ApiToken.IsNull(), "no default is a null field")
 }
 
 func TestUnit_AiSpendingCaps_Read_PagesThroughEveryCap(t *testing.T) {
@@ -269,11 +325,10 @@ func TestUnit_AiSpendingCaps_Read_PagesThroughEveryCap(t *testing.T) {
 		h.api.Caps["USER"][fmt.Sprintf("user-%03d", i)] = i
 	}
 
-	resp := h.read(desired(nil, nil, map[string]int64{}, nil))
+	got := h.refresh()
 
-	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
-	assert.Len(t, elements(t, h.model(resp.State).UserCapCents), 250)
-	assert.Equal(t, []string{"list:USER", "list:USER", "list:USER"}, h.api.CallsMade(), "100 per page")
+	assert.Len(t, elements(t, got.UserCapCents), 250)
+	assert.Equal(t, []string{"get-defaults", "list:USER", "list:USER", "list:USER", "list:SERVICEKEY"}, h.api.CallsMade(), "100 per page")
 }
 
 func TestUnit_AiSpendingCaps_Read_ErrorsWhenAPageWentMissing(t *testing.T) {
@@ -281,7 +336,7 @@ func TestUnit_AiSpendingCaps_Read_ErrorsWhenAPageWentMissing(t *testing.T) {
 	h.api.Seed("USER", map[string]int{"a": 1})
 	h.api.TotalCountPadding = 1
 
-	resp := h.read(desired(nil, nil, map[string]int64{}, nil))
+	resp := h.read()
 
 	require.True(t, resp.Diagnostics.HasError(), "a list shorter than its count must not read as the whole list")
 	assert.Contains(t, resp.Diagnostics.Errors()[0].Detail(), "reports 2")
@@ -291,7 +346,7 @@ func TestUnit_AiSpendingCaps_AFailedEntryIsAnErrorNamingTheSubject(t *testing.T)
 	h := newCapsHarness(t)
 	h.api.FailIds["user-b"] = true
 
-	resp := h.create(desired(nil, nil, map[string]int64{"user-a": 1, "user-b": 2}, nil))
+	resp := h.create(config{users: map[string]int64{"user-a": 1, "user-b": 2}})
 
 	require.True(t, resp.Diagnostics.HasError())
 	assert.Contains(t, resp.Diagnostics.Errors()[0].Detail(), "user-b")
@@ -302,7 +357,7 @@ func TestUnit_AiSpendingCaps_AnUnknownSubjectIsReportedAsItselfAndNotAsTheGate(t
 	h := newCapsHarness(t)
 	h.api.UnknownIds["gone-token"] = true
 
-	create := h.create(desired(nil, nil, nil, map[string]int64{"gone-token": 100}))
+	create := h.create(config{apiTokens: map[string]int64{"gone-token": 100}})
 	require.True(t, create.Diagnostics.HasError())
 	errs := create.Diagnostics.Errors()
 	assert.NotContains(t, errs[0].Summary(), "not available", "a 404 for a subject does not mean the feature is off")
@@ -310,8 +365,9 @@ func TestUnit_AiSpendingCaps_AnUnknownSubjectIsReportedAsItselfAndNotAsTheGate(t
 	assert.Contains(t, errs[0].Detail(), "api token with id gone-token not found")
 
 	h.api.Seed("USER", map[string]int{"gone-user": 5})
+	state := h.refresh()
 	h.api.UnknownIds["gone-user"] = true
-	update := h.update(desired(nil, nil, map[string]int64{}, nil), desired(nil, nil, map[string]int64{"gone-user": 5}, nil))
+	update := h.update(config{users: map[string]int64{}}, state)
 	require.True(t, update.Diagnostics.HasError())
 	assert.NotContains(t, update.Diagnostics.Errors()[0].Summary(), "not available")
 	assert.Contains(t, update.Diagnostics.Errors()[0].Detail(), "user with id gone-user not found")
@@ -320,14 +376,17 @@ func TestUnit_AiSpendingCaps_AnUnknownSubjectIsReportedAsItselfAndNotAsTheGate(t
 func TestUnit_AiSpendingCaps_TheGateBeingOffIsAnErrorAndNeverDropsTheResource(t *testing.T) {
 	h := newCapsHarness(t)
 	h.api.GateOff = true
-	state := desired(ptr(5000), nil, map[string]int64{"user-a": 1}, nil)
 
-	read := h.read(state)
+	read := h.read()
 	require.True(t, read.Diagnostics.HasError())
 	assert.Contains(t, read.Diagnostics.Errors()[0].Summary(), "not available")
 	assert.False(t, read.State.Raw.IsNull(), "a 404 here means the feature is off, not that the resource is gone")
 
-	create := h.create(desired(ptr(5000), nil, nil, nil))
+	plan := h.planCreate(config{defaults: &defaults{user: ptr(5000)}})
+	require.True(t, plan.Diagnostics.HasError(), "the create check reads, so the plan says so")
+	assert.Contains(t, plan.Diagnostics.Errors()[0].Detail(), "Contact Astronomer")
+
+	create := h.create(config{defaults: &defaults{user: ptr(5000)}})
 	require.True(t, create.Diagnostics.HasError())
 	assert.Contains(t, create.Diagnostics.Errors()[0].Detail(), "Contact Astronomer")
 
@@ -336,37 +395,90 @@ func TestUnit_AiSpendingCaps_TheGateBeingOffIsAnErrorAndNeverDropsTheResource(t 
 	assert.True(t, imported.Diagnostics.HasError())
 }
 
-func TestUnit_AiSpendingCaps_Delete_RemovesNothingAndSaysSo(t *testing.T) {
+func TestUnit_AiSpendingCaps_ModifyPlan_CreateFailsOnCapsItWouldChangeOrRemove(t *testing.T) {
 	h := newCapsHarness(t)
-	h.api.Seed("USER", map[string]int{"managed": 100, "set-in-the-ui": 700})
-	h.api.Seed("SERVICEKEY", map[string]int{"token-a": 5})
+	h.api.Seed("USER", map[string]int{"set-in-the-ui": 0, "same": 5})
+	h.api.Defaults = map[string]int{"USER": 1000, "SERVICEKEY": 2500}
+
+	resp := h.planCreate(config{
+		defaults: &defaults{user: ptr(1000)}, // same user default; leaves the API token default out
+		users:    map[string]int64{"same": 5, "new": 1},
+	})
+
+	require.True(t, resp.Diagnostics.HasError())
+	detail := resp.Diagnostics.Errors()[0].Detail()
+	assert.Contains(t, detail, "the override of user set-in-the-ui", "an override the map would remove")
+	assert.Contains(t, detail, "the API token default", "a default the object would remove")
+	assert.NotContains(t, detail, "user same", "an override the configuration keeps as it is")
+	assert.NotContains(t, detail, "the user default", "a default the configuration keeps as it is")
+	assert.Contains(t, detail, "terraform import")
+}
+
+func TestUnit_AiSpendingCaps_ModifyPlan_CreateIsAllowedWhenNothingExistingChanges(t *testing.T) {
+	h := newCapsHarness(t)
+	h.api.Seed("USER", map[string]int{"set-in-the-ui": 0})
+	h.api.Defaults = map[string]int{"USER": 1000}
+
+	assert.False(t, h.planCreate(config{apiTokens: map[string]int64{"token-a": 1}}).Diagnostics.HasError(),
+		"what the configuration leaves out never conflicts")
+	assert.False(t, h.planCreate(config{users: map[string]int64{"set-in-the-ui": 0}, defaults: &defaults{user: ptr(1000)}}).Diagnostics.HasError(),
+		"caps that match the configuration, as after a destroy, do not conflict")
+	assert.False(t, newCapsHarness(t).planCreate(config{defaults: &defaults{}, users: map[string]int64{}}).Diagnostics.HasError(),
+		"an organization without caps")
+}
+
+func TestUnit_AiSpendingCaps_ModifyPlan_CreateListsTheFirstConflictsAndCountsTheRest(t *testing.T) {
+	h := newCapsHarness(t)
+	for i := 0; i < 15; i++ {
+		h.api.Caps["USER"][fmt.Sprintf("user-%02d", i)] = i
+	}
+
+	resp := h.planCreate(config{users: map[string]int64{}})
+
+	require.True(t, resp.Diagnostics.HasError())
+	detail := resp.Diagnostics.Errors()[0].Detail()
+	assert.Contains(t, detail, "user-09")
+	assert.NotContains(t, detail, "user-10")
+	assert.Contains(t, detail, "and 5 more")
+}
+
+func TestUnit_AiSpendingCaps_ModifyPlan_UpdateReadsNothingAndDestroyWarns(t *testing.T) {
+	h := newCapsHarness(t)
+	h.api.Seed("USER", map[string]int{"set-in-the-ui": 0})
+	state := h.refresh()
+	callsBefore := len(h.api.CallsMade())
+
+	c := config{users: map[string]int64{}}
+	update := &resource.ModifyPlanResponse{Plan: h.tfPlan(planFor(c, &state))}
+	h.r.ModifyPlan(context.Background(), resource.ModifyPlanRequest{
+		Config: h.tfConfig(c), Plan: h.tfPlan(planFor(c, &state)), State: h.tfState(state),
+	}, update)
+	assert.False(t, update.Diagnostics.HasError())
+	assert.Len(t, h.api.CallsMade(), callsBefore, "an update plans from the refreshed state")
+
+	destroy := &resource.ModifyPlanResponse{Plan: tfsdk.Plan{Schema: h.schema, Raw: h.null()}}
+	h.r.ModifyPlan(context.Background(), resource.ModifyPlanRequest{
+		Config: tfsdk.Config{Schema: h.schema, Raw: h.null()}, Plan: tfsdk.Plan{Schema: h.schema, Raw: h.null()}, State: h.tfState(state),
+	}, destroy)
+	require.Equal(t, 1, destroy.Diagnostics.WarningsCount(), "the destroy plan says nothing will be removed")
+	assert.Contains(t, destroy.Diagnostics.Warnings()[0].Detail(), "{}")
+}
+
+func TestUnit_AiSpendingCaps_Delete_ChangesNothingAndSaysSo(t *testing.T) {
+	h := newCapsHarness(t)
+	h.api.Seed("USER", map[string]int{"a": 100})
 	h.api.Defaults = map[string]int{"USER": 5000, "SERVICEKEY": 2500}
-	state := h.refreshed(desired(ptr(5000), nil, map[string]int64{"managed": 100}, nil))
+	state := h.refresh()
 	callsBefore := len(h.api.CallsMade())
 
 	resp := h.destroy(state)
 
 	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
-	assert.Equal(t, map[string]int{"managed": 100, "set-in-the-ui": 700}, h.api.Caps["USER"], "a destroy removes no override, managed or not")
-	assert.Equal(t, map[string]int{"token-a": 5}, h.api.Caps["SERVICEKEY"], "an unmanaged map is left alone")
-	assert.Equal(t, map[string]int{"USER": 5000, "SERVICEKEY": 2500}, h.api.Defaults, "and no default, managed or not")
+	assert.Equal(t, map[string]int{"a": 100}, h.api.Caps["USER"])
+	assert.Equal(t, map[string]int{"USER": 5000, "SERVICEKEY": 2500}, h.api.Defaults)
 	assert.Len(t, h.api.CallsMade(), callsBefore, "it sends nothing")
-	require.Equal(t, 1, resp.Diagnostics.WarningsCount(), "it says the caps were left in place")
+	require.Equal(t, 1, resp.Diagnostics.WarningsCount())
 	assert.Contains(t, resp.Diagnostics.Warnings()[0].Detail(), "{}")
-}
-
-func TestUnit_AiSpendingCaps_Delete_AfterEmptyingTheMapsRemovesTheOverrides(t *testing.T) {
-	h := newCapsHarness(t)
-	h.api.Seed("USER", map[string]int{"managed": 100, "set-in-the-ui": 700})
-	state := h.refreshed(desired(nil, nil, map[string]int64{"managed": 100}, nil))
-
-	// The documented way to remove them before a destroy: set the map to {} and apply.
-	applied := h.update(desired(nil, nil, map[string]int64{}, nil), state)
-	require.False(t, applied.Diagnostics.HasError(), "%v", applied.Diagnostics)
-	resp := h.destroy(h.refreshed(h.model(applied.State)))
-
-	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
-	assert.Empty(t, h.api.Caps["USER"])
 }
 
 func TestUnit_AiSpendingCaps_ImportReadsEverything(t *testing.T) {
@@ -380,27 +492,25 @@ func TestUnit_AiSpendingCaps_ImportReadsEverything(t *testing.T) {
 	require.False(t, resp.Diagnostics.HasError(), "%v", resp.Diagnostics)
 	got := h.model(resp.State)
 	assert.Equal(t, "org", got.Id.ValueString())
-	assert.True(t, got.DefaultUserCapCents.IsNull(), "no default is no default")
-	assert.Equal(t, int64(2500), got.DefaultApiTokenCapCents.ValueInt64())
+	d := defaultsIn(t, got.DefaultCapCents)
+	assert.True(t, d.User.IsNull(), "no default is no default")
+	assert.Equal(t, int64(2500), d.ApiToken.ValueInt64())
 	assert.Equal(t, map[string]int64{"user-a": 100}, elements(t, got.UserCapCents))
-	assert.False(t, got.ApiTokenCapCents.IsNull(), "the maps are set, empty or not, so they are managed after an import")
 	assert.Empty(t, elements(t, got.ApiTokenCapCents))
 }
 
 func TestUnit_AiSpendingCaps_ValidateConfig_RefusesMoreThanTheOrganizationCanHave(t *testing.T) {
 	h := newCapsHarness(t)
 	validate := func(users, tokens int) *resource.ValidateConfigResponse {
-		userCaps, tokenCaps := map[string]int64{}, map[string]int64{}
+		c := config{users: map[string]int64{}, apiTokens: map[string]int64{}}
 		for i := 0; i < users; i++ {
-			userCaps[fmt.Sprintf("u%d", i)] = 1
+			c.users[fmt.Sprintf("u%d", i)] = 1
 		}
 		for i := 0; i < tokens; i++ {
-			tokenCaps[fmt.Sprintf("t%d", i)] = 1
+			c.apiTokens[fmt.Sprintf("t%d", i)] = 1
 		}
-		m := desired(nil, nil, userCaps, tokenCaps)
-		cfg := tfsdk.Config{Schema: h.schema, Raw: h.plan(m).Raw}
 		resp := &resource.ValidateConfigResponse{}
-		h.r.ValidateConfig(context.Background(), resource.ValidateConfigRequest{Config: cfg}, resp)
+		h.r.ValidateConfig(context.Background(), resource.ValidateConfigRequest{Config: h.tfConfig(c)}, resp)
 		return resp
 	}
 
@@ -415,7 +525,7 @@ func TestUnit_diffCaps(t *testing.T) {
 	assert.Equal(t, map[string]int64{"b": 2, "c": 3}, changes.set)
 	assert.Equal(t, []string{"d", "e"}, changes.remove)
 
-	assert.Equal(t, []string{"a"}, diffCaps(map[string]int64{}, map[string]int64{"a": 1}).remove, "an empty map removes what the state held")
+	assert.Equal(t, []string{"a"}, diffCaps(map[string]int64{}, map[string]int64{"a": 1}).remove, "an empty map removes what the state holds")
 	assert.Empty(t, diffCaps(map[string]int64{"a": 1}, map[string]int64{"a": 1}).set, "an unchanged cap is not sent")
 	assert.Equal(t, map[string]int64{"a": 0}, diffCaps(map[string]int64{"a": 0}, nil).set, "a cap of 0 is a cap to set")
 }
@@ -424,7 +534,6 @@ func TestUnit_diffDefault(t *testing.T) {
 	assert.Equal(t, 5, *diffDefault(types.Int64Value(5), types.Int64Null()), "a new default is set")
 	assert.Equal(t, 0, *diffDefault(types.Int64Value(0), types.Int64Value(5)), "0 is a default to set")
 	assert.Nil(t, diffDefault(types.Int64Value(5), types.Int64Value(5)), "an unchanged default is not sent")
-	assert.Nil(t, diffDefault(types.Int64Null(), types.Int64Value(5)), "left out of the configuration after it was set: not managed, not removed")
+	assert.Nil(t, diffDefault(types.Int64Null(), types.Int64Value(5)), "removing is not setting")
 	assert.Nil(t, diffDefault(types.Int64Unknown(), types.Int64Value(5)))
-	assert.Nil(t, diffDefault(types.Int64Null(), types.Int64Null()), "never managed")
 }

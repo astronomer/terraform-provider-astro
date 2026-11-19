@@ -15,12 +15,13 @@ import (
 	"github.com/astronomer/terraform-provider-astro/internal/provider/schemas"
 )
 
-func validateCapInt64(t *testing.T, attribute string, value int64) bool {
+func validateDefault(t *testing.T, field string, value int64) bool {
 	t.Helper()
-	attr := schemas.AiSpendingCapsResourceSchemaAttributes()[attribute].(resourceSchema.Int64Attribute)
+	defaults := schemas.AiSpendingCapsResourceSchemaAttributes()["default_cap_cents"].(resourceSchema.SingleNestedAttribute)
+	attr := defaults.Attributes[field].(resourceSchema.Int64Attribute)
 	resp := &validator.Int64Response{}
 	for _, v := range attr.Validators {
-		v.ValidateInt64(context.Background(), validator.Int64Request{Path: path.Root(attribute), ConfigValue: types.Int64Value(value)}, resp)
+		v.ValidateInt64(context.Background(), validator.Int64Request{Path: path.Root("default_cap_cents").AtName(field), ConfigValue: types.Int64Value(value)}, resp)
 	}
 	return !resp.Diagnostics.HasError()
 }
@@ -38,11 +39,11 @@ func validateCapMap(t *testing.T, attribute string, caps map[string]int64) bool 
 }
 
 func TestUnit_AiSpendingCapsSchema_DefaultsAreBetweenZeroAndTheMaximum(t *testing.T) {
-	for _, attribute := range []string{"default_user_cap_cents", "default_api_token_cap_cents"} {
-		assert.True(t, validateCapInt64(t, attribute, 0), "%s: 0 turns AI off and is allowed", attribute)
-		assert.True(t, validateCapInt64(t, attribute, schemas.MaxAiSpendingCapCents), "%s: the maximum is allowed", attribute)
-		assert.False(t, validateCapInt64(t, attribute, -1), "%s: a negative cap is refused", attribute)
-		assert.False(t, validateCapInt64(t, attribute, schemas.MaxAiSpendingCapCents+1), "%s: above the maximum is refused", attribute)
+	for _, field := range []string{"user", "api_token"} {
+		assert.True(t, validateDefault(t, field, 0), "%s: 0 turns AI off and is allowed", field)
+		assert.True(t, validateDefault(t, field, schemas.MaxAiSpendingCapCents), "%s: the maximum is allowed", field)
+		assert.False(t, validateDefault(t, field, -1), "%s: a negative cap is refused", field)
+		assert.False(t, validateDefault(t, field, schemas.MaxAiSpendingCapCents+1), "%s: above the maximum is refused", field)
 	}
 }
 
