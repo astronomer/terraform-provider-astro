@@ -346,7 +346,7 @@ Required:
 
 Optional:
 
-- `override` (Attributes) Hibernation override configuration. Set to null to remove the override. (see [below for nested schema](#nestedatt--scaling_spec--hibernation_spec--override))
+- `override` (Attributes) Hibernation override configuration. Set to null to remove the override. An override whose override_until has already passed is not stored in state. (see [below for nested schema](#nestedatt--scaling_spec--hibernation_spec--override))
 - `schedules` (Attributes Set) List of hibernation schedules. Set to null to remove all schedules. (see [below for nested schema](#nestedatt--scaling_spec--hibernation_spec--schedules))
 
 <a id="nestedatt--scaling_spec--hibernation_spec--override"></a>
@@ -358,7 +358,7 @@ Required:
 
 Optional:
 
-- `override_until` (String)
+- `override_until` (String) RFC3339 timestamp until which the override is in effect; it must be in the future. Omit it for an override that lasts until it is removed.
 
 Read-Only:
 
