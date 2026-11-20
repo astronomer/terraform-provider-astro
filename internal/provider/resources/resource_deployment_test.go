@@ -463,7 +463,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					SchedulerSize:               string(platform.SchedulerMachineNameEXTRALARGE),
 					IncludeEnvironmentVariables: false,
 					WorkerQueuesStr:             workerQueuesStr("", "20Gi"),
-					DesiredWorkloadIdentity:     "arn:aws:iam::123456789:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0",
+					DesiredWorkloadIdentity:     "arn:aws:iam::123456789012:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0",
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(awsResourceVar, "description", utils.TestResourceDescription),
@@ -473,7 +473,7 @@ func TestAcc_ResourceDeploymentStandard(t *testing.T) {
 					resource.TestCheckResourceAttr(awsResourceVar, "worker_queues.0.pod_ephemeral_storage", "20Gi"),
 					resource.TestCheckNoResourceAttr(awsResourceVar, "environment_variables.0.key"),
 					resource.TestCheckResourceAttr(awsResourceVar, "executor", "CELERY"),
-					resource.TestCheckResourceAttr(awsResourceVar, "desired_workload_identity", "arn:aws:iam::123456789:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0"),
+					resource.TestCheckResourceAttr(awsResourceVar, "desired_workload_identity", "arn:aws:iam::123456789012:role/AirflowS3Logs-clmk2qqia000008mhff3ndjr0"),
 					// Check via API that deployment exists
 					testAccCheckDeploymentExistence(t, awsDeploymentName, true, true),
 				),
