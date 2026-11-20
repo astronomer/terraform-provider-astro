@@ -154,6 +154,7 @@ func (p *AstroProvider) Resources(ctx context.Context) []func() resource.Resourc
 		resources.NewCustomRoleResource,
 		resources.NewEnvironmentObjectResource,
 		resources.NewAllowedIpAddressRangesResource,
+		resources.NewAiSpendingCapsResource,
 	}
 }
 

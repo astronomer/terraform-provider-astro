@@ -22,6 +22,37 @@ const (
 	JWTScopes = "JWT.Scopes"
 )
 
+// Defines values for AiSpendingCapSubjectType.
+const (
+	AiSpendingCapSubjectTypeSERVICEKEY AiSpendingCapSubjectType = "SERVICEKEY"
+	AiSpendingCapSubjectTypeUSER       AiSpendingCapSubjectType = "USER"
+)
+
+// Defines values for AiSpendingCapRequestSubjectType.
+const (
+	AiSpendingCapRequestSubjectTypeSERVICEKEY AiSpendingCapRequestSubjectType = "SERVICEKEY"
+	AiSpendingCapRequestSubjectTypeUSER       AiSpendingCapRequestSubjectType = "USER"
+)
+
+// Defines values for AiSpendingCapResultStatus.
+const (
+	FAILED    AiSpendingCapResultStatus = "FAILED"
+	UNCHANGED AiSpendingCapResultStatus = "UNCHANGED"
+	UPDATED   AiSpendingCapResultStatus = "UPDATED"
+)
+
+// Defines values for AiSpendingCapResultSubjectType.
+const (
+	AiSpendingCapResultSubjectTypeSERVICEKEY AiSpendingCapResultSubjectType = "SERVICEKEY"
+	AiSpendingCapResultSubjectTypeUSER       AiSpendingCapResultSubjectType = "USER"
+)
+
+// Defines values for AiSpendingCapSubjectSubjectType.
+const (
+	AiSpendingCapSubjectSubjectTypeSERVICEKEY AiSpendingCapSubjectSubjectType = "SERVICEKEY"
+	AiSpendingCapSubjectSubjectTypeUSER       AiSpendingCapSubjectSubjectType = "USER"
+)
+
 // Defines values for AlertEntityType.
 const (
 	AlertEntityTypeDEPLOYMENT AlertEntityType = "DEPLOYMENT"
@@ -62,8 +93,8 @@ const (
 
 // Defines values for BasicSubjectProfileSubjectType.
 const (
-	SERVICEKEY BasicSubjectProfileSubjectType = "SERVICEKEY"
-	USER       BasicSubjectProfileSubjectType = "USER"
+	BasicSubjectProfileSubjectTypeSERVICEKEY BasicSubjectProfileSubjectType = "SERVICEKEY"
+	BasicSubjectProfileSubjectTypeUSER       BasicSubjectProfileSubjectType = "USER"
 )
 
 // Defines values for CreateDagDurationAlertRequestEntityType.
@@ -278,6 +309,12 @@ const (
 	CreateTaskFailureAlertRequestTypeTASKFAILURE   CreateTaskFailureAlertRequestType = "TASK_FAILURE"
 )
 
+// Defines values for DeleteAiSpendingCapDefaultsRequestSubjectTypes.
+const (
+	DeleteAiSpendingCapDefaultsRequestSubjectTypesSERVICEKEY DeleteAiSpendingCapDefaultsRequestSubjectTypes = "SERVICEKEY"
+	DeleteAiSpendingCapDefaultsRequestSubjectTypesUSER       DeleteAiSpendingCapDefaultsRequestSubjectTypes = "USER"
+)
+
 // Defines values for NotificationChannelEntityType.
 const (
 	NotificationChannelEntityTypeDEPLOYMENT   NotificationChannelEntityType = "DEPLOYMENT"
@@ -420,6 +457,153 @@ const (
 	TASKFAILURE   UpdateTaskFailureAlertRequestType = "TASK_FAILURE"
 )
 
+// Defines values for ListAllowedIpAddressRangesParamsSorts.
+const (
+	CreatedAtAsc  ListAllowedIpAddressRangesParamsSorts = "createdAt:asc"
+	CreatedAtDesc ListAllowedIpAddressRangesParamsSorts = "createdAt:desc"
+	IpAddressAsc  ListAllowedIpAddressRangesParamsSorts = "ipAddress:asc"
+	IpAddressDesc ListAllowedIpAddressRangesParamsSorts = "ipAddress:desc"
+	UpdatedAtAsc  ListAllowedIpAddressRangesParamsSorts = "updatedAt:asc"
+	UpdatedAtDesc ListAllowedIpAddressRangesParamsSorts = "updatedAt:desc"
+)
+
+// Defines values for LabsListAiSpendingCapsParamsSubjectType.
+const (
+	SERVICEKEY LabsListAiSpendingCapsParamsSubjectType = "SERVICEKEY"
+	USER       LabsListAiSpendingCapsParamsSubjectType = "USER"
+)
+
+// Defines values for LabsListAiSpendingCapsParamsSorts.
+const (
+	NameAsc   LabsListAiSpendingCapsParamsSorts = "name:asc"
+	NameDesc  LabsListAiSpendingCapsParamsSorts = "name:desc"
+	UsageAsc  LabsListAiSpendingCapsParamsSorts = "usage:asc"
+	UsageDesc LabsListAiSpendingCapsParamsSorts = "usage:desc"
+)
+
+// AiSpendingCap defines model for AiSpendingCap.
+type AiSpendingCap struct {
+	// AvatarUrl A user's avatar. Absent for API tokens.
+	AvatarUrl *string `json:"avatarUrl,omitempty"`
+
+	// EffectiveSpendingCap The lowest cap that applies to the subject in USD cents: its override, else its type's default, and the organization's AI spending cap on all spend, which no subject can pass. Absent when none is set.
+	EffectiveSpendingCap *int `json:"effectiveSpendingCap,omitempty"`
+
+	// Email A user's email. Absent for API tokens.
+	Email *string `json:"email,omitempty"`
+
+	// IsCapReached Whether the subject's AI is blocked now by a spending limit: its override, else its type's default, or the organization's AI spending cap on all spend.
+	IsCapReached bool `json:"isCapReached"`
+
+	// Name A user's full name or an API token's name.
+	Name string `json:"name"`
+
+	// SpendingCap The subject's override in USD cents. Absent when it has none and follows its type's default.
+	SpendingCap *int `json:"spendingCap,omitempty"`
+
+	// SubjectId The ID of the user or API token.
+	SubjectId string `json:"subjectId"`
+
+	// SubjectType USER or SERVICEKEY.
+	SubjectType AiSpendingCapSubjectType `json:"subjectType"`
+
+	// UsageCents The subject's AI spend this period in USD cents. Absent when spend is unavailable.
+	UsageCents *int `json:"usageCents,omitempty"`
+}
+
+// AiSpendingCapSubjectType USER or SERVICEKEY.
+type AiSpendingCapSubjectType string
+
+// AiSpendingCapDefaults defines model for AiSpendingCapDefaults.
+type AiSpendingCapDefaults struct {
+	// ApiTokenSpendingCap The same default for API tokens.
+	ApiTokenSpendingCap *int `json:"apiTokenSpendingCap,omitempty"`
+
+	// UserSpendingCap The default monthly AI spending cap, in USD cents, for users without an override. Absent means no default.
+	UserSpendingCap *int `json:"userSpendingCap,omitempty"`
+}
+
+// AiSpendingCapRequest defines model for AiSpendingCapRequest.
+type AiSpendingCapRequest struct {
+	// SpendingCap The subject's override, its monthly AI spending cap, in USD cents, at most 10000000 ($100,000). Send 0 to turn AI off for the subject.
+	SpendingCap int `json:"spendingCap"`
+
+	// SubjectId The ID of a user in the organization or of an API token with a scope in it.
+	SubjectId string `json:"subjectId"`
+
+	// SubjectType USER for a user, SERVICEKEY for an API token. The ID must be one of that type in the organization.
+	SubjectType AiSpendingCapRequestSubjectType `json:"subjectType"`
+}
+
+// AiSpendingCapRequestSubjectType USER for a user, SERVICEKEY for an API token. The ID must be one of that type in the organization.
+type AiSpendingCapRequestSubjectType string
+
+// AiSpendingCapResult defines model for AiSpendingCapResult.
+type AiSpendingCapResult struct {
+	// SpendingCap The subject's override in USD cents after the call; absent when it has none and follows its type's default. For a failed entry it is the cap still in force.
+	SpendingCap *int `json:"spendingCap,omitempty"`
+
+	// Status UPDATED, UNCHANGED or FAILED. A failed entry changed nothing and can be sent again.
+	Status AiSpendingCapResultStatus `json:"status"`
+
+	// SubjectId The ID of the user or API token.
+	SubjectId string `json:"subjectId"`
+
+	// SubjectType USER or SERVICEKEY.
+	SubjectType AiSpendingCapResultSubjectType `json:"subjectType"`
+}
+
+// AiSpendingCapResultStatus UPDATED, UNCHANGED or FAILED. A failed entry changed nothing and can be sent again.
+type AiSpendingCapResultStatus string
+
+// AiSpendingCapResultSubjectType USER or SERVICEKEY.
+type AiSpendingCapResultSubjectType string
+
+// AiSpendingCapSubject defines model for AiSpendingCapSubject.
+type AiSpendingCapSubject struct {
+	// SubjectId The ID of the user or API token.
+	SubjectId string `json:"subjectId"`
+
+	// SubjectType USER for a user, SERVICEKEY for an API token.
+	SubjectType AiSpendingCapSubjectSubjectType `json:"subjectType"`
+}
+
+// AiSpendingCapSubjectSubjectType USER for a user, SERVICEKEY for an API token.
+type AiSpendingCapSubjectSubjectType string
+
+// AiSpendingCapsList defines model for AiSpendingCapsList.
+type AiSpendingCapsList struct {
+	// SpendingCaps What happened to each entry, in the order sent.
+	SpendingCaps []AiSpendingCapResult `json:"spendingCaps"`
+}
+
+// AiSpendingCapsPaginated defines model for AiSpendingCapsPaginated.
+type AiSpendingCapsPaginated struct {
+	// AiSpendingCaps The users or API tokens on this page.
+	AiSpendingCaps []AiSpendingCap `json:"aiSpendingCaps"`
+
+	// IsUsageAvailable False when spend could not be read from Metronome; every usageCents is then absent, while the caps and isCapReached still hold.
+	IsUsageAvailable bool `json:"isUsageAvailable"`
+
+	// IsUsageEstimated True when some usage is not on the draft invoice yet, as early in a period, and is priced at the contract's current rate instead, which can differ from what is invoiced.
+	IsUsageEstimated bool `json:"isUsageEstimated"`
+
+	// Limit The page size.
+	Limit int `json:"limit"`
+
+	// Offset The offset of this page.
+	Offset int `json:"offset"`
+
+	// PeriodEndAt The end of that period, exclusive.
+	PeriodEndAt time.Time `json:"periodEndAt"`
+
+	// PeriodStartAt The start of the billing period usageCents covers: Metronome's current period when spend is available, else the calendar month (UTC). Reached caps refresh at the start of the calendar month (UTC), which is the same for contract customers but not for trials.
+	PeriodStartAt time.Time `json:"periodStartAt"`
+
+	// TotalCount The number of users or API tokens that match.
+	TotalCount int `json:"totalCount"`
+}
+
 // Alert defines model for Alert.
 type Alert struct {
 	// CreatedAt The time when the alert was created in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
@@ -557,6 +741,20 @@ type AllowedIpAddressRangesList struct {
 	AllowedIpAddressRanges []AllowedIpAddressRange `json:"allowedIpAddressRanges"`
 }
 
+// AllowedIpAddressRangesPaginated defines model for AllowedIpAddressRangesPaginated.
+type AllowedIpAddressRangesPaginated struct {
+	AllowedIpAddressRanges []AllowedIpAddressRange `json:"allowedIpAddressRanges"`
+
+	// Limit The maximum number of allowed IP address ranges in one page.
+	Limit int `json:"limit"`
+
+	// Offset The offset of the current page of allowed IP address ranges.
+	Offset int `json:"offset"`
+
+	// TotalCount The total number of allowed IP address ranges.
+	TotalCount int `json:"totalCount"`
+}
+
 // BasicSubjectProfile defines model for BasicSubjectProfile.
 type BasicSubjectProfile struct {
 	// ApiTokenName The API token's name. Returned only when `SubjectType` is `SERVICEKEY`.
@@ -618,7 +816,7 @@ type CreateAlertsRequest struct {
 
 // CreateDagDurationAlertProperties defines model for CreateDagDurationAlertProperties.
 type CreateDagDurationAlertProperties struct {
-	// DagDurationSeconds The duration of the DAG in seconds. Min 60 (1 minute), max 604800 (7 days).
+	// DagDurationSeconds The duration of the Dag in seconds. Min 60 (1 minute), max 604800 (7 days).
 	DagDurationSeconds int `json:"dagDurationSeconds"`
 
 	// DeploymentId The ID of the deployment to which the alert is scoped.
@@ -753,7 +951,7 @@ type CreateDagSuccessAlertRules struct {
 
 // CreateDagTimelinessAlertProperties defines model for CreateDagTimelinessAlertProperties.
 type CreateDagTimelinessAlertProperties struct {
-	// DagDeadline The deadline for the DAG in HH:MM 24-hour format, in UTC time.
+	// DagDeadline The deadline for the Dag in HH:MM 24-hour format, in UTC time.
 	DagDeadline string `json:"dagDeadline"`
 
 	// DaysOfWeek The days of the week for the alert.
@@ -1032,14 +1230,29 @@ type CreateTaskFailureAlertRules struct {
 
 // DagTriggerNotificationChannelDefinition defines model for DagTriggerNotificationChannelDefinition.
 type DagTriggerNotificationChannelDefinition struct {
-	// DagId The DAG ID.
+	// DagId The Dag ID.
 	DagId string `json:"dagId"`
 
 	// DeploymentApiToken The Deployment API token.
 	DeploymentApiToken string `json:"deploymentApiToken"`
 
-	// DeploymentId The DAG's deployment ID.
+	// DeploymentId The Dag's deployment ID.
 	DeploymentId string `json:"deploymentId"`
+}
+
+// DeleteAiSpendingCapDefaultsRequest defines model for DeleteAiSpendingCapDefaultsRequest.
+type DeleteAiSpendingCapDefaultsRequest struct {
+	// SubjectTypes The default to remove: USER for the users' default, SERVICEKEY for the API tokens' default.
+	SubjectTypes []DeleteAiSpendingCapDefaultsRequestSubjectTypes `json:"subjectTypes"`
+}
+
+// DeleteAiSpendingCapDefaultsRequestSubjectTypes defines model for DeleteAiSpendingCapDefaultsRequest.SubjectTypes.
+type DeleteAiSpendingCapDefaultsRequestSubjectTypes string
+
+// DeleteAiSpendingCapsRequest defines model for DeleteAiSpendingCapsRequest.
+type DeleteAiSpendingCapsRequest struct {
+	// Subjects One entry per user or API token, each subject at most once. At most 500.
+	Subjects []AiSpendingCapSubject `json:"subjects"`
 }
 
 // DeleteAlertsRequest defines model for DeleteAlertsRequest.
@@ -1177,6 +1390,21 @@ type SlackNotificationChannelDefinition struct {
 	WebhookUrl string `json:"webhookUrl"`
 }
 
+// UpdateAiSpendingCapDefaultsRequest defines model for UpdateAiSpendingCapDefaultsRequest.
+type UpdateAiSpendingCapDefaultsRequest struct {
+	// ApiTokenSpendingCap The same default for API tokens, set independently of the user default.
+	ApiTokenSpendingCap *int `json:"apiTokenSpendingCap,omitempty"`
+
+	// UserSpendingCap The default monthly AI spending cap, in USD cents, for every user without an override, at most 10000000 ($100,000). Omit it to leave the default unchanged. Send 0 to turn AI off for those users.
+	UserSpendingCap *int `json:"userSpendingCap,omitempty"`
+}
+
+// UpdateAiSpendingCapsRequest defines model for UpdateAiSpendingCapsRequest.
+type UpdateAiSpendingCapsRequest struct {
+	// SpendingCaps One entry per user or API token, each subject at most once. At most 500.
+	SpendingCaps []AiSpendingCapRequest `json:"spendingCaps"`
+}
+
 // UpdateAlertRequest defines model for UpdateAlertRequest.
 type UpdateAlertRequest struct {
 	union json.RawMessage
@@ -1190,7 +1418,7 @@ type UpdateAlertsRequest struct {
 
 // UpdateDagDurationAlertProperties defines model for UpdateDagDurationAlertProperties.
 type UpdateDagDurationAlertProperties struct {
-	// DagDurationSeconds The duration of the DAG in seconds. Min 60 (1 minute), max 604800 (7 days).
+	// DagDurationSeconds The duration of the Dag in seconds. Min 60 (1 minute), max 604800 (7 days).
 	DagDurationSeconds *int `json:"dagDurationSeconds,omitempty"`
 }
 
@@ -1290,7 +1518,7 @@ type UpdateDagSuccessAlertRules struct {
 
 // UpdateDagTimelinessAlertProperties defines model for UpdateDagTimelinessAlertProperties.
 type UpdateDagTimelinessAlertProperties struct {
-	// DagDeadline The deadline for the DAG in HH:MM 24-hour format, in UTC time.
+	// DagDeadline The deadline for the Dag in HH:MM 24-hour format, in UTC time.
 	DagDeadline *string `json:"dagDeadline,omitempty"`
 
 	// DaysOfWeek The days of the week for the alert.
@@ -1416,11 +1644,71 @@ type LabsListAlertsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
+// ListAllowedIpAddressRangesParams defines parameters for ListAllowedIpAddressRanges.
+type ListAllowedIpAddressRangesParams struct {
+	// Offset The number of results to skip before returning values.
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Limit The maximum number of results to return.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Sorts A list of field names to sort by, and whether to show results as ascending or descending. Formatted as `<fieldName>:asc` or `<fieldName>:desc`.
+	Sorts *[]ListAllowedIpAddressRangesParamsSorts `form:"sorts,omitempty" json:"sorts,omitempty"`
+}
+
+// ListAllowedIpAddressRangesParamsSorts defines parameters for ListAllowedIpAddressRanges.
+type ListAllowedIpAddressRangesParamsSorts string
+
+// LabsListAiSpendingCapsParams defines parameters for LabsListAiSpendingCaps.
+type LabsListAiSpendingCapsParams struct {
+	// SubjectType List users or API tokens.
+	SubjectType LabsListAiSpendingCapsParamsSubjectType `form:"subjectType" json:"subjectType"`
+
+	// Search A user's name or email, or an API token's name.
+	Search *string `form:"search,omitempty" json:"search,omitempty"`
+
+	// Sorts Sort order, name:asc by default.
+	Sorts *LabsListAiSpendingCapsParamsSorts `form:"sorts,omitempty" json:"sorts,omitempty"`
+
+	// HasOverride true lists only subjects with an override, false only those without one.
+	HasOverride *bool `form:"hasOverride,omitempty" json:"hasOverride,omitempty"`
+
+	// Offset Offset of the page.
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Limit Page size, 20 by default and at most 100.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// LabsListAiSpendingCapsParamsSubjectType defines parameters for LabsListAiSpendingCaps.
+type LabsListAiSpendingCapsParamsSubjectType string
+
+// LabsListAiSpendingCapsParamsSorts defines parameters for LabsListAiSpendingCaps.
+type LabsListAiSpendingCapsParamsSorts string
+
 // LabsDeleteAllowedIpAddressRangesJSONRequestBody defines body for LabsDeleteAllowedIpAddressRanges for application/json ContentType.
 type LabsDeleteAllowedIpAddressRangesJSONRequestBody = BulkDeleteAllowedIpAddressRangesRequest
 
 // LabsCreateAllowedIpAddressRangesJSONRequestBody defines body for LabsCreateAllowedIpAddressRanges for application/json ContentType.
 type LabsCreateAllowedIpAddressRangesJSONRequestBody = BulkCreateAllowedIpAddressRangesRequest
+
+// BulkCreateAllowedIpAddressRangesJSONRequestBody defines body for BulkCreateAllowedIpAddressRanges for application/json ContentType.
+type BulkCreateAllowedIpAddressRangesJSONRequestBody = BulkCreateAllowedIpAddressRangesRequest
+
+// BulkDeleteAllowedIpAddressRangesJSONRequestBody defines body for BulkDeleteAllowedIpAddressRanges for application/json ContentType.
+type BulkDeleteAllowedIpAddressRangesJSONRequestBody = BulkDeleteAllowedIpAddressRangesRequest
+
+// LabsDeleteAiSpendingCapsJSONRequestBody defines body for LabsDeleteAiSpendingCaps for application/json ContentType.
+type LabsDeleteAiSpendingCapsJSONRequestBody = DeleteAiSpendingCapsRequest
+
+// LabsUpdateAiSpendingCapsJSONRequestBody defines body for LabsUpdateAiSpendingCaps for application/json ContentType.
+type LabsUpdateAiSpendingCapsJSONRequestBody = UpdateAiSpendingCapsRequest
+
+// LabsDeleteAiSpendingCapDefaultsJSONRequestBody defines body for LabsDeleteAiSpendingCapDefaults for application/json ContentType.
+type LabsDeleteAiSpendingCapDefaultsJSONRequestBody = DeleteAiSpendingCapDefaultsRequest
+
+// LabsUpdateAiSpendingCapDefaultsJSONRequestBody defines body for LabsUpdateAiSpendingCapDefaults for application/json ContentType.
+type LabsUpdateAiSpendingCapDefaultsJSONRequestBody = UpdateAiSpendingCapDefaultsRequest
 
 // LabsCreateAlertsJSONRequestBody defines body for LabsCreateAlerts for application/json ContentType.
 type LabsCreateAlertsJSONRequestBody = CreateAlertsRequest
@@ -2489,10 +2777,52 @@ type ClientInterface interface {
 
 	LabsDeleteAllowedIpAddressRanges(ctx context.Context, organizationId string, body LabsDeleteAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListAllowedIpAddressRanges request
+	ListAllowedIpAddressRanges(ctx context.Context, organizationId string, params *ListAllowedIpAddressRangesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// LabsCreateAllowedIpAddressRangesWithBody request with any body
 	LabsCreateAllowedIpAddressRangesWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	LabsCreateAllowedIpAddressRanges(ctx context.Context, organizationId string, body LabsCreateAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BulkCreateAllowedIpAddressRangesWithBody request with any body
+	BulkCreateAllowedIpAddressRangesWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	BulkCreateAllowedIpAddressRanges(ctx context.Context, organizationId string, body BulkCreateAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BulkDeleteAllowedIpAddressRangesWithBody request with any body
+	BulkDeleteAllowedIpAddressRangesWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	BulkDeleteAllowedIpAddressRanges(ctx context.Context, organizationId string, body BulkDeleteAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteAllowedIpAddressRange request
+	DeleteAllowedIpAddressRange(ctx context.Context, organizationId string, allowedIpAddressRangeId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// LabsDeleteAiSpendingCapsWithBody request with any body
+	LabsDeleteAiSpendingCapsWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	LabsDeleteAiSpendingCaps(ctx context.Context, organizationId string, body LabsDeleteAiSpendingCapsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// LabsListAiSpendingCaps request
+	LabsListAiSpendingCaps(ctx context.Context, organizationId string, params *LabsListAiSpendingCapsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// LabsUpdateAiSpendingCapsWithBody request with any body
+	LabsUpdateAiSpendingCapsWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	LabsUpdateAiSpendingCaps(ctx context.Context, organizationId string, body LabsUpdateAiSpendingCapsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// LabsDeleteAiSpendingCapDefaultsWithBody request with any body
+	LabsDeleteAiSpendingCapDefaultsWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	LabsDeleteAiSpendingCapDefaults(ctx context.Context, organizationId string, body LabsDeleteAiSpendingCapDefaultsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// LabsGetAiSpendingCapDefaults request
+	LabsGetAiSpendingCapDefaults(ctx context.Context, organizationId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// LabsUpdateAiSpendingCapDefaultsWithBody request with any body
+	LabsUpdateAiSpendingCapDefaultsWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	LabsUpdateAiSpendingCapDefaults(ctx context.Context, organizationId string, body LabsUpdateAiSpendingCapDefaultsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// LabsCreateAlertsWithBody request with any body
 	LabsCreateAlertsWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2556,6 +2886,18 @@ func (c *Client) LabsDeleteAllowedIpAddressRanges(ctx context.Context, organizat
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListAllowedIpAddressRanges(ctx context.Context, organizationId string, params *ListAllowedIpAddressRangesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAllowedIpAddressRangesRequest(c.Server, organizationId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) LabsCreateAllowedIpAddressRangesWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewLabsCreateAllowedIpAddressRangesRequestWithBody(c.Server, organizationId, contentType, body)
 	if err != nil {
@@ -2570,6 +2912,186 @@ func (c *Client) LabsCreateAllowedIpAddressRangesWithBody(ctx context.Context, o
 
 func (c *Client) LabsCreateAllowedIpAddressRanges(ctx context.Context, organizationId string, body LabsCreateAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewLabsCreateAllowedIpAddressRangesRequest(c.Server, organizationId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkCreateAllowedIpAddressRangesWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkCreateAllowedIpAddressRangesRequestWithBody(c.Server, organizationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkCreateAllowedIpAddressRanges(ctx context.Context, organizationId string, body BulkCreateAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkCreateAllowedIpAddressRangesRequest(c.Server, organizationId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkDeleteAllowedIpAddressRangesWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkDeleteAllowedIpAddressRangesRequestWithBody(c.Server, organizationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkDeleteAllowedIpAddressRanges(ctx context.Context, organizationId string, body BulkDeleteAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkDeleteAllowedIpAddressRangesRequest(c.Server, organizationId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteAllowedIpAddressRange(ctx context.Context, organizationId string, allowedIpAddressRangeId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteAllowedIpAddressRangeRequest(c.Server, organizationId, allowedIpAddressRangeId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) LabsDeleteAiSpendingCapsWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLabsDeleteAiSpendingCapsRequestWithBody(c.Server, organizationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) LabsDeleteAiSpendingCaps(ctx context.Context, organizationId string, body LabsDeleteAiSpendingCapsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLabsDeleteAiSpendingCapsRequest(c.Server, organizationId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) LabsListAiSpendingCaps(ctx context.Context, organizationId string, params *LabsListAiSpendingCapsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLabsListAiSpendingCapsRequest(c.Server, organizationId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) LabsUpdateAiSpendingCapsWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLabsUpdateAiSpendingCapsRequestWithBody(c.Server, organizationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) LabsUpdateAiSpendingCaps(ctx context.Context, organizationId string, body LabsUpdateAiSpendingCapsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLabsUpdateAiSpendingCapsRequest(c.Server, organizationId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) LabsDeleteAiSpendingCapDefaultsWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLabsDeleteAiSpendingCapDefaultsRequestWithBody(c.Server, organizationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) LabsDeleteAiSpendingCapDefaults(ctx context.Context, organizationId string, body LabsDeleteAiSpendingCapDefaultsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLabsDeleteAiSpendingCapDefaultsRequest(c.Server, organizationId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) LabsGetAiSpendingCapDefaults(ctx context.Context, organizationId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLabsGetAiSpendingCapDefaultsRequest(c.Server, organizationId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) LabsUpdateAiSpendingCapDefaultsWithBody(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLabsUpdateAiSpendingCapDefaultsRequestWithBody(c.Server, organizationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) LabsUpdateAiSpendingCapDefaults(ctx context.Context, organizationId string, body LabsUpdateAiSpendingCapDefaultsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLabsUpdateAiSpendingCapDefaultsRequest(c.Server, organizationId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2851,6 +3373,94 @@ func NewLabsDeleteAllowedIpAddressRangesRequestWithBody(server string, organizat
 	return req, nil
 }
 
+// NewListAllowedIpAddressRangesRequest generates requests for ListAllowedIpAddressRanges
+func NewListAllowedIpAddressRangesRequest(server string, organizationId string, params *ListAllowedIpAddressRangesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/allowed-ip-address-ranges", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Sorts != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sorts", runtime.ParamLocationQuery, *params.Sorts); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewLabsCreateAllowedIpAddressRangesRequest calls the generic LabsCreateAllowedIpAddressRanges builder with application/json body
 func NewLabsCreateAllowedIpAddressRangesRequest(server string, organizationId string, body LabsCreateAllowedIpAddressRangesJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -2879,6 +3489,495 @@ func NewLabsCreateAllowedIpAddressRangesRequestWithBody(server string, organizat
 	}
 
 	operationPath := fmt.Sprintf("/organizations/%s/allowed-ip-address-ranges", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewBulkCreateAllowedIpAddressRangesRequest calls the generic BulkCreateAllowedIpAddressRanges builder with application/json body
+func NewBulkCreateAllowedIpAddressRangesRequest(server string, organizationId string, body BulkCreateAllowedIpAddressRangesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBulkCreateAllowedIpAddressRangesRequestWithBody(server, organizationId, "application/json", bodyReader)
+}
+
+// NewBulkCreateAllowedIpAddressRangesRequestWithBody generates requests for BulkCreateAllowedIpAddressRanges with any type of body
+func NewBulkCreateAllowedIpAddressRangesRequestWithBody(server string, organizationId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/allowed-ip-address-ranges/bulk-create", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewBulkDeleteAllowedIpAddressRangesRequest calls the generic BulkDeleteAllowedIpAddressRanges builder with application/json body
+func NewBulkDeleteAllowedIpAddressRangesRequest(server string, organizationId string, body BulkDeleteAllowedIpAddressRangesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBulkDeleteAllowedIpAddressRangesRequestWithBody(server, organizationId, "application/json", bodyReader)
+}
+
+// NewBulkDeleteAllowedIpAddressRangesRequestWithBody generates requests for BulkDeleteAllowedIpAddressRanges with any type of body
+func NewBulkDeleteAllowedIpAddressRangesRequestWithBody(server string, organizationId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/allowed-ip-address-ranges/bulk-delete", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteAllowedIpAddressRangeRequest generates requests for DeleteAllowedIpAddressRange
+func NewDeleteAllowedIpAddressRangeRequest(server string, organizationId string, allowedIpAddressRangeId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "allowedIpAddressRangeId", runtime.ParamLocationPath, allowedIpAddressRangeId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/allowed-ip-address-ranges/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewLabsDeleteAiSpendingCapsRequest calls the generic LabsDeleteAiSpendingCaps builder with application/json body
+func NewLabsDeleteAiSpendingCapsRequest(server string, organizationId string, body LabsDeleteAiSpendingCapsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewLabsDeleteAiSpendingCapsRequestWithBody(server, organizationId, "application/json", bodyReader)
+}
+
+// NewLabsDeleteAiSpendingCapsRequestWithBody generates requests for LabsDeleteAiSpendingCaps with any type of body
+func NewLabsDeleteAiSpendingCapsRequestWithBody(server string, organizationId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/billing/ai-spending-caps", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewLabsListAiSpendingCapsRequest generates requests for LabsListAiSpendingCaps
+func NewLabsListAiSpendingCapsRequest(server string, organizationId string, params *LabsListAiSpendingCapsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/billing/ai-spending-caps", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "subjectType", runtime.ParamLocationQuery, params.SubjectType); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if params.Search != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "search", runtime.ParamLocationQuery, *params.Search); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Sorts != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sorts", runtime.ParamLocationQuery, *params.Sorts); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.HasOverride != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "hasOverride", runtime.ParamLocationQuery, *params.HasOverride); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewLabsUpdateAiSpendingCapsRequest calls the generic LabsUpdateAiSpendingCaps builder with application/json body
+func NewLabsUpdateAiSpendingCapsRequest(server string, organizationId string, body LabsUpdateAiSpendingCapsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewLabsUpdateAiSpendingCapsRequestWithBody(server, organizationId, "application/json", bodyReader)
+}
+
+// NewLabsUpdateAiSpendingCapsRequestWithBody generates requests for LabsUpdateAiSpendingCaps with any type of body
+func NewLabsUpdateAiSpendingCapsRequestWithBody(server string, organizationId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/billing/ai-spending-caps", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewLabsDeleteAiSpendingCapDefaultsRequest calls the generic LabsDeleteAiSpendingCapDefaults builder with application/json body
+func NewLabsDeleteAiSpendingCapDefaultsRequest(server string, organizationId string, body LabsDeleteAiSpendingCapDefaultsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewLabsDeleteAiSpendingCapDefaultsRequestWithBody(server, organizationId, "application/json", bodyReader)
+}
+
+// NewLabsDeleteAiSpendingCapDefaultsRequestWithBody generates requests for LabsDeleteAiSpendingCapDefaults with any type of body
+func NewLabsDeleteAiSpendingCapDefaultsRequestWithBody(server string, organizationId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/billing/ai-spending-caps/defaults", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewLabsGetAiSpendingCapDefaultsRequest generates requests for LabsGetAiSpendingCapDefaults
+func NewLabsGetAiSpendingCapDefaultsRequest(server string, organizationId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/billing/ai-spending-caps/defaults", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewLabsUpdateAiSpendingCapDefaultsRequest calls the generic LabsUpdateAiSpendingCapDefaults builder with application/json body
+func NewLabsUpdateAiSpendingCapDefaultsRequest(server string, organizationId string, body LabsUpdateAiSpendingCapDefaultsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewLabsUpdateAiSpendingCapDefaultsRequestWithBody(server, organizationId, "application/json", bodyReader)
+}
+
+// NewLabsUpdateAiSpendingCapDefaultsRequestWithBody generates requests for LabsUpdateAiSpendingCapDefaults with any type of body
+func NewLabsUpdateAiSpendingCapDefaultsRequestWithBody(server string, organizationId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/billing/ai-spending-caps/defaults", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -3184,10 +4283,52 @@ type ClientWithResponsesInterface interface {
 
 	LabsDeleteAllowedIpAddressRangesWithResponse(ctx context.Context, organizationId string, body LabsDeleteAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*LabsDeleteAllowedIpAddressRangesResponse, error)
 
+	// ListAllowedIpAddressRangesWithResponse request
+	ListAllowedIpAddressRangesWithResponse(ctx context.Context, organizationId string, params *ListAllowedIpAddressRangesParams, reqEditors ...RequestEditorFn) (*ListAllowedIpAddressRangesResponse, error)
+
 	// LabsCreateAllowedIpAddressRangesWithBodyWithResponse request with any body
 	LabsCreateAllowedIpAddressRangesWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LabsCreateAllowedIpAddressRangesResponse, error)
 
 	LabsCreateAllowedIpAddressRangesWithResponse(ctx context.Context, organizationId string, body LabsCreateAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*LabsCreateAllowedIpAddressRangesResponse, error)
+
+	// BulkCreateAllowedIpAddressRangesWithBodyWithResponse request with any body
+	BulkCreateAllowedIpAddressRangesWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkCreateAllowedIpAddressRangesResponse, error)
+
+	BulkCreateAllowedIpAddressRangesWithResponse(ctx context.Context, organizationId string, body BulkCreateAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkCreateAllowedIpAddressRangesResponse, error)
+
+	// BulkDeleteAllowedIpAddressRangesWithBodyWithResponse request with any body
+	BulkDeleteAllowedIpAddressRangesWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkDeleteAllowedIpAddressRangesResponse, error)
+
+	BulkDeleteAllowedIpAddressRangesWithResponse(ctx context.Context, organizationId string, body BulkDeleteAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkDeleteAllowedIpAddressRangesResponse, error)
+
+	// DeleteAllowedIpAddressRangeWithResponse request
+	DeleteAllowedIpAddressRangeWithResponse(ctx context.Context, organizationId string, allowedIpAddressRangeId string, reqEditors ...RequestEditorFn) (*DeleteAllowedIpAddressRangeResponse, error)
+
+	// LabsDeleteAiSpendingCapsWithBodyWithResponse request with any body
+	LabsDeleteAiSpendingCapsWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LabsDeleteAiSpendingCapsResponse, error)
+
+	LabsDeleteAiSpendingCapsWithResponse(ctx context.Context, organizationId string, body LabsDeleteAiSpendingCapsJSONRequestBody, reqEditors ...RequestEditorFn) (*LabsDeleteAiSpendingCapsResponse, error)
+
+	// LabsListAiSpendingCapsWithResponse request
+	LabsListAiSpendingCapsWithResponse(ctx context.Context, organizationId string, params *LabsListAiSpendingCapsParams, reqEditors ...RequestEditorFn) (*LabsListAiSpendingCapsResponse, error)
+
+	// LabsUpdateAiSpendingCapsWithBodyWithResponse request with any body
+	LabsUpdateAiSpendingCapsWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LabsUpdateAiSpendingCapsResponse, error)
+
+	LabsUpdateAiSpendingCapsWithResponse(ctx context.Context, organizationId string, body LabsUpdateAiSpendingCapsJSONRequestBody, reqEditors ...RequestEditorFn) (*LabsUpdateAiSpendingCapsResponse, error)
+
+	// LabsDeleteAiSpendingCapDefaultsWithBodyWithResponse request with any body
+	LabsDeleteAiSpendingCapDefaultsWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LabsDeleteAiSpendingCapDefaultsResponse, error)
+
+	LabsDeleteAiSpendingCapDefaultsWithResponse(ctx context.Context, organizationId string, body LabsDeleteAiSpendingCapDefaultsJSONRequestBody, reqEditors ...RequestEditorFn) (*LabsDeleteAiSpendingCapDefaultsResponse, error)
+
+	// LabsGetAiSpendingCapDefaultsWithResponse request
+	LabsGetAiSpendingCapDefaultsWithResponse(ctx context.Context, organizationId string, reqEditors ...RequestEditorFn) (*LabsGetAiSpendingCapDefaultsResponse, error)
+
+	// LabsUpdateAiSpendingCapDefaultsWithBodyWithResponse request with any body
+	LabsUpdateAiSpendingCapDefaultsWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LabsUpdateAiSpendingCapDefaultsResponse, error)
+
+	LabsUpdateAiSpendingCapDefaultsWithResponse(ctx context.Context, organizationId string, body LabsUpdateAiSpendingCapDefaultsJSONRequestBody, reqEditors ...RequestEditorFn) (*LabsUpdateAiSpendingCapDefaultsResponse, error)
 
 	// LabsCreateAlertsWithBodyWithResponse request with any body
 	LabsCreateAlertsWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LabsCreateAlertsResponse, error)
@@ -3267,6 +4408,32 @@ func (r LabsDeleteAllowedIpAddressRangesResponse) StatusCode() int {
 	return 0
 }
 
+type ListAllowedIpAddressRangesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AllowedIpAddressRangesPaginated
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAllowedIpAddressRangesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAllowedIpAddressRangesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type LabsCreateAllowedIpAddressRangesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -3289,6 +4456,246 @@ func (r LabsCreateAllowedIpAddressRangesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r LabsCreateAllowedIpAddressRangesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type BulkCreateAllowedIpAddressRangesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AllowedIpAddressRangesList
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON409      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r BulkCreateAllowedIpAddressRangesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BulkCreateAllowedIpAddressRangesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type BulkDeleteAllowedIpAddressRangesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r BulkDeleteAllowedIpAddressRangesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BulkDeleteAllowedIpAddressRangesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteAllowedIpAddressRangeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteAllowedIpAddressRangeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteAllowedIpAddressRangeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type LabsDeleteAiSpendingCapsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AiSpendingCapsList
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r LabsDeleteAiSpendingCapsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r LabsDeleteAiSpendingCapsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type LabsListAiSpendingCapsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AiSpendingCapsPaginated
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r LabsListAiSpendingCapsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r LabsListAiSpendingCapsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type LabsUpdateAiSpendingCapsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AiSpendingCapsList
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r LabsUpdateAiSpendingCapsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r LabsUpdateAiSpendingCapsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type LabsDeleteAiSpendingCapDefaultsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AiSpendingCapDefaults
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r LabsDeleteAiSpendingCapDefaultsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r LabsDeleteAiSpendingCapDefaultsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type LabsGetAiSpendingCapDefaultsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AiSpendingCapDefaults
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r LabsGetAiSpendingCapDefaultsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r LabsGetAiSpendingCapDefaultsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type LabsUpdateAiSpendingCapDefaultsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AiSpendingCapDefaults
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r LabsUpdateAiSpendingCapDefaultsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r LabsUpdateAiSpendingCapDefaultsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3454,6 +4861,15 @@ func (c *ClientWithResponses) LabsDeleteAllowedIpAddressRangesWithResponse(ctx c
 	return ParseLabsDeleteAllowedIpAddressRangesResponse(rsp)
 }
 
+// ListAllowedIpAddressRangesWithResponse request returning *ListAllowedIpAddressRangesResponse
+func (c *ClientWithResponses) ListAllowedIpAddressRangesWithResponse(ctx context.Context, organizationId string, params *ListAllowedIpAddressRangesParams, reqEditors ...RequestEditorFn) (*ListAllowedIpAddressRangesResponse, error) {
+	rsp, err := c.ListAllowedIpAddressRanges(ctx, organizationId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAllowedIpAddressRangesResponse(rsp)
+}
+
 // LabsCreateAllowedIpAddressRangesWithBodyWithResponse request with arbitrary body returning *LabsCreateAllowedIpAddressRangesResponse
 func (c *ClientWithResponses) LabsCreateAllowedIpAddressRangesWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LabsCreateAllowedIpAddressRangesResponse, error) {
 	rsp, err := c.LabsCreateAllowedIpAddressRangesWithBody(ctx, organizationId, contentType, body, reqEditors...)
@@ -3469,6 +4885,135 @@ func (c *ClientWithResponses) LabsCreateAllowedIpAddressRangesWithResponse(ctx c
 		return nil, err
 	}
 	return ParseLabsCreateAllowedIpAddressRangesResponse(rsp)
+}
+
+// BulkCreateAllowedIpAddressRangesWithBodyWithResponse request with arbitrary body returning *BulkCreateAllowedIpAddressRangesResponse
+func (c *ClientWithResponses) BulkCreateAllowedIpAddressRangesWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkCreateAllowedIpAddressRangesResponse, error) {
+	rsp, err := c.BulkCreateAllowedIpAddressRangesWithBody(ctx, organizationId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkCreateAllowedIpAddressRangesResponse(rsp)
+}
+
+func (c *ClientWithResponses) BulkCreateAllowedIpAddressRangesWithResponse(ctx context.Context, organizationId string, body BulkCreateAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkCreateAllowedIpAddressRangesResponse, error) {
+	rsp, err := c.BulkCreateAllowedIpAddressRanges(ctx, organizationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkCreateAllowedIpAddressRangesResponse(rsp)
+}
+
+// BulkDeleteAllowedIpAddressRangesWithBodyWithResponse request with arbitrary body returning *BulkDeleteAllowedIpAddressRangesResponse
+func (c *ClientWithResponses) BulkDeleteAllowedIpAddressRangesWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkDeleteAllowedIpAddressRangesResponse, error) {
+	rsp, err := c.BulkDeleteAllowedIpAddressRangesWithBody(ctx, organizationId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkDeleteAllowedIpAddressRangesResponse(rsp)
+}
+
+func (c *ClientWithResponses) BulkDeleteAllowedIpAddressRangesWithResponse(ctx context.Context, organizationId string, body BulkDeleteAllowedIpAddressRangesJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkDeleteAllowedIpAddressRangesResponse, error) {
+	rsp, err := c.BulkDeleteAllowedIpAddressRanges(ctx, organizationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkDeleteAllowedIpAddressRangesResponse(rsp)
+}
+
+// DeleteAllowedIpAddressRangeWithResponse request returning *DeleteAllowedIpAddressRangeResponse
+func (c *ClientWithResponses) DeleteAllowedIpAddressRangeWithResponse(ctx context.Context, organizationId string, allowedIpAddressRangeId string, reqEditors ...RequestEditorFn) (*DeleteAllowedIpAddressRangeResponse, error) {
+	rsp, err := c.DeleteAllowedIpAddressRange(ctx, organizationId, allowedIpAddressRangeId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteAllowedIpAddressRangeResponse(rsp)
+}
+
+// LabsDeleteAiSpendingCapsWithBodyWithResponse request with arbitrary body returning *LabsDeleteAiSpendingCapsResponse
+func (c *ClientWithResponses) LabsDeleteAiSpendingCapsWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LabsDeleteAiSpendingCapsResponse, error) {
+	rsp, err := c.LabsDeleteAiSpendingCapsWithBody(ctx, organizationId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLabsDeleteAiSpendingCapsResponse(rsp)
+}
+
+func (c *ClientWithResponses) LabsDeleteAiSpendingCapsWithResponse(ctx context.Context, organizationId string, body LabsDeleteAiSpendingCapsJSONRequestBody, reqEditors ...RequestEditorFn) (*LabsDeleteAiSpendingCapsResponse, error) {
+	rsp, err := c.LabsDeleteAiSpendingCaps(ctx, organizationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLabsDeleteAiSpendingCapsResponse(rsp)
+}
+
+// LabsListAiSpendingCapsWithResponse request returning *LabsListAiSpendingCapsResponse
+func (c *ClientWithResponses) LabsListAiSpendingCapsWithResponse(ctx context.Context, organizationId string, params *LabsListAiSpendingCapsParams, reqEditors ...RequestEditorFn) (*LabsListAiSpendingCapsResponse, error) {
+	rsp, err := c.LabsListAiSpendingCaps(ctx, organizationId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLabsListAiSpendingCapsResponse(rsp)
+}
+
+// LabsUpdateAiSpendingCapsWithBodyWithResponse request with arbitrary body returning *LabsUpdateAiSpendingCapsResponse
+func (c *ClientWithResponses) LabsUpdateAiSpendingCapsWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LabsUpdateAiSpendingCapsResponse, error) {
+	rsp, err := c.LabsUpdateAiSpendingCapsWithBody(ctx, organizationId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLabsUpdateAiSpendingCapsResponse(rsp)
+}
+
+func (c *ClientWithResponses) LabsUpdateAiSpendingCapsWithResponse(ctx context.Context, organizationId string, body LabsUpdateAiSpendingCapsJSONRequestBody, reqEditors ...RequestEditorFn) (*LabsUpdateAiSpendingCapsResponse, error) {
+	rsp, err := c.LabsUpdateAiSpendingCaps(ctx, organizationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLabsUpdateAiSpendingCapsResponse(rsp)
+}
+
+// LabsDeleteAiSpendingCapDefaultsWithBodyWithResponse request with arbitrary body returning *LabsDeleteAiSpendingCapDefaultsResponse
+func (c *ClientWithResponses) LabsDeleteAiSpendingCapDefaultsWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LabsDeleteAiSpendingCapDefaultsResponse, error) {
+	rsp, err := c.LabsDeleteAiSpendingCapDefaultsWithBody(ctx, organizationId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLabsDeleteAiSpendingCapDefaultsResponse(rsp)
+}
+
+func (c *ClientWithResponses) LabsDeleteAiSpendingCapDefaultsWithResponse(ctx context.Context, organizationId string, body LabsDeleteAiSpendingCapDefaultsJSONRequestBody, reqEditors ...RequestEditorFn) (*LabsDeleteAiSpendingCapDefaultsResponse, error) {
+	rsp, err := c.LabsDeleteAiSpendingCapDefaults(ctx, organizationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLabsDeleteAiSpendingCapDefaultsResponse(rsp)
+}
+
+// LabsGetAiSpendingCapDefaultsWithResponse request returning *LabsGetAiSpendingCapDefaultsResponse
+func (c *ClientWithResponses) LabsGetAiSpendingCapDefaultsWithResponse(ctx context.Context, organizationId string, reqEditors ...RequestEditorFn) (*LabsGetAiSpendingCapDefaultsResponse, error) {
+	rsp, err := c.LabsGetAiSpendingCapDefaults(ctx, organizationId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLabsGetAiSpendingCapDefaultsResponse(rsp)
+}
+
+// LabsUpdateAiSpendingCapDefaultsWithBodyWithResponse request with arbitrary body returning *LabsUpdateAiSpendingCapDefaultsResponse
+func (c *ClientWithResponses) LabsUpdateAiSpendingCapDefaultsWithBodyWithResponse(ctx context.Context, organizationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LabsUpdateAiSpendingCapDefaultsResponse, error) {
+	rsp, err := c.LabsUpdateAiSpendingCapDefaultsWithBody(ctx, organizationId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLabsUpdateAiSpendingCapDefaultsResponse(rsp)
+}
+
+func (c *ClientWithResponses) LabsUpdateAiSpendingCapDefaultsWithResponse(ctx context.Context, organizationId string, body LabsUpdateAiSpendingCapDefaultsJSONRequestBody, reqEditors ...RequestEditorFn) (*LabsUpdateAiSpendingCapDefaultsResponse, error) {
+	rsp, err := c.LabsUpdateAiSpendingCapDefaults(ctx, organizationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLabsUpdateAiSpendingCapDefaultsResponse(rsp)
 }
 
 // LabsCreateAlertsWithBodyWithResponse request with arbitrary body returning *LabsCreateAlertsResponse
@@ -3664,6 +5209,60 @@ func ParseLabsDeleteAllowedIpAddressRangesResponse(rsp *http.Response) (*LabsDel
 	return response, nil
 }
 
+// ParseListAllowedIpAddressRangesResponse parses an HTTP response from a ListAllowedIpAddressRangesWithResponse call
+func ParseListAllowedIpAddressRangesResponse(rsp *http.Response) (*ListAllowedIpAddressRangesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAllowedIpAddressRangesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AllowedIpAddressRangesPaginated
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseLabsCreateAllowedIpAddressRangesResponse parses an HTTP response from a LabsCreateAllowedIpAddressRangesWithResponse call
 func ParseLabsCreateAllowedIpAddressRangesResponse(rsp *http.Response) (*LabsCreateAllowedIpAddressRangesResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -3719,6 +5318,534 @@ func ParseLabsCreateAllowedIpAddressRangesResponse(rsp *http.Response) (*LabsCre
 			return nil, err
 		}
 		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseBulkCreateAllowedIpAddressRangesResponse parses an HTTP response from a BulkCreateAllowedIpAddressRangesWithResponse call
+func ParseBulkCreateAllowedIpAddressRangesResponse(rsp *http.Response) (*BulkCreateAllowedIpAddressRangesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BulkCreateAllowedIpAddressRangesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AllowedIpAddressRangesList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseBulkDeleteAllowedIpAddressRangesResponse parses an HTTP response from a BulkDeleteAllowedIpAddressRangesWithResponse call
+func ParseBulkDeleteAllowedIpAddressRangesResponse(rsp *http.Response) (*BulkDeleteAllowedIpAddressRangesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BulkDeleteAllowedIpAddressRangesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteAllowedIpAddressRangeResponse parses an HTTP response from a DeleteAllowedIpAddressRangeWithResponse call
+func ParseDeleteAllowedIpAddressRangeResponse(rsp *http.Response) (*DeleteAllowedIpAddressRangeResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteAllowedIpAddressRangeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseLabsDeleteAiSpendingCapsResponse parses an HTTP response from a LabsDeleteAiSpendingCapsWithResponse call
+func ParseLabsDeleteAiSpendingCapsResponse(rsp *http.Response) (*LabsDeleteAiSpendingCapsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &LabsDeleteAiSpendingCapsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AiSpendingCapsList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseLabsListAiSpendingCapsResponse parses an HTTP response from a LabsListAiSpendingCapsWithResponse call
+func ParseLabsListAiSpendingCapsResponse(rsp *http.Response) (*LabsListAiSpendingCapsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &LabsListAiSpendingCapsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AiSpendingCapsPaginated
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseLabsUpdateAiSpendingCapsResponse parses an HTTP response from a LabsUpdateAiSpendingCapsWithResponse call
+func ParseLabsUpdateAiSpendingCapsResponse(rsp *http.Response) (*LabsUpdateAiSpendingCapsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &LabsUpdateAiSpendingCapsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AiSpendingCapsList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseLabsDeleteAiSpendingCapDefaultsResponse parses an HTTP response from a LabsDeleteAiSpendingCapDefaultsWithResponse call
+func ParseLabsDeleteAiSpendingCapDefaultsResponse(rsp *http.Response) (*LabsDeleteAiSpendingCapDefaultsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &LabsDeleteAiSpendingCapDefaultsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AiSpendingCapDefaults
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseLabsGetAiSpendingCapDefaultsResponse parses an HTTP response from a LabsGetAiSpendingCapDefaultsWithResponse call
+func ParseLabsGetAiSpendingCapDefaultsResponse(rsp *http.Response) (*LabsGetAiSpendingCapDefaultsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &LabsGetAiSpendingCapDefaultsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AiSpendingCapDefaults
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseLabsUpdateAiSpendingCapDefaultsResponse parses an HTTP response from a LabsUpdateAiSpendingCapDefaultsWithResponse call
+func ParseLabsUpdateAiSpendingCapDefaultsResponse(rsp *http.Response) (*LabsUpdateAiSpendingCapDefaultsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &LabsUpdateAiSpendingCapDefaultsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AiSpendingCapDefaults
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest Error

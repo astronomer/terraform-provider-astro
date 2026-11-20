@@ -118,8 +118,10 @@ api_client_gen:
 	# Adding "NotificationChannels" prefixes the AlertNotificationChannelType constants
 	# (EMAIL -> AlertNotificationChannelTypeEMAIL, etc.) because the bulk notification-channel
 	# types reuse the same bare enum values. No provider code references the bare labs constants,
-	# so the rename is safe; the bulk NC resource uses the NotificationChannelType enum.
-	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Alerts,AllowedIpAddressRange,NotificationChannels -generate=types,client -package=labs "$(CORE_LABS_OPENAPI_SPEC)" > ./internal/clients/labs/api.gen.go
+	# so the rename is safe; the bulk NC resource uses the NotificationChannelType enum. Keep it
+	# that way: an enum without a prefixed constant is written as a typed conversion, e.g.
+	# labs.AiSpendingCapResultStatus("FAILED"), because a later tag addition can rename the bare one.
+	oapi-codegen -templates ./internal/clients/oapi-templates -include-tags=Alerts,AllowedIpAddressRange,NotificationChannels,AiSpendingCaps -generate=types,client -package=labs "$(CORE_LABS_OPENAPI_SPEC)" > ./internal/clients/labs/api.gen.go
 	@echo "Generating Platform v1 (unified public API) client..."
 	# Alerts and NotificationChannels are deliberately absent: those resources do not exist in
 	# the v1 spec at all and stay on platform/v1beta1 and labs. Organization is absent because
