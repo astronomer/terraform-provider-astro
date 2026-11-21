@@ -285,6 +285,52 @@ func TestUnit_EnvironmentObject_ReadFromResponse_LinkOverridesPreserve(t *testin
 		assert.Equal(t, "preserved_override", got)
 	})
 
+	secretLinkOverrideCases := []struct {
+		name string
+		obj  *platform_v1.EnvironmentObject
+	}{
+		{name: "airflow_variable", obj: newAirflowVariableAPIResponse("", true)},
+		{name: "environment_variable", obj: newEnvironmentVariableAPIResponse("", true)},
+	}
+	for _, tc := range secretLinkOverrideCases {
+		t.Run(tc.name+" secret link override: omitted overrides fall back to preserve", func(t *testing.T) {
+			obj := tc.obj
+			obj.Links = &[]platform_v1.EnvironmentObjectLink{{
+				Scope:         deploymentScope,
+				ScopeEntityId: depId,
+			}}
+			preserve := &models.EnvironmentObjectPreserve{
+				LinkOverrides: map[string]*models.EnvironmentObjectLinkOverridePreserve{
+					models.LinkPreserveKey("DEPLOYMENT", depId): {Value: lo.ToPtr("preserved_override")},
+				},
+			}
+			var data models.EnvironmentObject
+			diags := data.ReadFromResponse(context.Background(), obj, preserve)
+			require.False(t, diags.HasError(), "diags: %v", diags)
+			assert.Equal(t, "preserved_override", overrideValueFromLinks(t, data.Links, "value"))
+		})
+	}
+
+	t.Run("non-secret link override: omitted overrides stay null", func(t *testing.T) {
+		obj := newAirflowVariableAPIResponse("ws_value", false)
+		obj.Links = &[]platform_v1.EnvironmentObjectLink{{
+			Scope:         deploymentScope,
+			ScopeEntityId: depId,
+		}}
+		preserve := &models.EnvironmentObjectPreserve{
+			LinkOverrides: map[string]*models.EnvironmentObjectLinkOverridePreserve{
+				models.LinkPreserveKey("DEPLOYMENT", depId): {Value: lo.ToPtr("preserved_override")},
+			},
+		}
+		var data models.EnvironmentObject
+		diags := data.ReadFromResponse(context.Background(), obj, preserve)
+		require.False(t, diags.HasError(), "diags: %v", diags)
+		elems := data.Links.Elements()
+		require.Len(t, elems, 1)
+		overrides := elems[0].(types.Object).Attributes()["overrides"].(types.Object)
+		assert.True(t, overrides.IsNull())
+	})
+
 	t.Run("metrics_export link override: auth_type + basic_token + password fall back to preserve", func(t *testing.T) {
 		exporter := platform_v1.EnvironmentObjectMetricsExportAuthTypeAUTHTOKEN
 		_ = exporter
@@ -377,6 +423,22 @@ func newAirflowVariableAPIResponse(value string, isSecret bool) *platform_v1.Env
 		Scope:         scope,
 		ScopeEntityId: "ws_id",
 		AirflowVariable: &platform_v1.EnvironmentObjectAirflowVariable{
+			Value:    value,
+			IsSecret: isSecret,
+		},
+	}
+}
+
+func newEnvironmentVariableAPIResponse(value string, isSecret bool) *platform_v1.EnvironmentObject {
+	id := "cm6envobjid000envvar"
+	scope := platform_v1.EnvironmentObjectScopeWORKSPACE
+	return &platform_v1.EnvironmentObject{
+		Id:            &id,
+		ObjectKey:     "k",
+		ObjectType:    platform_v1.EnvironmentObjectObjectTypeENVIRONMENTVARIABLE,
+		Scope:         scope,
+		ScopeEntityId: "ws_id",
+		EnvironmentVariable: &platform_v1.EnvironmentObjectEnvironmentVariable{
 			Value:    value,
 			IsSecret: isSecret,
 		},

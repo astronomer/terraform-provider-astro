@@ -232,13 +232,15 @@ func (data *EnvironmentObject) ReadFromResponse(ctx context.Context, obj *platfo
 	// reflects reality (an empty array stays an empty set, not null).
 	linkObjType := types.ObjectType{AttrTypes: schemas.EnvironmentObjectLinkAttributeTypes()}
 	if obj.Links != nil {
+		secretVariable := (obj.AirflowVariable != nil && obj.AirflowVariable.IsSecret) ||
+			(obj.EnvironmentVariable != nil && obj.EnvironmentVariable.IsSecret)
 		linkObjects := make([]attr.Value, len(*obj.Links))
 		for i, link := range *obj.Links {
 			var linkPreserve *EnvironmentObjectLinkOverridePreserve
 			if preserve != nil && preserve.LinkOverrides != nil {
 				linkPreserve = preserve.LinkOverrides[LinkPreserveKey(string(link.Scope), link.ScopeEntityId)]
 			}
-			linkObjects[i], diags = EnvironmentObjectLinkTypesObject(ctx, &link, linkPreserve)
+			linkObjects[i], diags = EnvironmentObjectLinkTypesObject(ctx, &link, linkPreserve, secretVariable)
 			if diags.HasError() {
 				return diags
 			}
@@ -439,9 +441,10 @@ func EnvironmentObjectConnectionAuthTypeTypesObject(ctx context.Context, cat *pl
 // EnvironmentObjectLinkTypesObject converts a platform_v1.EnvironmentObjectLink into a
 // types.Object matching the link schema with a flat `overrides` block. The
 // preserve argument supplies any per-link override secrets/extra JSON that the
-// API does not echo back.
-func EnvironmentObjectLinkTypesObject(ctx context.Context, link *platform_v1.EnvironmentObjectLink, preserve *EnvironmentObjectLinkOverridePreserve) (types.Object, diag.Diagnostics) {
-	overrides, diags := environmentObjectOverridesTypesObject(link, preserve)
+// API does not echo back. secretVariable marks a secret AIRFLOW_VARIABLE or
+// ENVIRONMENT_VARIABLE, whose link overrides the API omits entirely.
+func EnvironmentObjectLinkTypesObject(ctx context.Context, link *platform_v1.EnvironmentObjectLink, preserve *EnvironmentObjectLinkOverridePreserve, secretVariable bool) (types.Object, diag.Diagnostics) {
+	overrides, diags := environmentObjectOverridesTypesObject(link, preserve, secretVariable)
 	if diags.HasError() {
 		return types.Object{}, diags
 	}
@@ -457,11 +460,16 @@ func EnvironmentObjectLinkTypesObject(ctx context.Context, link *platform_v1.Env
 // a link by selecting fields from whichever of AirflowVariableOverrides /
 // EnvironmentVariableOverrides / ConnectionOverrides / MetricsExportOverrides
 // is non-nil on the API response.
-func environmentObjectOverridesTypesObject(link *platform_v1.EnvironmentObjectLink, preserve *EnvironmentObjectLinkOverridePreserve) (types.Object, diag.Diagnostics) {
+func environmentObjectOverridesTypesObject(link *platform_v1.EnvironmentObjectLink, preserve *EnvironmentObjectLinkOverridePreserve, secretVariable bool) (types.Object, diag.Diagnostics) {
 	overridesAttrTypes := schemas.EnvironmentObjectOverridesAttributeTypes()
 
+	// For secret variables the API drops the override from the link entirely
+	// (no airflowVariableOverrides / environmentVariableOverrides key), so
+	// rebuild it from the preserved plan value instead of returning null.
+	preserveSecretValue := secretVariable && preserve != nil && preserve.Value != nil
+
 	hasAny := link.AirflowVariableOverrides != nil || link.EnvironmentVariableOverrides != nil || link.ConnectionOverrides != nil || link.MetricsExportOverrides != nil
-	if !hasAny {
+	if !hasAny && !preserveSecretValue {
 		return types.ObjectNull(overridesAttrTypes), nil
 	}
 
@@ -484,6 +492,10 @@ func environmentObjectOverridesTypesObject(link *platform_v1.EnvironmentObjectLi
 		"labels":           types.MapNull(types.StringType),
 		"data_dog_site":    types.StringNull(),
 		"data_dog_api_key": types.StringNull(),
+	}
+
+	if !hasAny {
+		values["value"] = types.StringValue(*preserve.Value)
 	}
 
 	if link.AirflowVariableOverrides != nil {
