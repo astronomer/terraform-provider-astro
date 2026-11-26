@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/astronomer/terraform-provider-astro/internal/clients"
 	platform_v1 "github.com/astronomer/terraform-provider-astro/internal/clients/platform_v1"
@@ -335,12 +336,13 @@ func buildCreateRequest(ctx context.Context, data *models.EnvironmentObject) (pl
 		req.Connection = connReq
 	case platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
 		meReq := &platform_v1.CreateEnvironmentObjectMetricsExportRequest{
-			Endpoint:      data.Endpoint.ValueStringPointer(),
-			ExporterType:  platform_v1.CreateEnvironmentObjectMetricsExportRequestExporterType(data.ExporterType.ValueString()),
-			BasicToken:    data.BasicToken.ValueStringPointer(),
-			Username:      data.Username.ValueStringPointer(),
-			Password:      data.Password.ValueStringPointer(),
-			DataDogApiKey: data.DataDogApiKey.ValueStringPointer(),
+			Endpoint:          data.Endpoint.ValueStringPointer(),
+			ExporterType:      platform_v1.CreateEnvironmentObjectMetricsExportRequestExporterType(data.ExporterType.ValueString()),
+			BasicToken:        data.BasicToken.ValueStringPointer(),
+			Username:          data.Username.ValueStringPointer(),
+			Password:          data.Password.ValueStringPointer(),
+			DataDogApiKey:     data.DataDogApiKey.ValueStringPointer(),
+			DynatraceApiToken: data.DynatraceApiToken.ValueStringPointer(),
 		}
 		if !data.AuthType.IsNull() && !data.AuthType.IsUnknown() {
 			meReq.AuthType = lo.ToPtr(platform_v1.CreateEnvironmentObjectMetricsExportRequestAuthType(data.AuthType.ValueString()))
@@ -454,11 +456,12 @@ func buildUpdateRequest(ctx context.Context, data, prior *models.EnvironmentObje
 		req.Connection = connReq
 	case platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
 		meReq := &platform_v1.UpdateEnvironmentObjectMetricsExportRequest{
-			Endpoint:      data.Endpoint.ValueStringPointer(),
-			BasicToken:    data.BasicToken.ValueStringPointer(),
-			Username:      data.Username.ValueStringPointer(),
-			Password:      data.Password.ValueStringPointer(),
-			DataDogApiKey: data.DataDogApiKey.ValueStringPointer(),
+			Endpoint:          data.Endpoint.ValueStringPointer(),
+			BasicToken:        data.BasicToken.ValueStringPointer(),
+			Username:          data.Username.ValueStringPointer(),
+			Password:          data.Password.ValueStringPointer(),
+			DataDogApiKey:     data.DataDogApiKey.ValueStringPointer(),
+			DynatraceApiToken: data.DynatraceApiToken.ValueStringPointer(),
 		}
 		if !data.ExporterType.IsNull() && !data.ExporterType.IsUnknown() {
 			meReq.ExporterType = lo.ToPtr(platform_v1.UpdateEnvironmentObjectMetricsExportRequestExporterType(data.ExporterType.ValueString()))
@@ -617,11 +620,12 @@ func buildCreateOverrides(ctx context.Context, overrides types.Object, objectTyp
 		out.Connection = connOvr
 	case platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
 		meOvr := &platform_v1.CreateEnvironmentObjectMetricsExportOverridesRequest{
-			Endpoint:      ov.Endpoint.ValueStringPointer(),
-			BasicToken:    ov.BasicToken.ValueStringPointer(),
-			Username:      ov.Username.ValueStringPointer(),
-			Password:      ov.Password.ValueStringPointer(),
-			DataDogApiKey: ov.DataDogApiKey.ValueStringPointer(),
+			Endpoint:          ov.Endpoint.ValueStringPointer(),
+			BasicToken:        ov.BasicToken.ValueStringPointer(),
+			Username:          ov.Username.ValueStringPointer(),
+			Password:          ov.Password.ValueStringPointer(),
+			DataDogApiKey:     ov.DataDogApiKey.ValueStringPointer(),
+			DynatraceApiToken: ov.DynatraceApiToken.ValueStringPointer(),
 		}
 		if isUserSet(ov.DataDogSite) {
 			meOvr.DataDogSite = lo.ToPtr(platform_v1.CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSite(ov.DataDogSite.ValueString()))
@@ -652,20 +656,19 @@ func buildCreateOverrides(ctx context.Context, overrides types.Object, objectTyp
 func buildUpdateOverrides(ctx context.Context, overrides, priorOverrides types.Object, objectType platform_v1.CreateEnvironmentObjectRequestObjectType) (*platform_v1.UpdateEnvironmentObjectOverridesRequest, diag.Diagnostics) {
 	// The API copies a removed override secret back from storage unless it is
 	// listed in unsetFields, so a key dropped from config would stay live.
-	priorHadDataDogApiKey := false
+	var prior *models.EnvironmentObjectOverridesInput
 	if objectType == platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT && !priorOverrides.IsNull() && !priorOverrides.IsUnknown() {
-		var prior models.EnvironmentObjectOverridesInput
-		if d := priorOverrides.As(ctx, &prior, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true}); d.HasError() {
+		prior = &models.EnvironmentObjectOverridesInput{}
+		if d := priorOverrides.As(ctx, prior, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true}); d.HasError() {
 			return nil, d
 		}
-		priorHadDataDogApiKey = isUserSet(prior.DataDogApiKey)
 	}
 
 	if overrides.IsNull() || overrides.IsUnknown() {
-		if priorHadDataDogApiKey {
+		if unset := removedOverrideSecrets(prior, nil); len(unset) > 0 {
 			return &platform_v1.UpdateEnvironmentObjectOverridesRequest{
 				MetricsExport: &platform_v1.UpdateEnvironmentObjectMetricsExportOverridesRequest{},
-				UnsetFields:   &[]string{"dataDogApiKey"},
+				UnsetFields:   &unset,
 			}, nil
 		}
 		return nil, nil
@@ -676,8 +679,8 @@ func buildUpdateOverrides(ctx context.Context, overrides, priorOverrides types.O
 	}
 
 	out := &platform_v1.UpdateEnvironmentObjectOverridesRequest{}
-	if priorHadDataDogApiKey && ov.DataDogApiKey.IsNull() {
-		out.UnsetFields = &[]string{"dataDogApiKey"}
+	if unset := removedOverrideSecrets(prior, &ov); len(unset) > 0 {
+		out.UnsetFields = &unset
 	}
 
 	switch objectType {
@@ -715,11 +718,12 @@ func buildUpdateOverrides(ctx context.Context, overrides, priorOverrides types.O
 		out.Connection = connOvr
 	case platform_v1.CreateEnvironmentObjectRequestObjectTypeMETRICSEXPORT:
 		meOvr := &platform_v1.UpdateEnvironmentObjectMetricsExportOverridesRequest{
-			Endpoint:      ov.Endpoint.ValueStringPointer(),
-			BasicToken:    ov.BasicToken.ValueStringPointer(),
-			Username:      ov.Username.ValueStringPointer(),
-			Password:      ov.Password.ValueStringPointer(),
-			DataDogApiKey: ov.DataDogApiKey.ValueStringPointer(),
+			Endpoint:          ov.Endpoint.ValueStringPointer(),
+			BasicToken:        ov.BasicToken.ValueStringPointer(),
+			Username:          ov.Username.ValueStringPointer(),
+			Password:          ov.Password.ValueStringPointer(),
+			DataDogApiKey:     ov.DataDogApiKey.ValueStringPointer(),
+			DynatraceApiToken: ov.DynatraceApiToken.ValueStringPointer(),
 		}
 		if isUserSet(ov.DataDogSite) {
 			meOvr.DataDogSite = lo.ToPtr(platform_v1.UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSite(ov.DataDogSite.ValueString()))
@@ -742,6 +746,32 @@ func buildUpdateOverrides(ctx context.Context, overrides, priorOverrides types.O
 	}
 
 	return out, nil
+}
+
+// unsettableOverrideSecrets are the metrics export override secrets the API
+// copies back from storage on update unless they are named in unsetFields.
+var unsettableOverrideSecrets = []struct {
+	apiName string
+	pick    func(*models.EnvironmentObjectOverridesInput) types.String
+}{
+	{"dataDogApiKey", func(o *models.EnvironmentObjectOverridesInput) types.String { return o.DataDogApiKey }},
+	{"dynatraceApiToken", func(o *models.EnvironmentObjectOverridesInput) types.String { return o.DynatraceApiToken }},
+}
+
+// removedOverrideSecrets returns the API names of the override secrets that
+// prior had and current drops. A nil current means the whole overrides block
+// was removed; a nil prior means there is nothing to unset.
+func removedOverrideSecrets(prior, current *models.EnvironmentObjectOverridesInput) []string {
+	if prior == nil {
+		return nil
+	}
+	var out []string
+	for _, s := range unsettableOverrideSecrets {
+		if isUserSet(s.pick(prior)) && (current == nil || s.pick(current).IsNull()) {
+			out = append(out, s.apiName)
+		}
+	}
+	return out
 }
 
 func tfMapToStringMap(m types.Map) map[string]string {
@@ -786,6 +816,7 @@ func buildPreserveFromModel(ctx context.Context, data *models.EnvironmentObject)
 		preserve.BasicToken = data.BasicToken.ValueStringPointer()
 		preserve.MetricsExportAuthType = data.AuthType.ValueStringPointer()
 		preserve.DataDogApiKey = data.DataDogApiKey.ValueStringPointer()
+		preserve.DynatraceApiToken = data.DynatraceApiToken.ValueStringPointer()
 	}
 
 	// Per-link overrides
@@ -824,6 +855,7 @@ func extractLinkOverridePreserve(ctx context.Context, overrides types.Object) (*
 	lop.BasicToken = ov.BasicToken.ValueStringPointer()
 	lop.AuthType = ov.AuthType.ValueStringPointer()
 	lop.DataDogApiKey = ov.DataDogApiKey.ValueStringPointer()
+	lop.DynatraceApiToken = ov.DynatraceApiToken.ValueStringPointer()
 	return lop, nil
 }
 
@@ -945,6 +977,8 @@ func validateMetricsExportFields(data *models.EnvironmentObject) diag.Diagnostic
 		diags.Append(validatePrometheusExportFields(data)...)
 	case platform_v1.CreateEnvironmentObjectMetricsExportRequestExporterTypeDATADOG:
 		diags.Append(validateDatadogExportFields(data)...)
+	case platform_v1.CreateEnvironmentObjectMetricsExportRequestExporterTypeDYNATRACE:
+		diags.Append(validateDynatraceExportFields(data)...)
 	}
 	for _, f := range variableOnlyFields(data) {
 		diags.AddAttributeError(path.Root(f.name), "Conflicting field",
@@ -963,6 +997,14 @@ func validatePrometheusExportFields(data *models.EnvironmentObject) diag.Diagnos
 		diags.AddAttributeError(path.Root("endpoint"), "Missing required field",
 			"endpoint is required when exporter_type=PROMETHEUS")
 	}
+	diags.Append(rejectDatadogFields(data)...)
+	diags.Append(rejectDynatraceFields(data)...)
+	return diags
+}
+
+// rejectDatadogFields flags the Datadog-only fields on a non-DATADOG export.
+func rejectDatadogFields(data *models.EnvironmentObject) diag.Diagnostics {
+	var diags diag.Diagnostics
 	for _, f := range []struct {
 		name string
 		v    types.String
@@ -974,6 +1016,42 @@ func validatePrometheusExportFields(data *models.EnvironmentObject) diag.Diagnos
 			diags.AddAttributeError(path.Root(f.name), "Conflicting field",
 				fmt.Sprintf("%s is only valid when exporter_type=DATADOG", f.name))
 		}
+	}
+	return diags
+}
+
+// rejectDynatraceFields flags the Dynatrace-only fields on a non-DYNATRACE export.
+func rejectDynatraceFields(data *models.EnvironmentObject) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if isUserSet(data.DynatraceApiToken) {
+		diags.AddAttributeError(path.Root("dynatrace_api_token"), "Conflicting field",
+			"dynatrace_api_token is only valid when exporter_type=DYNATRACE")
+	}
+	return diags
+}
+
+// rejectPrometheusAuthFields mirrors the API, which rejects the Prometheus
+// auth fields and headers on DATADOG and DYNATRACE exports rather than
+// ignoring them.
+func rejectPrometheusAuthFields(data *models.EnvironmentObject, exporterType string) diag.Diagnostics {
+	var diags diag.Diagnostics
+	for _, f := range []struct {
+		name string
+		v    types.String
+	}{
+		{"auth_type", data.AuthType},
+		{"basic_token", data.BasicToken},
+		{"username", data.Username},
+		{"password", data.Password},
+	} {
+		if isUserSet(f.v) {
+			diags.AddAttributeError(path.Root(f.name), "Conflicting field",
+				fmt.Sprintf("%s is not valid when exporter_type=%s", f.name, exporterType))
+		}
+	}
+	if !data.Headers.IsNull() && !data.Headers.IsUnknown() {
+		diags.AddAttributeError(path.Root("headers"), "Conflicting field",
+			fmt.Sprintf("headers is not valid when exporter_type=%s", exporterType))
 	}
 	return diags
 }
@@ -990,25 +1068,37 @@ func validateDatadogExportFields(data *models.EnvironmentObject) diag.Diagnostic
 		diags.AddAttributeError(path.Root("data_dog_api_key"), "Missing required field",
 			"data_dog_api_key is required when exporter_type=DATADOG")
 	}
-	for _, f := range []struct {
-		name string
-		v    types.String
-	}{
-		{"endpoint", data.Endpoint},
-		{"auth_type", data.AuthType},
-		{"basic_token", data.BasicToken},
-		{"username", data.Username},
-		{"password", data.Password},
-	} {
-		if isUserSet(f.v) {
-			diags.AddAttributeError(path.Root(f.name), "Conflicting field",
-				fmt.Sprintf("%s is not valid when exporter_type=DATADOG", f.name))
+	if isUserSet(data.Endpoint) {
+		diags.AddAttributeError(path.Root("endpoint"), "Conflicting field",
+			"endpoint is not valid when exporter_type=DATADOG")
+	}
+	diags.Append(rejectPrometheusAuthFields(data, "DATADOG")...)
+	diags.Append(rejectDynatraceFields(data)...)
+	return diags
+}
+
+// validateDynatraceExportFields mirrors the API: a DYNATRACE export needs an
+// https OTLP endpoint and an API token, and rejects the Prometheus auth fields,
+// headers (the provider-side collector sets the Authorization header itself)
+// and the Datadog fields.
+func validateDynatraceExportFields(data *models.EnvironmentObject) diag.Diagnostics {
+	var diags diag.Diagnostics
+	switch {
+	case data.Endpoint.IsNull():
+		diags.AddAttributeError(path.Root("endpoint"), "Missing required field",
+			"endpoint is required when exporter_type=DYNATRACE")
+	case !data.Endpoint.IsUnknown():
+		if u, err := url.Parse(data.Endpoint.ValueString()); err != nil || u.Scheme != "https" || u.Host == "" {
+			diags.AddAttributeError(path.Root("endpoint"), "Invalid endpoint",
+				"endpoint must be an https URL when exporter_type=DYNATRACE, e.g. https://<environment-id>.live.dynatrace.com/api/v2/otlp/v1/metrics")
 		}
 	}
-	if !data.Headers.IsNull() && !data.Headers.IsUnknown() {
-		diags.AddAttributeError(path.Root("headers"), "Conflicting field",
-			"headers is not valid when exporter_type=DATADOG")
+	if data.DynatraceApiToken.IsNull() && !data.DynatraceApiToken.IsUnknown() {
+		diags.AddAttributeError(path.Root("dynatrace_api_token"), "Missing required field",
+			"dynatrace_api_token is required when exporter_type=DYNATRACE")
 	}
+	diags.Append(rejectPrometheusAuthFields(data, "DYNATRACE")...)
+	diags.Append(rejectDatadogFields(data)...)
 	return diags
 }
 
@@ -1071,6 +1161,7 @@ func metricsExportOnlyFields(data *models.EnvironmentObject) []namedField {
 		{"username", data.Username},
 		{"data_dog_site", data.DataDogSite},
 		{"data_dog_api_key", data.DataDogApiKey},
+		{"dynatrace_api_token", data.DynatraceApiToken},
 	}
 	var out []namedField
 	for _, c := range checks {

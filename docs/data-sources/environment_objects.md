@@ -90,7 +90,8 @@ Read-Only:
 - `data_dog_api_key` (String, Sensitive) The Datadog API key. Null unless show_secrets = true on astro_environment_objects; the API masks it otherwise
 - `data_dog_site` (String) The Datadog site metrics are sent to (only used when object_type=METRICS_EXPORT and exporter_type=DATADOG)
 - `description` (String) The description of the environment object
-- `endpoint` (String) The Prometheus endpoint where the metrics are exported (only used when object_type=METRICS_EXPORT and exporter_type=PROMETHEUS)
+- `dynatrace_api_token` (String, Sensitive) The Dynatrace API token. Null unless show_secrets = true on astro_environment_objects; the API masks it otherwise
+- `endpoint` (String) The endpoint where the metrics are exported: the Prometheus remote write URL, or the Dynatrace OTLP metrics URL (only used when object_type=METRICS_EXPORT and exporter_type=PROMETHEUS or DYNATRACE)
 - `exclude_links` (Attributes Set) The excluded links for the environment object (see [below for nested schema](#nestedatt--environment_objects--exclude_links))
 - `exporter_type` (String) The type of exporter (only used when object_type=METRICS_EXPORT)
 - `extra` (String) Extra connection details as JSON string (only used when object_type=CONNECTION)
@@ -187,7 +188,8 @@ Read-Only:
 - `basic_token` (String, Sensitive) Override bearer token (only used when object_type=METRICS_EXPORT)
 - `data_dog_api_key` (String, Sensitive) Override Datadog API key. Null unless show_secrets = true on astro_environment_objects; the API masks it otherwise
 - `data_dog_site` (String) Override Datadog site (only used when object_type=METRICS_EXPORT and exporter_type=DATADOG)
-- `endpoint` (String) Override Prometheus endpoint (only used when object_type=METRICS_EXPORT)
+- `dynatrace_api_token` (String, Sensitive) Override Dynatrace API token. Null unless show_secrets = true on astro_environment_objects; the API masks it otherwise
+- `endpoint` (String) Override endpoint: the Prometheus remote write URL or the Dynatrace OTLP metrics URL (only used when object_type=METRICS_EXPORT)
 - `exporter_type` (String) Override exporter type (only used when object_type=METRICS_EXPORT)
 - `extra` (String) Override extra JSON (only used when object_type=CONNECTION)
 - `headers` (Map of String) Override HTTP request headers (only used when object_type=METRICS_EXPORT)

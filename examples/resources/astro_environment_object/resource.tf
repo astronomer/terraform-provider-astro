@@ -230,6 +230,20 @@ resource "astro_environment_object" "metrics_workspace_datadog" {
   labels           = { environment = "prod" }
 }
 
+# METRICS_EXPORT — Dynatrace. `endpoint` is the environment's OTLP metrics URL; the API token needs the metrics.ingest scope.
+# The Prometheus auth fields and `headers` are not allowed.
+resource "astro_environment_object" "metrics_workspace_dynatrace" {
+  object_key      = "dynatrace_export"
+  object_type     = "METRICS_EXPORT"
+  scope           = "WORKSPACE"
+  scope_entity_id = "clx42sxw501gl01o0gjenthnh"
+
+  exporter_type       = "DYNATRACE"
+  endpoint            = "https://abc12345.live.dynatrace.com/api/v2/otlp/v1/metrics"
+  dynatrace_api_token = "REPLACE_ME"
+  labels              = { environment = "prod" }
+}
+
 # Import an existing environment object
 import {
   id = "cm4ntm56001gk01mbhudv1elv"

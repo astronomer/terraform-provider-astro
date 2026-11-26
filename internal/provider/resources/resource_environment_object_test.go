@@ -836,6 +836,169 @@ func TestAcc_ResourceEnvironmentObjectMetricsExport_ExporterSwitch(t *testing.T)
 	})
 }
 
+func TestAcc_ResourceEnvironmentObjectMetricsExport_Dynatrace(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
+	meKey := fmt.Sprintf("test_me_dt_%v", namePrefix)
+	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
+	resourceVar := "astro_environment_object.test"
+	endpoint := "https://abc12345.live.dynatrace.com/api/v2/otlp/v1/metrics"
+	newEndpoint := "https://xyz98765.live.dynatrace.com/api/v2/otlp/v1/metrics"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckEnvironmentObjectDestroyed(t, meKey),
+		Steps: []resource.TestStep{
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExportDynatrace(
+					"test", meKey, workspaceId, endpoint,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckEnvironmentObjectExists(t, meKey),
+					resource.TestCheckResourceAttr(resourceVar, "exporter_type", "DYNATRACE"),
+					resource.TestCheckResourceAttr(resourceVar, "endpoint", endpoint),
+					resource.TestCheckResourceAttr(resourceVar, "dynatrace_api_token", "dt0c01.ABCDEFGHIJKLMNOPQRSTUVWX.0123456789abcdef"),
+					resource.TestCheckResourceAttr(resourceVar, "labels.team", "data"),
+					resource.TestCheckNoResourceAttr(resourceVar, "data_dog_site"),
+				),
+			},
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExportDynatrace(
+					"test", meKey, workspaceId, newEndpoint,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceVar, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "endpoint", newEndpoint),
+					resource.TestCheckResourceAttr(resourceVar, "dynatrace_api_token", "dt0c01.ABCDEFGHIJKLMNOPQRSTUVWX.0123456789abcdef"),
+				),
+			},
+			// Import — the API never returns dynatrace_api_token; auth_type is
+			// ignored for the same reason as the other METRICS_EXPORT tests.
+			{
+				ResourceName:            resourceVar,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"dynatrace_api_token", "auth_type"},
+			},
+		},
+	})
+}
+
+// TestAcc_ResourceEnvironmentObjectMetricsExport_DynatraceLinkOverride adds a
+// Dynatrace endpoint/token override on a linked Deployment, then removes it, so
+// the removal sends unsetFields and the follow-up plan must be empty.
+func TestAcc_ResourceEnvironmentObjectMetricsExport_DynatraceLinkOverride(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
+	meKey := fmt.Sprintf("test_me_dt_link_%v", namePrefix)
+	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
+	deploymentId := os.Getenv("HOSTED_DEPLOYMENT_ID")
+	resourceVar := "astro_environment_object.test"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckEnvironmentObjectDestroyed(t, meKey),
+		Steps: []resource.TestStep{
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExportDynatraceWithLinkOverride(
+					"test", meKey, workspaceId, deploymentId, true,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckEnvironmentObjectExists(t, meKey),
+					resource.TestCheckResourceAttr(resourceVar, "exporter_type", "DYNATRACE"),
+					resource.TestCheckResourceAttr(resourceVar, "links.#", "1"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceVar, "links.*", map[string]string{
+						"scope_entity_id":               deploymentId,
+						"overrides.endpoint":            "https://xyz98765.live.dynatrace.com/api/v2/otlp/v1/metrics",
+						"overrides.dynatrace_api_token": "dt0c01.ZYXWVUTSRQPONMLKJIHGFEDC.fedcba9876543210",
+						"overrides.labels.environment":  "staging",
+					}),
+				),
+			},
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExportDynatraceWithLinkOverride(
+					"test", meKey, workspaceId, deploymentId, false,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceVar, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "links.#", "1"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceVar, "links.*", map[string]string{
+						"scope_entity_id":              deploymentId,
+						"overrides.labels.environment": "staging",
+					}),
+					resource.TestCheckNoResourceAttr(resourceVar, "links.0.overrides.endpoint"),
+					resource.TestCheckNoResourceAttr(resourceVar, "links.0.overrides.dynatrace_api_token"),
+				),
+			},
+		},
+	})
+}
+
+// TestAcc_ResourceEnvironmentObjectMetricsExport_DynatraceExporterSwitch
+// switches one export PROMETHEUS -> DYNATRACE -> DATADOG -> PROMETHEUS in
+// place; each step's implicit empty-plan check catches state drift.
+func TestAcc_ResourceEnvironmentObjectMetricsExport_DynatraceExporterSwitch(t *testing.T) {
+	namePrefix := utils.GenerateTestResourceName(10)
+	meKey := fmt.Sprintf("test_me_dt_switch_%v", namePrefix)
+	workspaceId := os.Getenv("HOSTED_WORKSPACE_ID")
+	resourceVar := "astro_environment_object.test"
+	endpoint := "https://abc12345.live.dynatrace.com/api/v2/otlp/v1/metrics"
+	inPlace := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(resourceVar, plancheck.ResourceActionUpdate),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: astronomerprovider.TestAccProtoV6ProviderFactories,
+		PreCheck:                 func() { astronomerprovider.TestAccPreCheck(t) },
+		CheckDestroy:             testAccCheckEnvironmentObjectDestroyed(t, meKey),
+		Steps: []resource.TestStep{
+			{
+				Config: astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExport("test", meKey, "WORKSPACE", workspaceId, "https://prometheus.example.com/api/v1/write"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "exporter_type", "PROMETHEUS"),
+					resource.TestCheckNoResourceAttr(resourceVar, "dynatrace_api_token"),
+				),
+			},
+			{
+				Config:           astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExportDynatrace("test", meKey, workspaceId, endpoint),
+				ConfigPlanChecks: inPlace,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "exporter_type", "DYNATRACE"),
+					resource.TestCheckResourceAttr(resourceVar, "endpoint", endpoint),
+				),
+			},
+			{
+				Config:           astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExportDatadog("test", meKey, workspaceId, "datadoghq.com"),
+				ConfigPlanChecks: inPlace,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "exporter_type", "DATADOG"),
+					resource.TestCheckResourceAttr(resourceVar, "endpoint", ""),
+					resource.TestCheckNoResourceAttr(resourceVar, "dynatrace_api_token"),
+				),
+			},
+			{
+				Config:           astronomerprovider.ProviderConfig(t, astronomerprovider.HOSTED) + envObjMetricsExport("test", meKey, "WORKSPACE", workspaceId, "https://prometheus.example.com/api/v1/write"),
+				ConfigPlanChecks: inPlace,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceVar, "exporter_type", "PROMETHEUS"),
+					resource.TestCheckNoResourceAttr(resourceVar, "dynatrace_api_token"),
+					resource.TestCheckNoResourceAttr(resourceVar, "data_dog_api_key"),
+				),
+			},
+		},
+	})
+}
+
 // TestAcc_ResourceEnvironmentObject_LinkLifecycle exercises add / modify /
 // remove for the links block. Each transition is a fresh refresh+plan, so
 // any drift in the link state would surface as a non-empty plan failure.
@@ -1155,6 +1318,51 @@ resource "astro_environment_object" "%s" {
   }]
 }
 `, tfName, meKey, workspaceId, deploymentId, datadogOverride)
+}
+
+func envObjMetricsExportDynatrace(tfName, meKey, workspaceId, endpoint string) string {
+	return fmt.Sprintf(`
+resource "astro_environment_object" "%s" {
+  object_key      = "%s"
+  object_type     = "METRICS_EXPORT"
+  scope           = "WORKSPACE"
+  scope_entity_id = "%s"
+
+  exporter_type       = "DYNATRACE"
+  endpoint            = "%s"
+  dynatrace_api_token = "dt0c01.ABCDEFGHIJKLMNOPQRSTUVWX.0123456789abcdef"
+  labels              = { team = "data" }
+}
+`, tfName, meKey, workspaceId, endpoint)
+}
+
+func envObjMetricsExportDynatraceWithLinkOverride(tfName, meKey, workspaceId, deploymentId string, withDynatraceOverride bool) string {
+	dynatraceOverride := ""
+	if withDynatraceOverride {
+		dynatraceOverride = `
+      endpoint            = "https://xyz98765.live.dynatrace.com/api/v2/otlp/v1/metrics"
+      dynatrace_api_token = "dt0c01.ZYXWVUTSRQPONMLKJIHGFEDC.fedcba9876543210"`
+	}
+	return fmt.Sprintf(`
+resource "astro_environment_object" "%s" {
+  object_key      = "%s"
+  object_type     = "METRICS_EXPORT"
+  scope           = "WORKSPACE"
+  scope_entity_id = "%s"
+
+  exporter_type       = "DYNATRACE"
+  endpoint            = "https://abc12345.live.dynatrace.com/api/v2/otlp/v1/metrics"
+  dynatrace_api_token = "dt0c01.ABCDEFGHIJKLMNOPQRSTUVWX.0123456789abcdef"
+
+  links = [{
+    scope           = "DEPLOYMENT"
+    scope_entity_id = "%s"
+    overrides = {%s
+      labels = { environment = "staging" }
+    }
+  }]
+}
+`, tfName, meKey, workspaceId, deploymentId, dynatraceOverride)
 }
 
 // --- Existence checks ---

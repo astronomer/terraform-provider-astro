@@ -259,6 +259,64 @@ func TestUnit_EnvironmentObject_ReadFromResponse_MetricsExport_Datadog(t *testin
 	})
 }
 
+func TestUnit_EnvironmentObject_ReadFromResponse_MetricsExport_Dynatrace(t *testing.T) {
+	endpoint := "https://abc12345.live.dynatrace.com/api/v2/otlp/v1/metrics"
+
+	t.Run("endpoint comes from API, api token preserved from plan", func(t *testing.T) {
+		obj := newDynatraceMetricsExportAPIResponse(endpoint)
+		preserve := &models.EnvironmentObjectPreserve{DynatraceApiToken: lo.ToPtr("dt_token_from_plan")}
+		var data models.EnvironmentObject
+		diags := data.ReadFromResponse(context.Background(), obj, preserve)
+		require.False(t, diags.HasError(), "diags: %v", diags)
+		assert.Equal(t, "DYNATRACE", data.ExporterType.ValueString())
+		assert.Equal(t, endpoint, data.Endpoint.ValueString())
+		assert.Equal(t, "dt_token_from_plan", data.DynatraceApiToken.ValueString())
+		assert.True(t, data.DataDogSite.IsNull())
+		assert.True(t, data.DataDogApiKey.IsNull())
+		assert.True(t, data.AuthType.IsNull())
+	})
+
+	t.Run("masked empty token from API is null with nil preserve (import)", func(t *testing.T) {
+		obj := newDynatraceMetricsExportAPIResponse(endpoint)
+		obj.MetricsExport.DynatraceApiToken = lo.ToPtr("")
+		var data models.EnvironmentObject
+		diags := data.ReadFromResponse(context.Background(), obj, nil)
+		require.False(t, diags.HasError(), "diags: %v", diags)
+		assert.True(t, data.DynatraceApiToken.IsNull())
+	})
+
+	t.Run("prometheus export leaves the api token null", func(t *testing.T) {
+		obj := newMetricsExportAPIResponse(nil, nil, nil)
+		var data models.EnvironmentObject
+		diags := data.ReadFromResponse(context.Background(), obj, &models.EnvironmentObjectPreserve{})
+		require.False(t, diags.HasError(), "diags: %v", diags)
+		assert.True(t, data.DynatraceApiToken.IsNull())
+	})
+
+	t.Run("link override: endpoint from API, api token preserved", func(t *testing.T) {
+		depId := "cmq6m73on0hnl01ktk3xftlwf"
+		overrideEndpoint := "https://xyz98765.live.dynatrace.com/api/v2/otlp/v1/metrics"
+		obj := newDynatraceMetricsExportAPIResponse(endpoint)
+		obj.Links = &[]platform_v1.EnvironmentObjectLink{{
+			Scope:         platform_v1.EnvironmentObjectLinkScopeDEPLOYMENT,
+			ScopeEntityId: depId,
+			MetricsExportOverrides: &platform_v1.EnvironmentObjectMetricsExportOverrides{
+				Endpoint: &overrideEndpoint,
+			},
+		}}
+		preserve := &models.EnvironmentObjectPreserve{
+			LinkOverrides: map[string]*models.EnvironmentObjectLinkOverridePreserve{
+				models.LinkPreserveKey("DEPLOYMENT", depId): {DynatraceApiToken: lo.ToPtr("override_dt_token")},
+			},
+		}
+		var data models.EnvironmentObject
+		diags := data.ReadFromResponse(context.Background(), obj, preserve)
+		require.False(t, diags.HasError(), "diags: %v", diags)
+		assert.Equal(t, overrideEndpoint, overrideValueFromLinks(t, data.Links, "endpoint"))
+		assert.Equal(t, "override_dt_token", overrideValueFromLinks(t, data.Links, "dynatrace_api_token"))
+	})
+}
+
 // TestUnit_EnvironmentObject_ReadFromResponse_LinkOverridesPreserve covers the
 // per-link override preserve path: secrets, JSON, and auth_type must survive
 // when the API doesn't echo them back. Lookup is keyed by scope:scope_entity_id.
@@ -438,6 +496,21 @@ func newDatadogMetricsExportAPIResponse(site *platform_v1.EnvironmentObjectMetri
 		MetricsExport: &platform_v1.EnvironmentObjectMetricsExport{
 			ExporterType: platform_v1.EnvironmentObjectMetricsExportExporterTypeDATADOG,
 			DataDogSite:  site,
+		},
+	}
+}
+
+func newDynatraceMetricsExportAPIResponse(endpoint string) *platform_v1.EnvironmentObject {
+	id := "cm6envobjid00dynatrace"
+	return &platform_v1.EnvironmentObject{
+		Id:            &id,
+		ObjectKey:     "k",
+		ObjectType:    platform_v1.EnvironmentObjectObjectTypeMETRICSEXPORT,
+		Scope:         platform_v1.EnvironmentObjectScopeWORKSPACE,
+		ScopeEntityId: "ws_id",
+		MetricsExport: &platform_v1.EnvironmentObjectMetricsExport{
+			Endpoint:     endpoint,
+			ExporterType: platform_v1.EnvironmentObjectMetricsExportExporterTypeDYNATRACE,
 		},
 	}
 }

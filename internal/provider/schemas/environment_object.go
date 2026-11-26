@@ -84,15 +84,16 @@ func EnvironmentObjectOverridesAttributeTypes() map[string]attr.Type {
 		"extra":    types.StringType,
 		"password": types.StringType, // polymorphic: connection password OR basic-auth password
 		// METRICS_EXPORT
-		"auth_type":        types.StringType,
-		"endpoint":         types.StringType,
-		"basic_token":      types.StringType,
-		"exporter_type":    types.StringType,
-		"username":         types.StringType,
-		"headers":          types.MapType{ElemType: types.StringType},
-		"labels":           types.MapType{ElemType: types.StringType},
-		"data_dog_site":    types.StringType,
-		"data_dog_api_key": types.StringType,
+		"auth_type":           types.StringType,
+		"endpoint":            types.StringType,
+		"basic_token":         types.StringType,
+		"exporter_type":       types.StringType,
+		"username":            types.StringType,
+		"headers":             types.MapType{ElemType: types.StringType},
+		"labels":              types.MapType{ElemType: types.StringType},
+		"data_dog_site":       types.StringType,
+		"data_dog_api_key":    types.StringType,
+		"dynatrace_api_token": types.StringType,
 	}
 }
 
@@ -224,7 +225,7 @@ func environmentObjectOverridesDataSourceSchemaAttributes() map[string]datasourc
 			Computed:            true,
 		},
 		"endpoint": datasourceSchema.StringAttribute{
-			MarkdownDescription: "Override Prometheus endpoint (only used when object_type=METRICS_EXPORT)",
+			MarkdownDescription: "Override endpoint: the Prometheus remote write URL or the Dynatrace OTLP metrics URL (only used when object_type=METRICS_EXPORT)",
 			Computed:            true,
 		},
 		"basic_token": datasourceSchema.StringAttribute{
@@ -256,6 +257,11 @@ func environmentObjectOverridesDataSourceSchemaAttributes() map[string]datasourc
 		},
 		"data_dog_api_key": datasourceSchema.StringAttribute{
 			MarkdownDescription: "Override Datadog API key. Null unless show_secrets = true on astro_environment_objects; the API masks it otherwise",
+			Computed:            true,
+			Sensitive:           true,
+		},
+		"dynatrace_api_token": datasourceSchema.StringAttribute{
+			MarkdownDescription: "Override Dynatrace API token. Null unless show_secrets = true on astro_environment_objects; the API masks it otherwise",
 			Computed:            true,
 			Sensitive:           true,
 		},
@@ -382,7 +388,7 @@ func EnvironmentObjectDataSourceSchemaAttributes() map[string]datasourceSchema.A
 		},
 		// METRICS_EXPORT fields
 		"endpoint": datasourceSchema.StringAttribute{
-			MarkdownDescription: "The Prometheus endpoint where the metrics are exported (only used when object_type=METRICS_EXPORT and exporter_type=PROMETHEUS)",
+			MarkdownDescription: "The endpoint where the metrics are exported: the Prometheus remote write URL, or the Dynatrace OTLP metrics URL (only used when object_type=METRICS_EXPORT and exporter_type=PROMETHEUS or DYNATRACE)",
 			Computed:            true,
 		},
 		"exporter_type": datasourceSchema.StringAttribute{
@@ -418,6 +424,11 @@ func EnvironmentObjectDataSourceSchemaAttributes() map[string]datasourceSchema.A
 		},
 		"data_dog_api_key": datasourceSchema.StringAttribute{
 			MarkdownDescription: "The Datadog API key. Null unless show_secrets = true on astro_environment_objects; the API masks it otherwise",
+			Computed:            true,
+			Sensitive:           true,
+		},
+		"dynatrace_api_token": datasourceSchema.StringAttribute{
+			MarkdownDescription: "The Dynatrace API token. Null unless show_secrets = true on astro_environment_objects; the API masks it otherwise",
 			Computed:            true,
 			Sensitive:           true,
 		},
@@ -591,7 +602,7 @@ func environmentObjectOverridesResourceSchemaAttributes() map[string]resourceSch
 			Optional:            true,
 		},
 		"endpoint": resourceSchema.StringAttribute{
-			MarkdownDescription: "Override Prometheus endpoint (only valid when object_type=METRICS_EXPORT)",
+			MarkdownDescription: "Override endpoint: the Prometheus remote write URL or the Dynatrace OTLP metrics URL (only valid when object_type=METRICS_EXPORT)",
 			Optional:            true,
 		},
 		"basic_token": resourceSchema.StringAttribute{
@@ -627,6 +638,12 @@ func environmentObjectOverridesResourceSchemaAttributes() map[string]resourceSch
 			Optional:            true,
 			Sensitive:           true,
 			Validators:          []validator.String{dataDogApiKeyValidator()},
+		},
+		"dynatrace_api_token": resourceSchema.StringAttribute{
+			MarkdownDescription: "Override Dynatrace API token (only valid when object_type=METRICS_EXPORT and exporter_type=DYNATRACE)",
+			Optional:            true,
+			Sensitive:           true,
+			Validators:          []validator.String{dynatraceApiTokenValidator()},
 		},
 		// Polymorphic
 		"password": resourceSchema.StringAttribute{
@@ -848,18 +865,19 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 		},
 		// METRICS_EXPORT fields (only valid when object_type=METRICS_EXPORT)
 		"endpoint": resourceSchema.StringAttribute{
-			MarkdownDescription: "The Prometheus endpoint where the metrics are exported (required when exporter_type=PROMETHEUS, not allowed when exporter_type=DATADOG)",
+			MarkdownDescription: "The endpoint where the metrics are exported (required when exporter_type=PROMETHEUS or DYNATRACE, not allowed when exporter_type=DATADOG). For PROMETHEUS it is the remote write URL; for DYNATRACE it is the OTLP metrics URL, https://<environment-id>.live.dynatrace.com/api/v2/otlp/v1/metrics",
 			Optional:            true,
 			Computed:            true,
 		},
 		"exporter_type": resourceSchema.StringAttribute{
-			MarkdownDescription: "The type of exporter (required when object_type=METRICS_EXPORT). Values: PROMETHEUS, DATADOG",
+			MarkdownDescription: "The type of exporter (required when object_type=METRICS_EXPORT). Values: PROMETHEUS, DATADOG, DYNATRACE",
 			Optional:            true,
 			Computed:            true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
 					string(platform_v1.CreateEnvironmentObjectMetricsExportRequestExporterTypePROMETHEUS),
 					string(platform_v1.CreateEnvironmentObjectMetricsExportRequestExporterTypeDATADOG),
+					string(platform_v1.CreateEnvironmentObjectMetricsExportRequestExporterTypeDYNATRACE),
 				),
 			},
 		},
@@ -906,6 +924,12 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 			Optional:            true,
 			Sensitive:           true,
 			Validators:          []validator.String{dataDogApiKeyValidator()},
+		},
+		"dynatrace_api_token": resourceSchema.StringAttribute{
+			MarkdownDescription: "The Dynatrace API token used to authenticate the export (required when exporter_type=DYNATRACE). It needs the metrics.ingest scope. The API never returns it, so the value is kept from configuration",
+			Optional:            true,
+			Sensitive:           true,
+			Validators:          []validator.String{dynatraceApiTokenValidator()},
 		},
 		// Polymorphic — applies to both CONNECTION and METRICS_EXPORT
 		"password": resourceSchema.StringAttribute{
@@ -961,6 +985,11 @@ func EnvironmentObjectResourceSchemaAttributes() map[string]resourceSchema.Attri
 // dataDogApiKeyValidator mirrors the API's request bound on dataDogApiKey.
 func dataDogApiKeyValidator() validator.String {
 	return stringvalidator.LengthBetween(1, 64)
+}
+
+// dynatraceApiTokenValidator mirrors the API's request bound on dynatraceApiToken.
+func dynatraceApiTokenValidator() validator.String {
+	return stringvalidator.LengthBetween(1, 128)
 }
 
 func dataDogSiteValidator() validator.String {
