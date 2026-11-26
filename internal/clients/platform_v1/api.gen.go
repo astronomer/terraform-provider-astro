@@ -191,6 +191,7 @@ const (
 // Defines values for CreateEnvironmentObjectMetricsExportOverridesRequestExporterType.
 const (
 	CreateEnvironmentObjectMetricsExportOverridesRequestExporterTypeDATADOG    CreateEnvironmentObjectMetricsExportOverridesRequestExporterType = "DATADOG"
+	CreateEnvironmentObjectMetricsExportOverridesRequestExporterTypeDYNATRACE  CreateEnvironmentObjectMetricsExportOverridesRequestExporterType = "DYNATRACE"
 	CreateEnvironmentObjectMetricsExportOverridesRequestExporterTypePROMETHEUS CreateEnvironmentObjectMetricsExportOverridesRequestExporterType = "PROMETHEUS"
 )
 
@@ -215,6 +216,7 @@ const (
 // Defines values for CreateEnvironmentObjectMetricsExportRequestExporterType.
 const (
 	CreateEnvironmentObjectMetricsExportRequestExporterTypeDATADOG    CreateEnvironmentObjectMetricsExportRequestExporterType = "DATADOG"
+	CreateEnvironmentObjectMetricsExportRequestExporterTypeDYNATRACE  CreateEnvironmentObjectMetricsExportRequestExporterType = "DYNATRACE"
 	CreateEnvironmentObjectMetricsExportRequestExporterTypePROMETHEUS CreateEnvironmentObjectMetricsExportRequestExporterType = "PROMETHEUS"
 )
 
@@ -427,6 +429,7 @@ const (
 // Defines values for EnvironmentObjectMetricsExportExporterType.
 const (
 	EnvironmentObjectMetricsExportExporterTypeDATADOG    EnvironmentObjectMetricsExportExporterType = "DATADOG"
+	EnvironmentObjectMetricsExportExporterTypeDYNATRACE  EnvironmentObjectMetricsExportExporterType = "DYNATRACE"
 	EnvironmentObjectMetricsExportExporterTypePROMETHEUS EnvironmentObjectMetricsExportExporterType = "PROMETHEUS"
 )
 
@@ -451,6 +454,7 @@ const (
 // Defines values for EnvironmentObjectMetricsExportOverridesExporterType.
 const (
 	EnvironmentObjectMetricsExportOverridesExporterTypeDATADOG    EnvironmentObjectMetricsExportOverridesExporterType = "DATADOG"
+	EnvironmentObjectMetricsExportOverridesExporterTypeDYNATRACE  EnvironmentObjectMetricsExportOverridesExporterType = "DYNATRACE"
 	EnvironmentObjectMetricsExportOverridesExporterTypePROMETHEUS EnvironmentObjectMetricsExportOverridesExporterType = "PROMETHEUS"
 )
 
@@ -567,6 +571,7 @@ const (
 // Defines values for UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType.
 const (
 	UpdateEnvironmentObjectMetricsExportOverridesRequestExporterTypeDATADOG    UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType = "DATADOG"
+	UpdateEnvironmentObjectMetricsExportOverridesRequestExporterTypeDYNATRACE  UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType = "DYNATRACE"
 	UpdateEnvironmentObjectMetricsExportOverridesRequestExporterTypePROMETHEUS UpdateEnvironmentObjectMetricsExportOverridesRequestExporterType = "PROMETHEUS"
 )
 
@@ -591,6 +596,7 @@ const (
 // Defines values for UpdateEnvironmentObjectMetricsExportRequestExporterType.
 const (
 	UpdateEnvironmentObjectMetricsExportRequestExporterTypeDATADOG    UpdateEnvironmentObjectMetricsExportRequestExporterType = "DATADOG"
+	UpdateEnvironmentObjectMetricsExportRequestExporterTypeDYNATRACE  UpdateEnvironmentObjectMetricsExportRequestExporterType = "DYNATRACE"
 	UpdateEnvironmentObjectMetricsExportRequestExporterTypePROMETHEUS UpdateEnvironmentObjectMetricsExportRequestExporterType = "PROMETHEUS"
 )
 
@@ -811,6 +817,21 @@ const (
 	ListAgentTokensParamsSortsUpdatedByIdDesc  ListAgentTokensParamsSorts = "updatedById:desc"
 )
 
+// Defines values for ListAgentsParamsStatuses.
+const (
+	CORDONED   ListAgentsParamsStatuses = "CORDONED"
+	HEALTHY    ListAgentsParamsStatuses = "HEALTHY"
+	TERMINATED ListAgentsParamsStatuses = "TERMINATED"
+	UNHEALTHY  ListAgentsParamsStatuses = "UNHEALTHY"
+)
+
+// Defines values for ListAgentsParamsCapabilities.
+const (
+	DAGPROCESSING ListAgentsParamsCapabilities = "DAG_PROCESSING"
+	TASKEXEC      ListAgentsParamsCapabilities = "TASK_EXEC"
+	TRIGGEREXEC   ListAgentsParamsCapabilities = "TRIGGER_EXEC"
+)
+
 // Defines values for GetDeploymentLogsParamsSources.
 const (
 	GetDeploymentLogsParamsSourcesApiserver    GetDeploymentLogsParamsSources = "apiserver"
@@ -1011,11 +1032,29 @@ type AgentSlots struct {
 	Total int32 `json:"total"`
 }
 
+// AgentsPaginated defines model for AgentsPaginated.
+type AgentsPaginated struct {
+	// Agents A list of agents in the current page
+	Agents []Agent `json:"agents"`
+
+	// Limit The maximum number of agents in one page
+	Limit int `json:"limit"`
+
+	// Offset The offset of the current page of agents
+	Offset int `json:"offset"`
+
+	// TotalCount The total number of agents
+	TotalCount int `json:"totalCount"`
+}
+
 // AllowedIpAddressRange defines model for AllowedIpAddressRange.
 type AllowedIpAddressRange struct {
 	// CreatedAt The time when the allowed IP address range was created in UTC, formatted as `YYYY-MM-DDTHH:MM:SSZ`.
 	CreatedAt time.Time            `json:"createdAt"`
 	CreatedBy *BasicSubjectProfile `json:"createdBy,omitempty"`
+
+	// Description A label that describes the allowed IP address range.
+	Description *string `json:"description,omitempty"`
 
 	// Id The allowed IP address range's ID.
 	Id string `json:"id"`
@@ -1496,6 +1535,9 @@ type CreateAgentTokenRequest struct {
 
 // CreateAllowedIpAddressRangeRequest defines model for CreateAllowedIpAddressRangeRequest.
 type CreateAllowedIpAddressRangeRequest struct {
+	// Description A label that describes the allowed IP address range. At most 500 characters.
+	Description *string `json:"description,omitempty"`
+
 	// IpAddressRange The allowed IP address range in CIDR format.
 	IpAddressRange string `json:"ipAddressRange"`
 }
@@ -1870,6 +1912,9 @@ type CreateEnvironmentObjectMetricsExportOverridesRequest struct {
 	// DataDogSite The Datadog site to send metrics to, e.g. datadoghq.com or datadoghq.eu. Datadog exports carry infrastructure metrics only; Airflow metrics continue to be sent by the in-Deployment Datadog sidecar.
 	DataDogSite *CreateEnvironmentObjectMetricsExportOverridesRequestDataDogSite `json:"dataDogSite,omitempty"`
 
+	// DynatraceApiToken The Dynatrace API token used to authenticate the export. Never returned in responses.
+	DynatraceApiToken *string `json:"dynatraceApiToken,omitempty"`
+
 	// Endpoint The Prometheus endpoint where the metrics are exported
 	Endpoint *string `json:"endpoint,omitempty"`
 
@@ -1918,7 +1963,10 @@ type CreateEnvironmentObjectMetricsExportRequest struct {
 	// DataDogSite The Datadog site to send metrics to, e.g. datadoghq.com or datadoghq.eu. Required for DATADOG exports. Datadog exports carry infrastructure metrics only; Airflow metrics continue to be sent by the in-Deployment Datadog sidecar.
 	DataDogSite *CreateEnvironmentObjectMetricsExportRequestDataDogSite `json:"dataDogSite,omitempty"`
 
-	// Endpoint The Prometheus endpoint where the metrics are exported. Required for PROMETHEUS exports; not used by DATADOG exports, which derive their intake URL from site.
+	// DynatraceApiToken The Dynatrace API token used to authenticate the export. It needs the metrics.ingest scope. Required for DYNATRACE exports. Never returned in responses.
+	DynatraceApiToken *string `json:"dynatraceApiToken,omitempty"`
+
+	// Endpoint The endpoint where the metrics are exported. For PROMETHEUS it is the remote write URL; for DYNATRACE it is the OTLP metrics URL, https://<environment-id>.live.dynatrace.com/api/v2/otlp/v1/metrics. Not used by DATADOG exports, which derive their intake URL from site.
 	Endpoint *string `json:"endpoint,omitempty"`
 
 	// ExporterType The type of exporter
@@ -2606,7 +2654,7 @@ type DeploymentLog struct {
 	// Offset The offset of the current results page.
 	Offset int `json:"offset"`
 
-	// ResultCount The number of results returned.
+	// ResultCount The number of entries the whole search matched, up to maxNumResults.
 	ResultCount int `json:"resultCount"`
 
 	// Results The log entries.
@@ -2896,6 +2944,9 @@ type EnvironmentObjectMetricsExport struct {
 	// DataDogSite The Datadog site metrics are sent to. Datadog exports carry infrastructure metrics only; Airflow metrics continue to be sent by the in-Deployment Datadog sidecar.
 	DataDogSite *EnvironmentObjectMetricsExportDataDogSite `json:"dataDogSite,omitempty"`
 
+	// DynatraceApiToken Always empty; the Dynatrace API token is masked before serialization
+	DynatraceApiToken *string `json:"dynatraceApiToken,omitempty"`
+
 	// Endpoint The Prometheus endpoint where the metrics are exported
 	Endpoint string `json:"endpoint"`
 
@@ -2943,6 +2994,9 @@ type EnvironmentObjectMetricsExportOverrides struct {
 
 	// DataDogSite The Datadog site to send metrics to, e.g. datadoghq.com or datadoghq.eu. Datadog exports carry infrastructure metrics only; Airflow metrics continue to be sent by the in-Deployment Datadog sidecar.
 	DataDogSite *EnvironmentObjectMetricsExportOverridesDataDogSite `json:"dataDogSite,omitempty"`
+
+	// DynatraceApiToken The Dynatrace API token used to authenticate the export. Never returned in responses.
+	DynatraceApiToken *string `json:"dynatraceApiToken,omitempty"`
 
 	// Endpoint The Prometheus endpoint where the metrics are exported
 	Endpoint *string `json:"endpoint,omitempty"`
@@ -3550,6 +3604,12 @@ type TeamsPaginated struct {
 	TotalCount int `json:"totalCount"`
 }
 
+// UpdateAllowedIpAddressRangeRequest defines model for UpdateAllowedIpAddressRangeRequest.
+type UpdateAllowedIpAddressRangeRequest struct {
+	// Description A label that describes the allowed IP address range. At most 500 characters. An empty string clears it. The range itself cannot change: delete it and create a new one instead.
+	Description string `json:"description"`
+}
+
 // UpdateApiTokenRequest defines model for UpdateApiTokenRequest.
 type UpdateApiTokenRequest struct {
 	// Description The description of the API token.
@@ -3665,7 +3725,7 @@ type UpdateDedicatedDeploymentRequest struct {
 	// IsDagDeployEnabled Whether the Deployment has Dag deploys enabled.
 	IsDagDeployEnabled bool `json:"isDagDeployEnabled"`
 
-	// IsDevelopmentMode Whether the Deployment is for development only. If `false`, the Deployment can be considered production for the purposes of support case priority, but development-only features such as hibernation will not be available. You can't update this value to `true` for existing non-development Deployments.
+	// IsDevelopmentMode Whether the Deployment is for development only. If `false`, the Deployment can be considered production for the purposes of support case priority, but development-only features such as hibernation will not be available.
 	IsDevelopmentMode *bool `json:"isDevelopmentMode,omitempty"`
 
 	// IsHighAvailability Whether the Deployment is configured for high availability. If `true`, multiple scheduler pods will be online.
@@ -3824,6 +3884,9 @@ type UpdateEnvironmentObjectMetricsExportOverridesRequest struct {
 	// DataDogSite The Datadog site to send metrics to, e.g. datadoghq.com or datadoghq.eu. Datadog exports carry infrastructure metrics only; Airflow metrics continue to be sent by the in-Deployment Datadog sidecar.
 	DataDogSite *UpdateEnvironmentObjectMetricsExportOverridesRequestDataDogSite `json:"dataDogSite,omitempty"`
 
+	// DynatraceApiToken The Dynatrace API token used to authenticate the export. Never returned in responses.
+	DynatraceApiToken *string `json:"dynatraceApiToken,omitempty"`
+
 	// Endpoint The Prometheus endpoint where the metrics are exported
 	Endpoint *string `json:"endpoint,omitempty"`
 
@@ -3871,6 +3934,9 @@ type UpdateEnvironmentObjectMetricsExportRequest struct {
 
 	// DataDogSite DataDogSite is not marked required here even for DATADOG exports, because an update replaces the whole value: it is enforced by validation the same way endpoint is for PROMETHEUS. ApiKey is a secret, so omitting it keeps the stored key rather than clearing it.
 	DataDogSite *UpdateEnvironmentObjectMetricsExportRequestDataDogSite `json:"dataDogSite,omitempty"`
+
+	// DynatraceApiToken The Dynatrace API token used to authenticate the export. Omit to keep the existing token. Never returned in responses.
+	DynatraceApiToken *string `json:"dynatraceApiToken,omitempty"`
 
 	// Endpoint The Prometheus endpoint where the metrics are exported
 	Endpoint *string `json:"endpoint,omitempty"`
@@ -4045,7 +4111,7 @@ type UpdateStandardDeploymentRequest struct {
 	// IsDagDeployEnabled Whether the Deployment has Dag deploys enabled.
 	IsDagDeployEnabled bool `json:"isDagDeployEnabled"`
 
-	// IsDevelopmentMode Whether the Deployment is for development only. If `false`, the Deployment can be considered production for the purposes of support case priority, but development-only features such as hibernation will not be available. You can't update this value to `true` for existing non-development Deployments.
+	// IsDevelopmentMode Whether the Deployment is for development only. If `false`, the Deployment can be considered production for the purposes of support case priority, but development-only features such as hibernation will not be available.
 	IsDevelopmentMode *bool `json:"isDevelopmentMode,omitempty"`
 
 	// IsHighAvailability Whether the Deployment is configured for high availability. If `true`, multiple scheduler pods will be online.
@@ -4576,6 +4642,36 @@ type ListAgentTokensParams struct {
 // ListAgentTokensParamsSorts defines parameters for ListAgentTokens.
 type ListAgentTokensParamsSorts string
 
+// ListAgentsParams defines parameters for ListAgents.
+type ListAgentsParams struct {
+	// Offset The number of agents to skip before returning results. Defaults to 0.
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Limit The maximum number of agents to return. Defaults to 20.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// IncludeDeleted Whether to include deleted agents.
+	IncludeDeleted *bool `form:"includeDeleted,omitempty" json:"includeDeleted,omitempty"`
+
+	// IsCordoned Filter agents by whether they are cordoned.
+	IsCordoned *bool `form:"isCordoned,omitempty" json:"isCordoned,omitempty"`
+
+	// Statuses Agent statuses to filter by. Repeat the parameter to pass more than one.
+	Statuses *[]ListAgentsParamsStatuses `form:"statuses,omitempty" json:"statuses,omitempty"`
+
+	// Capabilities Agent capabilities to filter by. Repeat the parameter to pass more than one.
+	Capabilities *[]ListAgentsParamsCapabilities `form:"capabilities,omitempty" json:"capabilities,omitempty"`
+
+	// Queues Worker queues to filter by, at most 50. Repeat the parameter to pass more than one.
+	Queues *[]string `form:"queues,omitempty" json:"queues,omitempty"`
+}
+
+// ListAgentsParamsStatuses defines parameters for ListAgents.
+type ListAgentsParamsStatuses string
+
+// ListAgentsParamsCapabilities defines parameters for ListAgents.
+type ListAgentsParamsCapabilities string
+
 // GetDeploymentLogsParams defines parameters for GetDeploymentLogs.
 type GetDeploymentLogsParams struct {
 	// Sources Log sources to retrieve.
@@ -4647,7 +4743,7 @@ type ListEnvironmentObjectsParamsObjectType string
 
 // ListRoleTemplatesParams defines parameters for ListRoleTemplates.
 type ListRoleTemplatesParams struct {
-	// ScopeTypes Filter role templates based on the scope of permissions they include.
+	// ScopeTypes Filter role templates based on the scope of permissions they include. At most 4 values.
 	ScopeTypes *[]ListRoleTemplatesParamsScopeTypes `form:"scopeTypes,omitempty" json:"scopeTypes,omitempty"`
 }
 
@@ -4659,7 +4755,7 @@ type ListRolesParams struct {
 	// IncludeDefaultRoles Whether to include default Astro roles in the returned list.
 	IncludeDefaultRoles *bool `form:"includeDefaultRoles,omitempty" json:"includeDefaultRoles,omitempty"`
 
-	// ScopeTypes Filter the list of roles based on the scope of each role.
+	// ScopeTypes Filter the list of roles based on the scope of each role. At most 4 values.
 	ScopeTypes *[]ListRolesParamsScopeTypes `form:"scopeTypes,omitempty" json:"scopeTypes,omitempty"`
 
 	// Offset Offset for pagination.
@@ -4830,6 +4926,9 @@ type BulkCreateAllowedIpAddressRangesJSONRequestBody = BulkCreateAllowedIpAddres
 
 // BulkDeleteAllowedIpAddressRangesJSONRequestBody defines body for BulkDeleteAllowedIpAddressRanges for application/json ContentType.
 type BulkDeleteAllowedIpAddressRangesJSONRequestBody = BulkDeleteAllowedIpAddressRangesRequest
+
+// UpdateAllowedIpAddressRangeJSONRequestBody defines body for UpdateAllowedIpAddressRange for application/json ContentType.
+type UpdateAllowedIpAddressRangeJSONRequestBody = UpdateAllowedIpAddressRangeRequest
 
 // CreateClusterJSONRequestBody defines body for CreateCluster for application/json ContentType.
 type CreateClusterJSONRequestBody = CreateClusterRequest
@@ -5682,6 +5781,11 @@ type ClientInterface interface {
 	// DeleteAllowedIpAddressRange request
 	DeleteAllowedIpAddressRange(ctx context.Context, organizationId string, allowedIpAddressRangeId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// UpdateAllowedIpAddressRangeWithBody request with any body
+	UpdateAllowedIpAddressRangeWithBody(ctx context.Context, organizationId string, allowedIpAddressRangeId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateAllowedIpAddressRange(ctx context.Context, organizationId string, allowedIpAddressRangeId string, body UpdateAllowedIpAddressRangeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetClusterOptions request
 	GetClusterOptions(ctx context.Context, organizationId string, params *GetClusterOptionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -5739,6 +5843,15 @@ type ClientInterface interface {
 
 	// GetAgentToken request
 	GetAgentToken(ctx context.Context, organizationId string, deploymentId string, agentTokenId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListAgents request
+	ListAgents(ctx context.Context, organizationId string, deploymentId string, params *ListAgentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteAgent request
+	DeleteAgent(ctx context.Context, organizationId string, deploymentId string, agentId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAgent request
+	GetAgent(ctx context.Context, organizationId string, deploymentId string, agentId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AgentActionWithBody request with any body
 	AgentActionWithBody(ctx context.Context, organizationId string, deploymentId string, agentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -6005,6 +6118,30 @@ func (c *Client) DeleteAllowedIpAddressRange(ctx context.Context, organizationId
 	return c.Client.Do(req)
 }
 
+func (c *Client) UpdateAllowedIpAddressRangeWithBody(ctx context.Context, organizationId string, allowedIpAddressRangeId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAllowedIpAddressRangeRequestWithBody(c.Server, organizationId, allowedIpAddressRangeId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAllowedIpAddressRange(ctx context.Context, organizationId string, allowedIpAddressRangeId string, body UpdateAllowedIpAddressRangeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAllowedIpAddressRangeRequest(c.Server, organizationId, allowedIpAddressRangeId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetClusterOptions(ctx context.Context, organizationId string, params *GetClusterOptionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetClusterOptionsRequest(c.Server, organizationId, params)
 	if err != nil {
@@ -6247,6 +6384,42 @@ func (c *Client) DeleteAgentToken(ctx context.Context, organizationId string, de
 
 func (c *Client) GetAgentToken(ctx context.Context, organizationId string, deploymentId string, agentTokenId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetAgentTokenRequest(c.Server, organizationId, deploymentId, agentTokenId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListAgents(ctx context.Context, organizationId string, deploymentId string, params *ListAgentsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAgentsRequest(c.Server, organizationId, deploymentId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteAgent(ctx context.Context, organizationId string, deploymentId string, agentId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteAgentRequest(c.Server, organizationId, deploymentId, agentId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAgent(ctx context.Context, organizationId string, deploymentId string, agentId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAgentRequest(c.Server, organizationId, deploymentId, agentId)
 	if err != nil {
 		return nil, err
 	}
@@ -7267,6 +7440,60 @@ func NewDeleteAllowedIpAddressRangeRequest(server string, organizationId string,
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewUpdateAllowedIpAddressRangeRequest calls the generic UpdateAllowedIpAddressRange builder with application/json body
+func NewUpdateAllowedIpAddressRangeRequest(server string, organizationId string, allowedIpAddressRangeId string, body UpdateAllowedIpAddressRangeJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateAllowedIpAddressRangeRequestWithBody(server, organizationId, allowedIpAddressRangeId, "application/json", bodyReader)
+}
+
+// NewUpdateAllowedIpAddressRangeRequestWithBody generates requests for UpdateAllowedIpAddressRange with any type of body
+func NewUpdateAllowedIpAddressRangeRequestWithBody(server string, organizationId string, allowedIpAddressRangeId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "allowedIpAddressRangeId", runtime.ParamLocationPath, allowedIpAddressRangeId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/allowed-ip-address-ranges/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -8293,6 +8520,261 @@ func NewGetAgentTokenRequest(server string, organizationId string, deploymentId 
 	}
 
 	operationPath := fmt.Sprintf("/organizations/%s/deployments/%s/agent-tokens/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListAgentsRequest generates requests for ListAgents
+func NewListAgentsRequest(server string, organizationId string, deploymentId string, params *ListAgentsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "deploymentId", runtime.ParamLocationPath, deploymentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/deployments/%s/agents", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.IncludeDeleted != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "includeDeleted", runtime.ParamLocationQuery, *params.IncludeDeleted); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.IsCordoned != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "isCordoned", runtime.ParamLocationQuery, *params.IsCordoned); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Statuses != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "statuses", runtime.ParamLocationQuery, *params.Statuses); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Capabilities != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "capabilities", runtime.ParamLocationQuery, *params.Capabilities); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Queues != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "queues", runtime.ParamLocationQuery, *params.Queues); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteAgentRequest generates requests for DeleteAgent
+func NewDeleteAgentRequest(server string, organizationId string, deploymentId string, agentId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "deploymentId", runtime.ParamLocationPath, deploymentId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "agentId", runtime.ParamLocationPath, agentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/deployments/%s/agents/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAgentRequest generates requests for GetAgent
+func NewGetAgentRequest(server string, organizationId string, deploymentId string, agentId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "deploymentId", runtime.ParamLocationPath, deploymentId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "agentId", runtime.ParamLocationPath, agentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organizations/%s/deployments/%s/agents/%s", pathParam0, pathParam1, pathParam2)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -11311,6 +11793,11 @@ type ClientWithResponsesInterface interface {
 	// DeleteAllowedIpAddressRangeWithResponse request
 	DeleteAllowedIpAddressRangeWithResponse(ctx context.Context, organizationId string, allowedIpAddressRangeId string, reqEditors ...RequestEditorFn) (*DeleteAllowedIpAddressRangeResponse, error)
 
+	// UpdateAllowedIpAddressRangeWithBodyWithResponse request with any body
+	UpdateAllowedIpAddressRangeWithBodyWithResponse(ctx context.Context, organizationId string, allowedIpAddressRangeId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAllowedIpAddressRangeResponse, error)
+
+	UpdateAllowedIpAddressRangeWithResponse(ctx context.Context, organizationId string, allowedIpAddressRangeId string, body UpdateAllowedIpAddressRangeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAllowedIpAddressRangeResponse, error)
+
 	// GetClusterOptionsWithResponse request
 	GetClusterOptionsWithResponse(ctx context.Context, organizationId string, params *GetClusterOptionsParams, reqEditors ...RequestEditorFn) (*GetClusterOptionsResponse, error)
 
@@ -11368,6 +11855,15 @@ type ClientWithResponsesInterface interface {
 
 	// GetAgentTokenWithResponse request
 	GetAgentTokenWithResponse(ctx context.Context, organizationId string, deploymentId string, agentTokenId string, reqEditors ...RequestEditorFn) (*GetAgentTokenResponse, error)
+
+	// ListAgentsWithResponse request
+	ListAgentsWithResponse(ctx context.Context, organizationId string, deploymentId string, params *ListAgentsParams, reqEditors ...RequestEditorFn) (*ListAgentsResponse, error)
+
+	// DeleteAgentWithResponse request
+	DeleteAgentWithResponse(ctx context.Context, organizationId string, deploymentId string, agentId string, reqEditors ...RequestEditorFn) (*DeleteAgentResponse, error)
+
+	// GetAgentWithResponse request
+	GetAgentWithResponse(ctx context.Context, organizationId string, deploymentId string, agentId string, reqEditors ...RequestEditorFn) (*GetAgentResponse, error)
 
 	// AgentActionWithBodyWithResponse request with any body
 	AgentActionWithBodyWithResponse(ctx context.Context, organizationId string, deploymentId string, agentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AgentActionResponse, error)
@@ -11664,6 +12160,33 @@ func (r DeleteAllowedIpAddressRangeResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r DeleteAllowedIpAddressRangeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateAllowedIpAddressRangeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AllowedIpAddressRange
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateAllowedIpAddressRangeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateAllowedIpAddressRangeResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -12100,6 +12623,77 @@ func (r GetAgentTokenResponse) StatusCode() int {
 	return 0
 }
 
+type ListAgentsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentsPaginated
+	JSON4XX      *Error
+	JSON5XX      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAgentsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAgentsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteAgentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON4XX      *Error
+	JSON5XX      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteAgentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteAgentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAgentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Agent
+	JSON4XX      *Error
+	JSON5XX      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAgentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAgentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type AgentActionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -12178,7 +12772,10 @@ type GetDeploymentLogsResponse struct {
 	JSON400      *Error
 	JSON401      *Error
 	JSON403      *Error
+	JSON429      *Error
 	JSON500      *Error
+	JSON503      *Error
+	JSON504      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -13337,6 +13934,23 @@ func (c *ClientWithResponses) DeleteAllowedIpAddressRangeWithResponse(ctx contex
 	return ParseDeleteAllowedIpAddressRangeResponse(rsp)
 }
 
+// UpdateAllowedIpAddressRangeWithBodyWithResponse request with arbitrary body returning *UpdateAllowedIpAddressRangeResponse
+func (c *ClientWithResponses) UpdateAllowedIpAddressRangeWithBodyWithResponse(ctx context.Context, organizationId string, allowedIpAddressRangeId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAllowedIpAddressRangeResponse, error) {
+	rsp, err := c.UpdateAllowedIpAddressRangeWithBody(ctx, organizationId, allowedIpAddressRangeId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAllowedIpAddressRangeResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateAllowedIpAddressRangeWithResponse(ctx context.Context, organizationId string, allowedIpAddressRangeId string, body UpdateAllowedIpAddressRangeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAllowedIpAddressRangeResponse, error) {
+	rsp, err := c.UpdateAllowedIpAddressRange(ctx, organizationId, allowedIpAddressRangeId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAllowedIpAddressRangeResponse(rsp)
+}
+
 // GetClusterOptionsWithResponse request returning *GetClusterOptionsResponse
 func (c *ClientWithResponses) GetClusterOptionsWithResponse(ctx context.Context, organizationId string, params *GetClusterOptionsParams, reqEditors ...RequestEditorFn) (*GetClusterOptionsResponse, error) {
 	rsp, err := c.GetClusterOptions(ctx, organizationId, params, reqEditors...)
@@ -13519,6 +14133,33 @@ func (c *ClientWithResponses) GetAgentTokenWithResponse(ctx context.Context, org
 		return nil, err
 	}
 	return ParseGetAgentTokenResponse(rsp)
+}
+
+// ListAgentsWithResponse request returning *ListAgentsResponse
+func (c *ClientWithResponses) ListAgentsWithResponse(ctx context.Context, organizationId string, deploymentId string, params *ListAgentsParams, reqEditors ...RequestEditorFn) (*ListAgentsResponse, error) {
+	rsp, err := c.ListAgents(ctx, organizationId, deploymentId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAgentsResponse(rsp)
+}
+
+// DeleteAgentWithResponse request returning *DeleteAgentResponse
+func (c *ClientWithResponses) DeleteAgentWithResponse(ctx context.Context, organizationId string, deploymentId string, agentId string, reqEditors ...RequestEditorFn) (*DeleteAgentResponse, error) {
+	rsp, err := c.DeleteAgent(ctx, organizationId, deploymentId, agentId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteAgentResponse(rsp)
+}
+
+// GetAgentWithResponse request returning *GetAgentResponse
+func (c *ClientWithResponses) GetAgentWithResponse(ctx context.Context, organizationId string, deploymentId string, agentId string, reqEditors ...RequestEditorFn) (*GetAgentResponse, error) {
+	rsp, err := c.GetAgent(ctx, organizationId, deploymentId, agentId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAgentResponse(rsp)
 }
 
 // AgentActionWithBodyWithResponse request with arbitrary body returning *AgentActionResponse
@@ -14305,6 +14946,67 @@ func ParseDeleteAllowedIpAddressRangeResponse(rsp *http.Response) (*DeleteAllowe
 	}
 
 	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateAllowedIpAddressRangeResponse parses an HTTP response from a UpdateAllowedIpAddressRangeWithResponse call
+func ParseUpdateAllowedIpAddressRangeResponse(rsp *http.Response) (*UpdateAllowedIpAddressRangeResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateAllowedIpAddressRangeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AllowedIpAddressRange
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -15307,6 +16009,119 @@ func ParseGetAgentTokenResponse(rsp *http.Response) (*GetAgentTokenResponse, err
 	return response, nil
 }
 
+// ParseListAgentsResponse parses an HTTP response from a ListAgentsWithResponse call
+func ParseListAgentsResponse(rsp *http.Response) (*ListAgentsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAgentsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentsPaginated
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteAgentResponse parses an HTTP response from a DeleteAgentWithResponse call
+func ParseDeleteAgentResponse(rsp *http.Response) (*DeleteAgentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteAgentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAgentResponse parses an HTTP response from a GetAgentWithResponse call
+func ParseGetAgentResponse(rsp *http.Response) (*GetAgentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAgentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Agent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseAgentActionResponse parses an HTTP response from a AgentActionWithResponse call
 func ParseAgentActionResponse(rsp *http.Response) (*AgentActionResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -15462,12 +16277,33 @@ func ParseGetDeploymentLogsResponse(rsp *http.Response) (*GetDeploymentLogsRespo
 		}
 		response.JSON403 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 504:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON504 = &dest
 
 	}
 

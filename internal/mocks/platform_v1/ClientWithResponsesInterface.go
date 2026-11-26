@@ -1089,6 +1089,43 @@ func (_m *ClientWithResponsesInterface) DeleteAgentTokenWithResponse(ctx context
 	return r0, r1
 }
 
+// DeleteAgentWithResponse provides a mock function with given fields: ctx, organizationId, deploymentId, agentId, reqEditors
+func (_m *ClientWithResponsesInterface) DeleteAgentWithResponse(ctx context.Context, organizationId string, deploymentId string, agentId string, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.DeleteAgentResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, deploymentId, agentId)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteAgentWithResponse")
+	}
+
+	var r0 *platform_v1.DeleteAgentResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, ...platform_v1.RequestEditorFn) (*platform_v1.DeleteAgentResponse, error)); ok {
+		return rf(ctx, organizationId, deploymentId, agentId, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, ...platform_v1.RequestEditorFn) *platform_v1.DeleteAgentResponse); ok {
+		r0 = rf(ctx, organizationId, deploymentId, agentId, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.DeleteAgentResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, deploymentId, agentId, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // DeleteAllowedIpAddressRangeWithResponse provides a mock function with given fields: ctx, organizationId, allowedIpAddressRangeId, reqEditors
 func (_m *ClientWithResponsesInterface) DeleteAllowedIpAddressRangeWithResponse(ctx context.Context, organizationId string, allowedIpAddressRangeId string, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.DeleteAllowedIpAddressRangeResponse, error) {
 	_va := make([]interface{}, len(reqEditors))
@@ -1570,6 +1607,43 @@ func (_m *ClientWithResponsesInterface) GetAgentTokenWithResponse(ctx context.Co
 	return r0, r1
 }
 
+// GetAgentWithResponse provides a mock function with given fields: ctx, organizationId, deploymentId, agentId, reqEditors
+func (_m *ClientWithResponsesInterface) GetAgentWithResponse(ctx context.Context, organizationId string, deploymentId string, agentId string, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.GetAgentResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, deploymentId, agentId)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAgentWithResponse")
+	}
+
+	var r0 *platform_v1.GetAgentResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, ...platform_v1.RequestEditorFn) (*platform_v1.GetAgentResponse, error)); ok {
+		return rf(ctx, organizationId, deploymentId, agentId, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, ...platform_v1.RequestEditorFn) *platform_v1.GetAgentResponse); ok {
+		r0 = rf(ctx, organizationId, deploymentId, agentId, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.GetAgentResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, deploymentId, agentId, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetApiTokenWithResponse provides a mock function with given fields: ctx, organizationId, tokenId, reqEditors
 func (_m *ClientWithResponsesInterface) GetApiTokenWithResponse(ctx context.Context, organizationId string, tokenId string, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.GetApiTokenResponse, error) {
 	_va := make([]interface{}, len(reqEditors))
@@ -2043,6 +2117,43 @@ func (_m *ClientWithResponsesInterface) ListAgentTokensWithResponse(ctx context.
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, string, *platform_v1.ListAgentTokensParams, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, deploymentId, params, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ListAgentsWithResponse provides a mock function with given fields: ctx, organizationId, deploymentId, params, reqEditors
+func (_m *ClientWithResponsesInterface) ListAgentsWithResponse(ctx context.Context, organizationId string, deploymentId string, params *platform_v1.ListAgentsParams, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.ListAgentsResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, deploymentId, params)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListAgentsWithResponse")
+	}
+
+	var r0 *platform_v1.ListAgentsResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, *platform_v1.ListAgentsParams, ...platform_v1.RequestEditorFn) (*platform_v1.ListAgentsResponse, error)); ok {
+		return rf(ctx, organizationId, deploymentId, params, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, *platform_v1.ListAgentsParams, ...platform_v1.RequestEditorFn) *platform_v1.ListAgentsResponse); ok {
+		r0 = rf(ctx, organizationId, deploymentId, params, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.ListAgentsResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, *platform_v1.ListAgentsParams, ...platform_v1.RequestEditorFn) error); ok {
 		r1 = rf(ctx, organizationId, deploymentId, params, reqEditors...)
 	} else {
 		r1 = ret.Error(1)
@@ -2562,6 +2673,80 @@ func (_m *ClientWithResponsesInterface) RotateApiTokenWithResponse(ctx context.C
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, string, ...platform_v1.RequestEditorFn) error); ok {
 		r1 = rf(ctx, organizationId, tokenId, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateAllowedIpAddressRangeWithBodyWithResponse provides a mock function with given fields: ctx, organizationId, allowedIpAddressRangeId, contentType, body, reqEditors
+func (_m *ClientWithResponsesInterface) UpdateAllowedIpAddressRangeWithBodyWithResponse(ctx context.Context, organizationId string, allowedIpAddressRangeId string, contentType string, body io.Reader, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.UpdateAllowedIpAddressRangeResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, allowedIpAddressRangeId, contentType, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateAllowedIpAddressRangeWithBodyWithResponse")
+	}
+
+	var r0 *platform_v1.UpdateAllowedIpAddressRangeResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, io.Reader, ...platform_v1.RequestEditorFn) (*platform_v1.UpdateAllowedIpAddressRangeResponse, error)); ok {
+		return rf(ctx, organizationId, allowedIpAddressRangeId, contentType, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, io.Reader, ...platform_v1.RequestEditorFn) *platform_v1.UpdateAllowedIpAddressRangeResponse); ok {
+		r0 = rf(ctx, organizationId, allowedIpAddressRangeId, contentType, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.UpdateAllowedIpAddressRangeResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, io.Reader, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, allowedIpAddressRangeId, contentType, body, reqEditors...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateAllowedIpAddressRangeWithResponse provides a mock function with given fields: ctx, organizationId, allowedIpAddressRangeId, body, reqEditors
+func (_m *ClientWithResponsesInterface) UpdateAllowedIpAddressRangeWithResponse(ctx context.Context, organizationId string, allowedIpAddressRangeId string, body platform_v1.UpdateAllowedIpAddressRangeRequest, reqEditors ...platform_v1.RequestEditorFn) (*platform_v1.UpdateAllowedIpAddressRangeResponse, error) {
+	_va := make([]interface{}, len(reqEditors))
+	for _i := range reqEditors {
+		_va[_i] = reqEditors[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, organizationId, allowedIpAddressRangeId, body)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateAllowedIpAddressRangeWithResponse")
+	}
+
+	var r0 *platform_v1.UpdateAllowedIpAddressRangeResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, platform_v1.UpdateAllowedIpAddressRangeRequest, ...platform_v1.RequestEditorFn) (*platform_v1.UpdateAllowedIpAddressRangeResponse, error)); ok {
+		return rf(ctx, organizationId, allowedIpAddressRangeId, body, reqEditors...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, platform_v1.UpdateAllowedIpAddressRangeRequest, ...platform_v1.RequestEditorFn) *platform_v1.UpdateAllowedIpAddressRangeResponse); ok {
+		r0 = rf(ctx, organizationId, allowedIpAddressRangeId, body, reqEditors...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*platform_v1.UpdateAllowedIpAddressRangeResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, platform_v1.UpdateAllowedIpAddressRangeRequest, ...platform_v1.RequestEditorFn) error); ok {
+		r1 = rf(ctx, organizationId, allowedIpAddressRangeId, body, reqEditors...)
 	} else {
 		r1 = ret.Error(1)
 	}
